@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <encodingDesc>
+      <refsDecl n="CTS">
+        <cRefPattern n="section" matchPattern="(\w+).(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div[@n='$1']/tei:div[@n='$2'])"/>
+        <cRefPattern n="book" matchPattern="(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div[@n='$1'])"/>
+      </refsDecl>
+    </encodingDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="edition" n="urn:cts:latinLit:phi0474.phi055.perseus-lat1" xml:lang="lat">
+        <div type="textpart" subtype="sigla" n="sigla">
+          <p>B = Bambergensis</p>
+        </div>
+        <div type="textpart" subtype="book" n="1">
+          <head>Liber primus</head>
+          <div type="textpart" subtype="section" n="1">
+            <p><milestone unit="chapter" n="1"/>Quamquam te, Marce fili,<note>nota editoris</note> annum iam <del>iam</del> audientem Cratippum<pb n="p.2"/> <choice><sic>Athenes</sic><corr>Athenis</corr></choice>.</p>
+          </div>
+          <div type="textpart" subtype="section" n="2">
+            <p><app><lem>consilium</lem><rdg>concilium</rdg></app> cepit, ut ait <foreign xml:lang="grc">ἀρετή</foreign> et <foreign xml:lang="greek">kai</foreign> <choice><abbr>M.</abbr><expan>Marcus</expan></choice> Tullius.</p>
+          </div>
+        </div>
+        <div type="textpart" subtype="book" n="2">
+          <div type="textpart" subtype="section" n="1"><p>Quid multa?</p><l>arma virumque</l><l>cano</l></div>
+        </div>
+      </div>
+    </body>
+  </text>
+</TEI>

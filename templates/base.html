@@ -8,7 +8,12 @@
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="{% url 'core:home' %}">{% translate "Phraséologie latine" %}</a>
+    <div class="site-brand">
+      <a class="brand" href="{% url 'core:home' %}">{% translate "Phraséologie latine" %}</a>
+      <nav class="site-nav" aria-label="{% translate 'Navigation principale' %}">
+        <a href="{% url 'corpus:index' %}">{% translate "Corpus" %}</a>
+      </nav>
+    </div>
     <div class="site-tools">
       <nav class="site-nav" aria-label="{% translate 'Compte' %}">
         {% if user.is_authenticated %}

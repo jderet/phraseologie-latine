@@ -85,6 +85,23 @@ class TokenizeTests(SimpleTestCase):
         tokens = tokenize("Marci nostri ληκύθους fugimus")
         self.assertEqual([t.is_foreign for t in tokens], [False, False, True, False])
 
+    def test_beta_code_words_stay_whole_and_are_marked_foreign(self):
+        tokens = tokenize(r"*peri\ dunatw=n me scito kata\ *dio/dwron kri/nein.")
+        self.assertEqual(
+            [t.form for t in tokens],
+            ["*peri\\", "dunatw=n", "me", "scito", "kata\\", "*dio/dwron", "kri/nein"],
+        )
+        self.assertEqual(
+            [t.is_foreign for t in tokens], [True, True, False, False, True, True, True]
+        )
+
+    def test_parentheses_around_latin_words_stay_outside(self):
+        tokens = tokenize("(serviunt) dixit")
+        self.assertEqual(
+            [(t.before, t.form, t.after) for t in tokens],
+            [("(", "serviunt", ") "), ("", "dixit", "")],
+        )
+
     def test_decomposed_marks_stay_inside_the_word(self):
         self.assertEqual([t.form for t in tokenize("cōnsilium cepit")], ["cōnsilium", "cepit"])
 

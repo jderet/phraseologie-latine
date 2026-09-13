@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 19:07+0200\n"
-"PO-Revision-Date: 2026-09-13 19:15+0200\n"
+"POT-Creation-Date: 2026-09-13 19:55+0200\n"
+"PO-Revision-Date: 2026-09-13 19:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -173,6 +173,394 @@ msgid "Votre compte est supprimé. Vos contributions restent, sans votre nom."
 msgstr ""
 "Your account has been deleted. Your contributions remain, without your name."
 
+#: corpus/apps.py:7 templates/base.html:14 templates/corpus/index.html:4
+#: templates/corpus/index.html:8 templates/corpus/work.html:8
+msgid "Corpus"
+msgstr "Corpus"
+
+#: corpus/catalog.py:100
+#, python-format
+msgid "%(file)s, ligne %(line)d : %(message)s"
+msgstr "%(file)s, line %(line)d: %(message)s"
+
+#: corpus/catalog.py:107
+#, python-format
+msgid "la colonne « %(column)s » est vide"
+msgstr "column “%(column)s” is empty"
+
+#: corpus/catalog.py:118
+#, python-format
+msgid "« %(value)s » n’est pas une année (colonne %(column)s)"
+msgstr "“%(value)s” is not a year (column %(column)s)"
+
+#: corpus/catalog.py:127
+#, python-format
+msgid "« %(value)s » : écrire oui ou non (colonne %(column)s)"
+msgstr "“%(value)s”: write oui or non (column %(column)s)"
+
+#: corpus/catalog.py:137
+#, python-format
+msgid "« %(value)s » n’est pas permis dans la colonne %(column)s (%(allowed)s)"
+msgstr "“%(value)s” is not allowed in column %(column)s (%(allowed)s)"
+
+#: corpus/catalog.py:145
+#, python-format
+msgid "fichier introuvable : %(path)s"
+msgstr "file not found: %(path)s"
+
+#: corpus/catalog.py:152
+#, python-format
+msgid "%(file)s : colonnes manquantes : %(columns)s"
+msgstr "%(file)s: missing columns: %(columns)s"
+
+#: corpus/catalog.py:174
+#, python-format
+msgid "auteur en double : %(author)s"
+msgstr "duplicate author: %(author)s"
+
+#: corpus/catalog.py:181
+#, python-format
+msgid "URN CTS mal formée : %(urn)s"
+msgstr "malformed CTS URN: %(urn)s"
+
+#: corpus/catalog.py:183
+#, python-format
+msgid "œuvre en double : %(urn)s"
+msgstr "duplicate work: %(urn)s"
+
+#: corpus/catalog.py:185
+#, python-format
+msgid "auteur inconnu : %(author)s"
+msgstr "unknown author: %(author)s"
+
+#: corpus/catalog.py:188
+#, python-format
+msgid "chemin de fichier non valable : %(path)s"
+msgstr "invalid file path: %(path)s"
+
+#: corpus/catalog.py:191
+msgid "la date de début est postérieure à la date de fin"
+msgstr "the start date is later than the end date"
+
+#: corpus/catalog.py:197
+#, python-format
+msgid "expression d’exclusion non valable : %(pattern)s"
+msgstr "invalid exclusion expression: %(pattern)s"
+
+#: corpus/importer.py:45
+#, python-format
+msgid "l’édition %(edition)s n’appartient pas à l’œuvre %(work)s"
+msgstr "edition %(edition)s does not belong to work %(work)s"
+
+#: corpus/importer.py:49
+msgid "aucun passage trouvé"
+msgstr "no passage found"
+
+#: corpus/importer.py:54
+#, python-format
+msgid "références en double ou vides : %(references)s"
+msgstr "duplicate or empty references: %(references)s"
+
+#: corpus/management/commands/import_perseus.py:52
+#, python-format
+msgid "Catalogue mis à jour : %(count)d œuvres."
+msgstr "Catalogue updated: %(count)d works."
+
+#: corpus/management/commands/import_perseus.py:60
+#, python-format
+msgid "Version du dépôt Perseus illisible dans %(path)s."
+msgstr "Cannot read the version of the Perseus repository in %(path)s."
+
+#: corpus/management/commands/import_perseus.py:72
+#, python-format
+msgid "Œuvres absentes du catalogue : %(works)s"
+msgstr "Works missing from the catalogue: %(works)s"
+
+#: corpus/management/commands/import_perseus.py:88
+#, python-format
+msgid "%(work)s : %(passages)d passages, %(tokens)d mots"
+msgstr "%(work)s: %(passages)d passages, %(tokens)d words"
+
+#: corpus/management/commands/import_perseus.py:98
+#, python-format
+msgid "%(work)s : %(passages)d passages, %(tokens)d mots importés"
+msgstr "%(work)s: %(passages)d passages, %(tokens)d words imported"
+
+#: corpus/management/commands/import_perseus.py:102
+#, python-format
+msgid "%(work)s : déjà importée pour cette version de Perseus"
+msgstr "%(work)s: already imported for this version of Perseus"
+
+#: corpus/models.py:17
+msgid "latin archaïque"
+msgstr "archaic Latin"
+
+#: corpus/models.py:18
+msgid "latin classique"
+msgstr "classical Latin"
+
+#: corpus/models.py:19
+msgid "latin impérial"
+msgstr "imperial Latin"
+
+#: corpus/models.py:20
+msgid "latin tardif"
+msgstr "late Latin"
+
+#: corpus/models.py:21
+msgid "latin médiéval"
+msgstr "medieval Latin"
+
+#: corpus/models.py:22
+msgid "néo-latin"
+msgstr "Neo-Latin"
+
+#: corpus/models.py:26
+msgid "identifiant CTS"
+msgstr "CTS identifier"
+
+#: corpus/models.py:27
+msgid "nom en français"
+msgstr "French name"
+
+#: corpus/models.py:28
+msgid "nom en anglais"
+msgstr "English name"
+
+#: corpus/models.py:29
+msgid "nom latin"
+msgstr "Latin name"
+
+#: corpus/models.py:30 corpus/models.py:73
+msgid "abréviation"
+msgstr "abbreviation"
+
+#: corpus/models.py:31
+msgid "année de naissance"
+msgstr "year of birth"
+
+#: corpus/models.py:32
+msgid "année de mort"
+msgstr "year of death"
+
+#: corpus/models.py:33
+msgid "époque"
+msgstr "period"
+
+#: corpus/models.py:36 corpus/models.py:69 moderation/models.py:48
+#: moderation/models.py:122
+msgid "auteur"
+msgstr "author"
+
+#: corpus/models.py:37
+msgid "auteurs"
+msgstr "authors"
+
+#: corpus/models.py:50
+msgid "éloquence"
+msgstr "oratory"
+
+#: corpus/models.py:51
+msgid "rhétorique"
+msgstr "rhetoric"
+
+#: corpus/models.py:52
+msgid "philosophie"
+msgstr "philosophy"
+
+#: corpus/models.py:53
+msgid "lettres"
+msgstr "letters"
+
+#: corpus/models.py:54
+msgid "histoire"
+msgstr "history"
+
+#: corpus/models.py:55
+msgid "tragédie"
+msgstr "tragedy"
+
+#: corpus/models.py:56
+msgid "satire ménippée"
+msgstr "Menippean satire"
+
+#: corpus/models.py:59
+msgid "soutenu"
+msgstr "elevated"
+
+#: corpus/models.py:60
+msgid "courant"
+msgstr "standard"
+
+#: corpus/models.py:61
+msgid "familier"
+msgstr "familiar"
+
+#: corpus/models.py:64
+msgid "prose"
+msgstr "prose"
+
+#: corpus/models.py:65
+msgid "vers"
+msgstr "verse"
+
+#: corpus/models.py:66
+msgid "prosimètre"
+msgstr "prosimetrum"
+
+#: corpus/models.py:71 corpus/models.py:113
+msgid "URN CTS"
+msgstr "CTS URN"
+
+#: corpus/models.py:72 corpus/models.py:151
+msgid "titre"
+msgstr "title"
+
+#: corpus/models.py:74
+msgid "genre"
+msgstr "genre"
+
+#: corpus/models.py:75
+msgid "registre"
+msgstr "register"
+
+#: corpus/models.py:76
+msgid "forme"
+msgstr "form"
+
+#: corpus/models.py:77
+msgid "date de début"
+msgstr "start date"
+
+#: corpus/models.py:78
+msgid "date de fin"
+msgstr "end date"
+
+#: corpus/models.py:80
+msgid "noyau"
+msgstr "core"
+
+#: corpus/models.py:82
+msgid "Les attestations du noyau sont vérifiées par des personnes."
+msgstr "Attestations in the core are checked by people."
+
+#: corpus/models.py:84
+msgid "fragmentaire"
+msgstr "fragmentary"
+
+#: corpus/models.py:87 corpus/models.py:111
+msgid "œuvre"
+msgstr "work"
+
+#: corpus/models.py:88
+msgid "œuvres"
+msgstr "works"
+
+#: corpus/models.py:114
+msgid "source"
+msgstr "source"
+
+#: corpus/models.py:115
+msgid "fichier"
+msgstr "file"
+
+#: corpus/models.py:117
+msgid "version de la source"
+msgstr "source version"
+
+#: corpus/models.py:117
+msgid "Commit Git du dépôt importé."
+msgstr "Git commit of the imported repository."
+
+#: corpus/models.py:119
+msgid "licence"
+msgstr "license"
+
+#: corpus/models.py:120
+msgid "schéma de citation"
+msgstr "citation scheme"
+
+#: corpus/models.py:121
+msgid "importée le"
+msgstr "imported on"
+
+#: corpus/models.py:122
+msgid "édition en usage"
+msgstr "current edition"
+
+#: corpus/models.py:123
+msgid "nombre de passages"
+msgstr "number of passages"
+
+#: corpus/models.py:124
+msgid "nombre de mots"
+msgstr "number of words"
+
+#: corpus/models.py:127 corpus/models.py:147 corpus/models.py:188
+msgid "édition"
+msgstr "edition"
+
+#: corpus/models.py:128
+msgid "éditions"
+msgstr "editions"
+
+#: corpus/models.py:149
+msgid "ordre"
+msgstr "order"
+
+#: corpus/models.py:150
+msgid "référence"
+msgstr "reference"
+
+#: corpus/models.py:152
+msgid "texte"
+msgstr "text"
+
+#: corpus/models.py:155 corpus/models.py:191
+msgid "passage"
+msgstr "passage"
+
+#: corpus/models.py:156
+msgid "passages"
+msgstr "passages"
+
+#: corpus/models.py:193
+msgid "position dans l’édition"
+msgstr "position in the edition"
+
+#: corpus/models.py:194
+msgid "forme imprimée"
+msgstr "printed form"
+
+#: corpus/models.py:195
+msgid "forme normalisée"
+msgstr "normalized form"
+
+#: corpus/models.py:196
+msgid "ponctuation avant"
+msgstr "punctuation before"
+
+#: corpus/models.py:197
+msgid "ponctuation et espace après"
+msgstr "punctuation and space after"
+
+#: corpus/models.py:198
+msgid "mot étranger"
+msgstr "foreign word"
+
+#: corpus/models.py:201
+msgid "mot"
+msgstr "word"
+
+#: corpus/models.py:202
+msgid "mots"
+msgstr "words"
+
+#: corpus/templatetags/corpus_tags.py:14
+#, python-format
+msgid "%(year)d av. J.-C."
+msgstr "%(year)d BC"
+
 #: moderation/apps.py:7
 msgid "Modération"
 msgstr "Moderation"
@@ -228,10 +616,6 @@ msgstr "content type"
 #: moderation/models.py:42 moderation/models.py:116
 msgid "identifiant du contenu"
 msgstr "content identifier"
-
-#: moderation/models.py:48 moderation/models.py:122
-msgid "auteur"
-msgstr "author"
 
 #: moderation/models.py:50 moderation/models.py:129
 msgid "date"
@@ -363,7 +747,7 @@ msgid "Choisissez une décision."
 msgstr "Choose a decision."
 
 #: templates/accounts/account.html:4 templates/accounts/account.html:8
-#: templates/base.html:18
+#: templates/base.html:23
 msgid "Mon compte"
 msgstr "My account"
 
@@ -488,7 +872,7 @@ msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
 #: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:6
-#: templates/base.html:11
+#: templates/base.html:12
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -515,7 +899,7 @@ msgid "Nouveau mot de passe"
 msgstr "New password"
 
 #: templates/accounts/login.html:4 templates/accounts/login.html:8
-#: templates/base.html:24
+#: templates/base.html:29
 msgid "Connexion"
 msgstr "Log in"
 
@@ -638,30 +1022,34 @@ msgstr ""
 "address: a new link will be sent to you."
 
 #: templates/base.html:13
+msgid "Navigation principale"
+msgstr "Main navigation"
+
+#: templates/base.html:18
 msgid "Compte"
 msgstr "Account"
 
-#: templates/base.html:16 templates/moderation/report_queue.html:4
+#: templates/base.html:21 templates/moderation/report_queue.html:4
 msgid "Signalements"
 msgstr "Reports"
 
-#: templates/base.html:21
+#: templates/base.html:26
 msgid "Déconnexion"
 msgstr "Log out"
 
-#: templates/base.html:25
+#: templates/base.html:30
 msgid "Inscription"
 msgstr "Sign up"
 
-#: templates/base.html:31
+#: templates/base.html:36
 msgid "Langue"
 msgstr "Language"
 
-#: templates/base.html:38
+#: templates/base.html:43
 msgid "Changer"
 msgstr "Change"
 
-#: templates/base.html:55
+#: templates/base.html:60
 msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
 msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
 
@@ -727,6 +1115,101 @@ msgid ""
 "Jeune."
 msgstr ""
 "Starting corpus: Cicero, Caesar, Sallust, Livy, Seneca, Pliny the Younger."
+
+#: templates/corpus/index.html:9
+msgid ""
+"Textes latins des éditions libres de Perseus, sous licence CC BY-SA 4.0. Les "
+"attestations relevées dans les œuvres du noyau sont vérifiées par des "
+"personnes ; ailleurs, elles sont repérées automatiquement."
+msgstr ""
+"Latin texts from the open editions of Perseus, under the CC BY-SA 4.0 "
+"license. Attestations found in the works of the core are checked by people; "
+"elsewhere, they are found automatically."
+
+#: templates/corpus/index.html:25
+msgid "hors noyau"
+msgstr "outside the core"
+
+#: templates/corpus/index.html:32
+msgid "Aucun texte importé pour l’instant."
+msgstr "No text imported yet."
+
+#: templates/corpus/passage.html:13
+msgid "Passages voisins"
+msgstr "Neighboring passages"
+
+#: templates/corpus/passage.html:20
+msgid "Identifiant"
+msgstr "Identifier"
+
+#: templates/corpus/passage.html:24
+msgid "Source"
+msgstr "Source"
+
+#: templates/corpus/passage.html:25 templates/corpus/work.html:49
+msgid "version"
+msgstr "version"
+
+#: templates/corpus/work.html:12
+msgid "Citation"
+msgstr "Citation"
+
+#: templates/corpus/work.html:17
+msgid "Genre"
+msgstr "Genre"
+
+#: templates/corpus/work.html:22
+msgid "Forme"
+msgstr "Form"
+
+#: templates/corpus/work.html:27
+msgid "Registre"
+msgstr "Register"
+
+#: templates/corpus/work.html:33
+msgid "Date"
+msgstr "Date"
+
+#: templates/corpus/work.html:38
+msgid "Noyau"
+msgstr "Core"
+
+#: templates/corpus/work.html:39
+msgid "oui : attestations vérifiées par des personnes"
+msgstr "yes: attestations checked by people"
+
+#: templates/corpus/work.html:39
+msgid "non : attestations repérées automatiquement"
+msgstr "no: attestations found automatically"
+
+#: templates/corpus/work.html:43
+msgid "État du texte"
+msgstr "State of the text"
+
+#: templates/corpus/work.html:44
+msgid "fragmentaire ou lacunaire"
+msgstr "fragmentary or with gaps"
+
+#: templates/corpus/work.html:48
+msgid "Édition"
+msgstr "Edition"
+
+#: templates/corpus/work.html:64
+msgid "Pages"
+msgstr "Pages"
+
+#: templates/corpus/work.html:65
+msgid "Page précédente"
+msgstr "Previous page"
+
+#: templates/corpus/work.html:66
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Page %(number)s of %(total)s"
+
+#: templates/corpus/work.html:67
+msgid "Page suivante"
+msgstr "Next page"
 
 #: templates/moderation/history.html:4 templates/moderation/links.html:1
 msgid "Historique"

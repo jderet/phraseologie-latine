@@ -26,8 +26,8 @@ Développement :
 - [x] PostgreSQL en local (Docker)
 - [x] Comptes : inscription par e-mail, déclaration de majorité, trois rôles, limites des nouveaux comptes
 - [x] Révisions, retour arrière et signalements sur tout contenu
-- [ ] Import du noyau depuis Perseus : œuvres, passages, mots à identifiants stables, URN CTS
-- [ ] Métadonnées : date, genre, registre, prose ou vers, époque
+- [x] Import du noyau depuis Perseus : œuvres, passages, mots à identifiants stables, URN CTS
+- [x] Métadonnées : date, genre, registre, prose ou vers, époque
 - [x] Forme normalisée pour la recherche
 - [ ] Analyse automatique sur le Mac (LatinCy) : lemmes, morphologie, syntaxe UD, en couches versionnées
 - [ ] Recherche par forme et par lemme, avec filtres et contexte

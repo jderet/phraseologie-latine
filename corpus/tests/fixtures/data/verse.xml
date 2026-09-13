@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <encodingDesc>
+      <refsDecl n="CTS">
+        <cRefPattern n="line" matchPattern="(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div//tei:l[@n='$1'])"/>
+      </refsDecl>
+    </encodingDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="edition" n="urn:cts:latinLit:phi1017.phi004.perseus-lat2">
+        <head>Personae: Medea, Nutrix</head>
+        <sp>
+          <speaker>Medea</speaker>
+          <l n="1">Di coniugales tuque genialis tori,</l>
+          <l n="2">Lucina, custos</l>
+          <l>quaeque domituram freta</l>
+        </sp>
+        <note><l n="99">versus in nota</l></note>
+        <l n="3">Tiphyn novam frenare docuisti ratem,</l>
+      </div>
+    </body>
+  </text>
+</TEI>

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{{ work.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'corpus:index' %}">{% translate "Corpus" %}</a> · {{ work.author.name }}</p>
+  <h1><i>{{ work.title }}</i></h1>
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Citation" %}</dt>
+      <dd>{{ work.citation_prefix }}</dd>
+    </div>
+    {% if work.genre %}
+    <div>
+      <dt>{% translate "Genre" %}</dt>
+      <dd>{{ work.get_genre_display|capfirst }}</dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Forme" %}</dt>
+      <dd>{{ work.get_form_display|capfirst }}</dd>
+    </div>
+    {% if work.register %}
+    <div>
+      <dt>{% translate "Registre" %}</dt>
+      <dd>{{ work.get_register_display|capfirst }}</dd>
+    </div>
+    {% endif %}
+    {% if work.date_from is not None %}
+    <div>
+      <dt>{% translate "Date" %}</dt>
+      <dd>{{ work.date_from|format_year }}{% if work.date_to is not None and work.date_to != work.date_from %} – {{ work.date_to|format_year }}{% endif %}</dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Noyau" %}</dt>
+      <dd>{% if work.is_core %}{% translate "oui : attestations vérifiées par des personnes" %}{% else %}{% translate "non : attestations repérées automatiquement" %}{% endif %}</dd>
+    </div>
+    {% if work.is_fragmentary %}
+    <div>
+      <dt>{% translate "État du texte" %}</dt>
+      <dd>{% translate "fragmentaire ou lacunaire" %}</dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Édition" %}</dt>
+      <dd>{{ edition.source }}, {{ edition.license }} <span class="muted">· {{ edition.cts_urn }} · {% translate "version" %} {{ edition.source_version|slice:":7" }}</span></dd>
+    </div>
+  </dl>
+
+  <ol class="passages">
+    {% for passage in page %}
+    <li>
+      {% if passage.heading %}<p class="passage-heading">{{ passage.heading }}</p>{% endif %}
+      <a class="ref" href="{% url 'corpus:passage' work.cts_id passage.reference %}">{{ passage.reference }}</a>
+      {{ passage.text }}
+    </li>
+    {% endfor %}
+  </ol>
+
+  {% if page.has_other_pages %}
+  <nav class="pager" aria-label="{% translate 'Pages' %}">
+    {% if page.has_previous %}<a rel="prev" href="?page={{ page.previous_page_number }}">{% translate "Page précédente" %}</a>{% endif %}
+    <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
+    {% if page.has_next %}<a rel="next" href="?page={{ page.next_page_number }}">{% translate "Page suivante" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

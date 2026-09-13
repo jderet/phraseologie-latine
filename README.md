@@ -37,6 +37,14 @@ Le corpus latin vient de [Perseus canonical-latinLit](https://github.com/Perseus
 git clone https://github.com/PerseusDL/canonical-latinLit.git
 ```
 
+Puis importer le noyau dans PostgreSQL (environ 3 minutes, 350 Mo) :
+
+```bash
+python manage.py import_perseus
+```
+
+La liste des œuvres importées, les éditions retenues et leurs métadonnées sont décrites dans [corpus/data](corpus/data/README.md).
+
 ## Licences
 
 - Code : [AGPL-3.0](LICENSE).

@@ -7,6 +7,7 @@
   --accent: #2b6f62;
   --on-accent: #ffffff;
   --danger: #a8392b;
+  --highlight: #f2dd9b;
   --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light dark;
@@ -22,6 +23,7 @@
     --accent: #6cc0ac;
     --on-accent: #0d1512;
     --danger: #f0907f;
+    --highlight: #5b4916;
   }
 }
 
@@ -452,6 +454,103 @@ blockquote {
 .moderation-links {
   font-size: 0.9rem;
   color: var(--ink-2);
+}
+
+/* Corpus */
+
+.site-brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 28px;
+}
+
+.muted {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 7px;
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+}
+
+.author-block {
+  margin-top: 32px;
+}
+
+.author-block h2 .muted {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+}
+
+.works {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.works i,
+.passages,
+.passage-text {
+  font-family: var(--serif);
+}
+
+.passages {
+  display: grid;
+  gap: 12px;
+  max-width: 46rem;
+  margin: 28px 0 0;
+  padding: 0;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  list-style: none;
+}
+
+.ref {
+  margin-right: 6px;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.passage-heading {
+  margin: 8px 0 4px;
+  font-variant: small-caps;
+  color: var(--ink-2);
+}
+
+.passage-text {
+  max-width: 42rem;
+  margin: 24px 0 0;
+  font-size: 1.25rem;
+  line-height: 1.7;
+}
+
+mark {
+  padding: 0 2px;
+  color: inherit;
+  background: var(--highlight);
+  border-radius: 3px;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin: 24px 0 0;
+}
+
+code {
+  font-size: 0.9em;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 600px) {

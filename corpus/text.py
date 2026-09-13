@@ -10,14 +10,18 @@ from dataclasses import dataclass
 
 LIGATURES = str.maketrans({"æ": "ae", "Æ": "Ae", "œ": "oe", "Œ": "Oe"})
 
-# A word: letters or digits of any script, possibly followed by combining marks that
-# have no precomposed form.
-WORD_PATTERN = re.compile(r"[^\W_](?:[^\W_]|[̀-ͯ])*")
+# A word: letters or digits of any script, possibly with combining marks that have no
+# precomposed form. Some Perseus editions write Greek in Beta code (*dio/dwron, a)reth/):
+# its accent signs stay inside the word, and so do breathings followed by a letter.
+WORD_PATTERN = re.compile(
+    r"(?:\*[()\\/=|+]*(?=[^\W_]))?[^\W_](?:[^\W_]|[̀-ͯ]|[()](?=[^\W_])|[\\/=|+])*"
+)
 
 # Marks that open a quotation or a parenthesis and belong to the following word.
 OPENING_MARKS = set("([{«‹„“‘¿¡<⟨")
 
-GREEK_PATTERN = re.compile(r"[Ͱ-Ͽἀ-῿]")
+# Greek script, or the signs of Beta code inside a word.
+FOREIGN_PATTERN = re.compile(r"[Ͱ-Ͽἀ-῿]|^\*|[()\\/=|+]")
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,5 +78,5 @@ def tokenize(text):
         else:
             after = _split_gap(text[match.end() : matches[index + 1].start()])[0]
         form = match.group()
-        tokens.append(TextToken(form, before, after, bool(GREEK_PATTERN.search(form))))
+        tokens.append(TextToken(form, before, after, bool(FOREIGN_PATTERN.search(form))))
     return tokens
