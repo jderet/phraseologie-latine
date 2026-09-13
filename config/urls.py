@@ -7,5 +7,6 @@ urlpatterns = [
     path("", include("accounts.urls")),
     path("", include("moderation.urls")),
     path("", include("corpus.urls")),
+    path("", include("translations.urls")),
     path("", include("core.urls")),
 ]

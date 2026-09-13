@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ source.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{% url 'translations:source_list' %}">{% translate "Texte source" %}</a></p>
+  <h1>{{ source.title }}</h1>
+  {% if source.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+
+  <dl class="facts">
+    {% if source.author %}
+    <div>
+      <dt>{% translate "Auteur" %}</dt>
+      <dd>{{ source.author }}{% if source.author_death_year %} ({% blocktranslate with year=source.author_death_year %}mort en {{ year }}{% endblocktranslate %}){% endif %}</dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Langue" %}</dt>
+      <dd>{{ source.get_language_display|capfirst }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Licence" %}</dt>
+      <dd>{% if source.is_public_domain %}{{ source.get_license_display|capfirst }}{% else %}<a href="{{ source.license_url }}" rel="license noopener">{{ source.get_license_display }}</a> <span class="muted">({{ source.legal_status }})</span>{% endif %}</dd>
+    </div>
+    {% if source.source_url %}
+    <div>
+      <dt>{% translate "Origine" %}</dt>
+      <dd><a href="{{ source.source_url }}" rel="nofollow ugc noopener">{{ source.source_url }}</a></dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Ajouté par" %}</dt>
+      <dd><a href="{{ source.added_by.get_absolute_url }}">{{ source.added_by.public_name }}</a>, {{ source.created_at|date:"j F Y" }}</dd>
+    </div>
+  </dl>
+  {% if can_edit %}
+  <p class="form-links"><a href="{% url 'translations:source_edit' source.pk %}">{% translate "Modifier les informations" %}</a></p>
+  {% endif %}
+  {% moderation_links source %}
+
+  <h2>{% translate "Phrases" %}</h2>
+  <ol class="segments" lang="{{ source.language }}">
+    {% for segment in segments %}
+    <li{% if segment.starts_paragraph and not forloop.first %} class="paragraph-start"{% endif %}>{{ segment.text }}</li>
+    {% endfor %}
+  </ol>
+</article>
+{% endblock %}

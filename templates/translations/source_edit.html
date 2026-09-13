@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Modifier le texte" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <p class="eyebrow"><a href="{{ source.get_absolute_url }}">{{ source.title }}</a></p>
+  <h1>{% translate "Modifier les informations du texte" %}</h1>
+  <p class="lede">{% translate "Le découpage en phrases ne change pas." %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+  </form>
+</section>
+{% endblock %}

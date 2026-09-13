@@ -642,6 +642,56 @@ code {
   font-size: 1.08rem;
 }
 
+/* Translation */
+
+.page-medium {
+  max-width: 48rem;
+}
+
+.item-list {
+  display: grid;
+  gap: 12px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item-list > li {
+  display: grid;
+  gap: 2px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.item-title {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+}
+
+.segments {
+  display: grid;
+  gap: 6px;
+  max-width: 46rem;
+  margin: 0;
+  padding-left: 2.5em;
+  font-family: var(--serif);
+  font-size: 1.08rem;
+}
+
+.segments li::marker {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+
+.segments .paragraph-start {
+  margin-top: 14px;
+}
+
+article > h2 {
+  margin-top: 40px;
+}
+
 @media (max-width: 600px) {
   .goals dl > div,
   .facts > div {

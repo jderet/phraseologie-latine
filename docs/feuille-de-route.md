@@ -38,7 +38,7 @@ Vérifié le 13 septembre 2026 (Perseus 4620cf8, LatinCy la_core_web_lg 3.9.6) :
 
 ## Étape 2 : traduction
 
-- [ ] Textes sources avec licence déclarée, découpés en phrases
+- [x] Textes sources avec licence déclarée, découpés en phrases
 - [ ] Projets ; versions en brouillon puis publiées ; styles déclarés
 - [ ] Vue de comparaison phrase par phrase ; version de référence choisie par le créateur du projet
 - [ ] Éditeur en trois colonnes, saisie des macrons

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Ajouter un texte" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <h1>{% translate "Ajouter un texte à traduire" %}</h1>
+  {% if segmented %}
+  <p class="lede">{% blocktranslate trimmed count counter=sentences|length %}
+    Le texte est découpé en {{ counter }} phrase. Vérifiez le découpage avant d’enregistrer : une
+    phrase par ligne, une ligne vide entre deux paragraphes. Il ne pourra plus changer ensuite.
+  {% plural %}
+    Le texte est découpé en {{ counter }} phrases. Vérifiez le découpage avant d’enregistrer : une
+    phrase par ligne, une ligne vide entre deux paragraphes. Il ne pourra plus changer ensuite.
+  {% endblocktranslate %}</p>
+  {% else %}
+  <p class="lede">{% blocktranslate trimmed %}
+    Seuls sont acceptés les textes du domaine public (auteur mort depuis plus de 70 ans) et les
+    textes sous licence libre compatible, comme les articles de Wikipédia (CC BY-SA).
+  {% endblocktranslate %}</p>
+  {% endif %}
+
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% if segmented %}<input type="hidden" name="segmented" value="1">{% endif %}
+    {{ form }}
+    <button type="submit" class="button">{% if segmented %}{% translate "Enregistrer le texte" %}{% else %}{% translate "Découper en phrases" %}{% endif %}</button>
+  </form>
+</section>
+{% endblock %}

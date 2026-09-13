@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Textes à traduire" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Textes à traduire" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Textes en langue moderne, du domaine public ou sous licence libre, découpés en phrases.
+    Chaque texte peut faire l’objet de projets de traduction vers le latin.
+  {% endblocktranslate %}</p>
+  {% if user.is_authenticated %}
+  <p class="actions"><a class="button" href="{% url 'translations:source_create' %}">{% translate "Ajouter un texte" %}</a></p>
+  {% endif %}
+
+  <ul class="item-list">
+    {% for source in page %}
+    <li>
+      <a class="item-title" href="{{ source.get_absolute_url }}">{{ source.title }}</a>
+      <span class="muted">{% if source.author %}{{ source.author }} · {% endif %}{{ source.get_language_display }} · {{ source.get_license_display }} · {% blocktranslate count counter=source.segment_count %}{{ counter }} phrase{% plural %}{{ counter }} phrases{% endblocktranslate %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucun texte pour l’instant." %}</li>
+    {% endfor %}
+  </ul>
+
+  {% if page.has_other_pages %}
+  <nav class="pager" aria-label="{% translate 'Pages' %}">
+    {% if page.has_previous %}<a rel="prev" href="{% querystring page=page.previous_page_number %}">{% translate "Page précédente" %}</a>{% endif %}
+    <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
+    {% if page.has_next %}<a rel="next" href="{% querystring page=page.next_page_number %}">{% translate "Page suivante" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}
