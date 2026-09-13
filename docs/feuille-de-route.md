@@ -23,7 +23,7 @@ Développement :
 
 ## Étape 1 : socle
 
-- [ ] PostgreSQL en local (Docker)
+- [x] PostgreSQL en local (Docker)
 - [ ] Comptes : inscription par e-mail, déclaration de majorité, trois rôles, limites des nouveaux comptes
 - [ ] Révisions, retour arrière et signalements sur tout contenu
 - [ ] Import du noyau depuis Perseus : œuvres, passages, mots à identifiants stables, URN CTS
