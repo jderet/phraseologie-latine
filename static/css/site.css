@@ -344,6 +344,116 @@ h2 {
   margin: 0;
 }
 
+.form fieldset {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.form legend {
+  margin-bottom: 4px;
+  padding: 0;
+  font-weight: 600;
+}
+
+.form fieldset label {
+  font-weight: 400;
+}
+
+.form fieldset input {
+  margin: 0 8px 0 0;
+}
+
+.notice {
+  padding: 10px 14px;
+  background: var(--surface);
+  border-left: 4px solid var(--danger);
+  border-radius: 6px;
+}
+
+blockquote {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--rule);
+  color: var(--ink-2);
+}
+
+/* Moderation */
+
+.revisions {
+  display: grid;
+  gap: 24px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.revision,
+.report {
+  display: grid;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+}
+
+.report + .report {
+  margin-top: 24px;
+}
+
+.revision p,
+.report p {
+  margin: 0;
+}
+
+.revision-meta {
+  color: var(--ink-2);
+}
+
+.revision-meta strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.changes {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.changes th,
+.changes td {
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule);
+}
+
+.changes thead th {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.changes td {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.button-quiet {
+  color: var(--accent);
+  background: transparent;
+}
+
+.moderation-links {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+
 @media (max-width: 600px) {
   .goals dl > div,
   .facts > div {

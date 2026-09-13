@@ -24,8 +24,8 @@ Développement :
 ## Étape 1 : socle
 
 - [x] PostgreSQL en local (Docker)
-- [ ] Comptes : inscription par e-mail, déclaration de majorité, trois rôles, limites des nouveaux comptes
-- [ ] Révisions, retour arrière et signalements sur tout contenu
+- [x] Comptes : inscription par e-mail, déclaration de majorité, trois rôles, limites des nouveaux comptes
+- [x] Révisions, retour arrière et signalements sur tout contenu
 - [ ] Import du noyau depuis Perseus : œuvres, passages, mots à identifiants stables, URN CTS
 - [ ] Métadonnées : date, genre, registre, prose ou vers, époque
 - [ ] Forme normalisée pour la recherche

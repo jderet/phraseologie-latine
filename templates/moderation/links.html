@@ -1,0 +1,1 @@
+{% load i18n %}<p class="moderation-links"><a href="{{ history_url }}">{% translate "Historique" %}</a>{% if user.is_authenticated %} · <a href="{{ report_url }}">{% translate "Signaler" %}</a>{% endif %}</p>

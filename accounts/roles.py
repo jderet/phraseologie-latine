@@ -24,10 +24,15 @@ ROLE_LABELS = {
 # Permissions are written "app_label.codename".
 ROLE_PERMISSIONS = {
     CONTRIBUTOR: [],
-    REVIEWER: [],
+    REVIEWER: [
+        "moderation.view_report",
+        "moderation.view_revision",
+    ],
     ADMINISTRATOR: [
         "accounts.view_user",
         "accounts.change_user",
+        "moderation.view_report",
+        "moderation.view_revision",
     ],
 }
 

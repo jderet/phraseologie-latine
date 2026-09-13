@@ -1,4 +1,4 @@
-{% load i18n static %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
+{% load i18n static account_tags %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8">
@@ -12,6 +12,9 @@
     <div class="site-tools">
       <nav class="site-nav" aria-label="{% translate 'Compte' %}">
         {% if user.is_authenticated %}
+          {% if user|is_reviewer %}
+          <a href="{% url 'moderation:report_queue' %}">{% translate "Signalements" %}</a>
+          {% endif %}
           <a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a>
           <form action="{% url 'accounts:logout' %}" method="post">
             {% csrf_token %}

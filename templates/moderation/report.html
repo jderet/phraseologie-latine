@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Signaler un contenu" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Signaler un contenu" %}</h1>
+  <p class="lede">{% blocktranslate trimmed with content=object %}
+    Contenu signalé : « {{ content }} ».
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="button">{% translate "Envoyer le signalement" %}</button>
+  </form>
+  <p class="note">{% blocktranslate trimmed %}
+    Les signalements sont lus par l’équipe de relecture. Un contenu manifestement illicite est
+    retiré promptement.
+  {% endblocktranslate %}</p>
+</section>
+{% endblock %}
