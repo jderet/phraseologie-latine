@@ -6,18 +6,21 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Prefetch, Q
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
 from corpus.forms import MODE_FORM, SCOPE_CORE, SearchForm
+from justifications.display import visible_evidences
 from justifications.models import Challenge, Justification
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
+from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
     ReferenceForm,
@@ -436,6 +439,50 @@ def version_edit(request, pk):
             "source": version.project.source_text,
             "rows": rows,
             **_progress(rows),
+        },
+    )
+
+
+def version_export_text(request, pk):
+    """The source text and the Latin of a version, sentence by sentence, as a text file."""
+    version = _version(request.user, pk)
+    response = HttpResponse(
+        bilingual_text(version, _rows(request.user, version)),
+        content_type="text/plain; charset=utf-8",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{export_filename(version, "txt")}"'
+    return response
+
+
+def version_export_print(request, pk):
+    """A printable page with the justifications as notes; the browser saves it as PDF."""
+    version = _version(request.user, pk)
+    rows = _rows(request.user, version)
+    notes = []
+    corpus_sources = set()
+    for row in rows:
+        row["notes"] = [] if row["hidden"] else row["justifications"]
+        for justification in row["notes"]:
+            notes.append(justification)
+            justification.note_number = len(notes)
+            justification.evidence_list = visible_evidences(
+                request.user, justification.evidences.all(), justification=justification
+            )
+            for evidence in justification.evidence_list:
+                if getattr(evidence, "quotation", None):
+                    edition = evidence.quotation.token.passage.edition
+                    corpus_sources.add((edition.source, edition.license))
+    return render(
+        request,
+        "translations/version_print.html",
+        {
+            "version": version,
+            "project": version.project,
+            "source": version.project.source_text,
+            "rows": rows,
+            "notes": notes,
+            "corpus_sources": sorted(corpus_sources),
+            "exported_at": timezone.now(),
         },
     )
 

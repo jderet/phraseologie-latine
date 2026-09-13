@@ -29,4 +29,14 @@ urlpatterns = [
     ),
     path("versions/<int:pk>/style/", views.version_settings, name="version_settings"),
     path("versions/<int:pk>/publier/", views.version_publish, name="version_publish"),
+    path(
+        "versions/<int:pk>/export/bilingue.txt",
+        views.version_export_text,
+        name="version_export_text",
+    ),
+    path(
+        "versions/<int:pk>/export/imprimer/",
+        views.version_export_print,
+        name="version_export_print",
+    ),
 ]

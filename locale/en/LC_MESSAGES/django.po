@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 00:26+0200\n"
+"POT-Creation-Date: 2026-09-14 00:33+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -1106,36 +1106,36 @@ msgstr "Challenge closed"
 msgid "Contestation retirée"
 msgstr "Challenge withdrawn"
 
-#: justifications/views.py:164
+#: justifications/views.py:136
 msgid "Traduisez et enregistrez d’abord cette phrase."
 msgstr "First translate and save this sentence."
 
-#: justifications/views.py:191
+#: justifications/views.py:163
 msgid "La justification est enregistrée."
 msgstr "The justification has been saved."
 
-#: justifications/views.py:201
+#: justifications/views.py:173
 msgid "Justifier un choix de traduction"
 msgstr "Justify a translation choice"
 
-#: justifications/views.py:202
+#: justifications/views.py:174
 msgid "Enregistrer la justification"
 msgstr "Save the justification"
 
-#: justifications/views.py:249 translations/views.py:67
-#: translations/views.py:234 translations/views.py:426
+#: justifications/views.py:221 translations/views.py:70
+#: translations/views.py:237 translations/views.py:429
 msgid "Aucune modification."
 msgstr "No change."
 
-#: justifications/views.py:251 translations/views.py:69
+#: justifications/views.py:223 translations/views.py:72
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
-#: justifications/views.py:257
+#: justifications/views.py:229
 msgid "Modifier la justification"
 msgstr "Edit the justification"
 
-#: justifications/views.py:258 templates/accounts/account.html:26
+#: justifications/views.py:230 templates/accounts/account.html:26
 #: templates/translations/project_form.html:21
 #: templates/translations/source_edit.html:14
 #: templates/translations/version_edit.html:42
@@ -1143,58 +1143,61 @@ msgstr "Edit the justification"
 msgid "Enregistrer"
 msgstr "Save"
 
-#: justifications/views.py:278
+#: justifications/views.py:250
 #, python-format
 msgid "%(count)d preuve ajoutée."
 msgid_plural "%(count)d preuves ajoutées."
 msgstr[0] "%(count)d piece of evidence added."
 msgstr[1] "%(count)d pieces of evidence added."
 
-#: justifications/views.py:282
+#: justifications/views.py:254
 msgid "Cochez une attestation ou citez un ouvrage."
 msgstr "Tick an attestation or cite a work."
 
-#: justifications/views.py:291
+#: justifications/views.py:263
 #: templates/justifications/justification_detail.html:73
 msgid "Ajouter des preuves"
 msgstr "Add evidence"
 
-#: justifications/views.py:292
+#: justifications/views.py:264
 msgid "Ajouter les preuves"
 msgstr "Add the evidence"
 
-#: justifications/views.py:308
+#: justifications/views.py:280
 msgid "La preuve est retirée."
 msgstr "The evidence has been withdrawn."
 
-#: justifications/views.py:394
+#: justifications/views.py:366
 msgid "La contestation est publiée."
 msgstr "The challenge has been published."
 
-#: justifications/views.py:409
+#: justifications/views.py:381
 msgid "Contester un choix de traduction"
 msgstr "Challenge a translation choice"
 
-#: justifications/views.py:411
+#: justifications/views.py:383
 msgid ""
 "Exposez votre argument ; appuyez-le au besoin sur des contre-exemples du "
 "corpus ou sur des ouvrages de référence. L’auteur de la version pourra "
 "répondre et justifier son choix."
-msgstr "Set out your argument; support it if needed with counter-examples from the corpus or with reference works. The author of the version will be able to answer and justify their choice."
+msgstr ""
+"Set out your argument; support it if needed with counter-examples from the "
+"corpus or with reference works. The author of the version will be able to "
+"answer and justify their choice."
 
-#: justifications/views.py:415
+#: justifications/views.py:387
 msgid "Publier la contestation"
 msgstr "Publish the challenge"
 
-#: justifications/views.py:451
+#: justifications/views.py:423
 msgid "Choisissez une décision et motivez-la."
 msgstr "Choose a decision and give your reasons."
 
-#: justifications/views.py:459
+#: justifications/views.py:431
 msgid "La contestation est close."
 msgstr "The challenge has been closed."
 
-#: justifications/views.py:472
+#: justifications/views.py:444
 msgid "La contestation est retirée."
 msgstr "The challenge has been withdrawn."
 
@@ -1787,7 +1790,7 @@ msgstr ""
 
 #: templates/core/home.html:31
 #: templates/justifications/challenge_detail.html:15
-#: templates/translations/version_detail.html:64
+#: templates/translations/version_detail.html:65
 msgid "Justifier"
 msgstr "Justify"
 
@@ -1979,7 +1982,9 @@ msgstr "This content is hidden following a report."
 msgid ""
 "Ce choix de votre version est contesté : répondez dans la discussion et "
 "justifiez-le."
-msgstr "This choice in your version is challenged: answer in the discussion and justify it."
+msgstr ""
+"This choice in your version is challenged: answer in the discussion and "
+"justify it."
 
 #: templates/justifications/challenge_detail.html:20
 #: templates/justifications/justification_detail.html:24
@@ -1990,6 +1995,7 @@ msgstr "Source sentence"
 #: templates/justifications/challenge_detail.html:24
 #: templates/justifications/justification_detail.html:28
 #: templates/justifications/justification_form.html:17
+#: templates/translations/version_print.html:24
 msgid "Latin"
 msgstr "Latin"
 
@@ -2041,7 +2047,9 @@ msgstr "defensible choice"
 msgid ""
 "Les avis sont indicatifs : la décision revient à l’équipe de relecture, et "
 "les arguments restent affichés."
-msgstr "Opinions are indicative: the review team decides, and the arguments remain displayed."
+msgstr ""
+"Opinions are indicative: the review team decides, and the arguments remain "
+"displayed."
 
 #: templates/justifications/challenge_detail.html:63
 msgid "La discussion est close."
@@ -2063,7 +2071,9 @@ msgstr "Close"
 msgid ""
 "Les choix de traduction contestés, avec leurs arguments, leurs contre-"
 "exemples et leur discussion. Les contestations ouvertes viennent en premier."
-msgstr "Challenged translation choices, with their arguments, counter-examples and discussion. Open challenges come first."
+msgstr ""
+"Challenged translation choices, with their arguments, counter-examples and "
+"discussion. Open challenges come first."
 
 #: templates/justifications/challenge_list.html:18
 #, python-format
@@ -2100,6 +2110,7 @@ msgid "Force de preuve"
 msgstr "Strength of evidence"
 
 #: templates/justifications/justification_detail.html:33
+#: templates/translations/version_print.html:44
 #, python-format
 msgid "corpus interrogé : version %(label)s"
 msgstr "searched corpus: version %(label)s"
@@ -2149,10 +2160,12 @@ msgstr ""
 "of evidence."
 
 #: templates/justifications/justification_item.html:5
+#: templates/translations/version_print.html:44
 msgid "à revoir"
 msgstr "to be reviewed"
 
 #: templates/justifications/justification_item.html:6
+#: templates/translations/version_print.html:44
 msgid "contestée"
 msgstr "challenged"
 
@@ -2302,12 +2315,14 @@ msgid "Afficher"
 msgstr "Show"
 
 #: templates/translations/project_compare.html:37
-#: templates/translations/version_detail.html:55
+#: templates/translations/version_detail.html:56
+#: templates/translations/version_print.html:32
 msgid "Phrase masquée à la suite d’un signalement."
 msgstr "Sentence hidden following a report."
 
 #: templates/translations/project_compare.html:37
-#: templates/translations/version_detail.html:55
+#: templates/translations/version_detail.html:56
+#: templates/translations/version_print.html:32
 msgid "non traduite"
 msgstr "not translated"
 
@@ -2583,21 +2598,33 @@ msgstr "Edit the style"
 msgid "Publier"
 msgstr "Publish"
 
-#: templates/translations/version_detail.html:48
+#: templates/translations/version_detail.html:46
+msgid "Exporter :"
+msgstr "Export:"
+
+#: templates/translations/version_detail.html:46
+msgid "texte bilingue"
+msgstr "bilingual text"
+
+#: templates/translations/version_detail.html:46
+msgid "version imprimable avec notes (PDF)"
+msgstr "printable version with notes (PDF)"
+
+#: templates/translations/version_detail.html:49
 msgid "Texte et traduction"
 msgstr "Text and translation"
 
-#: templates/translations/version_detail.html:62
+#: templates/translations/version_detail.html:63
 #: templates/translations/version_edit.html:62
 #, python-format
 msgid "Contesté : « %(excerpt)s »"
 msgstr "Challenged: “%(excerpt)s”"
 
-#: templates/translations/version_detail.html:62
+#: templates/translations/version_detail.html:63
 msgid "une justification est attendue"
 msgstr "a justification is expected"
 
-#: templates/translations/version_detail.html:65
+#: templates/translations/version_detail.html:66
 msgid "Contester"
 msgstr "Challenge"
 
@@ -2698,6 +2725,62 @@ msgstr "Remove the reference status"
 msgid "Choisir comme version de référence"
 msgstr "Choose as reference version"
 
+#: templates/translations/version_print.html:8
+msgid ""
+"Pour obtenir un PDF, utilisez la commande Imprimer de votre navigateur (⌘ P "
+"ou Ctrl P) et choisissez « Enregistrer au format PDF »."
+msgstr "To get a PDF, use your browser’s Print command (⌘ P or Ctrl P) and choose “Save as PDF”."
+
+#: templates/translations/version_print.html:11
+msgid "Retour à la version"
+msgstr "Back to the version"
+
+#: templates/translations/version_print.html:15
+#, python-format
+msgid "Version latine de %(name)s, style %(style)s"
+msgstr "Latin version by %(name)s, %(style)s style"
+
+#: templates/translations/version_print.html:16 translations/exports.py:22
+msgid "Brouillon non publié."
+msgstr "Unpublished draft."
+
+#: templates/translations/version_print.html:22
+msgid "N°"
+msgstr "No."
+
+#: templates/translations/version_print.html:40
+msgid "Notes justificatives"
+msgstr "Supporting notes"
+
+#: templates/translations/version_print.html:44
+#, python-format
+msgid "force %(strength)s/5, %(label)s"
+msgstr "strength %(strength)s/5, %(label)s"
+
+#: templates/translations/version_print.html:60
+msgid "Sources et licences"
+msgstr "Sources and licenses"
+
+#: templates/translations/version_print.html:61 translations/exports.py:24
+#, python-format
+msgid "Texte source : %(title)s, %(license)s."
+msgstr "Source text: %(title)s, %(license)s."
+
+#: templates/translations/version_print.html:64
+#, python-format
+msgid "Traduction latine : %(name)s, sous licence CC BY-SA 4.0."
+msgstr "Latin translation: %(name)s, under the CC BY-SA 4.0 license."
+
+#: templates/translations/version_print.html:68
+#, python-format
+msgid "Citations du corpus : %(name)s, %(license)s."
+msgstr "Corpus quotations: %(name)s, %(license)s."
+
+#: templates/translations/version_print.html:70
+#, python-format
+msgid "Exporté le %(date)s depuis %(url)s"
+msgstr "Exported on %(date)s from %(url)s"
+
 #: templates/translations/version_publish.html:4
 #: templates/translations/version_publish.html:9
 msgid "Publier la version"
@@ -2712,6 +2795,33 @@ msgstr ""
 "Once published, the version is visible to all, under the CC BY-SA 4.0 "
 "license, and can never become a draft again. You will still be able to edit "
 "it: every change will stay in the history."
+
+#: translations/exports.py:18
+#, python-format
+msgid "Version latine de %(author)s, style déclaré : %(style)s."
+msgstr "Latin version by %(author)s, declared style: %(style)s."
+
+#: translations/exports.py:28
+#, python-format
+msgid "Auteur du texte source : %(author)s."
+msgstr "Author of the source text: %(author)s."
+
+#: translations/exports.py:30
+#, python-format
+msgid "Origine : %(url)s"
+msgstr "Origin: %(url)s"
+
+#: translations/exports.py:31
+msgid "Traduction latine sous licence CC BY-SA 4.0."
+msgstr "Latin translation under the CC BY-SA 4.0 license."
+
+#: translations/exports.py:38
+msgid "[phrase masquée]"
+msgstr "[hidden sentence]"
+
+#: translations/exports.py:40
+msgid "[non traduite]"
+msgstr "[not translated]"
 
 #: translations/forms.py:49
 msgid ""
@@ -3020,41 +3130,41 @@ msgstr "The reference version must be a published version of this project."
 msgid "Choix de la version de référence"
 msgstr "Choice of the reference version"
 
-#: translations/views.py:121
+#: translations/views.py:124
 msgid "Le texte est ajouté."
 msgstr "The text has been added."
 
-#: translations/views.py:171
+#: translations/views.py:174
 msgid "Le projet est créé."
 msgstr "The project has been created."
 
-#: translations/views.py:230
+#: translations/views.py:233
 msgid "Choisissez une version publiée de ce projet."
 msgstr "Choose a published version of this project."
 
-#: translations/views.py:236
+#: translations/views.py:239
 msgid "Le projet n’a plus de version de référence."
 msgstr "The project no longer has a reference version."
 
-#: translations/views.py:238
+#: translations/views.py:241
 msgid "La version de référence est choisie."
 msgstr "The reference version has been chosen."
 
-#: translations/views.py:419
+#: translations/views.py:422
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:428
+#: translations/views.py:431
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:478
+#: translations/views.py:525
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:486
+#: translations/views.py:533
 msgid "La version est publiée."
 msgstr "The version has been published."

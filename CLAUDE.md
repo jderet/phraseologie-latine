@@ -46,14 +46,15 @@ python manage.py analyze_corpus --make-default   # analyse LatinCy du corpus (su
 | `accounts` | utilisateurs, rôles, limites des nouveaux comptes | connexion par e-mail, inscription, rôles, limites |
 | `core` | pages générales | page d'accueil |
 | `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | noyau importé et analysé (LatinCy), lecture, recherche par forme et par lemme |
-| `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements ; discussions et votes à l'étape 2 |
-| `translations` | textes sources, projets, versions, segments | étape 2 |
-| `justifications` | justifications, preuves, ouvrages, contestations | étape 2 |
+| `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements, discussions, avis indicatifs |
+| `translations` | textes sources, projets, versions, segments | textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable |
+| `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
 | `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | étape 3 |
 
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.
 - Les traitements lourds du corpus sont des commandes `manage.py` lancées sur le Mac : `import_perseus` lit le catalogue `corpus/data/` et les fichiers TEI ; `analyze_corpus` crée une couche d'analyse LatinCy, raccrochée aux mots par leur position dans le texte (un seul processus : le modèle ne se transmet pas entre processus).
-- Contenus contribués : hériter de `moderation.models.ModeratedContent`, s'inscrire avec `moderation.registry.register` et enregistrer chaque modification par `moderation.services.save_with_revision`.
+- Contenus contribués : hériter de `moderation.models.ModeratedContent`, s'inscrire avec `moderation.registry.register` et enregistrer chaque modification par `moderation.services.save_with_revision`. `register` déclare aussi le propriétaire, la règle de visibilité (brouillons), ce qui compte dans la limite des nouveaux comptes, les champs qu'un retour arrière ne rétablit pas, et qui peut discuter ou voter.
+- L'éditeur de traduction est le seul composant JavaScript (`static/js/editor.js`) ; sans lui, les pages fonctionnent par formulaires. Le PDF est enregistré par le navigateur depuis la page imprimable.
 
 ## Conventions
 

@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Case, IntegerField, Prefetch, Value, When
+from django.db.models import Case, IntegerField, Value, When
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
@@ -11,13 +11,13 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
 from accounts.roles import is_reviewer
-from corpus.models import Token
 from corpus.search import quotation
 from corpus.views import search_context
 from moderation.registry import can_view
 from translations.models import TranslatedSegment, TranslationVersion
 from translations.permissions import can_challenge, can_translate
 
+from .display import excerpt_parts, visible_evidences
 from .forms import ChallengeCloseForm, ChallengeForm, JustificationForm, ReferenceFormSet
 from .models import Challenge, Evidence, Justification
 from .services import (
@@ -86,34 +86,6 @@ def _search_page_context(request, translated, evidences, **extra):
         hint=_hint(request),
         **extra,
     )
-
-
-def _visible_evidences(user, queryset, **parent):
-    """Evidence that is not withdrawn, with the quotation of corpus words."""
-    tokens = Token.objects.select_related("passage__edition__work__author")
-    evidences = []
-    queryset = (
-        queryset.filter(is_withdrawn=False)
-        .select_related("work")
-        .prefetch_related(Prefetch("tokens", queryset=tokens))
-    )
-    for evidence in queryset:
-        for name, value in parent.items():
-            setattr(evidence, name, value)
-        if not can_view(user, evidence):
-            continue
-        cited = list(evidence.tokens.all())
-        if evidence.kind == Evidence.Kind.CORPUS and cited:
-            evidence.quotation = quotation(cited)
-        evidences.append(evidence)
-    return evidences
-
-
-def _excerpt_parts(obj):
-    """The Latin sentence cut around the words of a justification or a challenge."""
-    span = obj.locate()
-    text = obj.translated_segment.text
-    return (text[: span[0]], text[span[0] : span[1]], text[span[1] :]) if span else None
 
 
 def _own_version(user, pk):
@@ -219,10 +191,10 @@ def justification_detail(request, pk):
         _page_context(
             translated,
             justification=justification,
-            evidences=_visible_evidences(
+            evidences=visible_evidences(
                 request.user, justification.evidences.all(), justification=justification
             ),
-            parts=_excerpt_parts(justification),
+            parts=excerpt_parts(justification),
             can_edit=request.user.pk == justification.author_id,
             challenges=challenges,
             can_challenge=can_challenge(request.user, translated.version),
@@ -431,8 +403,8 @@ def challenge_detail(request, pk):
             translated,
             challenge=challenge,
             contested=justification,
-            evidences=_visible_evidences(user, challenge.evidences.all(), challenge=challenge),
-            parts=_excerpt_parts(challenge),
+            evidences=visible_evidences(user, challenge.evidences.all(), challenge=challenge),
+            parts=excerpt_parts(challenge),
             close_form=ChallengeCloseForm() if challenge.is_open and is_reviewer(user) else None,
             can_withdraw=challenge.is_open and user.pk == challenge.author_id,
             can_justify=challenge.is_open and user.pk == translated.version.author_id,

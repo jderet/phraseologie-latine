@@ -44,7 +44,7 @@ Vérifié le 13 septembre 2026 (Perseus 4620cf8, LatinCy la_core_web_lg 3.9.6) :
 - [x] Éditeur en trois colonnes, saisie des macrons
 - [x] Justifications : preuves, force, commentaire obligatoire pour l'analogie, passage « à revoir »
 - [x] Contestation : contre-exemples, discussion, votes
-- [ ] Exports bilingue et PDF avec notes
+- [x] Exports bilingue et PDF avec notes
 
 Terminé quand les testeurs ont traduit, comparé et justifié un texte dans plusieurs styles.
 

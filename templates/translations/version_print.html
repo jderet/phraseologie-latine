@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{{ project.title }} · {{ version.author.public_name }}{% endblock %}
+
+{% block content %}
+<article class="export">
+  <p class="notice notice-info no-print">{% blocktranslate trimmed %}
+    Pour obtenir un PDF, utilisez la commande Imprimer de votre navigateur (⌘ P ou Ctrl P) et
+    choisissez « Enregistrer au format PDF ».
+  {% endblocktranslate %} <a href="{{ version.get_absolute_url }}">{% translate "Retour à la version" %}</a></p>
+
+  <header>
+    <h1>{{ project.title }}</h1>
+    <p class="lede">{% blocktranslate with name=version.author.public_name style=version.get_style_display %}Version latine de {{ name }}, style {{ style }}{% endblocktranslate %}{% if version.style_note %} ({{ version.style_note }}){% endif %}</p>
+    {% if version.is_draft %}<p class="notice">{% translate "Brouillon non publié." %}</p>{% endif %}
+  </header>
+
+  <table class="export-bitext">
+    <thead>
+      <tr>
+        <th scope="col">{% translate "N°" %}</th>
+        <th scope="col">{{ source.get_language_display|capfirst }}</th>
+        <th scope="col">{% translate "Latin" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr{% if row.segment.starts_paragraph and not forloop.first %} class="paragraph-start"{% endif %}>
+        <td class="export-number">{{ row.segment.order }}</td>
+        <td lang="{{ source.language }}">{{ row.segment.text }}</td>
+        <td lang="la" class="latin">{% if row.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif row.saved %}{{ row.saved }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}{% for note in row.notes %}<sup><a href="#note-{{ note.note_number }}" id="appel-{{ note.note_number }}">{{ note.note_number }}</a></sup>{% endfor %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if notes %}
+  <section aria-labelledby="notes-title">
+    <h2 id="notes-title">{% translate "Notes justificatives" %}</h2>
+    <ol class="export-notes">
+      {% for note in notes %}
+      <li id="note-{{ note.note_number }}" value="{{ note.note_number }}">
+        <p><span lang="la" class="latin">« {{ note.latin_excerpt }} »</span> — {% blocktranslate with strength=note.strength label=note.get_strength_display %}force {{ strength }}/5, {{ label }}{% endblocktranslate %}{% if note.corpus_version %} ({% blocktranslate with label=note.corpus_version %}corpus interrogé : version {{ label }}{% endblocktranslate %}){% endif %}{% if note.needs_review %} — {% translate "à revoir" %}{% endif %}{% if note.is_challenged %} — {% translate "contestée" %}{% endif %}</p>
+        {% if note.comment %}<p>{{ note.comment|linebreaksbr }}</p>{% endif %}
+        {% if note.evidence_list %}
+        <ul class="export-evidences">
+          {% for evidence in note.evidence_list %}
+          <li>{% if evidence.quotation %}{{ evidence.quotation.citation }} : <span lang="la">… {% render_tokens evidence.quotation.words evidence.quotation.highlighted %} …</span>{% elif evidence.work %}{{ evidence.work.abbreviation }} {{ evidence.locator }}{% endif %}{% if evidence.note %} ({{ evidence.note }}){% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endif %}
+
+  <footer class="export-credits">
+    <h2>{% translate "Sources et licences" %}</h2>
+    <p>{% blocktranslate trimmed with title=source.title license=source.get_license_display %}
+      Texte source : {{ title }}, {{ license }}.
+    {% endblocktranslate %}{% if source.author %} {{ source.author }}.{% endif %}{% if source.source_url %} {{ source.source_url }}{% endif %}</p>
+    <p>{% blocktranslate trimmed with name=version.author.public_name %}
+      Traduction latine : {{ name }}, sous licence CC BY-SA 4.0.
+    {% endblocktranslate %}</p>
+    {% for name, license in corpus_sources %}
+    <p>{% blocktranslate with name=name license=license %}Citations du corpus : {{ name }}, {{ license }}.{% endblocktranslate %}</p>
+    {% endfor %}
+    <p class="muted">{% blocktranslate with date=exported_at|date:"j F Y" url=request.build_absolute_uri %}Exporté le {{ date }} depuis {{ url }}{% endblocktranslate %}</p>
+  </footer>
+</article>
+{% endblock %}

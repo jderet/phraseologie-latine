@@ -1,0 +1,43 @@
+"""Exports of a version: a bilingual text file. The printable page with notes is a template."""
+
+from django.utils.text import slugify
+from django.utils.translation import gettext
+
+
+def export_filename(version, extension):
+    parts = [slugify(version.project.title), slugify(version.author.public_name)]
+    name = "-".join(part for part in parts if part) or f"version-{version.pk}"
+    return f"{name}.{extension}"
+
+
+def bilingual_text(version, rows):
+    """The source text and the Latin, sentence by sentence, with the licenses to credit."""
+    project, source = version.project, version.project.source_text
+    lines = [project.title, "=" * len(project.title), ""]
+    lines.append(
+        gettext("Version latine de %(author)s, style déclaré : %(style)s.")
+        % {"author": version.author.public_name, "style": version.get_style_display()}
+    )
+    if version.is_draft:
+        lines.append(gettext("Brouillon non publié."))
+    lines.append(
+        gettext("Texte source : %(title)s, %(license)s.")
+        % {"title": source.title, "license": source.get_license_display()}
+    )
+    if source.author:
+        lines.append(gettext("Auteur du texte source : %(author)s.") % {"author": source.author})
+    if source.source_url:
+        lines.append(gettext("Origine : %(url)s") % {"url": source.source_url})
+    lines.append(gettext("Traduction latine sous licence CC BY-SA 4.0."))
+    for row in rows:
+        segment = row["segment"]
+        lines.append("")
+        if segment.starts_paragraph and segment.order > 1:
+            lines.append("")
+        if row["hidden"]:
+            latin = gettext("[phrase masquée]")
+        else:
+            latin = row["saved"] or gettext("[non traduite]")
+        lines.append(f"{segment.order}. {segment.text}")
+        lines.append(f"   {latin}")
+    return "\n".join(lines) + "\n"
