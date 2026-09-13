@@ -2,7 +2,7 @@
 
 Plateforme collaborative pour traduire vers le latin, relever la phraséologie des auteurs dans le corpus et justifier chaque choix de traduction par des attestations. Nom définitif à venir.
 
-État : en construction (étape 1 : comptes, modération, corpus du noyau et recherche par forme). Voir la [feuille de route](docs/feuille-de-route.md).
+État : en construction. Étape 1 terminée : comptes, modération, corpus du noyau analysé, recherche par forme et par lemme. Voir la [feuille de route](docs/feuille-de-route.md).
 
 ## Documents
 
@@ -44,6 +44,18 @@ python manage.py import_perseus
 ```
 
 La liste des œuvres importées, les éditions retenues et leurs métadonnées sont décrites dans [corpus/data](corpus/data/README.md).
+
+L'analyse linguistique (lemmes, morphologie, syntaxe) utilise LatinCy, installé sur le Mac seulement :
+
+```bash
+pip install -r requirements-corpus.txt
+```
+
+Puis, pour analyser le corpus importé (environ 45 minutes pour le noyau) et rendre la recherche par lemme disponible :
+
+```bash
+python manage.py analyze_corpus --make-default
+```
 
 ## Licences
 
