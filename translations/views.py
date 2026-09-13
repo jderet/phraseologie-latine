@@ -8,7 +8,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
 from moderation.registry import can_view
@@ -16,12 +16,13 @@ from moderation.services import save_with_revision
 
 from .forms import (
     ProjectForm,
+    ReferenceForm,
     SourceTextEditForm,
     SourceTextForm,
     TranslationTextForm,
     VersionForm,
 )
-from .models import SourceText, TranslationProject, TranslationVersion
+from .models import SourceText, TranslatedSegment, TranslationProject, TranslationVersion
 from .permissions import can_edit, can_translate
 from .segmentation import from_lines, segment, to_lines
 from .services import (
@@ -30,6 +31,7 @@ from .services import (
     create_version,
     publish_version,
     save_translation,
+    set_reference_version,
 )
 
 ITEMS_PER_PAGE = 50
@@ -185,6 +187,8 @@ def project_detail(request, pk):
             "published": [version for version in versions if version.is_published],
             "drafts": [version for version in versions if version.is_draft],
             "can_edit": can_edit(request.user, project),
+            "reference_id": project.reference_version_id,
+            "is_creator": request.user.pk == project.created_by_id,
         },
     )
 
@@ -207,6 +211,68 @@ def project_edit(request, pk):
         request,
         "translations/project_form.html",
         {"form": form, "source": project.source_text, "project": project},
+    )
+
+
+@login_required
+@require_POST
+def project_reference(request, pk):
+    project = _visible(request.user, TranslationProject.objects.all(), pk)
+    if request.user.pk != project.created_by_id:
+        raise PermissionDenied
+    form = ReferenceForm(request.POST, project=project)
+    if not form.is_valid():
+        messages.error(request, _("Choisissez une version publiée de ce projet."))
+        return redirect(project)
+    version = form.cleaned_data["version"]
+    if set_reference_version(project, version, request.user) is None:
+        messages.info(request, _("Aucune modification."))
+    elif version is None:
+        messages.success(request, _("Le projet n’a plus de version de référence."))
+    else:
+        messages.success(request, _("La version de référence est choisie."))
+    return redirect(project)
+
+
+def project_compare(request, pk):
+    """The versions of a project aligned sentence by sentence, the reference version first."""
+    project = _visible(request.user, TranslationProject.objects.select_related("source_text"), pk)
+    versions = sorted(
+        project.versions.visible_to(request.user).select_related("author"),
+        key=lambda version: (
+            version.pk != project.reference_version_id,
+            version.is_draft,
+            version.published_at or version.created_at,
+        ),
+    )
+    asked = {int(value) for value in request.GET.getlist("v") if value.isdigit()}
+    shown = [version for version in versions if version.pk in asked] or versions
+    translations = TranslatedSegment.objects.filter(version__in=shown).select_related("version")
+    texts = {(item.version_id, item.segment_id): item for item in translations}
+    rows = []
+    for source_segment in project.source_text.segments.all():
+        cells = []
+        for version in shown:
+            item = texts.get((version.pk, source_segment.pk))
+            cells.append(
+                {
+                    "version": version,
+                    "text": item.text if item else "",
+                    "hidden": item is not None and not can_view(request.user, item),
+                }
+            )
+        rows.append({"segment": source_segment, "cells": cells})
+    return render(
+        request,
+        "translations/project_compare.html",
+        {
+            "project": project,
+            "source": project.source_text,
+            "versions": versions,
+            "shown": shown,
+            "rows": rows,
+            "reference_id": project.reference_version_id,
+        },
     )
 
 
@@ -264,6 +330,7 @@ def version_detail(request, pk):
             "source": version.project.source_text,
             "rows": rows,
             "can_translate": can_translate(request.user, version),
+            "is_reference": version.pk == version.project.reference_version_id,
             **_progress(rows),
         },
     )

@@ -13,6 +13,8 @@ urlpatterns = [
     path("projets/", views.project_list, name="project_list"),
     path("projets/<int:pk>/", views.project_detail, name="project"),
     path("projets/<int:pk>/modifier/", views.project_edit, name="project_edit"),
+    path("projets/<int:pk>/comparer/", views.project_compare, name="project_compare"),
+    path("projets/<int:pk>/reference/", views.project_reference, name="project_reference"),
     path(
         "projets/<int:project_pk>/nouvelle-version/",
         views.version_create,

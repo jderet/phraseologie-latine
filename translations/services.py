@@ -9,7 +9,7 @@ from django.utils.translation import gettext
 
 from moderation.services import save_with_revision
 
-from .models import Segment, TranslatedSegment, TranslationVersion
+from .models import Segment, TranslatedSegment, TranslationProject, TranslationVersion
 from .segmentation import to_lines
 
 
@@ -81,3 +81,23 @@ def publish_version(version, user):
     version.state = TranslationVersion.State.PUBLISHED
     version.published_at = timezone.now()
     return save_with_revision(version, user, comment=gettext("Publication"))
+
+
+@transaction.atomic
+def set_reference_version(project, version, user):
+    """The creator of a project chooses its reference version among published ones (T6).
+
+    ``version`` None removes the reference. Return None when nothing changed.
+    """
+    project = TranslationProject.objects.select_for_update().get(pk=project.pk)
+    if user.pk != project.created_by_id:
+        raise PermissionDenied
+    if version is not None and (
+        version.project_id != project.pk or not version.is_published or version.is_hidden
+    ):
+        raise ValidationError(
+            gettext("La version de référence doit être une version publiée de ce projet."),
+            code="invalid_reference",
+        )
+    project.reference_version = version
+    return save_with_revision(project, user, comment=gettext("Choix de la version de référence"))

@@ -7,6 +7,7 @@
 <article>
   <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
   <h1>{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</h1>
+  {% if is_reference %}<p><span class="badge reference-badge">{% translate "version de référence" %}</span></p>{% endif %}
   {% if version.is_draft %}
   <p class="notice notice-info">{% translate "Brouillon : cette version n’est visible que de vous." %}</p>
   {% endif %}
@@ -38,6 +39,7 @@
   <p class="form-links">
     <a class="button" href="{% url 'translations:version_edit' version.pk %}">{% translate "Traduire" %}</a>
     <a href="{% url 'translations:version_settings' version.pk %}">{% translate "Modifier le style" %}</a>
+    {% if version.is_published %}<a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer les versions" %}</a>{% endif %}
     {% if version.is_draft %}<a href="{% url 'translations:version_publish' version.pk %}">{% translate "Publier" %}</a>{% endif %}
   </p>
   {% endif %}

@@ -120,3 +120,15 @@ class TranslationTextForm(forms.Form):
         text = normalize_sentence(self.cleaned_data["text"])
         check_text_for_links(self.user, text)
         return text
+
+
+class ReferenceForm(forms.Form):
+    """A published version of the project, or nothing to remove the reference."""
+
+    version = forms.ModelChoiceField(queryset=TranslationVersion.objects.none(), required=False)
+
+    def __init__(self, *args, project, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["version"].queryset = project.versions.filter(
+            state=TranslationVersion.State.PUBLISHED, is_hidden=False
+        )

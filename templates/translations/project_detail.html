@@ -24,6 +24,7 @@
   </dl>
   <p class="form-links">
     {% if user.is_authenticated and not project.is_hidden %}<a class="button" href="{% url 'translations:version_create' project.pk %}">{% translate "Rédiger une version" %}</a>{% endif %}
+    {% if published %}<a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer les versions" %}</a>{% endif %}
     {% if can_edit %}<a href="{% url 'translations:project_edit' project.pk %}">{% translate "Modifier le projet" %}</a>{% endif %}
   </p>
   {% moderation_links project %}
@@ -37,6 +38,9 @@
   {% endif %}
 
   <h2>{% translate "Versions publiées" %}</h2>
+  {% if is_creator and published %}
+  <p class="note">{% translate "Vous avez créé ce projet : c’est vous qui choisissez la version de référence." %}</p>
+  {% endif %}
   <ul class="item-list">
     {% for version in published %}{% include "translations/version_item.html" %}{% empty %}
     <li>{% translate "Aucune version publiée pour l’instant." %}</li>

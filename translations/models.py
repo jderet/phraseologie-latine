@@ -207,6 +207,16 @@ class TranslationProject(ModeratedContent):
         verbose_name=_("créé par"),
     )
     created_at = models.DateTimeField(_("créé le"), default=timezone.now, editable=False)
+    reference_version = models.ForeignKey(
+        "TranslationVersion",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("version de référence"),
+        help_text=_("Choisie par le créateur du projet parmi les versions publiées."),
+    )
 
     class Meta:
         verbose_name = _("projet de traduction")
@@ -336,7 +346,13 @@ def version_visible_to(user, version):
 
 
 register(SourceText, owner_field="added_by", text_fields=("title", "author", "text"))
-register(TranslationProject, owner_field="created_by", text_fields=("title", "description"))
+register(
+    TranslationProject,
+    owner_field="created_by",
+    text_fields=("title", "description"),
+    # Only the creator chooses the reference version, never a revert (T6).
+    not_reverted=("reference_version",),
+)
 register(
     TranslationVersion,
     owner_field="author",

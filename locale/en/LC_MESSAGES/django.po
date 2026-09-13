@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 22:14+0200\n"
+"POT-Creation-Date: 2026-09-13 23:48+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -479,7 +479,7 @@ msgid "époque"
 msgstr "period"
 
 #: corpus/models.py:36 corpus/models.py:69 moderation/models.py:48
-#: moderation/models.py:122 translations/models.py:249
+#: moderation/models.py:122 translations/models.py:259
 msgid "auteur"
 msgstr "author"
 
@@ -632,7 +632,7 @@ msgstr "editions"
 msgid "ordre"
 msgstr "order"
 
-#: corpus/models.py:150
+#: corpus/models.py:150 templates/translations/project_compare.html:22
 msgid "référence"
 msgstr "reference"
 
@@ -1310,7 +1310,7 @@ msgstr ""
 msgid "Trois buts liés"
 msgstr "Three connected goals"
 
-#: templates/core/home.html:18 templates/translations/version_detail.html:39
+#: templates/core/home.html:18 templates/translations/version_detail.html:40
 #: templates/translations/version_edit.html:4
 #: templates/translations/version_edit.html:9
 msgid "Traduire"
@@ -1386,7 +1386,7 @@ msgid "Source"
 msgstr "Source"
 
 #: templates/corpus/passage.html:25 templates/corpus/work.html:49
-#: translations/models.py:267 translations/models.py:303
+#: translations/models.py:277 translations/models.py:313
 msgid "version"
 msgstr "version"
 
@@ -1511,7 +1511,7 @@ msgstr "View the content"
 #: templates/moderation/history.html:14
 #: templates/translations/project_detail.html:11
 #: templates/translations/source_detail.html:11
-#: templates/translations/version_detail.html:14
+#: templates/translations/version_detail.html:15
 msgid "Ce contenu est masqué à la suite d’un signalement."
 msgstr "This content is hidden following a report."
 
@@ -1580,6 +1580,46 @@ msgstr "Confirm the decision"
 msgid "Aucun signalement ouvert."
 msgstr "No open reports."
 
+#: templates/translations/project_compare.html:4
+#: templates/translations/project_compare.html:9
+#: templates/translations/project_detail.html:27
+#: templates/translations/version_detail.html:42
+msgid "Comparer les versions"
+msgstr "Compare the versions"
+
+#: templates/translations/project_compare.html:11
+#: templates/translations/project_detail.html:46
+msgid "Aucune version publiée pour l’instant."
+msgstr "No published version yet."
+
+#: templates/translations/project_compare.html:13
+msgid ""
+"Les versions publiées, alignées phrase par phrase. La version de référence, "
+"choisie par le créateur du projet, vient en premier."
+msgstr "The published versions, aligned sentence by sentence. The reference version, chosen by the creator of the project, comes first."
+
+#: templates/translations/project_compare.html:20
+msgid "Versions affichées"
+msgstr "Versions shown"
+
+#: templates/translations/project_compare.html:22
+msgid "votre brouillon"
+msgstr "your draft"
+
+#: templates/translations/project_compare.html:25
+msgid "Afficher"
+msgstr "Show"
+
+#: templates/translations/project_compare.html:37
+#: templates/translations/version_detail.html:54
+msgid "Phrase masquée à la suite d’un signalement."
+msgstr "Sentence hidden following a report."
+
+#: templates/translations/project_compare.html:37
+#: templates/translations/version_detail.html:54
+msgid "non traduite"
+msgstr "not translated"
+
 #: templates/translations/project_detail.html:8
 msgid "Projet de traduction"
 msgstr "Translation project"
@@ -1607,27 +1647,28 @@ msgstr "Started by"
 msgid "Rédiger une version"
 msgstr "Write a version"
 
-#: templates/translations/project_detail.html:27
+#: templates/translations/project_detail.html:28
 #: templates/translations/project_form.html:4
 #: templates/translations/project_form.html:10
 msgid "Modifier le projet"
 msgstr "Edit the project"
 
-#: templates/translations/project_detail.html:32
+#: templates/translations/project_detail.html:33
 msgid "Vos brouillons"
 msgstr "Your drafts"
 
-#: templates/translations/project_detail.html:33
+#: templates/translations/project_detail.html:34
 msgid "Visibles de vous seul, jusqu’à leur publication."
 msgstr "Visible to you only, until they are published."
 
-#: templates/translations/project_detail.html:39
+#: templates/translations/project_detail.html:40
 msgid "Versions publiées"
 msgstr "Published versions"
 
 #: templates/translations/project_detail.html:42
-msgid "Aucune version publiée pour l’instant."
-msgstr "No published version yet."
+msgid ""
+"Vous avez créé ce projet : c’est vous qui choisissez la version de référence."
+msgstr "You created this project: you choose the reference version."
 
 #: templates/translations/project_form.html:4
 msgid "Nouveau projet"
@@ -1641,7 +1682,9 @@ msgstr "New translation project"
 msgid ""
 "Le projet réunit les versions latines de ce texte. Vous en serez le "
 "créateur : c’est vous qui choisirez la version de référence."
-msgstr "The project gathers the Latin versions of this text. You will be its creator: you will choose the reference version."
+msgstr ""
+"The project gathers the Latin versions of this text. You will be its "
+"creator: you will choose the reference version."
 
 #: templates/translations/project_form.html:21
 msgid "Créer le projet"
@@ -1658,7 +1701,10 @@ msgid ""
 "Chaque projet porte sur un texte source. Chacun y rédige sa propre version "
 "latine, dans le style de son choix ; les versions publiées se comparent "
 "phrase par phrase."
-msgstr "Each project is about a source text. Everyone writes their own Latin version in the style of their choice; published versions are compared sentence by sentence."
+msgstr ""
+"Each project is about a source text. Everyone writes their own Latin version "
+"in the style of their choice; published versions are compared sentence by "
+"sentence."
 
 #: templates/translations/project_list.html:13
 #: templates/translations/source_list.html:4
@@ -1743,7 +1789,7 @@ msgid "mort en %(year)s"
 msgstr "died in %(year)s"
 
 #: templates/translations/source_detail.html:26
-#: templates/translations/version_detail.html:32
+#: templates/translations/version_detail.html:33
 msgid "Licence"
 msgstr "License"
 
@@ -1802,33 +1848,38 @@ msgstr "No text yet."
 msgid "Version de %(name)s"
 msgstr "Version by %(name)s"
 
-#: templates/translations/version_detail.html:11
+#: templates/translations/version_detail.html:10
+#: templates/translations/version_item.html:2 translations/models.py:217
+msgid "version de référence"
+msgstr "reference version"
+
+#: templates/translations/version_detail.html:12
 msgid "Brouillon : cette version n’est visible que de vous."
 msgstr "Draft: this version is visible to you only."
 
-#: templates/translations/version_detail.html:19
+#: templates/translations/version_detail.html:20
 msgid "Style déclaré"
 msgstr "Declared style"
 
-#: templates/translations/version_detail.html:23
+#: templates/translations/version_detail.html:24
 msgid "État"
 msgstr "Status"
 
-#: templates/translations/version_detail.html:24
+#: templates/translations/version_detail.html:25
 #: templates/translations/version_item.html:3
 #, python-format
 msgid "publiée le %(date)s"
 msgstr "published on %(date)s"
 
-#: templates/translations/version_detail.html:24 translations/models.py:236
+#: templates/translations/version_detail.html:25 translations/models.py:246
 msgid "brouillon"
 msgstr "draft"
 
-#: templates/translations/version_detail.html:27
+#: templates/translations/version_detail.html:28
 msgid "Avancement"
 msgstr "Progress"
 
-#: templates/translations/version_detail.html:28
+#: templates/translations/version_detail.html:29
 #: templates/translations/version_edit.html:11
 #: templates/translations/version_item.html:3
 #: templates/translations/version_publish.html:10
@@ -1836,26 +1887,18 @@ msgstr "Progress"
 msgid "phrases traduites : %(done)s sur %(total)s"
 msgstr "sentences translated: %(done)s of %(total)s"
 
-#: templates/translations/version_detail.html:40
+#: templates/translations/version_detail.html:41
 msgid "Modifier le style"
 msgstr "Edit the style"
 
-#: templates/translations/version_detail.html:41
+#: templates/translations/version_detail.html:43
 #: templates/translations/version_publish.html:18
 msgid "Publier"
 msgstr "Publish"
 
-#: templates/translations/version_detail.html:46
+#: templates/translations/version_detail.html:48
 msgid "Texte et traduction"
 msgstr "Text and translation"
-
-#: templates/translations/version_detail.html:52
-msgid "Phrase masquée à la suite d’un signalement."
-msgstr "Sentence hidden following a report."
-
-#: templates/translations/version_detail.html:52
-msgid "non traduite"
-msgstr "not translated"
 
 #: templates/translations/version_edit.html:10
 msgid "Brouillon visible de vous seul."
@@ -1865,7 +1908,8 @@ msgstr "Draft visible to you only."
 msgid ""
 "Version publiée : chaque modification est visible de tous et reste dans "
 "l’historique."
-msgstr "Published version: every change is visible to all and stays in the history."
+msgstr ""
+"Published version: every change is visible to all and stays in the history."
 
 #: templates/translations/version_edit.html:29
 msgid "Voir la version"
@@ -1880,7 +1924,9 @@ msgstr "Edit the declared style"
 msgid ""
 "Déclarez le latin que vous visez. Votre version reste un brouillon visible "
 "de vous seul jusqu’à ce que vous la publiiez."
-msgstr "Declare the Latin you are aiming at. Your version stays a draft visible to you only until you publish it."
+msgstr ""
+"Declare the Latin you are aiming at. Your version stays a draft visible to "
+"you only until you publish it."
 
 #: templates/translations/version_form.html:21
 msgid "Commencer la traduction"
@@ -1889,6 +1935,14 @@ msgstr "Start translating"
 #: templates/translations/version_item.html:3
 msgid "masquée"
 msgstr "hidden"
+
+#: templates/translations/version_item.html:9
+msgid "Retirer le statut de référence"
+msgstr "Remove the reference status"
+
+#: templates/translations/version_item.html:12
+msgid "Choisir comme version de référence"
+msgstr "Choose as reference version"
 
 #: templates/translations/version_publish.html:4
 #: templates/translations/version_publish.html:9
@@ -1900,7 +1954,10 @@ msgid ""
 "Une fois publiée, la version est visible de tous, sous licence CC BY-SA 4.0, "
 "et ne peut plus redevenir un brouillon. Vous pourrez toujours la modifier : "
 "chaque modification restera dans l’historique."
-msgstr "Once published, the version is visible to all, under the CC BY-SA 4.0 license, and can never become a draft again. You will still be able to edit it: every change will stay in the history."
+msgstr ""
+"Once published, the version is visible to all, under the CC BY-SA 4.0 "
+"license, and can never become a draft again. You will still be able to edit "
+"it: every change will stay in the history."
 
 #: translations/forms.py:49
 msgid ""
@@ -2123,76 +2180,80 @@ msgstr "created by"
 msgid "créé le"
 msgstr "created on"
 
-#: translations/models.py:212
+#: translations/models.py:218
+msgid "Choisie par le créateur du projet parmi les versions publiées."
+msgstr "Chosen by the creator of the project among the published versions."
+
+#: translations/models.py:222
 msgid "projet de traduction"
 msgstr "translation project"
 
-#: translations/models.py:213
+#: translations/models.py:223
 msgid "projets de traduction"
 msgstr "translation projects"
 
-#: translations/models.py:237
+#: translations/models.py:247
 msgid "publiée"
 msgstr "published"
 
-#: translations/models.py:243
+#: translations/models.py:253
 msgid "projet"
 msgstr "project"
 
-#: translations/models.py:251
+#: translations/models.py:261
 msgid "style déclaré"
 msgstr "declared style"
 
-#: translations/models.py:253
+#: translations/models.py:263
 msgid "précision sur le style"
 msgstr "details on the style"
 
-#: translations/models.py:256
+#: translations/models.py:266
 msgid "Facultatif, par exemple : « Cicéron des lettres à Atticus »."
 msgstr "Optional, for example: “Cicero of the letters to Atticus”."
 
-#: translations/models.py:259
+#: translations/models.py:269
 msgid "état"
 msgstr "status"
 
-#: translations/models.py:261
+#: translations/models.py:271
 msgid "commencée le"
 msgstr "started on"
 
-#: translations/models.py:262
+#: translations/models.py:272
 msgid "publiée le"
 msgstr "published on"
 
-#: translations/models.py:268
+#: translations/models.py:278
 msgid "versions"
 msgstr "versions"
 
-#: translations/models.py:279
+#: translations/models.py:289
 #, python-format
 msgid "%(project)s, version de %(author)s"
 msgstr "%(project)s, version by %(author)s"
 
-#: translations/models.py:309
+#: translations/models.py:319
 msgid "phrase source"
 msgstr "source sentence"
 
-#: translations/models.py:311
+#: translations/models.py:321
 msgid "latin"
 msgstr "Latin"
 
-#: translations/models.py:312
+#: translations/models.py:322
 msgid "modifié le"
 msgstr "changed on"
 
-#: translations/models.py:315
+#: translations/models.py:325
 msgid "phrase traduite"
 msgstr "translated sentence"
 
-#: translations/models.py:316
+#: translations/models.py:326
 msgid "phrases traduites"
 msgstr "translated sentences"
 
-#: translations/models.py:325
+#: translations/models.py:335
 #, python-format
 msgid "%(version)s, phrase %(number)s"
 msgstr "%(version)s, sentence %(number)s"
@@ -2205,37 +2266,57 @@ msgstr "Translate at least one sentence before publishing."
 msgid "Publication"
 msgstr "Publication"
 
-#: translations/views.py:60 translations/views.py:318
+#: translations/services.py:99
+msgid "La version de référence doit être une version publiée de ce projet."
+msgstr "The reference version must be a published version of this project."
+
+#: translations/services.py:103
+msgid "Choix de la version de référence"
+msgstr "Choice of the reference version"
+
+#: translations/views.py:62 translations/views.py:229 translations/views.py:385
 msgid "Aucune modification."
 msgstr "No change."
 
-#: translations/views.py:62
+#: translations/views.py:64
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
-#: translations/views.py:114
+#: translations/views.py:116
 msgid "Le texte est ajouté."
 msgstr "The text has been added."
 
-#: translations/views.py:164
+#: translations/views.py:166
 msgid "Le projet est créé."
 msgstr "The project has been created."
 
-#: translations/views.py:311
+#: translations/views.py:225
+msgid "Choisissez une version publiée de ce projet."
+msgstr "Choose a published version of this project."
+
+#: translations/views.py:231
+msgid "Le projet n’a plus de version de référence."
+msgstr "The project no longer has a reference version."
+
+#: translations/views.py:233
+msgid "La version de référence est choisie."
+msgstr "The reference version has been chosen."
+
+#: translations/views.py:378
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:320
+#: translations/views.py:387
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:354
+#: translations/views.py:421
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:362
+#: translations/views.py:429
 msgid "La version est publiée."
 msgstr "The version has been published."
