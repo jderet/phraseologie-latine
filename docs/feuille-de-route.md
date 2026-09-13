@@ -28,7 +28,7 @@ Développement :
 - [x] Révisions, retour arrière et signalements sur tout contenu
 - [ ] Import du noyau depuis Perseus : œuvres, passages, mots à identifiants stables, URN CTS
 - [ ] Métadonnées : date, genre, registre, prose ou vers, époque
-- [ ] Forme normalisée pour la recherche
+- [x] Forme normalisée pour la recherche
 - [ ] Analyse automatique sur le Mac (LatinCy) : lemmes, morphologie, syntaxe UD, en couches versionnées
 - [ ] Recherche par forme et par lemme, avec filtres et contexte
 
