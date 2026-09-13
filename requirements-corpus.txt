@@ -1,0 +1,4 @@
+# Traitement du corpus, sur le Mac seulement (ni sur le serveur ni dans l'intégration continue).
+-r requirements-dev.txt
+spacy==3.8.16
+la_core_web_lg @ https://huggingface.co/latincy/la_core_web_lg/resolve/main/la_core_web_lg-3.9.6-py3-none-any.whl

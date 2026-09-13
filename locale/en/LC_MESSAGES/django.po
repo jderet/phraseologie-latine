@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 20:11+0200\n"
-"PO-Revision-Date: 2026-09-13 20:15+0200\n"
+"POT-Creation-Date: 2026-09-13 20:52+0200\n"
+"PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -173,7 +173,7 @@ msgid "Votre compte est supprimé. Vos contributions restent, sans votre nom."
 msgstr ""
 "Your account has been deleted. Your contributions remain, without your name."
 
-#: corpus/apps.py:7 corpus/forms.py:31 templates/base.html:14
+#: corpus/apps.py:7 corpus/forms.py:46 templates/base.html:14
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
 #: templates/corpus/work.html:8
 msgid "Corpus"
@@ -248,87 +248,105 @@ msgstr "the start date is later than the end date"
 msgid "expression d’exclusion non valable : %(pattern)s"
 msgstr "invalid exclusion expression: %(pattern)s"
 
-#: corpus/forms.py:20
+#: corpus/forms.py:23
+msgid "Chercher comme"
+msgstr "Search as"
+
+#: corpus/forms.py:24 corpus/models.py:76
+msgid "forme"
+msgstr "form"
+
+#: corpus/forms.py:24 corpus/models.py:274
+msgid "lemme"
+msgstr "lemma"
+
+#: corpus/forms.py:32
 msgid "Mot"
 msgstr "Word"
 
-#: corpus/forms.py:22
+#: corpus/forms.py:34
 msgid ""
 "Un mot par case ; * pour un début de mot, | pour des variantes : cap* | cep*"
 msgstr ""
 "One word per box; * for the beginning of a word, | for variants: cap* | cep*"
 
-#: corpus/forms.py:24
+#: corpus/forms.py:37
 msgid "Deuxième mot"
 msgstr "Second word"
 
-#: corpus/forms.py:25
+#: corpus/forms.py:39
 msgid "Troisième mot"
 msgstr "Third word"
 
-#: corpus/forms.py:27
+#: corpus/forms.py:42
 msgid "Distance maximale (en mots)"
 msgstr "Maximum distance (in words)"
 
-#: corpus/forms.py:29
+#: corpus/forms.py:44
 msgid "Les mots dans cet ordre"
 msgstr "Words in this order"
 
-#: corpus/forms.py:32 corpus/models.py:80
+#: corpus/forms.py:47 corpus/models.py:80
 msgid "noyau"
 msgstr "core"
 
-#: corpus/forms.py:32
+#: corpus/forms.py:47
 msgid "tout le corpus"
 msgstr "whole corpus"
 
-#: corpus/forms.py:37
+#: corpus/forms.py:52
 msgid "Auteurs"
 msgstr "Authors"
 
-#: corpus/forms.py:43
+#: corpus/forms.py:58
 msgid "Œuvres"
 msgstr "Works"
 
-#: corpus/forms.py:49 templates/corpus/work.html:22
+#: corpus/forms.py:64 templates/corpus/work.html:22
 msgid "Forme"
 msgstr "Form"
 
-#: corpus/forms.py:55 templates/corpus/work.html:17
+#: corpus/forms.py:70 templates/corpus/work.html:17
 msgid "Genre"
 msgstr "Genre"
 
-#: corpus/forms.py:61 templates/corpus/work.html:27
+#: corpus/forms.py:76 templates/corpus/work.html:27
 msgid "Registre"
 msgstr "Register"
 
-#: corpus/forms.py:67
+#: corpus/forms.py:82
 msgid "Époque"
 msgstr "Period"
 
-#: corpus/forms.py:73
+#: corpus/forms.py:88
 msgid "Écrit en ou après"
 msgstr "Written in or after"
 
-#: corpus/forms.py:74
+#: corpus/forms.py:89
 msgid "Année ; négative avant notre ère."
 msgstr "Year; negative before the common era."
 
-#: corpus/forms.py:77
+#: corpus/forms.py:92
 msgid "Écrit en ou avant"
 msgstr "Written in or before"
 
-#: corpus/forms.py:85
+#: corpus/forms.py:100
 msgid "Écrivez un mot."
 msgstr "Write a word."
 
-#: corpus/forms.py:89
+#: corpus/forms.py:104
 msgid "Un seul mot par case : utilisez les cases suivantes pour les autres."
 msgstr "One word per box: use the next boxes for the others."
 
-#: corpus/forms.py:93
+#: corpus/forms.py:108
 msgid "Écrivez au moins deux lettres avant *."
 msgstr "Write at least two letters before *."
+
+#: corpus/forms.py:126
+msgid ""
+"La recherche par lemme n’est pas encore disponible : le corpus n’a pas été "
+"analysé."
+msgstr "Lemma search is not available yet: the corpus has not been analyzed."
 
 #: corpus/importer.py:45
 #, python-format
@@ -343,6 +361,36 @@ msgstr "no passage found"
 #, python-format
 msgid "références en double ou vides : %(references)s"
 msgstr "duplicate or empty references: %(references)s"
+
+#: corpus/management/commands/analyze_corpus.py:40
+#, python-format
+msgid "Analyseur indisponible (%(error)s) : installer requirements-corpus.txt."
+msgstr "Analyzer unavailable (%(error)s): install requirements-corpus.txt."
+
+#: corpus/management/commands/analyze_corpus.py:48
+#, python-format
+msgid "%(work)s : déjà analysée dans cette couche"
+msgstr "%(work)s: already analyzed in this layer"
+
+#: corpus/management/commands/analyze_corpus.py:53
+#, python-format
+msgid "%(work)s : %(rows)d analyses en %(seconds)d s"
+msgstr "%(work)s: %(rows)d analyses in %(seconds)d s"
+
+#: corpus/management/commands/analyze_corpus.py:60
+#, python-format
+msgid "Couche %(layer)d : %(editions)d éditions analysées."
+msgstr "Layer %(layer)d: %(editions)d editions analyzed."
+
+#: corpus/management/commands/analyze_corpus.py:77
+#, python-format
+msgid "Œuvres non importées : %(works)s"
+msgstr "Works not imported: %(works)s"
+
+#: corpus/management/commands/analyze_corpus.py:91
+#, python-format
+msgid "Couche d’analyse inconnue : %(layer)d"
+msgstr "Unknown analysis layer: %(layer)d"
 
 #: corpus/management/commands/import_perseus.py:52
 #, python-format
@@ -507,10 +555,6 @@ msgstr "genre"
 msgid "registre"
 msgstr "register"
 
-#: corpus/models.py:76
-msgid "forme"
-msgstr "form"
-
 #: corpus/models.py:77
 msgid "date de début"
 msgstr "start date"
@@ -627,13 +671,113 @@ msgstr "punctuation and space after"
 msgid "mot étranger"
 msgstr "foreign word"
 
-#: corpus/models.py:201
+#: corpus/models.py:201 corpus/models.py:270
 msgid "mot"
 msgstr "word"
 
 #: corpus/models.py:202
 msgid "mots"
 msgstr "words"
+
+#: corpus/models.py:221
+msgid "outil"
+msgstr "tool"
+
+#: corpus/models.py:222
+msgid "version de l’outil"
+msgstr "tool version"
+
+#: corpus/models.py:223
+msgid "détails"
+msgstr "details"
+
+#: corpus/models.py:224
+msgid "créée le"
+msgstr "created on"
+
+#: corpus/models.py:226
+msgid "éditions analysées"
+msgstr "analyzed editions"
+
+#: corpus/models.py:229
+msgid "couche par défaut"
+msgstr "default layer"
+
+#: corpus/models.py:231
+msgid "Couche utilisée par la recherche par lemme."
+msgstr "Layer used by lemma search."
+
+#: corpus/models.py:235
+msgid "couche d’analyse"
+msgstr "analysis layer"
+
+#: corpus/models.py:236
+msgid "couches d’analyse"
+msgstr "analysis layers"
+
+#: corpus/models.py:262
+msgid "import vérifié"
+msgstr "verified import"
+
+#: corpus/models.py:263
+msgid "automatique"
+msgstr "automatic"
+
+#: corpus/models.py:264
+msgid "correction humaine"
+msgstr "human correction"
+
+#: corpus/models.py:267
+msgid "couche"
+msgstr "layer"
+
+#: corpus/models.py:272
+msgid "partie du mot"
+msgstr "part of the word"
+
+#: corpus/models.py:273
+msgid "texte analysé"
+msgstr "analyzed text"
+
+#: corpus/models.py:275
+msgid "lemme normalisé"
+msgstr "normalized lemma"
+
+#: corpus/models.py:276
+msgid "catégorie"
+msgstr "part of speech"
+
+#: corpus/models.py:277
+msgid "traits morphologiques"
+msgstr "morphological features"
+
+#: corpus/models.py:285
+msgid "tête syntaxique"
+msgstr "syntactic head"
+
+#: corpus/models.py:287
+msgid "partie de la tête"
+msgstr "part of the head"
+
+#: corpus/models.py:288
+msgid "relation syntaxique"
+msgstr "syntactic relation"
+
+#: corpus/models.py:289
+msgid "phrase"
+msgstr "sentence"
+
+#: corpus/models.py:291
+msgid "origine"
+msgstr "origin"
+
+#: corpus/models.py:295
+msgid "analyse d’un mot"
+msgstr "word analysis"
+
+#: corpus/models.py:296
+msgid "analyses des mots"
+msgstr "word analyses"
 
 #: corpus/templatetags/corpus_tags.py:14
 #, python-format
@@ -1239,58 +1383,61 @@ msgstr "Search the corpus"
 
 #: templates/corpus/search.html:9
 msgid ""
-"Recherche par forme, sans tenir compte des majuscules, des macrons ni de u/v "
-"et i/j. La recherche par lemme viendra avec l’analyse linguistique du corpus."
+"Chaque mot se cherche comme forme, sans tenir compte des majuscules, des "
+"macrons ni de u/v et i/j, ou comme lemme, pour trouver toutes ses formes. "
+"Les lemmes viennent d’une analyse automatique et peuvent comporter des "
+"erreurs."
 msgstr ""
-"Search by form, ignoring capitals, macrons, u/v and i/j. Lemma search will "
-"come with the linguistic analysis of the corpus."
+"Each word can be searched as a form, ignoring capitals, macrons, u/v and i/"
+"j, or as a lemma, to find all its forms. Lemmas come from an automatic "
+"analysis and may contain errors."
 
-#: templates/corpus/search.html:27
+#: templates/corpus/search.html:28
 msgid "Filtres"
 msgstr "Filters"
 
-#: templates/corpus/search.html:39
+#: templates/corpus/search.html:40
 msgid "Chercher"
 msgstr "Search"
 
-#: templates/corpus/search.html:46
+#: templates/corpus/search.html:47
 #, python-format
 msgid "%(counter)s occurrence"
 msgid_plural "%(counter)s occurrences"
 msgstr[0] "%(counter)s occurrence"
 msgstr[1] "%(counter)s occurrences"
 
-#: templates/corpus/search.html:61
+#: templates/corpus/search.html:62
 msgid "Pages de résultats"
 msgstr "Result pages"
 
-#: templates/corpus/search.html:62 templates/corpus/work.html:65
+#: templates/corpus/search.html:63 templates/corpus/work.html:65
 msgid "Page précédente"
 msgstr "Previous page"
 
-#: templates/corpus/search.html:63 templates/corpus/work.html:66
+#: templates/corpus/search.html:64 templates/corpus/work.html:66
 #, python-format
 msgid "Page %(number)s sur %(total)s"
 msgstr "Page %(number)s of %(total)s"
 
-#: templates/corpus/search.html:64 templates/corpus/work.html:67
+#: templates/corpus/search.html:65 templates/corpus/work.html:67
 msgid "Page suivante"
 msgstr "Next page"
 
-#: templates/corpus/search.html:68
+#: templates/corpus/search.html:69
 msgid "Aucune occurrence"
 msgstr "No occurrence"
 
-#: templates/corpus/search.html:69
+#: templates/corpus/search.html:70
 #, python-format
 msgid "Introuvable dans le corpus interrogé (version %(label)s)."
 msgstr "Not found in the searched corpus (version %(label)s)."
 
-#: templates/corpus/search.html:71
+#: templates/corpus/search.html:72
 msgid "La recherche portait sur le noyau seulement."
 msgstr "The search covered the core only."
 
-#: templates/corpus/search.html:73
+#: templates/corpus/search.html:74
 #, python-format
 msgid "Corpus interrogé : %(label)s, %(counter)s édition."
 msgid_plural "Corpus interrogé : %(label)s, %(counter)s éditions."

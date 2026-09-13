@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
@@ -213,3 +213,98 @@ class Token(models.Model):
 
     def __str__(self):
         return self.form
+
+
+class AnalysisLayer(models.Model):
+    """One run of an analysis tool over the corpus; running a tool again creates a new layer."""
+
+    tool = models.CharField(_("outil"), max_length=100)
+    tool_version = models.CharField(_("version de l’outil"), max_length=50, blank=True)
+    details = models.JSONField(_("détails"), default=dict, blank=True)
+    created_at = models.DateTimeField(_("créée le"), default=timezone.now)
+    editions = models.ManyToManyField(
+        Edition, related_name="analysis_layers", blank=True, verbose_name=_("éditions analysées")
+    )
+    is_default = models.BooleanField(
+        _("couche par défaut"),
+        default=False,
+        help_text=_("Couche utilisée par la recherche par lemme."),
+    )
+
+    class Meta:
+        verbose_name = _("couche d’analyse")
+        verbose_name_plural = _("couches d’analyse")
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["is_default"], condition=Q(is_default=True), name="corpus_one_default_layer"
+            ),
+        ]
+
+    def __str__(self):
+        return self.label
+
+    @property
+    def label(self):
+        return f"{self.tool} {self.tool_version}".strip()
+
+    @transaction.atomic
+    def make_default(self):
+        AnalysisLayer.objects.filter(is_default=True).exclude(pk=self.pk).update(is_default=False)
+        self.is_default = True
+        self.save(update_fields=["is_default"])
+
+
+class TokenAnalysis(models.Model):
+    """Analysis of a word, or of one part of it such as an enclitic, in a layer."""
+
+    class Origin(models.TextChoices):
+        VERIFIED = "verified", _("import vérifié")
+        AUTOMATIC = "automatic", _("automatique")
+        CORRECTED = "corrected", _("correction humaine")
+
+    layer = models.ForeignKey(
+        AnalysisLayer, on_delete=models.CASCADE, related_name="analyses", verbose_name=_("couche")
+    )
+    token = models.ForeignKey(
+        Token, on_delete=models.CASCADE, related_name="analyses", verbose_name=_("mot")
+    )
+    part = models.PositiveSmallIntegerField(_("partie du mot"), default=0)
+    text = models.CharField(_("texte analysé"), max_length=200)
+    lemma = models.CharField(_("lemme"), max_length=200, blank=True)
+    lemma_norm = models.CharField(_("lemme normalisé"), max_length=200, blank=True)
+    upos = models.CharField(_("catégorie"), max_length=10, blank=True)
+    feats = models.CharField(_("traits morphologiques"), max_length=300, blank=True)
+    head = models.ForeignKey(
+        Token,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="+",
+        db_index=False,
+        verbose_name=_("tête syntaxique"),
+    )
+    head_part = models.PositiveSmallIntegerField(_("partie de la tête"), default=0)
+    deprel = models.CharField(_("relation syntaxique"), max_length=30, blank=True)
+    sentence = models.PositiveIntegerField(_("phrase"), default=0)
+    origin = models.CharField(
+        _("origine"), max_length=10, choices=Origin.choices, default=Origin.AUTOMATIC
+    )
+
+    class Meta:
+        verbose_name = _("analyse d’un mot")
+        verbose_name_plural = _("analyses des mots")
+        ordering = ["layer", "token", "part"]
+        constraints = [
+            models.UniqueConstraint(fields=["layer", "token", "part"], name="corpus_analysis_part"),
+        ]
+        indexes = [
+            models.Index(
+                fields=["layer", "lemma_norm"],
+                name="corpus_analysis_lemma",
+                opclasses=["int8_ops", "varchar_pattern_ops"],
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.text} : {self.lemma}"

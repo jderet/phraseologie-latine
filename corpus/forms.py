@@ -3,16 +3,28 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from .models import Author, Period, Work
-from .search import parse_term
+from .search import default_layer, parse_term
 from .text import normalize
 
 SCOPE_CORE = "core"
 SCOPE_ALL = "all"
+MODE_FORM = "form"
+MODE_LEMMA = "lemma"
+TERM_NUMBERS = (1, 2, 3)
 
 
 class WorkChoiceField(forms.ModelMultipleChoiceField):
     def label_from_instance(self, obj):
         return f"{obj.citation_prefix} – {obj.title}"
+
+
+def mode_field():
+    return forms.ChoiceField(
+        label=_("Chercher comme"),
+        choices=[(MODE_FORM, _("forme")), (MODE_LEMMA, _("lemme"))],
+        widget=forms.RadioSelect,
+        required=False,
+    )
 
 
 class SearchForm(forms.Form):
@@ -21,8 +33,11 @@ class SearchForm(forms.Form):
         max_length=100,
         help_text=_("Un mot par case ; * pour un début de mot, | pour des variantes : cap* | cep*"),
     )
+    mode1 = mode_field()
     term2 = forms.CharField(label=_("Deuxième mot"), max_length=100, required=False)
+    mode2 = mode_field()
     term3 = forms.CharField(label=_("Troisième mot"), max_length=100, required=False)
+    mode3 = mode_field()
     distance = forms.IntegerField(
         label=_("Distance maximale (en mots)"), min_value=1, max_value=20, required=False
     )
@@ -80,7 +95,7 @@ class SearchForm(forms.Form):
 
     def _clean_term(self, name):
         value = self.cleaned_data.get(name, "")
-        patterns = parse_term(value)
+        patterns = parse_term(value).patterns
         if value.strip() and not patterns:
             raise ValidationError(_("Écrivez un mot."), code="empty")
         for pattern in patterns:
@@ -102,11 +117,26 @@ class SearchForm(forms.Form):
     def clean_term3(self):
         return self._clean_term("term3")
 
+    def clean(self):
+        data = super().clean()
+        lemma_asked = any(data.get(f"mode{number}") == MODE_LEMMA for number in TERM_NUMBERS)
+        if lemma_asked and default_layer() is None:
+            raise ValidationError(
+                _(
+                    "La recherche par lemme n’est pas encore disponible : "
+                    "le corpus n’a pas été analysé."
+                ),
+                code="no_layer",
+            )
+        return data
+
     @property
     def terms(self):
-        names = ("term1", "term2", "term3")
+        data = self.cleaned_data
         return [
-            parse_term(self.cleaned_data[name]) for name in names if self.cleaned_data.get(name)
+            parse_term(data[f"term{number}"], lemma=data.get(f"mode{number}") == MODE_LEMMA)
+            for number in TERM_NUMBERS
+            if data.get(f"term{number}")
         ]
 
     @property

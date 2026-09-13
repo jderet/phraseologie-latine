@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Author, Edition, Work
+from .models import AnalysisLayer, Author, Edition, Work
 
 
 class ReadOnlyAdmin(admin.ModelAdmin):
@@ -40,3 +40,8 @@ class EditionAdmin(ReadOnlyAdmin):
         "imported_at",
     )
     list_filter = ("is_current",)
+
+
+@admin.register(AnalysisLayer)
+class AnalysisLayerAdmin(ReadOnlyAdmin):
+    list_display = ("id", "tool", "tool_version", "created_at", "is_default")

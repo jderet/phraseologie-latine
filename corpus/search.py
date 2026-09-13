@@ -1,9 +1,8 @@
-"""Searching the corpus by word form, with filters and context.
+"""Searching the corpus by word form or lemma, with filters and context.
 
 A query has one to three terms. Each term is one or more patterns separated by "|"; a
 pattern ending with "*" matches the beginning of a word. Forms are compared in their
-normalized spelling (corpus.text.normalize). Lemma search arrives with the linguistic
-analysis layer.
+normalized spelling (corpus.text.normalize); lemmas come from the default analysis layer.
 """
 
 from collections import defaultdict
@@ -11,33 +10,60 @@ from dataclasses import dataclass
 
 from django.db.models import Count, Exists, Max, OuterRef, Q
 
-from .models import Author, Edition, Token
+from .models import AnalysisLayer, Author, Edition, Token, TokenAnalysis
 from .text import normalize
 
 CONTEXT_WORDS = 8
 
 
-def parse_term(text):
-    """Patterns of a term: "cap* | cep*" gives ["cap*", "cep*"]."""
-    return [part.strip() for part in (text or "").split("|") if part.strip().rstrip("*")]
+class NoAnalysisLayer(ValueError):
+    pass
 
 
-def _pattern_rules(patterns):
-    return [(normalize(pattern.rstrip("*")), pattern.endswith("*")) for pattern in patterns]
+@dataclass(frozen=True)
+class Term:
+    patterns: tuple[str, ...]
+    lemma: bool = False
+
+    def __bool__(self):
+        return bool(self.patterns)
+
+    @property
+    def rules(self):
+        return [
+            (normalize(pattern.rstrip("*")), pattern.endswith("*")) for pattern in self.patterns
+        ]
+
+    def matches(self, value):
+        return any(
+            value.startswith(rule) if is_prefix else value == rule for rule, is_prefix in self.rules
+        )
 
 
-def _condition(patterns):
+def parse_term(text, lemma=False):
+    """A term from what was typed: "cap* | cep*" gives the patterns ("cap*", "cep*")."""
+    patterns = tuple(part.strip() for part in (text or "").split("|") if part.strip().rstrip("*"))
+    return Term(patterns, lemma)
+
+
+def default_layer():
+    return AnalysisLayer.objects.filter(is_default=True).first()
+
+
+def _patterns(term, field):
     condition = Q(pk__in=[])
-    for value, is_prefix in _pattern_rules(patterns):
-        condition |= Q(norm__startswith=value) if is_prefix else Q(norm=value)
+    for value, is_prefix in term.rules:
+        condition |= Q(**{f"{field}__startswith": value}) if is_prefix else Q(**{field: value})
     return condition
 
 
-def _matcher(patterns):
-    rules = _pattern_rules(patterns)
-    return lambda norm: any(
-        norm.startswith(value) if is_prefix else norm == value for value, is_prefix in rules
-    )
+def _condition(term, layer):
+    if not term.lemma:
+        return _patterns(term, "norm")
+    if layer is None:
+        raise NoAnalysisLayer("Lemma search needs an analysis layer.")
+    analyses = TokenAnalysis.objects.filter(token=OuterRef("pk"), layer=layer)
+    return Exists(analyses.filter(_patterns(term, "lemma_norm")))
 
 
 def _apply_filters(tokens, filters):
@@ -62,13 +88,15 @@ def _apply_filters(tokens, filters):
     return tokens
 
 
-def search_tokens(terms, distance=5, ordered=False, filters=None):
+def search_tokens(terms, distance=5, ordered=False, filters=None, layer=None):
     """Words matching the first term that have the other terms within ``distance`` words.
 
     With ``ordered``, the other terms must come after the first one.
     """
+    if layer is None and any(term.lemma for term in terms):
+        layer = default_layer()
     first, *others = terms
-    hits = Token.objects.filter(edition__is_current=True).filter(_condition(first))
+    hits = Token.objects.filter(edition__is_current=True).filter(_condition(first, layer))
     hits = _apply_filters(hits, filters or {})
     for other in others:
         lowest = 1 if ordered else -distance
@@ -79,7 +107,7 @@ def search_tokens(terms, distance=5, ordered=False, filters=None):
                 position__lte=OuterRef("position") + distance,
             )
             .exclude(position=OuterRef("position"))
-            .filter(_condition(other))
+            .filter(_condition(other, layer))
         )
         hits = hits.filter(Exists(neighbours))
     return hits.select_related("passage__edition__work__author").order_by(
@@ -103,12 +131,7 @@ class Hit:
         return f"{self.token.passage.get_absolute_url()}?mots={ids}#mot-{self.token.pk}"
 
 
-def build_hits(tokens, terms, distance=5, ordered=False):
-    """Hits with the words around them, the words matching a term being highlighted."""
-    tokens = list(tokens)
-    if not tokens:
-        return []
-    reach = distance + CONTEXT_WORDS
+def _nearby_words(tokens, reach):
     ranges = Q(pk__in=[])
     for token in tokens:
         ranges |= Q(
@@ -119,17 +142,37 @@ def build_hits(tokens, terms, distance=5, ordered=False):
     fields = ("id", "edition_id", "position", "form", "norm", "before", "after")
     for word in Token.objects.filter(ranges).only(*fields):
         nearby[word.edition_id][word.position] = word
-    matchers = [_matcher(term) for term in terms[1:]]
+    return nearby
+
+
+def build_hits(tokens, terms, distance=5, ordered=False, layer=None):
+    """Hits with the words around them, the words matching a term being highlighted."""
+    tokens = list(tokens)
+    if not tokens:
+        return []
+    nearby = _nearby_words(tokens, distance + CONTEXT_WORDS)
+    lemmas = defaultdict(set)
+    if any(term.lemma for term in terms):
+        layer = layer or default_layer()
+        ids = [word.pk for words in nearby.values() for word in words.values()]
+        analyses = TokenAnalysis.objects.filter(layer=layer, token_id__in=ids)
+        for token_id, lemma in analyses.values_list("token_id", "lemma_norm"):
+            lemmas[token_id].add(lemma)
+
+    def matches(term, word):
+        values = lemmas[word.pk] if term.lemma else {word.norm}
+        return any(term.matches(value) for value in values)
+
     hits = []
     for token in tokens:
         words = nearby[token.edition_id]
         highlighted = {token.pk}
         positions = [token.position]
         lowest = token.position + 1 if ordered else token.position - distance
-        for matches in matchers:
+        for term in terms[1:]:
             for position in range(lowest, token.position + distance + 1):
                 word = words.get(position)
-                if position != token.position and word is not None and matches(word.norm):
+                if position != token.position and word is not None and matches(term, word):
                     highlighted.add(word.pk)
                     positions.append(position)
         start, end = min(positions) - CONTEXT_WORDS, max(positions) + CONTEXT_WORDS
@@ -153,14 +196,17 @@ class CorpusVersion:
     sources: tuple[str, ...]
     edition_count: int
     imported_at: object
+    layer: str = ""
 
     @property
     def label(self):
-        return "Perseus " + ", ".join(version[:7] for version in self.sources)
+        label = "Perseus " + ", ".join(version[:7] for version in self.sources)
+        return f"{label} · {self.layer}" if self.layer else label
 
 
 def corpus_version():
     editions = Edition.objects.filter(is_current=True)
     sources = tuple(sorted(set(editions.values_list("source_version", flat=True))))
     imported_at = editions.aggregate(last=Max("imported_at"))["last"]
-    return CorpusVersion(sources, editions.count(), imported_at)
+    layer = default_layer()
+    return CorpusVersion(sources, editions.count(), imported_at, layer.label if layer else "")
