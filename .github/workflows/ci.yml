@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: phraseologie
+          POSTGRES_USER: phraseologie
+          POSTGRES_PASSWORD: phraseologie
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U phraseologie"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DJANGO_DEBUG: "False"
+      DJANGO_SECRET_KEY: ci-only-key-never-used-in-production-5f8a2c7e9b1d4036a8e7c2b9
+      DJANGO_ALLOWED_HOSTS: localhost
+      DATABASE_URL: postgres://phraseologie:phraseologie@localhost:5432/phraseologie
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Style et analyse de sécurité statique
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Migrations à jour
+        run: python manage.py makemigrations --check --dry-run
+      - name: Vérification de la configuration de production
+        run: python manage.py check --deploy --fail-level WARNING
+      - name: Tests
+        env:
+          DJANGO_SECURE_SSL_REDIRECT: "False"
+        run: python manage.py test

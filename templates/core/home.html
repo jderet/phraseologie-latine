@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<section class="intro">
+  <p class="eyebrow">{% translate "En construction" %}</p>
+  <h1>{% translate "Traduire en latin, preuves à l’appui" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Une plateforme collaborative pour traduire vers le latin, relever la phraséologie des auteurs
+    et justifier chaque choix par le corpus.
+  {% endblocktranslate %}</p>
+</section>
+
+<section class="goals" aria-labelledby="goals-title">
+  <h2 id="goals-title">{% translate "Trois buts liés" %}</h2>
+  <dl>
+    <div>
+      <dt>{% translate "Traduire" %}</dt>
+      <dd>{% blocktranslate trimmed %}
+        Chacun rédige sa version latine d’un texte, puis on compare les versions phrase par phrase.
+      {% endblocktranslate %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Relever" %}</dt>
+      <dd>{% blocktranslate trimmed %}
+        Les tournures des auteurs, de <i>consilium capere</i> à <i>quid multa?</i>, sont réunies
+        en fiches attestées dans le corpus.
+      {% endblocktranslate %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Justifier" %}</dt>
+      <dd>{% blocktranslate trimmed %}
+        Chaque choix de traduction peut s’appuyer sur des passages d’auteurs, une règle de grammaire
+        ou un article de dictionnaire.
+      {% endblocktranslate %}</dd>
+    </div>
+  </dl>
+  <p class="note">{% translate "Corpus de départ : Cicéron, César, Salluste, Tite-Live, Sénèque, Pline le Jeune." %}</p>
+</section>
+{% endblock %}

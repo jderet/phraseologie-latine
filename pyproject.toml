@@ -1,0 +1,19 @@
+[project]
+name = "phraseologie-latine"
+version = "0.1.0"
+description = "Plateforme collaborative de phraséologie latine"
+requires-python = ">=3.13"
+license = "AGPL-3.0-or-later"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["canonical-latinLit", "*/migrations/*"]
+
+[tool.ruff.lint]
+# S = security checks (bandit rules), DJ = Django-specific checks.
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"*/tests.py" = ["S"]
+"*/tests/*" = ["S"]

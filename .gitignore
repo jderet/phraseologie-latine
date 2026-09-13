@@ -1,0 +1,21 @@
+# Environnement Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Secrets et données locales
+.env
+db.sqlite3
+/media/
+/staticfiles/
+
+# Corpus Perseus : dépôt Git séparé (CC BY-SA 4.0), cloné à la racine
+/canonical-latinLit/
+
+# Outils
+.ruff_cache/
+.coverage
+htmlcov/
+
+# macOS
+.DS_Store

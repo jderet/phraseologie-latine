@@ -1,0 +1,94 @@
+# English translation of the phraseologie-latine interface.
+# This file is distributed under the same license as the phraseologie-latine package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: phraseologie-latine 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-13 17:50+0200\n"
+"PO-Revision-Date: 2026-09-13 17:55+0200\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/base.html:6 templates/base.html:11
+msgid "Phraséologie latine"
+msgstr "Latin Phraseology"
+
+#: templates/base.html:15
+msgid "Langue"
+msgstr "Language"
+
+#: templates/base.html:22
+msgid "Changer"
+msgstr "Change"
+
+#: templates/base.html:31
+msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
+msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
+
+#: templates/core/home.html:6
+msgid "En construction"
+msgstr "Under construction"
+
+#: templates/core/home.html:7
+msgid "Traduire en latin, preuves à l’appui"
+msgstr "Translating into Latin, with evidence"
+
+#: templates/core/home.html:8
+msgid ""
+"Une plateforme collaborative pour traduire vers le latin, relever la "
+"phraséologie des auteurs et justifier chaque choix par le corpus."
+msgstr ""
+"A collaborative platform to translate into Latin, collect the phraseology of "
+"classical authors and back every choice with the corpus."
+
+#: templates/core/home.html:15
+msgid "Trois buts liés"
+msgstr "Three connected goals"
+
+#: templates/core/home.html:18
+msgid "Traduire"
+msgstr "Translate"
+
+#: templates/core/home.html:19
+msgid ""
+"Chacun rédige sa version latine d’un texte, puis on compare les versions "
+"phrase par phrase."
+msgstr ""
+"Everyone writes their own Latin version of a text, then the versions are "
+"compared sentence by sentence."
+
+#: templates/core/home.html:24
+msgid "Relever"
+msgstr "Collect"
+
+#: templates/core/home.html:25
+msgid ""
+"Les tournures des auteurs, de <i>consilium capere</i> à <i>quid multa?</i>, "
+"sont réunies en fiches attestées dans le corpus."
+msgstr ""
+"Authors’ expressions, from <i>consilium capere</i> to <i>quid multa?</i>, are "
+"gathered into entries attested in the corpus."
+
+#: templates/core/home.html:31
+msgid "Justifier"
+msgstr "Justify"
+
+#: templates/core/home.html:32
+msgid ""
+"Chaque choix de traduction peut s’appuyer sur des passages d’auteurs, une "
+"règle de grammaire ou un article de dictionnaire."
+msgstr ""
+"Every translation choice can rest on passages from authors, a grammar rule or "
+"a dictionary entry."
+
+#: templates/core/home.html:38
+msgid ""
+"Corpus de départ : Cicéron, César, Salluste, Tite-Live, Sénèque, Pline le "
+"Jeune."
+msgstr "Starting corpus: Cicero, Caesar, Sallust, Livy, Seneca, Pliny the Younger."
