@@ -2,7 +2,7 @@
 
 Plateforme collaborative pour traduire vers le latin, relever la phraséologie des auteurs dans le corpus et justifier chaque choix de traduction par des attestations. Nom définitif à venir.
 
-État : en construction (phase 0). Voir la [feuille de route](docs/feuille-de-route.md).
+État : en construction (étape 1 : comptes, modération, corpus du noyau et recherche par forme). Voir la [feuille de route](docs/feuille-de-route.md).
 
 ## Documents
 

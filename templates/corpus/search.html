@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{% translate "Recherche" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Recherche dans le corpus" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Recherche par forme, sans tenir compte des majuscules, des macrons ni de u/v et i/j.
+    La recherche par lemme viendra avec l’analyse linguistique du corpus.
+  {% endblocktranslate %}</p>
+
+  <form method="get" class="form search-form">
+    {{ form.non_field_errors }}
+    <div class="terms">
+      <div class="field">{{ form.term1.as_field_group }}</div>
+      <div class="field">{{ form.term2.as_field_group }}</div>
+      <div class="field">{{ form.term3.as_field_group }}</div>
+    </div>
+    <div class="options">
+      <div class="field">{{ form.distance.as_field_group }}</div>
+      <div class="field">{{ form.ordered.as_field_group }}</div>
+      <div class="field">{{ form.scope.as_field_group }}</div>
+    </div>
+    <details class="filters"{% if form.is_bound %} open{% endif %}>
+      <summary>{% translate "Filtres" %}</summary>
+      <div class="filter-grid">
+        <div class="field">{{ form.authors.as_field_group }}</div>
+        <div class="field">{{ form.works.as_field_group }}</div>
+        <div class="field">{{ form.genres.as_field_group }}</div>
+        <div class="field">{{ form.text_forms.as_field_group }}</div>
+        <div class="field">{{ form.registers.as_field_group }}</div>
+        <div class="field">{{ form.periods.as_field_group }}</div>
+        <div class="field">{{ form.date_from.as_field_group }}</div>
+        <div class="field">{{ form.date_to.as_field_group }}</div>
+      </div>
+    </details>
+    <button type="submit" class="button">{% translate "Chercher" %}</button>
+  </form>
+</section>
+
+{% if searched %}
+<section class="results" aria-labelledby="results-title">
+  {% if page.paginator.count %}
+  <h2 id="results-title">{% blocktranslate count counter=page.paginator.count %}{{ counter }} occurrence{% plural %}{{ counter }} occurrences{% endblocktranslate %}</h2>
+  <ul class="distribution">
+    {% for author, count in distribution %}
+    <li>{{ author.name }} <span class="muted">{{ count }}</span></li>
+    {% endfor %}
+  </ul>
+  <ol class="hits" start="{{ page.start_index }}">
+    {% for hit in hits %}
+    <li>
+      <a class="hit-ref" href="{{ hit.url }}">{{ hit.citation }}</a>
+      <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
+    </li>
+    {% endfor %}
+  </ol>
+  {% if page.has_other_pages %}
+  <nav class="pager" aria-label="{% translate 'Pages de résultats' %}">
+    {% if page.has_previous %}<a rel="prev" href="{% querystring page=page.previous_page_number %}">{% translate "Page précédente" %}</a>{% endif %}
+    <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
+    {% if page.has_next %}<a rel="next" href="{% querystring page=page.next_page_number %}">{% translate "Page suivante" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <h2 id="results-title">{% translate "Aucune occurrence" %}</h2>
+  <p class="notice">{% blocktranslate trimmed with label=version.label %}
+    Introuvable dans le corpus interrogé (version {{ label }}).
+  {% endblocktranslate %}{% if core_only %} {% translate "La recherche portait sur le noyau seulement." %}{% endif %}</p>
+  {% endif %}
+  <p class="note">{% blocktranslate trimmed with label=version.label count counter=version.edition_count %}
+    Corpus interrogé : {{ label }}, {{ counter }} édition.
+  {% plural %}
+    Corpus interrogé : {{ label }}, {{ counter }} éditions.
+  {% endblocktranslate %}</p>
+</section>
+{% endif %}
+{% endblock %}

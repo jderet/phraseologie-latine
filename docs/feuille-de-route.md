@@ -29,8 +29,8 @@ Développement :
 - [x] Import du noyau depuis Perseus : œuvres, passages, mots à identifiants stables, URN CTS
 - [x] Métadonnées : date, genre, registre, prose ou vers, époque
 - [x] Forme normalisée pour la recherche
-- [ ] Analyse automatique sur le Mac (LatinCy) : lemmes, morphologie, syntaxe UD, en couches versionnées
-- [ ] Recherche par forme et par lemme, avec filtres et contexte
+- [ ] Analyse automatique sur le Mac (LatinCy) : lemmes, morphologie, syntaxe UD, en couches versionnées (reportée : installation de LatinCy à décider)
+- [ ] Recherche par forme et par lemme, avec filtres et contexte (recherche par forme faite ; le lemme attend l'analyse)
 
 Terminé quand on trouve toutes les occurrences de *consilium capere* dans le noyau, avec leurs références.
 

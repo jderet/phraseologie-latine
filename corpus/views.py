@@ -2,9 +2,12 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
 
+from .forms import SCOPE_CORE, SearchForm
 from .models import URN_PREFIX, Author, Edition, Work
+from .search import author_distribution, build_hits, corpus_version, search_tokens
 
 PASSAGES_PER_PAGE = 50
+RESULTS_PER_PAGE = 50
 MAX_HIGHLIGHTED = 100
 
 
@@ -56,3 +59,27 @@ def passage_detail(request, work_id, reference):
             "following": neighbours.filter(order__gt=passage.order).order_by("order").first(),
         },
     )
+
+
+def search(request):
+    defaults = {"scope": SCOPE_CORE, "distance": SearchForm.DEFAULT_DISTANCE}
+    if "term1" in request.GET:
+        data = request.GET.copy()
+        for key, value in defaults.items():
+            data.setdefault(key, str(value))
+        form = SearchForm(data)
+    else:
+        form = SearchForm(initial=defaults)
+    context = {"form": form, "version": corpus_version(), "searched": False}
+    if form.is_bound and form.is_valid():
+        terms, distance, ordered = form.terms, form.search_distance, form.cleaned_data["ordered"]
+        hits = search_tokens(terms, distance, ordered, form.filters())
+        page = Paginator(hits, RESULTS_PER_PAGE).get_page(request.GET.get("page"))
+        context.update(
+            searched=True,
+            page=page,
+            hits=build_hits(page.object_list, terms, distance, ordered),
+            distribution=author_distribution(hits),
+            core_only=form.core_only,
+        )
+    return render(request, "corpus/search.html", context)

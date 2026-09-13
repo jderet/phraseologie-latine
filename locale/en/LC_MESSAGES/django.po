@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 19:55+0200\n"
-"PO-Revision-Date: 2026-09-13 19:50+0200\n"
+"POT-Creation-Date: 2026-09-13 20:11+0200\n"
+"PO-Revision-Date: 2026-09-13 20:15+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -173,8 +173,9 @@ msgid "Votre compte est supprimé. Vos contributions restent, sans votre nom."
 msgstr ""
 "Your account has been deleted. Your contributions remain, without your name."
 
-#: corpus/apps.py:7 templates/base.html:14 templates/corpus/index.html:4
-#: templates/corpus/index.html:8 templates/corpus/work.html:8
+#: corpus/apps.py:7 corpus/forms.py:31 templates/base.html:14
+#: templates/corpus/index.html:4 templates/corpus/index.html:8
+#: templates/corpus/work.html:8
 msgid "Corpus"
 msgstr "Corpus"
 
@@ -246,6 +247,88 @@ msgstr "the start date is later than the end date"
 #, python-format
 msgid "expression d’exclusion non valable : %(pattern)s"
 msgstr "invalid exclusion expression: %(pattern)s"
+
+#: corpus/forms.py:20
+msgid "Mot"
+msgstr "Word"
+
+#: corpus/forms.py:22
+msgid ""
+"Un mot par case ; * pour un début de mot, | pour des variantes : cap* | cep*"
+msgstr ""
+"One word per box; * for the beginning of a word, | for variants: cap* | cep*"
+
+#: corpus/forms.py:24
+msgid "Deuxième mot"
+msgstr "Second word"
+
+#: corpus/forms.py:25
+msgid "Troisième mot"
+msgstr "Third word"
+
+#: corpus/forms.py:27
+msgid "Distance maximale (en mots)"
+msgstr "Maximum distance (in words)"
+
+#: corpus/forms.py:29
+msgid "Les mots dans cet ordre"
+msgstr "Words in this order"
+
+#: corpus/forms.py:32 corpus/models.py:80
+msgid "noyau"
+msgstr "core"
+
+#: corpus/forms.py:32
+msgid "tout le corpus"
+msgstr "whole corpus"
+
+#: corpus/forms.py:37
+msgid "Auteurs"
+msgstr "Authors"
+
+#: corpus/forms.py:43
+msgid "Œuvres"
+msgstr "Works"
+
+#: corpus/forms.py:49 templates/corpus/work.html:22
+msgid "Forme"
+msgstr "Form"
+
+#: corpus/forms.py:55 templates/corpus/work.html:17
+msgid "Genre"
+msgstr "Genre"
+
+#: corpus/forms.py:61 templates/corpus/work.html:27
+msgid "Registre"
+msgstr "Register"
+
+#: corpus/forms.py:67
+msgid "Époque"
+msgstr "Period"
+
+#: corpus/forms.py:73
+msgid "Écrit en ou après"
+msgstr "Written in or after"
+
+#: corpus/forms.py:74
+msgid "Année ; négative avant notre ère."
+msgstr "Year; negative before the common era."
+
+#: corpus/forms.py:77
+msgid "Écrit en ou avant"
+msgstr "Written in or before"
+
+#: corpus/forms.py:85
+msgid "Écrivez un mot."
+msgstr "Write a word."
+
+#: corpus/forms.py:89
+msgid "Un seul mot par case : utilisez les cases suivantes pour les autres."
+msgstr "One word per box: use the next boxes for the others."
+
+#: corpus/forms.py:93
+msgid "Écrivez au moins deux lettres avant *."
+msgstr "Write at least two letters before *."
 
 #: corpus/importer.py:45
 #, python-format
@@ -435,10 +518,6 @@ msgstr "start date"
 #: corpus/models.py:78
 msgid "date de fin"
 msgstr "end date"
-
-#: corpus/models.py:80
-msgid "noyau"
-msgstr "core"
 
 #: corpus/models.py:82
 msgid "Les attestations du noyau sont vérifiées par des personnes."
@@ -747,7 +826,7 @@ msgid "Choisissez une décision."
 msgstr "Choose a decision."
 
 #: templates/accounts/account.html:4 templates/accounts/account.html:8
-#: templates/base.html:23
+#: templates/base.html:24
 msgid "Mon compte"
 msgstr "My account"
 
@@ -899,7 +978,7 @@ msgid "Nouveau mot de passe"
 msgstr "New password"
 
 #: templates/accounts/login.html:4 templates/accounts/login.html:8
-#: templates/base.html:29
+#: templates/base.html:30
 msgid "Connexion"
 msgstr "Log in"
 
@@ -1025,31 +1104,35 @@ msgstr ""
 msgid "Navigation principale"
 msgstr "Main navigation"
 
-#: templates/base.html:18
+#: templates/base.html:15 templates/corpus/search.html:4
+msgid "Recherche"
+msgstr "Search"
+
+#: templates/base.html:19
 msgid "Compte"
 msgstr "Account"
 
-#: templates/base.html:21 templates/moderation/report_queue.html:4
+#: templates/base.html:22 templates/moderation/report_queue.html:4
 msgid "Signalements"
 msgstr "Reports"
 
-#: templates/base.html:26
+#: templates/base.html:27
 msgid "Déconnexion"
 msgstr "Log out"
 
-#: templates/base.html:30
+#: templates/base.html:31
 msgid "Inscription"
 msgstr "Sign up"
 
-#: templates/base.html:36
+#: templates/base.html:37
 msgid "Langue"
 msgstr "Language"
 
-#: templates/base.html:43
+#: templates/base.html:44
 msgid "Changer"
 msgstr "Change"
 
-#: templates/base.html:60
+#: templates/base.html:61
 msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
 msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
 
@@ -1150,21 +1233,73 @@ msgstr "Source"
 msgid "version"
 msgstr "version"
 
+#: templates/corpus/search.html:8
+msgid "Recherche dans le corpus"
+msgstr "Search the corpus"
+
+#: templates/corpus/search.html:9
+msgid ""
+"Recherche par forme, sans tenir compte des majuscules, des macrons ni de u/v "
+"et i/j. La recherche par lemme viendra avec l’analyse linguistique du corpus."
+msgstr ""
+"Search by form, ignoring capitals, macrons, u/v and i/j. Lemma search will "
+"come with the linguistic analysis of the corpus."
+
+#: templates/corpus/search.html:27
+msgid "Filtres"
+msgstr "Filters"
+
+#: templates/corpus/search.html:39
+msgid "Chercher"
+msgstr "Search"
+
+#: templates/corpus/search.html:46
+#, python-format
+msgid "%(counter)s occurrence"
+msgid_plural "%(counter)s occurrences"
+msgstr[0] "%(counter)s occurrence"
+msgstr[1] "%(counter)s occurrences"
+
+#: templates/corpus/search.html:61
+msgid "Pages de résultats"
+msgstr "Result pages"
+
+#: templates/corpus/search.html:62 templates/corpus/work.html:65
+msgid "Page précédente"
+msgstr "Previous page"
+
+#: templates/corpus/search.html:63 templates/corpus/work.html:66
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Page %(number)s of %(total)s"
+
+#: templates/corpus/search.html:64 templates/corpus/work.html:67
+msgid "Page suivante"
+msgstr "Next page"
+
+#: templates/corpus/search.html:68
+msgid "Aucune occurrence"
+msgstr "No occurrence"
+
+#: templates/corpus/search.html:69
+#, python-format
+msgid "Introuvable dans le corpus interrogé (version %(label)s)."
+msgstr "Not found in the searched corpus (version %(label)s)."
+
+#: templates/corpus/search.html:71
+msgid "La recherche portait sur le noyau seulement."
+msgstr "The search covered the core only."
+
+#: templates/corpus/search.html:73
+#, python-format
+msgid "Corpus interrogé : %(label)s, %(counter)s édition."
+msgid_plural "Corpus interrogé : %(label)s, %(counter)s éditions."
+msgstr[0] "Searched corpus: %(label)s, %(counter)s edition."
+msgstr[1] "Searched corpus: %(label)s, %(counter)s editions."
+
 #: templates/corpus/work.html:12
 msgid "Citation"
 msgstr "Citation"
-
-#: templates/corpus/work.html:17
-msgid "Genre"
-msgstr "Genre"
-
-#: templates/corpus/work.html:22
-msgid "Forme"
-msgstr "Form"
-
-#: templates/corpus/work.html:27
-msgid "Registre"
-msgstr "Register"
 
 #: templates/corpus/work.html:33
 msgid "Date"
@@ -1197,19 +1332,6 @@ msgstr "Edition"
 #: templates/corpus/work.html:64
 msgid "Pages"
 msgstr "Pages"
-
-#: templates/corpus/work.html:65
-msgid "Page précédente"
-msgstr "Previous page"
-
-#: templates/corpus/work.html:66
-#, python-format
-msgid "Page %(number)s sur %(total)s"
-msgstr "Page %(number)s of %(total)s"
-
-#: templates/corpus/work.html:67
-msgid "Page suivante"
-msgstr "Next page"
 
 #: templates/moderation/history.html:4 templates/moderation/links.html:1
 msgid "Historique"
