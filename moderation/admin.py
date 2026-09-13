@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Report, Revision
+from .models import Comment, Report, Revision, Vote
 
 
 class ReadOnlyAdmin(admin.ModelAdmin):
@@ -28,3 +28,16 @@ class ReportAdmin(ReadOnlyAdmin):
     list_display = ("created_at", "reason", "status", "content_type", "object_id", "author")
     list_filter = ("status", "reason")
     date_hierarchy = "created_at"
+
+
+@admin.register(Comment)
+class CommentAdmin(ReadOnlyAdmin):
+    list_display = ("created_at", "content_type", "object_id", "author", "is_hidden")
+    list_filter = ("is_hidden", "content_type")
+    date_hierarchy = "created_at"
+
+
+@admin.register(Vote)
+class VoteAdmin(ReadOnlyAdmin):
+    list_display = ("updated_at", "content_type", "object_id", "author", "value")
+    list_filter = ("value", "content_type")

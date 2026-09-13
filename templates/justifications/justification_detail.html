@@ -50,6 +50,23 @@
     {% endfor %}
   </ul>
 
+  {% if challenges or can_challenge %}
+  <h2>{% translate "Contestations" %}</h2>
+  <ul class="item-list">
+    {% for challenge in challenges %}
+    <li>
+      <a class="item-title" href="{{ challenge.get_absolute_url }}">{{ challenge.author.public_name }}</a>
+      <span class="muted">{{ challenge.get_status_display|capfirst }} · {{ challenge.created_at|date:"j F Y" }}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune contestation." %}</li>
+    {% endfor %}
+  </ul>
+  {% if can_challenge %}
+  <p class="actions"><a class="button button-quiet" href="{% url 'justifications:challenge_create' translated.pk %}?justification={{ justification.pk }}">{% translate "Contester cette justification" %}</a></p>
+  {% endif %}
+  {% endif %}
+
   {% if can_edit %}
   <p class="form-links">
     <a class="button" href="{% url 'justifications:edit' justification.pk %}">{% translate "Modifier" %}</a>

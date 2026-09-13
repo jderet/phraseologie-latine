@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ challenge }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{{ version.get_absolute_url }}#phrase-{{ segment.order }}">{{ version }}</a> · <a href="{% url 'justifications:challenge_list' %}">{% translate "Contestations" %}</a></p>
+  <h1>{% translate "Contestation" %}</h1>
+  <p><span class="badge{% if challenge.is_open %} review-badge{% endif %}">{{ challenge.get_status_display }}</span></p>
+  {% if challenge.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+  {% if can_justify %}
+  <p class="notice">{% translate "Ce choix de votre version est contesté : répondez dans la discussion et justifiez-le." %} <a href="{% url 'justifications:create' version.pk segment.pk %}?extrait={{ challenge.latin_excerpt|urlencode }}">{% translate "Justifier" %}</a></p>
+  {% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Phrase source" %}</dt>
+      <dd lang="{{ source_language }}">{{ segment.text }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Latin" %}</dt>
+      <dd lang="la" class="latin">{% if parts %}{{ parts.0 }}<mark>{{ parts.1 }}</mark>{{ parts.2 }}{% else %}{{ translated.text }} <span class="muted">(« {{ challenge.latin_excerpt }} »)</span>{% endif %}</dd>
+    </div>
+    {% if contested %}
+    <div>
+      <dt>{% translate "Justification contestée" %}</dt>
+      <dd><a href="{{ contested.get_absolute_url }}">« {{ contested.latin_excerpt }} »</a> <span class="muted">{{ contested.strength }}/5 · {{ contested.get_strength_display }}</span></dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Auteur" %}</dt>
+      <dd><a href="{{ challenge.author.get_absolute_url }}">{{ challenge.author.public_name }}</a>, {{ challenge.created_at|date:"j F Y" }}</dd>
+    </div>
+  </dl>
+
+  <h2>{% translate "Argument" %}</h2>
+  <p>{{ challenge.argument|linebreaksbr }}</p>
+
+  <h2>{% translate "Contre-exemples et références" %}</h2>
+  <ul class="evidences">
+    {% for evidence in evidences %}{% include "justifications/evidence_item.html" %}{% empty %}
+    <li>{% translate "Aucun contre-exemple." %}</li>
+    {% endfor %}
+  </ul>
+
+  {% if not challenge.is_open %}
+  <h2>{% translate "Décision" %}</h2>
+  {% if challenge.status == "withdrawn" %}
+  <p>{% blocktranslate with date=challenge.closed_at|date:"j F Y" %}Retirée par son auteur le {{ date }}.{% endblocktranslate %}</p>
+  {% else %}
+  <p>{% blocktranslate with status=challenge.get_status_display name=challenge.closed_by.public_name date=challenge.closed_at|date:"j F Y" %}Contestation {{ status }} par {{ name }} le {{ date }}.{% endblocktranslate %}</p>
+  {% endif %}
+  {% if challenge.resolution %}<p>{{ challenge.resolution|linebreaksbr }}</p>{% endif %}
+  {% endif %}
+
+  <h2>{% translate "Avis" %}</h2>
+  {% translate "contestation fondée" as for_label %}{% translate "choix défendable" as against_label %}{% translate "Les avis sont indicatifs : la décision revient à l’équipe de relecture, et les arguments restent affichés." as votes_note %}
+  {% votes challenge for_label against_label votes_note %}
+
+  {% translate "La discussion est close." as closed_message %}
+  {% discussion challenge closed_message %}
+
+  {% if can_withdraw %}
+  <form method="post" action="{% url 'justifications:challenge_withdraw' challenge.pk %}" class="actions">
+    {% csrf_token %}
+    <button type="submit" class="button button-quiet">{% translate "Retirer ma contestation" %}</button>
+  </form>
+  {% endif %}
+
+  {% if close_form %}
+  <h2>{% translate "Clore la contestation" %}</h2>
+  <form method="post" action="{% url 'justifications:challenge_close' challenge.pk %}" class="form">
+    {% csrf_token %}
+    {{ close_form }}
+    <button type="submit" class="button">{% translate "Clore" %}</button>
+  </form>
+  {% endif %}
+  {% moderation_links challenge %}
+</article>
+{% endblock %}

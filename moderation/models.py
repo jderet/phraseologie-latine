@@ -6,7 +6,10 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+
+from .registry import can_view, register
 
 
 class ModeratedContent(models.Model):
@@ -21,7 +24,9 @@ class ModeratedContent(models.Model):
         abstract = True
 
 
-class RevisionQuerySet(models.QuerySet):
+class ObjectQuerySet(models.QuerySet):
+    """Records attached to a content: revisions, messages."""
+
     def for_object(self, obj):
         return self.filter(content_type=ContentType.objects.get_for_model(obj), object_id=obj.pk)
 
@@ -61,7 +66,7 @@ class Revision(models.Model):
         verbose_name=_("version rétablie"),
     )
 
-    objects = RevisionQuerySet.as_manager()
+    objects = ObjectQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("révision")
@@ -153,3 +158,88 @@ class Report(models.Model):
 
     def __str__(self):
         return f"{self.get_reason_display()} · {self.content_type.name} {self.object_id}"
+
+
+class Comment(ModeratedContent):
+    """A message in the discussion of a content (Q48); the thread is the list of its messages."""
+
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.PROTECT, verbose_name=_("type de contenu")
+    )
+    object_id = models.PositiveBigIntegerField(_("identifiant du contenu"))
+    content_object = GenericForeignKey("content_type", "object_id")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="comments",
+        verbose_name=_("auteur"),
+    )
+    text = models.TextField(_("message"), max_length=5000)
+    created_at = models.DateTimeField(_("date"), default=timezone.now, editable=False)
+
+    objects = ObjectQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("message")
+        verbose_name_plural = _("messages")
+        ordering = ["created_at", "pk"]
+        indexes = [
+            models.Index(
+                fields=["content_type", "object_id", "created_at"],
+                name="moderation_comment_object",
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("Message de %(author)s") % {"author": self.author.public_name}
+
+    def get_absolute_url(self):
+        target = self.content_object
+        return f"{target.get_absolute_url()}#message-{self.pk}"
+
+
+class Vote(models.Model):
+    """An indicative opinion on a content. A vote is not a content: it has no history."""
+
+    class Value(models.IntegerChoices):
+        FOR = 1, _("pour")
+        AGAINST = -1, _("contre")
+
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.PROTECT, verbose_name=_("type de contenu")
+    )
+    object_id = models.PositiveBigIntegerField(_("identifiant du contenu"))
+    content_object = GenericForeignKey("content_type", "object_id")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="votes",
+        verbose_name=_("auteur"),
+    )
+    value = models.SmallIntegerField(_("avis"), choices=Value.choices)
+    created_at = models.DateTimeField(_("date"), default=timezone.now, editable=False)
+    updated_at = models.DateTimeField(_("modifié le"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("vote")
+        verbose_name_plural = _("votes")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["author", "content_type", "object_id"],
+                name="moderation_one_vote_per_author",
+            ),
+            models.CheckConstraint(condition=Q(value__in=[1, -1]), name="moderation_vote_value"),
+        ]
+
+    def __str__(self):
+        return f"{self.get_value_display()} · {self.content_type.name} {self.object_id}"
+
+
+register(
+    Comment,
+    owner_field="author",
+    text_fields=("text",),
+    visible_to=lambda user, comment: (
+        comment.content_object is not None and can_view(user, comment.content_object)
+    ),
+)

@@ -1019,6 +1019,63 @@ article > h2 {
   font-size: 1.05rem;
 }
 
+/* Challenges, discussions and votes */
+
+.row-alert {
+  margin: 4px 0 0;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.row-alert a {
+  color: inherit;
+}
+
+.discussion {
+  margin-top: 40px;
+}
+
+.comments {
+  display: grid;
+  gap: 16px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.comment {
+  display: grid;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.comment p {
+  margin: 0;
+}
+
+.comment-meta {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+
+.votes {
+  display: grid;
+  gap: 10px;
+}
+
+.votes p {
+  margin: 0;
+}
+
+.vote-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
 .reference-badge {
   color: var(--accent);
   border-color: var(--accent);

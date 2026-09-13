@@ -1,7 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Prefetch
+from django.core.paginator import Paginator
+from django.db.models import Case, IntegerField, Prefetch, Value, When
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
@@ -9,24 +10,29 @@ from django.utils.translation import ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
+from accounts.roles import is_reviewer
 from corpus.models import Token
 from corpus.search import quotation
 from corpus.views import search_context
 from moderation.registry import can_view
 from translations.models import TranslatedSegment, TranslationVersion
-from translations.permissions import can_translate
+from translations.permissions import can_challenge, can_translate
 
-from .forms import JustificationForm, ReferenceFormSet
-from .models import Evidence, Justification
+from .forms import ChallengeCloseForm, ChallengeForm, JustificationForm, ReferenceFormSet
+from .models import Challenge, Evidence, Justification
 from .services import (
     add_evidences,
+    close_challenge,
     corpus_evidence,
+    create_challenge,
     create_justification,
     update_justification,
+    withdraw_challenge,
     withdraw_evidence,
 )
 
 SEARCH_RESULTS = 20
+CHALLENGES_PER_PAGE = 50
 FORM_TEMPLATE = "justifications/justification_form.html"
 
 
@@ -82,6 +88,34 @@ def _search_page_context(request, translated, evidences, **extra):
     )
 
 
+def _visible_evidences(user, queryset, **parent):
+    """Evidence that is not withdrawn, with the quotation of corpus words."""
+    tokens = Token.objects.select_related("passage__edition__work__author")
+    evidences = []
+    queryset = (
+        queryset.filter(is_withdrawn=False)
+        .select_related("work")
+        .prefetch_related(Prefetch("tokens", queryset=tokens))
+    )
+    for evidence in queryset:
+        for name, value in parent.items():
+            setattr(evidence, name, value)
+        if not can_view(user, evidence):
+            continue
+        cited = list(evidence.tokens.all())
+        if evidence.kind == Evidence.Kind.CORPUS and cited:
+            evidence.quotation = quotation(cited)
+        evidences.append(evidence)
+    return evidences
+
+
+def _excerpt_parts(obj):
+    """The Latin sentence cut around the words of a justification or a challenge."""
+    span = obj.locate()
+    text = obj.translated_segment.text
+    return (text[: span[0]], text[span[0] : span[1]], text[span[1] :]) if span else None
+
+
 def _own_version(user, pk):
     version = get_object_or_404(
         TranslationVersion.objects.select_related("project__source_text", "author"), pk=pk
@@ -111,6 +145,9 @@ def _own_justification(user, pk):
     if user.pk != justification.author_id:
         raise PermissionDenied
     return justification
+
+
+# Justifications
 
 
 @login_required
@@ -171,32 +208,24 @@ def justification_create(request, version_pk, segment_pk):
 def justification_detail(request, pk):
     justification = _justification(request.user, pk)
     translated = justification.translated_segment
-    tokens = Token.objects.select_related("passage__edition__work__author")
-    queryset = (
-        justification.evidences.filter(is_withdrawn=False)
-        .select_related("work")
-        .prefetch_related(Prefetch("tokens", queryset=tokens))
-    )
-    evidences = []
-    for evidence in queryset:
-        evidence.justification = justification
-        if not can_view(request.user, evidence):
-            continue
-        if evidence.kind == Evidence.Kind.CORPUS and evidence.tokens.all():
-            evidence.quotation = quotation(list(evidence.tokens.all()))
-        evidences.append(evidence)
-    span = justification.locate()
-    text = translated.text
-    parts = (text[: span[0]], text[span[0] : span[1]], text[span[1] :]) if span else None
+    challenges = [
+        challenge
+        for challenge in justification.challenges.select_related("author")
+        if can_view(request.user, challenge)
+    ]
     return render(
         request,
         "justifications/justification_detail.html",
         _page_context(
             translated,
             justification=justification,
-            evidences=evidences,
-            parts=parts,
+            evidences=_visible_evidences(
+                request.user, justification.evidences.all(), justification=justification
+            ),
+            parts=_excerpt_parts(justification),
             can_edit=request.user.pk == justification.author_id,
+            challenges=challenges,
+            can_challenge=can_challenge(request.user, translated.version),
         ),
     )
 
@@ -268,7 +297,7 @@ def evidence_add(request, pk):
 @login_required
 @require_POST
 def evidence_withdraw(request, pk):
-    evidence = get_object_or_404(Evidence, pk=pk)
+    evidence = get_object_or_404(Evidence, pk=pk, justification__isnull=False)
     justification = _own_justification(request.user, evidence.justification_id)
     evidence.justification = justification
     try:
@@ -278,3 +307,167 @@ def evidence_withdraw(request, pk):
     else:
         messages.success(request, _("La preuve est retirée."))
     return redirect(justification)
+
+
+# Challenges
+
+
+def _challenge(user, pk):
+    queryset = Challenge.objects.select_related(
+        "author",
+        "closed_by",
+        "justification",
+        "translated_segment__segment",
+        "translated_segment__version__project__source_text",
+        "translated_segment__version__author",
+    )
+    challenge = get_object_or_404(queryset, pk=pk)
+    if not can_view(user, challenge):
+        raise Http404
+    return challenge
+
+
+def challenge_list(request):
+    open_first = Case(
+        When(status=Challenge.Status.OPEN, then=Value(0)),
+        default=Value(1),
+        output_field=IntegerField(),
+    )
+    challenges = (
+        Challenge.objects.filter(
+            is_hidden=False,
+            translated_segment__version__state=TranslationVersion.State.PUBLISHED,
+            translated_segment__version__is_hidden=False,
+        )
+        .select_related(
+            "author", "translated_segment__version__project", "translated_segment__version__author"
+        )
+        .order_by(open_first, "-created_at", "-pk")
+    )
+    page = Paginator(challenges, CHALLENGES_PER_PAGE).get_page(request.GET.get("page"))
+    return render(request, "justifications/challenge_list.html", {"page": page})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def challenge_create(request, translated_pk):
+    queryset = TranslatedSegment.objects.select_related(
+        "segment", "version__project__source_text", "version__author"
+    )
+    translated = get_object_or_404(queryset.exclude(text=""), pk=translated_pk)
+    if not can_view(request.user, translated):
+        raise Http404
+    if not can_challenge(request.user, translated.version):
+        raise PermissionDenied
+    justification = None
+    if request.GET.get("justification", "").isdigit():
+        justification = get_object_or_404(
+            translated.justifications.filter(is_hidden=False), pk=request.GET["justification"]
+        )
+    default_excerpt = request.GET.get("extrait") or (
+        justification.latin_excerpt if justification else translated.text
+    )
+    form = ChallengeForm(
+        request.POST or None,
+        translated=translated,
+        user=request.user,
+        initial={"latin_excerpt": default_excerpt},
+    )
+    references = _references(request)
+    evidences, errors = _attestations(request)
+    if request.method == "POST":
+        valid = form.is_valid() & references.is_valid()
+        for message in errors:
+            form.add_error(None, message)
+        if valid and not errors:
+            challenge = form.save(commit=False)
+            challenge.translated_segment = translated
+            challenge.justification = justification
+            all_evidences = evidences + _reference_evidences(references)
+            try:
+                create_challenge(challenge, request.user, all_evidences, _hint(request))
+            except ContributionLimitReached as error:
+                messages.error(request, str(error))
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                messages.success(request, _("La contestation est publiée."))
+                return redirect(challenge)
+    keep = {
+        key: request.GET[key]
+        for key in ("extrait", "debut", "justification")
+        if request.GET.get(key)
+    }
+    context = _search_page_context(
+        request,
+        translated,
+        evidences,
+        form=form,
+        references=references,
+        keep=keep,
+        justification=justification,
+        heading=_("Contester un choix de traduction"),
+        intro=_(
+            "Exposez votre argument ; appuyez-le au besoin sur des contre-exemples du corpus ou "
+            "sur des ouvrages de référence. L’auteur de la version pourra répondre et justifier "
+            "son choix."
+        ),
+        submit_label=_("Publier la contestation"),
+    )
+    return render(request, FORM_TEMPLATE, context)
+
+
+def challenge_detail(request, pk):
+    user = request.user
+    challenge = _challenge(user, pk)
+    translated = challenge.translated_segment
+    justification = challenge.justification
+    if justification is not None and not can_view(user, justification):
+        justification = None
+    return render(
+        request,
+        "justifications/challenge_detail.html",
+        _page_context(
+            translated,
+            challenge=challenge,
+            contested=justification,
+            evidences=_visible_evidences(user, challenge.evidences.all(), challenge=challenge),
+            parts=_excerpt_parts(challenge),
+            close_form=ChallengeCloseForm() if challenge.is_open and is_reviewer(user) else None,
+            can_withdraw=challenge.is_open and user.pk == challenge.author_id,
+            can_justify=challenge.is_open and user.pk == translated.version.author_id,
+        ),
+    )
+
+
+@login_required
+@require_POST
+def challenge_close(request, pk):
+    challenge = _challenge(request.user, pk)
+    if not is_reviewer(request.user):
+        raise PermissionDenied
+    form = ChallengeCloseForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Choisissez une décision et motivez-la."))
+        return redirect(challenge)
+    data = form.cleaned_data
+    try:
+        close_challenge(challenge, request.user, data["decision"], data["resolution"])
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("La contestation est close."))
+    return redirect(challenge)
+
+
+@login_required
+@require_POST
+def challenge_withdraw(request, pk):
+    challenge = _challenge(request.user, pk)
+    try:
+        withdraw_challenge(challenge, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("La contestation est retirée."))
+    return redirect(challenge)

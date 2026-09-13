@@ -1,0 +1,12 @@
+{% load i18n %}<div class="votes" id="votes">
+  <p class="vote-counts"><span><strong>{{ summary.for }}</strong> {{ for_label }}</span> · <span><strong>{{ summary.against }}</strong> {{ against_label }}</span></p>
+  {% if can_vote %}
+  <form method="post" action="{{ vote_url }}" class="vote-form">
+    {% csrf_token %}
+    <button type="submit" name="value" value="1" class="button{% if summary.current != 1 %} button-quiet{% endif %}">{{ for_label|capfirst }}</button>
+    <button type="submit" name="value" value="-1" class="button{% if summary.current != -1 %} button-quiet{% endif %}">{{ against_label|capfirst }}</button>
+    {% if summary.current %}<button type="submit" name="value" value="0" class="link-button">{% translate "Retirer mon avis" %}</button>{% endif %}
+  </form>
+  {% endif %}
+  {% if note %}<p class="note">{{ note }}</p>{% endif %}
+</div>

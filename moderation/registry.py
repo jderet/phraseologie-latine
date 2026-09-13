@@ -21,8 +21,8 @@ class NotRegistered(ImproperlyConfigured):
 class Registration:
     model: type
     # Foreign key to the user who owns the content (may revert it, sees it when hidden);
-    # dots follow relations, as in "version.author".
-    owner_field: str | None = None
+    # dots follow relations, as in "version.author"; a function returns the owner's id.
+    owner_field: str | Callable | None = None
     # Free-text fields checked for links when the author is a new account.
     text_fields: tuple[str, ...] = ()
     # Extra visibility rule, e.g. drafts visible to their author only.
@@ -32,6 +32,12 @@ class Registration:
     counts_toward_limit: bool = True
     # Fields a revert never restores, e.g. the publication of a version.
     not_reverted: tuple[str, ...] = ()
+    # Who may post in the discussion of a content (function of user and content); None: no
+    # discussion. Viewing the content is also required.
+    discussion: Callable | None = None
+    # Who may vote on a content, besides being able to view it, not owning it and not being a
+    # new account; None: no votes.
+    votes: Callable | None = None
 
 
 _registry: dict[type, Registration] = {}
@@ -45,6 +51,8 @@ def register(
     visible_to=None,
     counts_toward_limit=True,
     not_reverted=(),
+    discussion=None,
+    votes=None,
 ):
     try:
         model._meta.get_field("is_hidden")
@@ -59,6 +67,8 @@ def register(
         visible_to,
         counts_toward_limit,
         tuple(not_reverted),
+        discussion,
+        votes,
     )
     return model
 
@@ -90,6 +100,8 @@ def owner_id(obj):
     owner_field = get_registration(obj).owner_field
     if not owner_field:
         return None
+    if callable(owner_field):
+        return owner_field(obj)
     *path, name = owner_field.split(".")
     for step in path:
         obj = getattr(obj, step)
@@ -123,3 +135,11 @@ def history_url(obj):
 
 def report_url(obj):
     return reverse("moderation:report", args=_object_args(obj))
+
+
+def comment_url(obj):
+    return reverse("moderation:comment", args=_object_args(obj))
+
+
+def vote_url(obj):
+    return reverse("moderation:vote", args=_object_args(obj))

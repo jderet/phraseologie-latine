@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
-from django.http import Http404
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST
@@ -9,10 +9,10 @@ from django.views.decorators.http import require_http_methods, require_POST
 from accounts.limits import ContributionLimitReached
 from accounts.roles import is_reviewer
 
-from .forms import ReportForm, ResolveReportForm
+from .forms import CommentForm, ReportForm, ResolveReportForm
 from .models import Report, Revision
 from .registry import can_revert, can_view, find_registration, history_url
-from .services import create_report, resolve_report, revert_to
+from .services import cast_vote, create_report, post_comment, resolve_report, revert_to
 
 HISTORY_LENGTH = 200
 
@@ -131,3 +131,37 @@ def handle_report(request, pk):
     else:
         messages.error(request, _("Choisissez une décision."))
     return redirect("moderation:report_queue")
+
+
+@login_required
+@require_POST
+def comment(request, app_label, model_name, pk):
+    obj = _visible_object(request.user, app_label, model_name, pk)
+    form = CommentForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Écrivez un message de 5 000 caractères au plus."))
+    else:
+        try:
+            post_comment(obj, request.user, form.cleaned_data["text"])
+        except ContributionLimitReached as error:
+            messages.error(request, str(error))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+        else:
+            messages.success(request, _("Votre message est publié."))
+    return redirect(f"{_object_url(obj)}#discussion")
+
+
+@login_required
+@require_POST
+def vote(request, app_label, model_name, pk):
+    obj = _visible_object(request.user, app_label, model_name, pk)
+    value = request.POST.get("value", "")
+    if value not in {"1", "-1", "0"}:
+        return HttpResponseBadRequest()
+    cast_vote(obj, request.user, int(value))
+    if value == "0":
+        messages.success(request, _("Votre avis est retiré."))
+    else:
+        messages.success(request, _("Votre avis est enregistré."))
+    return redirect(f"{_object_url(obj)}#votes")

@@ -16,6 +16,12 @@ urlpatterns = [
         views.report,
         name="report",
     ),
+    path(
+        "discussion/<slug:app_label>/<slug:model_name>/<int:pk>/",
+        views.comment,
+        name="comment",
+    ),
+    path("avis/<slug:app_label>/<slug:model_name>/<int:pk>/", views.vote, name="vote"),
     path("moderation/signalements/", views.report_queue, name="report_queue"),
     path(
         "moderation/signalements/<int:pk>/traiter/",

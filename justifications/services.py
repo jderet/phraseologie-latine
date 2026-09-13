@@ -4,14 +4,17 @@ from dataclasses import dataclass, field
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext
 
+from accounts.roles import is_reviewer
 from corpus.models import Token
 from corpus.search import corpus_version
+from moderation.registry import can_view
 from moderation.services import save_with_revision
-from translations.permissions import can_translate
+from translations.permissions import can_challenge, can_translate
 
-from .models import ATTESTED_STRENGTHS, Evidence, Justification, Strength
+from .models import ATTESTED_STRENGTHS, Challenge, Evidence, Justification, Strength
 
 MAX_CITED_WORDS = 12
 
@@ -91,9 +94,10 @@ def active_evidences(justification):
     return list(justification.evidences.filter(is_withdrawn=False))
 
 
-def _save_evidence(justification, evidence, author):
+def _save_evidence(evidence, author, justification=None, challenge=None):
     obj = Evidence(
         justification=justification,
+        challenge=challenge,
         kind=evidence.kind,
         passage=evidence.tokens[0].passage if evidence.tokens else None,
         work=evidence.work,
@@ -117,7 +121,7 @@ def create_justification(justification, author, evidences, hint=None):
         justification.corpus_version = corpus_version().label
     save_with_revision(justification, author)
     for evidence in evidences:
-        _save_evidence(justification, evidence, author)
+        _save_evidence(evidence, author, justification=justification)
     return justification
 
 
@@ -141,14 +145,14 @@ def update_justification(justification, author, hint=None):
 def add_evidences(justification, evidences, author):
     if author.pk != justification.author_id:
         raise PermissionDenied
-    return [_save_evidence(justification, evidence, author) for evidence in evidences]
+    return [_save_evidence(evidence, author, justification=justification) for evidence in evidences]
 
 
 @transaction.atomic
 def withdraw_evidence(evidence, author):
     """Withdraw a piece of evidence, if the justification still has what its strength needs."""
     justification = evidence.justification
-    if author.pk != justification.author_id:
+    if justification is None or author.pk != justification.author_id:
         raise PermissionDenied
     if evidence.is_withdrawn:
         return None
@@ -156,3 +160,50 @@ def withdraw_evidence(evidence, author):
     check_strength(justification.strength, justification.comment, remaining)
     evidence.is_withdrawn = True
     return save_with_revision(evidence, author, comment=gettext("Preuve retirée"))
+
+
+@transaction.atomic
+def create_challenge(challenge, author, evidences, hint=None):
+    """Contest words of a published version; its author answers and justifies them (Q46)."""
+    translated = challenge.translated_segment
+    version = translated.version
+    if not can_challenge(author, version) or not can_view(author, translated):
+        raise PermissionDenied
+    justification = challenge.justification
+    if justification is not None and justification.translated_segment_id != translated.pk:
+        raise ValueError("The justification is not about this sentence.")
+    challenge.author = author
+    challenge.latin_start = find_excerpt(translated.text, challenge.latin_excerpt, hint)
+    save_with_revision(challenge, author)
+    for evidence in evidences:
+        _save_evidence(evidence, author, challenge=challenge)
+    return challenge
+
+
+def _close(challenge, user, status, resolution, comment):
+    challenge = Challenge.objects.select_for_update().get(pk=challenge.pk)
+    if not challenge.is_open:
+        raise ValidationError(gettext("Cette contestation est déjà close."), code="closed")
+    challenge.status = status
+    challenge.resolution = resolution
+    challenge.closed_by = user
+    challenge.closed_at = timezone.now()
+    save_with_revision(challenge, user, comment=comment)
+    return challenge
+
+
+@transaction.atomic
+def close_challenge(challenge, user, status, resolution):
+    """A reviewer upholds or dismisses a challenge; the arguments stay displayed (Q53)."""
+    if not is_reviewer(user):
+        raise PermissionDenied
+    if status not in (Challenge.Status.UPHELD, Challenge.Status.DISMISSED):
+        raise ValueError("A reviewer upholds or dismisses a challenge.")
+    return _close(challenge, user, status, resolution, gettext("Contestation close"))
+
+
+@transaction.atomic
+def withdraw_challenge(challenge, user):
+    if user.pk != challenge.author_id:
+        raise PermissionDenied
+    return _close(challenge, user, Challenge.Status.WITHDRAWN, "", gettext("Contestation retirée"))

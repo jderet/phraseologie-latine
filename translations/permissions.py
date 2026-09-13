@@ -12,3 +12,14 @@ def can_edit(user, obj):
 def can_translate(user, version):
     """Only its author writes the Latin of a version."""
     return user.is_active and is_owner(user, version) and can_view(user, version)
+
+
+def can_challenge(user, version):
+    """Anyone but its author may contest the choices of a published version."""
+    return (
+        user.is_authenticated
+        and user.is_active
+        and version.is_published
+        and not version.is_hidden
+        and user.pk != version.author_id
+    )

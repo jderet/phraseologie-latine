@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Contestations" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Traduction" %}</a></p>
+  <h1>{% translate "Contestations" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Les choix de traduction contestés, avec leurs arguments, leurs contre-exemples et leur
+    discussion. Les contestations ouvertes viennent en premier.
+  {% endblocktranslate %}</p>
+  <ul class="item-list">
+    {% for challenge in page %}
+    <li>
+      <a class="item-title" href="{{ challenge.get_absolute_url }}" lang="la">« {{ challenge.latin_excerpt }} »</a>
+      <span class="muted">{{ challenge.get_status_display|capfirst }} · {{ challenge.translated_segment.version }} · {% blocktranslate with name=challenge.author.public_name %}par {{ name }}{% endblocktranslate %}, {{ challenge.created_at|date:"j F Y" }}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune contestation pour l’instant." %}</li>
+    {% endfor %}
+  </ul>
+  {% include "translations/pager.html" %}
+</section>
+{% endblock %}

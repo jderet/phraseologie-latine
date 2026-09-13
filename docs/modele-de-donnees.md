@@ -66,15 +66,15 @@ erDiagram
   « À revoir » n'est pas enregistré mais calculé : la justification est à revoir quand la phrase latine ne contient plus le passage justifié (un passage seulement déplacé reste valable). Cela vaut aussi après un retour arrière.
 - **Preuve** (`Evidence`) : justification, type (attestation, règle de grammaire, article de dictionnaire), mots cités du corpus (identifiants stables) et leur passage, ou ouvrage de référence avec sa localisation (paragraphe, entrée), note, retirée ou non. Une preuve ne peut être retirée que si la justification garde ce qu'exige sa force. L'attestation (`Attestation`) de l'étape 3 s'y ajoutera.
 - **Ouvrage de référence** (`BibliographicWork`) : titre, abréviation (K-St, E-T, A&G, Gaffiot, L&S, TLL…), type (grammaire, dictionnaire), statut de droits (libre, ou sous droits et donc cité seulement). Liste tenue par les administrateurs ; aucun extrait n'est jamais stocké.
-- **Contestation** (`Challenge`) : objet contesté, auteur, argument, contre-exemples (attestations), discussion, votes.
+- **Contestation** (`Challenge`) : phrase traduite d'une version publiée, justification contestée (facultatif), passage contesté, auteur, argument, contre-exemples (preuves), discussion, votes, statut, décision motivée. Tout le monde sauf l'auteur de la version peut contester ; tant que la contestation est ouverte, une justification est attendue de l'auteur de la version (Q46). Un relecteur la retient ou l'écarte en motivant sa décision, ou son auteur la retire ; les arguments restent affichés (Q53). Un retour arrière ne rouvre ni ne clôt une contestation.
 
 ## 5. Communauté
 
 - **Utilisateur** (`User`) : nom affiché, adresse e-mail, ORCID facultatif, déclaration de majorité, langue d'interface, compte confirmé (après une première contribution validée).
 - **Rôles** : contributeur, relecteur, administrateur (groupes Django).
 - **Révision** (`Revision`) : objet, auteur, date, contenu avant et après. Sert l'historique et le retour arrière.
-- **Discussion** (`Thread`, `Comment`) : rattachée à n'importe quel objet.
-- **Vote** (`Vote`) : objet, auteur, valeur.
+- **Discussion** (`Comment`) : messages rattachés à un contenu qui l'autorise (pour l'instant les contestations ouvertes). Le fil est la liste des messages du contenu, sans objet séparé. Un message est un contenu modéré : révisions, signalement, masquage.
+- **Vote** (`Vote`) : objet, auteur, valeur (pour ou contre). Un avis indicatif, modifiable ou retiré, sans historique. Votent les comptes confirmés et les relecteurs, sauf l'auteur de l'objet et, pour une contestation, l'auteur de la version contestée.
 - **Signalement** (`Report`) : objet, auteur, motif, statut.
 
 ## 6. Statuts
@@ -85,6 +85,7 @@ erDiagram
 | Attestation | automatique ou proposée → validée, ou rejetée |
 | Version de traduction | brouillon → publiée |
 | Justification | normale ; contestée ; à revoir quand le latin visé a changé |
+| Contestation | ouverte → retenue ou écartée par un relecteur, ou retirée par son auteur |
 | Candidat | à examiner → retenu ou rejeté |
 | Signalement | ouvert → traité ou rejeté |
 

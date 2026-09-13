@@ -6,21 +6,12 @@ from accounts.limits import check_text_for_links
 from translations.forms import ContributionForm
 from translations.services import normalize_sentence
 
-from .models import BibliographicWork, Justification
+from .models import BibliographicWork, Challenge, Justification
 from .services import reference_evidence
 
 
-class JustificationForm(ContributionForm):
-    link_fields = ("source_excerpt", "comment")
-
-    class Meta:
-        model = Justification
-        fields = ("latin_excerpt", "source_excerpt", "strength", "comment")
-        widgets = {
-            "latin_excerpt": forms.TextInput(attrs={"lang": "la"}),
-            "strength": forms.RadioSelect,
-            "comment": forms.Textarea(attrs={"rows": 4}),
-        }
+class LatinExcerptForm(ContributionForm):
+    """A form about some words of a translated sentence."""
 
     def __init__(self, *args, translated, **kwargs):
         self.translated = translated
@@ -35,6 +26,19 @@ class JustificationForm(ContributionForm):
             )
         return excerpt
 
+
+class JustificationForm(LatinExcerptForm):
+    link_fields = ("source_excerpt", "comment")
+
+    class Meta:
+        model = Justification
+        fields = ("latin_excerpt", "source_excerpt", "strength", "comment")
+        widgets = {
+            "latin_excerpt": forms.TextInput(attrs={"lang": "la"}),
+            "strength": forms.RadioSelect,
+            "comment": forms.Textarea(attrs={"rows": 4}),
+        }
+
     def clean_source_excerpt(self):
         excerpt = normalize_sentence(self.cleaned_data["source_excerpt"])
         if excerpt and excerpt not in self.translated.segment.text:
@@ -42,6 +46,32 @@ class JustificationForm(ContributionForm):
                 _("Ce passage ne figure pas dans la phrase source."), code="source_not_found"
             )
         return excerpt
+
+
+class ChallengeForm(LatinExcerptForm):
+    link_fields = ("argument",)
+
+    class Meta:
+        model = Challenge
+        fields = ("latin_excerpt", "argument")
+        widgets = {
+            "latin_excerpt": forms.TextInput(attrs={"lang": "la"}),
+            "argument": forms.Textarea(attrs={"rows": 6}),
+        }
+
+
+class ChallengeCloseForm(forms.Form):
+    decision = forms.ChoiceField(
+        label=_("Décision"),
+        choices=[
+            (Challenge.Status.UPHELD, _("Retenir : le choix contesté doit être revu")),
+            (Challenge.Status.DISMISSED, _("Écarter : le choix contesté est défendable")),
+        ],
+        widget=forms.RadioSelect,
+    )
+    resolution = forms.CharField(
+        label=_("Motivation"), max_length=3000, widget=forms.Textarea(attrs={"rows": 3})
+    )
 
 
 class ReferenceForm(forms.Form):

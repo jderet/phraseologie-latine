@@ -12,6 +12,20 @@ from moderation.registry import register
 from translations.models import TranslatedSegment, version_visible_to
 
 
+def locate_excerpt(text, excerpt, start):
+    """(start, end) of words in a Latin sentence, or None when the sentence no longer has them.
+
+    Words that only moved in the sentence are found again when they occur once.
+    """
+    end = start + len(excerpt)
+    if text[start:end] == excerpt:
+        return start, end
+    if text.count(excerpt) == 1:
+        found = text.index(excerpt)
+        return found, found + len(excerpt)
+    return None
+
+
 class BibliographicWork(models.Model):
     """A grammar or a dictionary, cited by reference only: nothing of it is copied (rule 12)."""
 
@@ -129,26 +143,27 @@ class Justification(ModeratedContent):
         return reverse("justifications:detail", args=[self.pk])
 
     def locate(self):
-        """(start, end) of the justified words in the current Latin, or None if they changed.
-
-        Words that only moved in the sentence are found again when they occur once.
-        """
-        text = self.translated_segment.text
-        end = self.latin_start + len(self.latin_excerpt)
-        if text[self.latin_start : end] == self.latin_excerpt:
-            return self.latin_start, end
-        if text.count(self.latin_excerpt) == 1:
-            start = text.index(self.latin_excerpt)
-            return start, start + len(self.latin_excerpt)
-        return None
+        """(start, end) of the justified words in the current Latin, or None if they changed."""
+        return locate_excerpt(self.translated_segment.text, self.latin_excerpt, self.latin_start)
 
     @property
     def needs_review(self):
         return self.locate() is None
 
+    @property
+    def is_challenged(self):
+        """Whether an open challenge contests this justification."""
+        open_challenges = getattr(self, "open_challenges", None)
+        if open_challenges is None:
+            return self.challenges.filter(status=Challenge.Status.OPEN, is_hidden=False).exists()
+        return bool(open_challenges)
+
 
 class Evidence(ModeratedContent):
-    """One piece of evidence: words of the corpus, or a place in a grammar or a dictionary."""
+    """One piece of evidence: words of the corpus, or a place in a grammar or a dictionary.
+
+    It supports a justification, or a challenge as a counter-example.
+    """
 
     class Kind(models.TextChoices):
         CORPUS = "corpus", _("attestation du corpus")
@@ -158,8 +173,18 @@ class Evidence(ModeratedContent):
     justification = models.ForeignKey(
         Justification,
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name="evidences",
         verbose_name=_("justification"),
+    )
+    challenge = models.ForeignKey(
+        "Challenge",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="evidences",
+        verbose_name=_("contestation"),
     )
     kind = models.CharField(_("type"), max_length=20, choices=Kind.choices)
     passage = models.ForeignKey(
@@ -204,6 +229,11 @@ class Evidence(ModeratedContent):
                 ),
                 name="justifications_evidence_kind",
             ),
+            models.CheckConstraint(
+                condition=Q(justification__isnull=False, challenge__isnull=True)
+                | Q(justification__isnull=True, challenge__isnull=False),
+                name="justifications_evidence_one_parent",
+            ),
         ]
 
     def __str__(self):
@@ -222,10 +252,121 @@ register(
     text_fields=("source_excerpt", "comment"),
     visible_to=justification_visible_to,
 )
+
+
+class Challenge(ModeratedContent):
+    """A contested translation choice: argument, counter-examples, votes and discussion (Q48)."""
+
+    class Status(models.TextChoices):
+        OPEN = "open", _("ouverte")
+        UPHELD = "upheld", _("retenue")
+        DISMISSED = "dismissed", _("écartée")
+        WITHDRAWN = "withdrawn", _("retirée par son auteur")
+
+    translated_segment = models.ForeignKey(
+        TranslatedSegment,
+        on_delete=models.PROTECT,
+        related_name="challenges",
+        verbose_name=_("phrase traduite"),
+    )
+    justification = models.ForeignKey(
+        Justification,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="challenges",
+        verbose_name=_("justification contestée"),
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="challenges",
+        verbose_name=_("auteur"),
+    )
+    latin_excerpt = models.CharField(
+        _("passage contesté"),
+        max_length=500,
+        help_text=_("Les mots contestés, tels qu’ils sont écrits."),
+    )
+    latin_start = models.PositiveIntegerField(_("position du passage"), default=0)
+    argument = models.TextField(
+        _("argument"),
+        max_length=5000,
+        help_text=_("Pourquoi ce choix vous paraît fautif, et ce que vous proposez à la place."),
+    )
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.OPEN, editable=False
+    )
+    resolution = models.TextField(
+        _("décision motivée"), max_length=3000, blank=True, editable=False
+    )
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("close par"),
+    )
+    closed_at = models.DateTimeField(_("close le"), null=True, blank=True, editable=False)
+    created_at = models.DateTimeField(_("ouverte le"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("contestation")
+        verbose_name_plural = _("contestations")
+        ordering = ["-created_at", "-pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(status="open", closed_at__isnull=True, closed_by__isnull=True)
+                | (~Q(status="open") & Q(closed_at__isnull=False, closed_by__isnull=False)),
+                name="justifications_challenge_closing",
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("Contestation de « %(excerpt)s »") % {"excerpt": self.latin_excerpt}
+
+    def get_absolute_url(self):
+        return reverse("justifications:challenge", args=[self.pk])
+
+    def locate(self):
+        return locate_excerpt(self.translated_segment.text, self.latin_excerpt, self.latin_start)
+
+    @property
+    def is_open(self):
+        return self.status == self.Status.OPEN
+
+    @property
+    def contested_author_id(self):
+        return self.translated_segment.version.author_id
+
+
+def evidence_visible_to(user, evidence):
+    parent = evidence.justification or evidence.challenge
+    return version_visible_to(user, parent.translated_segment.version)
+
+
+def evidence_owner_id(evidence):
+    return (evidence.justification or evidence.challenge).author_id
+
+
 register(
     Evidence,
-    owner_field="justification.author",
+    owner_field=evidence_owner_id,
     text_fields=("locator", "note"),
-    visible_to=lambda user, evidence: justification_visible_to(user, evidence.justification),
+    visible_to=evidence_visible_to,
     counts_toward_limit=False,
+)
+register(
+    Challenge,
+    owner_field="author",
+    text_fields=("argument",),
+    visible_to=lambda user, challenge: version_visible_to(
+        user, challenge.translated_segment.version
+    ),
+    # A revert never reopens or closes a challenge.
+    not_reverted=("status", "resolution", "closed_by", "closed_at"),
+    discussion=lambda user, challenge: challenge.is_open,
+    votes=lambda user, challenge: challenge.is_open and user.pk != challenge.contested_author_id,
 )

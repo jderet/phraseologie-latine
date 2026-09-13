@@ -58,6 +58,9 @@
           {% else %}
           <p class="note">{% translate "Aucune justification pour cette phrase." %}</p>
           {% endif %}
+          {% for challenge in row.challenges %}
+          <p class="row-alert"><a href="{{ challenge.get_absolute_url }}">{% blocktranslate with excerpt=challenge.latin_excerpt %}Contesté : « {{ excerpt }} »{% endblocktranslate %}</a></p>
+          {% endfor %}
           <a class="button button-quiet justify-link" data-segment="{{ row.segment.pk }}" href="{% url 'justifications:create' version.pk row.segment.pk %}">{% translate "Justifier la sélection" %}</a>
         </div>
         {% endfor %}

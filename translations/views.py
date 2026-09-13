@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
 from corpus.forms import MODE_FORM, SCOPE_CORE, SearchForm
-from justifications.models import Justification
+from justifications.models import Challenge, Justification
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
@@ -27,7 +27,7 @@ from .forms import (
     VersionForm,
 )
 from .models import SourceText, TranslatedSegment, TranslationProject, TranslationVersion
-from .permissions import can_edit, can_translate
+from .permissions import can_challenge, can_edit, can_translate
 from .segmentation import from_lines, segment, to_lines
 from .services import (
     create_project,
@@ -298,8 +298,13 @@ def _own_version(user, pk):
 
 def _justifications_by_segment(user, version):
     grouped = defaultdict(list)
-    queryset = Justification.objects.filter(translated_segment__version=version).select_related(
-        "translated_segment"
+    open_challenges = Challenge.objects.filter(status=Challenge.Status.OPEN, is_hidden=False)
+    queryset = (
+        Justification.objects.filter(translated_segment__version=version)
+        .select_related("translated_segment")
+        .prefetch_related(
+            Prefetch("challenges", queryset=open_challenges, to_attr="open_challenges")
+        )
     )
     for justification in queryset:
         justification.translated_segment.version = version
@@ -308,10 +313,25 @@ def _justifications_by_segment(user, version):
     return grouped
 
 
+def _challenges_by_segment(user, version):
+    grouped = defaultdict(list)
+    if version.is_draft:
+        return grouped
+    queryset = Challenge.objects.filter(
+        translated_segment__version=version, status=Challenge.Status.OPEN
+    ).select_related("translated_segment")
+    for challenge in queryset:
+        challenge.translated_segment.version = version
+        if can_view(user, challenge):
+            grouped[challenge.translated_segment.segment_id].append(challenge)
+    return grouped
+
+
 def _rows(user, version):
     """Each sentence of the source text with its Latin and its justifications in the version."""
     translated = {item.segment_id: item for item in version.segments.all()}
     justifications = _justifications_by_segment(user, version)
+    challenges = _challenges_by_segment(user, version)
     rows = []
     for source_segment in version.project.source_text.segments.all():
         item = translated.get(source_segment.pk)
@@ -325,6 +345,7 @@ def _rows(user, version):
                 "hidden": item is not None and not can_view(user, item),
                 "errors": None,
                 "justifications": justifications.get(source_segment.pk, []),
+                "challenges": challenges.get(source_segment.pk, []),
             }
         )
     return rows
@@ -350,6 +371,7 @@ def version_detail(request, pk):
             "rows": rows,
             "can_translate": can_translate(request.user, version),
             "is_reference": version.pk == version.project.reference_version_id,
+            "can_challenge": can_challenge(request.user, version),
             **_progress(rows),
         },
     )

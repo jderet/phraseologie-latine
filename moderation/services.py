@@ -6,18 +6,20 @@ enforce the rules shared by all contents (limits of new accounts, visibility, ro
 
 import json
 
+from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
+from django.db.models import Count
 from django.utils import timezone
 from django.utils.translation import gettext
 
-from accounts.limits import check_can_contribute, check_text_for_links
+from accounts.limits import check_can_contribute, check_text_for_links, is_limited
 from accounts.roles import is_reviewer
 
-from .models import Report, Revision
-from .registry import can_revert, can_view, get_registration
+from .models import Comment, Report, Revision, Vote
+from .registry import can_revert, can_view, get_registration, is_owner
 
 # Visibility is changed only by hiding or unhiding, never by a revert.
 NOT_REVERTED = {"is_hidden"}
@@ -161,3 +163,79 @@ def resolve_report(report, user, status, resolution="", hide=False):
     report.resolution = resolution
     report.save()
     return report
+
+
+def can_comment(user, obj):
+    discussion = get_registration(obj).discussion
+    return bool(
+        discussion
+        and user.is_authenticated
+        and user.is_active
+        and can_view(user, obj)
+        and discussion(user, obj)
+    )
+
+
+@transaction.atomic
+def post_comment(obj, user, text):
+    """Post a message in the discussion of a content; a message is itself a content."""
+    if not can_comment(user, obj):
+        raise PermissionDenied
+    comment = Comment(content_object=obj, author=user, text=text)
+    save_with_revision(comment, user)
+    return comment
+
+
+def comments_for(user, obj):
+    """Messages of a discussion that the user may see."""
+    comments = []
+    for comment in Comment.objects.for_object(obj).select_related("author"):
+        comment.content_object = obj
+        if can_view(user, comment):
+            comments.append(comment)
+    return comments
+
+
+def can_vote(user, obj):
+    """Confirmed accounts vote on what they see, except on what they own."""
+    votes = get_registration(obj).votes
+    return bool(
+        votes
+        and user.is_authenticated
+        and user.is_active
+        and not is_limited(user)
+        and can_view(user, obj)
+        and not is_owner(user, obj)
+        and votes(user, obj)
+    )
+
+
+@transaction.atomic
+def cast_vote(obj, user, value):
+    """Record or change the user's vote on a content; the value 0 removes it."""
+    if not can_vote(user, obj):
+        raise PermissionDenied
+    content_type = ContentType.objects.get_for_model(obj)
+    if value == 0:
+        Vote.objects.filter(author=user, content_type=content_type, object_id=obj.pk).delete()
+        return None
+    if value not in Vote.Value.values:
+        raise ValueError("A vote is 1 or -1.")
+    vote, _created = Vote.objects.update_or_create(
+        author=user, content_type=content_type, object_id=obj.pk, defaults={"value": value}
+    )
+    return vote
+
+
+def vote_summary(user, obj):
+    content_type = ContentType.objects.get_for_model(obj)
+    votes = Vote.objects.filter(content_type=content_type, object_id=obj.pk)
+    counts = dict(votes.values_list("value").annotate(count=Count("pk")).order_by())
+    current = None
+    if user.is_authenticated:
+        current = votes.filter(author=user).values_list("value", flat=True).first()
+    return {
+        "for": counts.get(Vote.Value.FOR, 0),
+        "against": counts.get(Vote.Value.AGAINST, 0),
+        "current": current,
+    }

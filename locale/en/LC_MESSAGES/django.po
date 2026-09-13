@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 00:10+0200\n"
+"POT-Creation-Date: 2026-09-14 00:26+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -175,7 +175,7 @@ msgstr ""
 
 #: corpus/apps.py:7 corpus/forms.py:46 templates/base.html:14
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
-#: templates/corpus/work.html:8 templates/translations/version_edit.html:65
+#: templates/corpus/work.html:8 templates/translations/version_edit.html:68
 msgid "Corpus"
 msgstr "Corpus"
 
@@ -462,7 +462,7 @@ msgstr "English name"
 msgid "nom latin"
 msgstr "Latin name"
 
-#: corpus/models.py:30 corpus/models.py:73 justifications/models.py:26
+#: corpus/models.py:30 corpus/models.py:73 justifications/models.py:40
 msgid "abréviation"
 msgstr "abbreviation"
 
@@ -478,8 +478,10 @@ msgstr "year of death"
 msgid "époque"
 msgstr "period"
 
-#: corpus/models.py:36 corpus/models.py:69 justifications/models.py:72
-#: moderation/models.py:48 moderation/models.py:122 translations/models.py:259
+#: corpus/models.py:36 corpus/models.py:69 justifications/models.py:86
+#: justifications/models.py:284 moderation/models.py:53
+#: moderation/models.py:127 moderation/models.py:175 moderation/models.py:217
+#: translations/models.py:259
 msgid "auteur"
 msgstr "author"
 
@@ -543,7 +545,7 @@ msgstr "prosimetrum"
 msgid "URN CTS"
 msgstr "CTS URN"
 
-#: corpus/models.py:72 corpus/models.py:151 justifications/models.py:27
+#: corpus/models.py:72 corpus/models.py:151 justifications/models.py:41
 #: translations/models.py:55 translations/models.py:201
 msgid "titre"
 msgstr "title"
@@ -640,7 +642,7 @@ msgstr "reference"
 msgid "texte"
 msgstr "text"
 
-#: corpus/models.py:155 corpus/models.py:191 justifications/models.py:171
+#: corpus/models.py:155 corpus/models.py:191 justifications/models.py:196
 msgid "passage"
 msgstr "passage"
 
@@ -692,7 +694,7 @@ msgstr "tool version"
 msgid "détails"
 msgstr "details"
 
-#: corpus/models.py:224 justifications/models.py:103
+#: corpus/models.py:224 justifications/models.py:117
 msgid "créée le"
 msgstr "created on"
 
@@ -791,249 +793,349 @@ msgstr "%(year)d BC"
 msgid "Justification"
 msgstr "Justification"
 
-#: justifications/forms.py:33 justifications/services.py:56
+#: justifications/forms.py:24 justifications/services.py:59
 msgid "Ce passage ne figure pas dans la phrase latine : copiez-le tel quel."
 msgstr "This passage is not in the Latin sentence: copy it exactly."
 
-#: justifications/forms.py:42
+#: justifications/forms.py:46
 msgid "Ce passage ne figure pas dans la phrase source."
 msgstr "This passage is not in the source sentence."
 
-#: justifications/forms.py:51
+#: justifications/forms.py:65 moderation/forms.py:31
+#: templates/justifications/challenge_detail.html:50
+msgid "Décision"
+msgstr "Decision"
+
+#: justifications/forms.py:67
+msgid "Retenir : le choix contesté doit être revu"
+msgstr "Uphold: the contested choice must be revised"
+
+#: justifications/forms.py:68
+msgid "Écarter : le choix contesté est défendable"
+msgstr "Dismiss: the contested choice is defensible"
+
+#: justifications/forms.py:73
+msgid "Motivation"
+msgstr "Reasons"
+
+#: justifications/forms.py:81
 msgid "Ouvrage"
 msgstr "Work"
 
-#: justifications/forms.py:54
+#: justifications/forms.py:84
 msgid "Localisation"
 msgstr "Location"
 
-#: justifications/forms.py:57 justifications/models.py:189
+#: justifications/forms.py:87 justifications/models.py:214
 msgid "Paragraphe, page ou entrée : « § 426 », « s. v. consilium »."
 msgstr "Paragraph, page or entry: “§ 426”, “s.v. consilium”."
 
-#: justifications/forms.py:59 moderation/forms.py:32
+#: justifications/forms.py:89 moderation/forms.py:40
 msgid "Note"
 msgstr "Note"
 
-#: justifications/forms.py:68
+#: justifications/forms.py:98
 msgid "Indiquez le paragraphe, la page ou l’entrée."
 msgstr "Give the paragraph, the page or the entry."
 
-#: justifications/forms.py:70
+#: justifications/forms.py:100
 msgid "Choisissez l’ouvrage cité."
 msgstr "Choose the cited work."
 
-#: justifications/models.py:19
+#: justifications/models.py:33
 msgid "grammaire"
 msgstr "grammar"
 
-#: justifications/models.py:20
+#: justifications/models.py:34
 msgid "dictionnaire"
 msgstr "dictionary"
 
-#: justifications/models.py:23
+#: justifications/models.py:37
 msgid "libre de droits"
 msgstr "copyright-free"
 
-#: justifications/models.py:24
+#: justifications/models.py:38
 msgid "sous droits : cité seulement"
 msgstr "under copyright: cited only"
 
-#: justifications/models.py:28 justifications/models.py:164
+#: justifications/models.py:42 justifications/models.py:189
 msgid "type"
 msgstr "type"
 
-#: justifications/models.py:30
+#: justifications/models.py:44
 msgid "droits"
 msgstr "rights"
 
-#: justifications/models.py:34
+#: justifications/models.py:48
 msgid "ouvrage de référence"
 msgstr "reference work"
 
-#: justifications/models.py:35
+#: justifications/models.py:49
 msgid "ouvrages de référence"
 msgstr "reference works"
 
-#: justifications/models.py:45
+#: justifications/models.py:59
 msgid "attesté tel quel en prose classique"
 msgstr "attested as such in classical prose"
 
-#: justifications/models.py:46
+#: justifications/models.py:60
 msgid "attesté avec variante"
 msgstr "attested with a variant"
 
-#: justifications/models.py:47
+#: justifications/models.py:61
 msgid "attesté seulement en poésie ou à basse époque"
 msgstr "attested only in poetry or in late Latin"
 
-#: justifications/models.py:48
+#: justifications/models.py:62
 msgid "par analogie"
 msgstr "by analogy"
 
-#: justifications/models.py:49
+#: justifications/models.py:63
 msgid "introuvable dans le corpus"
 msgstr "not found in the corpus"
 
-#: justifications/models.py:66 translations/models.py:325
+#: justifications/models.py:80 justifications/models.py:270
+#: translations/models.py:325
 msgid "phrase traduite"
 msgstr "translated sentence"
 
-#: justifications/models.py:75
+#: justifications/models.py:89
 msgid "passage latin justifié"
 msgstr "justified Latin passage"
 
-#: justifications/models.py:77
+#: justifications/models.py:91
 msgid "Les mots de votre phrase latine que vous justifiez, tels quels."
 msgstr "The words of your Latin sentence that you justify, exactly as written."
 
-#: justifications/models.py:79
+#: justifications/models.py:93 justifications/models.py:291
 msgid "position du passage"
 msgstr "position of the passage"
 
-#: justifications/models.py:81
+#: justifications/models.py:95
 msgid "passage du texte source"
 msgstr "passage of the source text"
 
-#: justifications/models.py:84
+#: justifications/models.py:98
 msgid "Facultatif : les mots du texte source que ce passage traduit."
 msgstr "Optional: the words of the source text this passage translates."
 
-#: justifications/models.py:87
+#: justifications/models.py:101
 msgid "force de preuve"
 msgstr "strength of evidence"
 
-#: justifications/models.py:89
+#: justifications/models.py:103
 msgid "De la plus forte (1) à la plus faible (5)."
 msgstr "From the strongest (1) to the weakest (5)."
 
-#: justifications/models.py:92 moderation/models.py:54
+#: justifications/models.py:106 moderation/models.py:59
 msgid "commentaire"
 msgstr "comment"
 
-#: justifications/models.py:95
+#: justifications/models.py:109
 msgid "Obligatoire pour une justification par analogie."
 msgstr "Required for a justification by analogy."
 
-#: justifications/models.py:98
+#: justifications/models.py:112
 msgid "version du corpus interrogé"
 msgstr "version of the searched corpus"
 
-#: justifications/models.py:101
+#: justifications/models.py:115
 msgid "Enregistrée quand le passage est introuvable dans le corpus (règle 7)."
 msgstr "Recorded when the passage is not found in the corpus (rule 7)."
 
-#: justifications/models.py:106 justifications/models.py:162
+#: justifications/models.py:120 justifications/models.py:179
 msgid "justification"
 msgstr "justification"
 
-#: justifications/models.py:107
+#: justifications/models.py:121
 msgid "justifications"
 msgstr "justifications"
 
-#: justifications/models.py:117 justifications/services.py:75
+#: justifications/models.py:131 justifications/services.py:78
 msgid "Une justification par analogie exige un commentaire."
 msgstr "A justification by analogy requires a comment."
 
-#: justifications/models.py:126
+#: justifications/models.py:140
 #, python-format
 msgid "Justification de « %(excerpt)s »"
 msgstr "Justification of “%(excerpt)s”"
 
-#: justifications/models.py:154
+#: justifications/models.py:169
 msgid "attestation du corpus"
 msgstr "corpus attestation"
 
-#: justifications/models.py:155
+#: justifications/models.py:170
 msgid "règle de grammaire"
 msgstr "grammar rule"
 
-#: justifications/models.py:156
+#: justifications/models.py:171
 msgid "article de dictionnaire"
 msgstr "dictionary entry"
 
-#: justifications/models.py:175
+#: justifications/models.py:187 justifications/models.py:316
+msgid "contestation"
+msgstr "challenge"
+
+#: justifications/models.py:200
 msgid "mots cités"
 msgstr "cited words"
 
-#: justifications/models.py:183
+#: justifications/models.py:208
 msgid "ouvrage"
 msgstr "work"
 
-#: justifications/models.py:186
+#: justifications/models.py:211
 msgid "localisation"
 msgstr "location"
 
-#: justifications/models.py:191
+#: justifications/models.py:216
 msgid "note"
 msgstr "note"
 
-#: justifications/models.py:192
+#: justifications/models.py:217
 msgid "retirée"
 msgstr "withdrawn"
 
-#: justifications/models.py:193
+#: justifications/models.py:218
 msgid "ajoutée le"
 msgstr "added on"
 
-#: justifications/models.py:196
+#: justifications/models.py:221
 msgid "preuve"
 msgstr "evidence"
 
-#: justifications/models.py:197
+#: justifications/models.py:222
 msgid "preuves"
 msgstr "evidence"
 
-#: justifications/services.py:41
+#: justifications/models.py:261
+msgid "ouverte"
+msgstr "open"
+
+#: justifications/models.py:262
+msgid "retenue"
+msgstr "upheld"
+
+#: justifications/models.py:263
+msgid "écartée"
+msgstr "dismissed"
+
+#: justifications/models.py:264
+msgid "retirée par son auteur"
+msgstr "withdrawn by its author"
+
+#: justifications/models.py:278
+msgid "justification contestée"
+msgstr "contested justification"
+
+#: justifications/models.py:287
+msgid "passage contesté"
+msgstr "contested passage"
+
+#: justifications/models.py:289
+msgid "Les mots contestés, tels qu’ils sont écrits."
+msgstr "The contested words, exactly as written."
+
+#: justifications/models.py:293
+msgid "argument"
+msgstr "argument"
+
+#: justifications/models.py:295
+msgid ""
+"Pourquoi ce choix vous paraît fautif, et ce que vous proposez à la place."
+msgstr "Why this choice seems wrong to you, and what you suggest instead."
+
+#: justifications/models.py:298 moderation/models.py:132
+msgid "statut"
+msgstr "status"
+
+#: justifications/models.py:301
+msgid "décision motivée"
+msgstr "reasoned decision"
+
+#: justifications/models.py:310
+msgid "close par"
+msgstr "closed by"
+
+#: justifications/models.py:312
+msgid "close le"
+msgstr "closed on"
+
+#: justifications/models.py:313
+msgid "ouverte le"
+msgstr "opened on"
+
+#: justifications/models.py:317
+msgid "contestations"
+msgstr "challenges"
+
+#: justifications/models.py:328
+#, python-format
+msgid "Contestation de « %(excerpt)s »"
+msgstr "Challenge of “%(excerpt)s”"
+
+#: justifications/services.py:44
 msgid "Cette attestation n’est pas valide : refaites la recherche."
 msgstr "This attestation is not valid: search again."
 
-#: justifications/services.py:69
+#: justifications/services.py:72
 msgid "Cette force de preuve exige au moins une attestation du corpus."
 msgstr "This strength of evidence requires at least one corpus attestation."
 
-#: justifications/services.py:80
+#: justifications/services.py:83
 msgid "Une justification par analogie s’appuie sur au moins une preuve."
 msgstr "A justification by analogy rests on at least one piece of evidence."
 
-#: justifications/services.py:85
+#: justifications/services.py:88
 msgid "Expliquez ce choix par un commentaire ou par une preuve."
 msgstr "Explain this choice with a comment or a piece of evidence."
 
-#: justifications/services.py:158
+#: justifications/services.py:162
 msgid "Preuve retirée"
 msgstr "Evidence withdrawn"
 
-#: justifications/views.py:127
+#: justifications/services.py:186
+msgid "Cette contestation est déjà close."
+msgstr "This challenge is already closed."
+
+#: justifications/services.py:202
+msgid "Contestation close"
+msgstr "Challenge closed"
+
+#: justifications/services.py:209
+msgid "Contestation retirée"
+msgstr "Challenge withdrawn"
+
+#: justifications/views.py:164
 msgid "Traduisez et enregistrez d’abord cette phrase."
 msgstr "First translate and save this sentence."
 
-#: justifications/views.py:154
+#: justifications/views.py:191
 msgid "La justification est enregistrée."
 msgstr "The justification has been saved."
 
-#: justifications/views.py:164
+#: justifications/views.py:201
 msgid "Justifier un choix de traduction"
 msgstr "Justify a translation choice"
 
-#: justifications/views.py:165
+#: justifications/views.py:202
 msgid "Enregistrer la justification"
 msgstr "Save the justification"
 
-#: justifications/views.py:220 translations/views.py:67
-#: translations/views.py:234 translations/views.py:404
+#: justifications/views.py:249 translations/views.py:67
+#: translations/views.py:234 translations/views.py:426
 msgid "Aucune modification."
 msgstr "No change."
 
-#: justifications/views.py:222 translations/views.py:69
+#: justifications/views.py:251 translations/views.py:69
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
-#: justifications/views.py:228
+#: justifications/views.py:257
 msgid "Modifier la justification"
 msgstr "Edit the justification"
 
-#: justifications/views.py:229 templates/accounts/account.html:26
+#: justifications/views.py:258 templates/accounts/account.html:26
 #: templates/translations/project_form.html:21
 #: templates/translations/source_edit.html:14
 #: templates/translations/version_edit.html:42
@@ -1041,179 +1143,246 @@ msgstr "Edit the justification"
 msgid "Enregistrer"
 msgstr "Save"
 
-#: justifications/views.py:249
+#: justifications/views.py:278
 #, python-format
 msgid "%(count)d preuve ajoutée."
 msgid_plural "%(count)d preuves ajoutées."
 msgstr[0] "%(count)d piece of evidence added."
 msgstr[1] "%(count)d pieces of evidence added."
 
-#: justifications/views.py:253
+#: justifications/views.py:282
 msgid "Cochez une attestation ou citez un ouvrage."
 msgstr "Tick an attestation or cite a work."
 
-#: justifications/views.py:262
-#: templates/justifications/justification_detail.html:56
+#: justifications/views.py:291
+#: templates/justifications/justification_detail.html:73
 msgid "Ajouter des preuves"
 msgstr "Add evidence"
 
-#: justifications/views.py:263
+#: justifications/views.py:292
 msgid "Ajouter les preuves"
 msgstr "Add the evidence"
 
-#: justifications/views.py:279
+#: justifications/views.py:308
 msgid "La preuve est retirée."
 msgstr "The evidence has been withdrawn."
+
+#: justifications/views.py:394
+msgid "La contestation est publiée."
+msgstr "The challenge has been published."
+
+#: justifications/views.py:409
+msgid "Contester un choix de traduction"
+msgstr "Challenge a translation choice"
+
+#: justifications/views.py:411
+msgid ""
+"Exposez votre argument ; appuyez-le au besoin sur des contre-exemples du "
+"corpus ou sur des ouvrages de référence. L’auteur de la version pourra "
+"répondre et justifier son choix."
+msgstr "Set out your argument; support it if needed with counter-examples from the corpus or with reference works. The author of the version will be able to answer and justify their choice."
+
+#: justifications/views.py:415
+msgid "Publier la contestation"
+msgstr "Publish the challenge"
+
+#: justifications/views.py:451
+msgid "Choisissez une décision et motivez-la."
+msgstr "Choose a decision and give your reasons."
+
+#: justifications/views.py:459
+msgid "La contestation est close."
+msgstr "The challenge has been closed."
+
+#: justifications/views.py:472
+msgid "La contestation est retirée."
+msgstr "The challenge has been withdrawn."
 
 #: moderation/apps.py:7
 msgid "Modération"
 msgstr "Moderation"
 
-#: moderation/forms.py:23
-msgid "Décision"
-msgstr "Decision"
+#: moderation/forms.py:19
+msgid "Votre message"
+msgstr "Your message"
 
-#: moderation/forms.py:25
+#: moderation/forms.py:33
 msgid "Traité, contenu laissé en ligne"
 msgstr "Handled, content left online"
 
-#: moderation/forms.py:26
+#: moderation/forms.py:34
 msgid "Traité, contenu masqué"
 msgstr "Handled, content hidden"
 
-#: moderation/forms.py:27
+#: moderation/forms.py:35
 msgid "Rejeté"
 msgstr "Rejected"
 
-#: moderation/models.py:18
+#: moderation/models.py:21
 msgid "masqué"
 msgstr "hidden"
 
-#: moderation/models.py:33
+#: moderation/models.py:38
 msgid "création"
 msgstr "creation"
 
-#: moderation/models.py:34
+#: moderation/models.py:39
 msgid "modification"
 msgstr "change"
 
-#: moderation/models.py:35
+#: moderation/models.py:40
 msgid "retour à une version précédente"
 msgstr "return to a previous version"
 
-#: moderation/models.py:36
+#: moderation/models.py:41
 msgid "masquage"
 msgstr "hiding"
 
-#: moderation/models.py:37
+#: moderation/models.py:42
 msgid "rétablissement"
 msgstr "made visible again"
 
-#: moderation/models.py:40 moderation/models.py:114
+#: moderation/models.py:45 moderation/models.py:119 moderation/models.py:167
+#: moderation/models.py:209
 msgid "type de contenu"
 msgstr "content type"
 
-#: moderation/models.py:42 moderation/models.py:116
+#: moderation/models.py:47 moderation/models.py:121 moderation/models.py:169
+#: moderation/models.py:211
 msgid "identifiant du contenu"
 msgstr "content identifier"
 
-#: moderation/models.py:50 moderation/models.py:129
+#: moderation/models.py:55 moderation/models.py:134 moderation/models.py:178
+#: moderation/models.py:220
 msgid "date"
 msgstr "date"
 
-#: moderation/models.py:51
+#: moderation/models.py:56
 msgid "action"
 msgstr "action"
 
-#: moderation/models.py:52
+#: moderation/models.py:57
 msgid "état avant"
 msgstr "state before"
 
-#: moderation/models.py:53
+#: moderation/models.py:58
 msgid "état après"
 msgstr "state after"
 
-#: moderation/models.py:61
+#: moderation/models.py:66
 msgid "version rétablie"
 msgstr "restored version"
 
-#: moderation/models.py:67
+#: moderation/models.py:72
 msgid "révision"
 msgstr "revision"
 
-#: moderation/models.py:68
+#: moderation/models.py:73
 msgid "révisions"
 msgstr "revisions"
 
-#: moderation/models.py:101
+#: moderation/models.py:106
 msgid "contenu manifestement illicite"
 msgstr "manifestly illegal content"
 
-#: moderation/models.py:102
+#: moderation/models.py:107
 msgid "propos injurieux ou harcèlement"
 msgstr "abuse or harassment"
 
-#: moderation/models.py:103
+#: moderation/models.py:108
 msgid "atteinte au droit d’auteur"
 msgstr "copyright infringement"
 
-#: moderation/models.py:104
+#: moderation/models.py:109
 msgid "publicité ou spam"
 msgstr "advertising or spam"
 
-#: moderation/models.py:105
+#: moderation/models.py:110
 msgid "erreur manifeste"
 msgstr "obvious error"
 
-#: moderation/models.py:106
+#: moderation/models.py:111
 msgid "autre motif"
 msgstr "other reason"
 
-#: moderation/models.py:109
+#: moderation/models.py:114
 msgid "ouvert"
 msgstr "open"
 
-#: moderation/models.py:110
+#: moderation/models.py:115
 msgid "traité"
 msgstr "handled"
 
-#: moderation/models.py:111
+#: moderation/models.py:116
 msgid "rejeté"
 msgstr "rejected"
 
-#: moderation/models.py:124
+#: moderation/models.py:129
 msgid "motif"
 msgstr "reason"
 
-#: moderation/models.py:125
+#: moderation/models.py:130
 msgid "précisions"
 msgstr "details"
 
-#: moderation/models.py:127
-msgid "statut"
-msgstr "status"
-
-#: moderation/models.py:136
+#: moderation/models.py:141
 msgid "traité par"
 msgstr "handled by"
 
-#: moderation/models.py:138
+#: moderation/models.py:143
 msgid "traité le"
 msgstr "handled on"
 
-#: moderation/models.py:139
+#: moderation/models.py:144
 msgid "suite donnée"
 msgstr "outcome"
 
-#: moderation/models.py:142
+#: moderation/models.py:147
 msgid "signalement"
 msgstr "report"
 
-#: moderation/models.py:143
+#: moderation/models.py:148
 msgid "signalements"
 msgstr "reports"
 
-#: moderation/services.py:156
+#: moderation/models.py:177 moderation/models.py:183
+msgid "message"
+msgstr "message"
+
+#: moderation/models.py:184
+msgid "messages"
+msgstr "messages"
+
+#: moderation/models.py:194
+#, python-format
+msgid "Message de %(author)s"
+msgstr "Message by %(author)s"
+
+#: moderation/models.py:205
+msgid "pour"
+msgstr "for"
+
+#: moderation/models.py:206
+msgid "contre"
+msgstr "against"
+
+#: moderation/models.py:219
+msgid "avis"
+msgstr "opinion"
+
+#: moderation/models.py:221 translations/models.py:322
+msgid "modifié le"
+msgstr "changed on"
+
+#: moderation/models.py:224
+msgid "vote"
+msgstr "vote"
+
+#: moderation/models.py:225
+msgid "votes"
+msgstr "votes"
+
+#: moderation/services.py:158
 #, python-format
 msgid "Masqué à la suite du signalement n° %(number)s"
 msgstr "Hidden following report no. %(number)s"
@@ -1241,6 +1410,22 @@ msgstr "Report handled."
 #: moderation/views.py:132
 msgid "Choisissez une décision."
 msgstr "Choose a decision."
+
+#: moderation/views.py:142
+msgid "Écrivez un message de 5 000 caractères au plus."
+msgstr "Write a message of at most 5,000 characters."
+
+#: moderation/views.py:151
+msgid "Votre message est publié."
+msgstr "Your message has been published."
+
+#: moderation/views.py:164
+msgid "Votre avis est retiré."
+msgstr "Your opinion has been withdrawn."
+
+#: moderation/views.py:166
+msgid "Votre avis est enregistré."
+msgstr "Your opinion has been recorded."
 
 #: templates/accounts/account.html:4 templates/accounts/account.html:8
 #: templates/base.html:25
@@ -1521,8 +1706,8 @@ msgstr "Main navigation"
 msgid "Recherche"
 msgstr "Search"
 
-#: templates/base.html:16 templates/translations/source_list.html:8
-#: translations/apps.py:7
+#: templates/base.html:16 templates/justifications/challenge_list.html:8
+#: templates/translations/source_list.html:8 translations/apps.py:7
 msgid "Traduction"
 msgstr "Translation"
 
@@ -1600,7 +1785,9 @@ msgstr ""
 "Authors’ expressions, from <i>consilium capere</i> to <i>quid multa?</i>, "
 "are gathered into entries attested in the corpus."
 
-#: templates/core/home.html:31 templates/translations/version_detail.html:61
+#: templates/core/home.html:31
+#: templates/justifications/challenge_detail.html:15
+#: templates/translations/version_detail.html:64
 msgid "Justifier"
 msgstr "Justify"
 
@@ -1675,7 +1862,7 @@ msgstr "Filters"
 
 #: templates/corpus/search.html:40
 #: templates/justifications/search_attestations.html:8
-#: templates/translations/version_edit.html:70
+#: templates/translations/version_edit.html:73
 msgid "Chercher"
 msgstr "Search"
 
@@ -1767,6 +1954,126 @@ msgstr "Edition"
 msgid "Pages"
 msgstr "Pages"
 
+#: templates/justifications/challenge_detail.html:8
+#: templates/justifications/challenge_list.html:4
+#: templates/justifications/challenge_list.html:9
+#: templates/justifications/justification_detail.html:54
+#: templates/translations/project_list.html:13
+msgid "Contestations"
+msgstr "Challenges"
+
+#: templates/justifications/challenge_detail.html:9
+msgid "Contestation"
+msgstr "Challenge"
+
+#: templates/justifications/challenge_detail.html:12
+#: templates/justifications/justification_detail.html:14
+#: templates/moderation/discussion.html:7 templates/moderation/history.html:14
+#: templates/translations/project_detail.html:11
+#: templates/translations/source_detail.html:11
+#: templates/translations/version_detail.html:15
+msgid "Ce contenu est masqué à la suite d’un signalement."
+msgstr "This content is hidden following a report."
+
+#: templates/justifications/challenge_detail.html:15
+msgid ""
+"Ce choix de votre version est contesté : répondez dans la discussion et "
+"justifiez-le."
+msgstr "This choice in your version is challenged: answer in the discussion and justify it."
+
+#: templates/justifications/challenge_detail.html:20
+#: templates/justifications/justification_detail.html:24
+#: templates/justifications/justification_form.html:13
+msgid "Phrase source"
+msgstr "Source sentence"
+
+#: templates/justifications/challenge_detail.html:24
+#: templates/justifications/justification_detail.html:28
+#: templates/justifications/justification_form.html:17
+msgid "Latin"
+msgstr "Latin"
+
+#: templates/justifications/challenge_detail.html:29
+msgid "Justification contestée"
+msgstr "Contested justification"
+
+#: templates/justifications/challenge_detail.html:34
+#: templates/justifications/justification_detail.html:36
+#: templates/translations/source_detail.html:17
+msgid "Auteur"
+msgstr "Author"
+
+#: templates/justifications/challenge_detail.html:39
+msgid "Argument"
+msgstr "Argument"
+
+#: templates/justifications/challenge_detail.html:42
+msgid "Contre-exemples et références"
+msgstr "Counter-examples and references"
+
+#: templates/justifications/challenge_detail.html:45
+msgid "Aucun contre-exemple."
+msgstr "No counter-example."
+
+#: templates/justifications/challenge_detail.html:52
+#, python-format
+msgid "Retirée par son auteur le %(date)s."
+msgstr "Withdrawn by its author on %(date)s."
+
+#: templates/justifications/challenge_detail.html:54
+#, python-format
+msgid "Contestation %(status)s par %(name)s le %(date)s."
+msgstr "Challenge %(status)s by %(name)s on %(date)s."
+
+#: templates/justifications/challenge_detail.html:59
+msgid "Avis"
+msgstr "Opinions"
+
+#: templates/justifications/challenge_detail.html:60
+msgid "contestation fondée"
+msgstr "well-founded challenge"
+
+#: templates/justifications/challenge_detail.html:60
+msgid "choix défendable"
+msgstr "defensible choice"
+
+#: templates/justifications/challenge_detail.html:60
+msgid ""
+"Les avis sont indicatifs : la décision revient à l’équipe de relecture, et "
+"les arguments restent affichés."
+msgstr "Opinions are indicative: the review team decides, and the arguments remain displayed."
+
+#: templates/justifications/challenge_detail.html:63
+msgid "La discussion est close."
+msgstr "The discussion is closed."
+
+#: templates/justifications/challenge_detail.html:69
+msgid "Retirer ma contestation"
+msgstr "Withdraw my challenge"
+
+#: templates/justifications/challenge_detail.html:74
+msgid "Clore la contestation"
+msgstr "Close the challenge"
+
+#: templates/justifications/challenge_detail.html:78
+msgid "Clore"
+msgstr "Close"
+
+#: templates/justifications/challenge_list.html:10
+msgid ""
+"Les choix de traduction contestés, avec leurs arguments, leurs contre-"
+"exemples et leur discussion. Les contestations ouvertes viennent en premier."
+msgstr "Challenged translation choices, with their arguments, counter-examples and discussion. Open challenges come first."
+
+#: templates/justifications/challenge_list.html:18
+#, python-format
+msgid "par %(name)s"
+msgstr "by %(name)s"
+
+#: templates/justifications/challenge_list.html:21
+msgid "Aucune contestation pour l’instant."
+msgstr "No challenge yet."
+
 #: templates/justifications/evidence_item.html:7
 msgid "ouvrage sous droits, cité sans extrait"
 msgstr "work under copyright, cited without excerpt"
@@ -1779,30 +2086,14 @@ msgstr "Withdraw this evidence"
 msgid "Brouillon : cette justification n’est visible que de vous."
 msgstr "Draft: this justification is visible to you only."
 
-#: templates/justifications/justification_detail.html:14
-#: templates/moderation/history.html:14
-#: templates/translations/project_detail.html:11
-#: templates/translations/source_detail.html:11
-#: templates/translations/version_detail.html:15
-msgid "Ce contenu est masqué à la suite d’un signalement."
-msgstr "This content is hidden following a report."
-
 #: templates/justifications/justification_detail.html:17
 #, python-format
 msgid ""
 "À revoir : la phrase latine ne contient plus le passage justifié, « "
 "%(excerpt)s »."
-msgstr "To be reviewed: the Latin sentence no longer contains the justified passage, “%(excerpt)s”."
-
-#: templates/justifications/justification_detail.html:24
-#: templates/justifications/justification_form.html:12
-msgid "Phrase source"
-msgstr "Source sentence"
-
-#: templates/justifications/justification_detail.html:28
-#: templates/justifications/justification_form.html:16
-msgid "Latin"
-msgstr "Latin"
+msgstr ""
+"To be reviewed: the Latin sentence no longer contains the justified passage, "
+"“%(excerpt)s”."
 
 #: templates/justifications/justification_detail.html:32
 msgid "Force de preuve"
@@ -1812,11 +2103,6 @@ msgstr "Strength of evidence"
 #, python-format
 msgid "corpus interrogé : version %(label)s"
 msgstr "searched corpus: version %(label)s"
-
-#: templates/justifications/justification_detail.html:36
-#: templates/translations/source_detail.html:17
-msgid "Auteur"
-msgstr "Author"
 
 #: templates/justifications/justification_detail.html:42
 msgid "Commentaire"
@@ -1830,29 +2116,45 @@ msgstr "Evidence"
 msgid "Aucune preuve."
 msgstr "No evidence."
 
-#: templates/justifications/justification_detail.html:55
+#: templates/justifications/justification_detail.html:62
+msgid "Aucune contestation."
+msgstr "No challenge."
+
+#: templates/justifications/justification_detail.html:66
+msgid "Contester cette justification"
+msgstr "Challenge this justification"
+
+#: templates/justifications/justification_detail.html:72
 msgid "Modifier"
 msgstr "Edit"
 
-#: templates/justifications/justification_form.html:29
+#: templates/justifications/justification_form.html:30
 msgid "Attestations retenues"
 msgstr "Chosen attestations"
 
-#: templates/justifications/justification_form.html:40
+#: templates/justifications/justification_form.html:41
 msgid "Grammaires et dictionnaires"
 msgstr "Grammars and dictionaries"
 
-#: templates/justifications/justification_form.html:46
+#: templates/justifications/justification_form.html:47
 msgid ""
 "Forces 1 à 3 : au moins une attestation du corpus. Force 4, par analogie : "
 "un commentaire et au moins une preuve. Force 5 : la version du corpus "
 "interrogé est enregistrée ; expliquez votre choix par un commentaire ou une "
 "preuve."
-msgstr "Strengths 1 to 3: at least one corpus attestation. Strength 4, by analogy: a comment and at least one piece of evidence. Strength 5: the version of the searched corpus is recorded; explain your choice with a comment or a piece of evidence."
+msgstr ""
+"Strengths 1 to 3: at least one corpus attestation. Strength 4, by analogy: a "
+"comment and at least one piece of evidence. Strength 5: the version of the "
+"searched corpus is recorded; explain your choice with a comment or a piece "
+"of evidence."
 
 #: templates/justifications/justification_item.html:5
 msgid "à revoir"
 msgstr "to be reviewed"
+
+#: templates/justifications/justification_item.html:6
+msgid "contestée"
+msgstr "challenged"
 
 #: templates/justifications/search_attestations.html:2
 msgid "Chercher des attestations"
@@ -1873,6 +2175,18 @@ msgstr "Only the first ones are shown: narrow the search if needed."
 #: templates/justifications/search_attestations.html:22
 msgid "contexte"
 msgstr "context"
+
+#: templates/moderation/discussion.html:2
+msgid "Discussion"
+msgstr "Discussion"
+
+#: templates/moderation/discussion.html:12
+msgid "Aucun message pour l’instant."
+msgstr "No message yet."
+
+#: templates/moderation/discussion.html:19
+msgid "Publier le message"
+msgstr "Post the message"
 
 #: templates/moderation/history.html:4 templates/moderation/links.html:1
 msgid "Historique"
@@ -1950,6 +2264,10 @@ msgstr "Confirm the decision"
 #: templates/moderation/report_queue.html:31
 msgid "Aucun signalement ouvert."
 msgstr "No open reports."
+
+#: templates/moderation/votes.html:8
+msgid "Retirer mon avis"
+msgstr "Withdraw my opinion"
 
 #: templates/translations/project_compare.html:4
 #: templates/translations/project_compare.html:9
@@ -2269,6 +2587,20 @@ msgstr "Publish"
 msgid "Texte et traduction"
 msgstr "Text and translation"
 
+#: templates/translations/version_detail.html:62
+#: templates/translations/version_edit.html:62
+#, python-format
+msgid "Contesté : « %(excerpt)s »"
+msgstr "Challenged: “%(excerpt)s”"
+
+#: templates/translations/version_detail.html:62
+msgid "une justification est attendue"
+msgstr "a justification is expected"
+
+#: templates/translations/version_detail.html:65
+msgid "Contester"
+msgstr "Challenge"
+
 #: templates/translations/version_edit.html:12
 msgid "Brouillon visible de vous seul."
 msgstr "Draft visible to you only."
@@ -2333,7 +2665,7 @@ msgstr "Sentence %(number)s"
 msgid "Aucune justification pour cette phrase."
 msgstr "No justification for this sentence."
 
-#: templates/translations/version_edit.html:61
+#: templates/translations/version_edit.html:64
 msgid "Justifier la sélection"
 msgstr "Justify the selection"
 
@@ -2663,10 +2995,6 @@ msgstr "source sentence"
 msgid "latin"
 msgstr "Latin"
 
-#: translations/models.py:322
-msgid "modifié le"
-msgstr "changed on"
-
 #: translations/models.py:326
 msgid "phrases traduites"
 msgstr "translated sentences"
@@ -2712,21 +3040,21 @@ msgstr "The project no longer has a reference version."
 msgid "La version de référence est choisie."
 msgstr "The reference version has been chosen."
 
-#: translations/views.py:397
+#: translations/views.py:419
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:406
+#: translations/views.py:428
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:456
+#: translations/views.py:478
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:464
+#: translations/views.py:486
 msgid "La version est publiée."
 msgstr "The version has been published."

@@ -14,6 +14,14 @@ class ReportForm(forms.ModelForm):
         }
 
 
+class CommentForm(forms.Form):
+    text = forms.CharField(
+        label=_("Votre message"),
+        max_length=5000,
+        widget=forms.Textarea(attrs={"rows": 4}),
+    )
+
+
 class ResolveReportForm(forms.Form):
     HANDLED = "handled"
     HIDE = "hide"
