@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Connexion" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Connexion" %}</h1>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="button">{% translate "Se connecter" %}</button>
+  </form>
+  <p class="form-links">
+    <a href="{% url 'accounts:password_reset' %}">{% translate "Mot de passe oublié ?" %}</a>
+    <a href="{% url 'accounts:signup' %}">{% translate "Créer un compte" %}</a>
+  </p>
+</section>
+{% endblock %}

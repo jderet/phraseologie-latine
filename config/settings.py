@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "core",
+    "corpus",
+    "moderation",
 ]
 
 MIDDLEWARE = [
@@ -81,6 +83,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "core:home"
+LOGOUT_REDIRECT_URL = "core:home"
+
+# Contributions per day of a new account, until its first validated contribution.
+NEW_ACCOUNT_DAILY_LIMIT = env.int("NEW_ACCOUNT_DAILY_LIMIT", default=10)
+
 
 # Internationalization: interface strings are written in French and translated in locale/.
 
@@ -114,6 +123,7 @@ MAILERS = {
         ),
     },
 }
+DEFAULT_FROM_EMAIL = env("DJANGO_DEFAULT_FROM_EMAIL", default="webmaster@localhost")
 
 
 # Corpus

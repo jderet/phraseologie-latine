@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Historique" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow">{% translate "Historique des modifications" %}</p>
+  <h1>{{ object }}</h1>
+  {% if object.get_absolute_url %}
+  <p class="form-links"><a href="{{ object.get_absolute_url }}">{% translate "Voir le contenu" %}</a></p>
+  {% endif %}
+  {% if object.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+  <ol class="revisions">
+    {% for revision in revisions %}
+    <li class="revision">
+      <p class="revision-meta">
+        <strong>{{ revision.get_action_display|capfirst }}</strong>
+        · {{ revision.created_at|date:"j F Y, H:i" }}
+        · {% if revision.author.is_active %}<a href="{{ revision.author.get_absolute_url }}">{{ revision.author.public_name }}</a>{% else %}{{ revision.author.public_name }}{% endif %}
+      </p>
+      {% if revision.comment %}<p class="revision-comment">{{ revision.comment }}</p>{% endif %}
+      <div class="table-scroll">
+        <table class="changes">
+          <thead>
+            <tr>
+              <th scope="col">{% translate "Champ" %}</th>
+              <th scope="col">{% translate "Avant" %}</th>
+              <th scope="col">{% translate "Après" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for change in revision.changes %}
+            <tr>
+              <th scope="row">{{ change.label|capfirst }}</th>
+              <td>{{ change.before|default_if_none:"—" }}</td>
+              <td>{{ change.after|default_if_none:"—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if can_revert and not forloop.first %}
+      <form method="post" action="{% url 'moderation:revert' revision.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="button button-quiet">{% translate "Rétablir cette version" %}</button>
+      </form>
+      {% endif %}
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune modification enregistrée." %}</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

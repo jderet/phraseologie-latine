@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Supprimer mon compte" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Supprimer mon compte" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Votre nom, votre adresse e-mail et votre ORCID seront effacés, et vous ne pourrez plus vous
+    connecter. Vos contributions, publiées sous licence CC BY-SA 4.0, restent en ligne et sont
+    attribuées à un contributeur anonyme. Cette action est définitive.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="button button-danger">{% translate "Supprimer définitivement" %}</button>
+  </form>
+  <p class="form-links"><a href="{% url 'accounts:account' %}">{% translate "Annuler" %}</a></p>
+</section>
+{% endblock %}

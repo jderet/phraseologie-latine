@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <encodingDesc>
+      <refsDecl n="CTS">
+        <cRefPattern n="section" matchPattern="(\w+).(\w+).(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div/tei:div[@n='$1']/tei:div[@n='$2']/tei:div[@n='$3'])"/>
+        <cRefPattern n="chapter" matchPattern="(\w+).(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div/tei:div[@n='$1']/tei:div[@n='$2'])"/>
+        <cRefPattern n="book" matchPattern="(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div/tei:div[@n='$1'])"/>
+      </refsDecl>
+    </encodingDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="edition" n="urn:cts:latinLit:phi0914.phi001.perseus-lat2">
+        <div type="textpart" subtype="part" n="1">
+          <div type="textpart" subtype="index"><p>V = Veronensis</p></div>
+          <div type="textpart" subtype="book" n="1s"><p>Periocha libri primi.</p></div>
+          <div type="textpart" subtype="book" n="1">
+            <div type="textpart" subtype="chapter" n="pr">
+              <div type="textpart" subtype="section" n="1"><p>Facturusne operae pretium sim</p></div>
+            </div>
+            <div type="textpart" subtype="chapter" n="1">
+              <div type="textpart" subtype="section" n="1"><p>Iam primum omnium satis constat.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+  </text>
+</TEI>

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Mon compte" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Mon compte" %}</h1>
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Adresse e-mail" %}</dt>
+      <dd>{{ user.email }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Rôles" %}</dt>
+      <dd>{{ roles|join:", "|default:"—" }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Statut" %}</dt>
+      <dd>{% if user.is_confirmed %}{% translate "Compte confirmé" %}{% else %}{% translate "Nouveau compte : contributions limitées jusqu’à une première contribution validée" %}{% endif %}</dd>
+    </div>
+  </dl>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+  </form>
+  <ul class="actions">
+    <li><a href="{% url 'accounts:profile' user.pk %}">{% translate "Voir ma page publique" %}</a></li>
+    <li><a href="{% url 'accounts:password_change' %}">{% translate "Changer de mot de passe" %}</a></li>
+    <li><a href="{% url 'accounts:delete' %}">{% translate "Supprimer mon compte" %}</a></li>
+  </ul>
+</section>
+{% endblock %}

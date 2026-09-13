@@ -1,0 +1,5 @@
+cts_urn,author,edition_file,title,abbreviation,genre,register,form,date_from,date_to,is_core,is_fragmentary,exclude
+urn:cts:latinLit:phi0474.phi055,phi0474,data/prose.xml,De officiis,Off.,philosophy,elevated,prose,-44,-44,oui,non,
+urn:cts:latinLit:phi0474.phi057,phi0474,data/letters.xml,Epistulae ad Atticum,Att.,letters,familiar,prose,-68,-44,oui,non,
+urn:cts:latinLit:phi0914.phi001,phi0914,data/wrapped.xml,Ab urbe condita,,history,elevated,prose,-27,17,oui,non,\d+s
+urn:cts:latinLit:phi1017.phi004,phi1017,data/verse.xml,Medea,Med.,tragedy,elevated,verse,,,non,non,

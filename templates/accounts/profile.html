@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ profile_user.public_name }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <p class="eyebrow">{% translate "Page de contributeur" %}</p>
+  <h1>{{ profile_user.public_name }}</h1>
+  <dl class="facts">
+    {% if roles %}
+    <div>
+      <dt>{% translate "Rôles" %}</dt>
+      <dd>{{ roles|join:", " }}</dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Membre depuis" %}</dt>
+      <dd>{{ profile_user.date_joined|date:"F Y" }}</dd>
+    </div>
+    {% if profile_user.orcid %}
+    <div>
+      <dt>ORCID</dt>
+      <dd><a href="https://orcid.org/{{ profile_user.orcid }}" rel="me noopener">{{ profile_user.orcid }}</a></dd>
+    </div>
+    {% endif %}
+  </dl>
+  <p class="note">{% translate "Les contributions apparaîtront ici." %}</p>
+</section>
+{% endblock %}

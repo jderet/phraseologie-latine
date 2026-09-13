@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{% translate "Corpus" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Corpus" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Textes latins des éditions libres de Perseus, sous licence CC BY-SA 4.0. Les attestations
+    relevées dans les œuvres du noyau sont vérifiées par des personnes ; ailleurs, elles sont
+    repérées automatiquement.
+  {% endblocktranslate %}</p>
+  {% for author in authors %}
+  <section class="author-block">
+    <h2>
+      {{ author.name }}
+      <span class="muted">{{ author.latin_name }}{% if author.birth_year is not None %} ({{ author.birth_year|format_year }} – {{ author.death_year|format_year }}){% endif %}</span>
+    </h2>
+    <ul class="works">
+      {% for work in author.works.all %}
+      <li>
+        <a href="{{ work.get_absolute_url }}"><i>{{ work.title }}</i></a>
+        <span class="muted">{{ work.citation_prefix }}</span>
+        {% if not work.is_core %}<span class="badge">{% translate "hors noyau" %}</span>{% endif %}
+        {% if work.form != "prose" %}<span class="badge">{{ work.get_form_display }}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% empty %}
+  <p>{% translate "Aucun texte importé pour l’instant." %}</p>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Signalements" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Signalements à traiter" %}</h1>
+  {% for item in items %}
+  {% with report=item.report %}
+  <article class="report">
+    <p class="revision-meta">
+      <strong>{{ report.get_reason_display|capfirst }}</strong>
+      · {{ report.created_at|date:"j F Y, H:i" }}
+      · {{ report.author.public_name }}
+    </p>
+    <p>
+      {% translate "Contenu :" %}
+      <a href="{{ report.content_object.get_absolute_url }}">{{ report.content_object }}</a>
+      · <a href="{% url 'moderation:history' report.content_type.app_label report.content_type.model report.object_id %}">{% translate "historique" %}</a>
+    </p>
+    {% if report.message %}<blockquote>{{ report.message|linebreaksbr }}</blockquote>{% endif %}
+    <form method="post" action="{% url 'moderation:handle_report' report.pk %}" class="form">
+      {% csrf_token %}
+      {{ item.form }}
+      <button type="submit" class="button">{% translate "Valider la décision" %}</button>
+    </form>
+  </article>
+  {% endwith %}
+  {% empty %}
+  <p class="lede">{% translate "Aucun signalement ouvert." %}</p>
+  {% endfor %}
+</section>
+{% endblock %}

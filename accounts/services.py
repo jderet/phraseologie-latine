@@ -1,0 +1,51 @@
+"""Account operations shared by views, the admin and management commands."""
+
+from django.contrib.auth.models import Group
+from django.core.mail import send_mail
+from django.db import transaction
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
+from .roles import CONTRIBUTOR
+from .tokens import activation_token_generator
+
+
+def send_activation_email(request, user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = activation_token_generator.make_token(user)
+    context = {
+        "user": user,
+        "activation_url": request.build_absolute_uri(
+            reverse("accounts:activate", args=[uid, token])
+        ),
+    }
+    subject = render_to_string("accounts/email/activation_subject.txt", context, request)
+    body = render_to_string("accounts/email/activation_body.txt", context, request)
+    send_mail(" ".join(subject.split()), body, None, [user.email])
+
+
+@transaction.atomic
+def activate_user(user):
+    user.is_active = True
+    user.save(update_fields=["is_active"])
+    user.groups.add(Group.objects.get(name=CONTRIBUTOR))
+
+
+@transaction.atomic
+def anonymize_user(user):
+    """Erase personal data but keep the account row, so contributions stay (CC BY-SA)."""
+    user.display_name = ""
+    user.email = f"anonyme-{user.pk}@anonyme.invalid"
+    user.orcid = ""
+    user.is_active = False
+    user.is_staff = False
+    user.is_superuser = False
+    user.last_login = None
+    user.set_unusable_password()
+    user.anonymized_at = timezone.now()
+    user.save()
+    user.groups.clear()
+    user.user_permissions.clear()

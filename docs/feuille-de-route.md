@@ -23,16 +23,18 @@ Développement :
 
 ## Étape 1 : socle
 
-- [ ] PostgreSQL en local (Docker)
-- [ ] Comptes : inscription par e-mail, déclaration de majorité, trois rôles, limites des nouveaux comptes
-- [ ] Révisions, retour arrière et signalements sur tout contenu
-- [ ] Import du noyau depuis Perseus : œuvres, passages, mots à identifiants stables, URN CTS
-- [ ] Métadonnées : date, genre, registre, prose ou vers, époque
-- [ ] Forme normalisée pour la recherche
-- [ ] Analyse automatique sur le Mac (LatinCy) : lemmes, morphologie, syntaxe UD, en couches versionnées
-- [ ] Recherche par forme et par lemme, avec filtres et contexte
+- [x] PostgreSQL en local (Docker)
+- [x] Comptes : inscription par e-mail, déclaration de majorité, trois rôles, limites des nouveaux comptes
+- [x] Révisions, retour arrière et signalements sur tout contenu
+- [x] Import du noyau depuis Perseus : œuvres, passages, mots à identifiants stables, URN CTS
+- [x] Métadonnées : date, genre, registre, prose ou vers, époque
+- [x] Forme normalisée pour la recherche
+- [x] Analyse automatique sur le Mac (LatinCy) : lemmes, morphologie, syntaxe UD, en couches versionnées
+- [x] Recherche par forme et par lemme, avec filtres et contexte
 
 Terminé quand on trouve toutes les occurrences de *consilium capere* dans le noyau, avec leurs références.
+
+Vérifié le 13 septembre 2026 (Perseus 4620cf8, LatinCy la_core_web_lg 3.9.6) : 123 occurrences à cinq mots au plus. La recherche par lemme en trouve 121 ; la recherche par forme (`consili*` et `cap* | cep*`) rattrape les 2 que le lemmatiseur a manquées (*Att.* 7, 10, 1 *cepi* ; Liv. 9, 3, 11 *caperetur*). Les attestations automatiques devront donc être relues par des personnes, comme prévu à l'étape 4.
 
 ## Étape 2 : traduction
 

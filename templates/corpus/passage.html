@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{{ passage.citation }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{{ work.get_absolute_url }}">{{ work.author.name }}, {{ work.title }}</a></p>
+  <h1>{{ passage.citation }}</h1>
+  {% if passage.heading %}<p class="passage-heading">{{ passage.heading }}</p>{% endif %}
+  <div class="passage-text" lang="la">{% if tokens %}{% render_tokens tokens highlighted %}{% else %}{{ passage.text }}{% endif %}</div>
+
+  <nav class="pager" aria-label="{% translate 'Passages voisins' %}">
+    {% if previous %}<a rel="prev" href="{% url 'corpus:passage' work.cts_id previous.reference %}">← {{ previous.reference }}</a>{% endif %}
+    {% if following %}<a rel="next" href="{% url 'corpus:passage' work.cts_id following.reference %}">{{ following.reference }} →</a>{% endif %}
+  </nav>
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Identifiant" %}</dt>
+      <dd><code>{{ passage.urn }}</code></dd>
+    </div>
+    <div>
+      <dt>{% translate "Source" %}</dt>
+      <dd>{{ edition.source }}, {% translate "version" %} {{ edition.source_version|slice:":7" }} · {{ edition.license }}</dd>
+    </div>
+  </dl>
+</article>
+{% endblock %}

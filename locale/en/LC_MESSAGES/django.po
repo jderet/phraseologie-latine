@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 17:50+0200\n"
-"PO-Revision-Date: 2026-09-13 17:55+0200\n"
+"POT-Creation-Date: 2026-09-13 20:52+0200\n"
+"PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -15,19 +15,1268 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: templates/base.html:6 templates/base.html:11
+#: accounts/admin.py:12
+msgid "Profil"
+msgstr "Profile"
+
+#: accounts/admin.py:14 templates/accounts/account.html:19
+msgid "Statut"
+msgstr "Status"
+
+#: accounts/admin.py:26
+msgid "Permissions"
+msgstr "Permissions"
+
+#: accounts/admin.py:29
+msgid "Dates"
+msgstr "Dates"
+
+#: accounts/apps.py:8
+msgid "Comptes"
+msgstr "Accounts"
+
+#: accounts/forms.py:21
+msgid "Je déclare avoir 18 ans ou plus."
+msgstr "I declare that I am 18 or older."
+
+#: accounts/forms.py:22
+msgid "La plateforme est réservée aux personnes majeures."
+msgstr "The platform is for adults only."
+
+#: accounts/forms.py:39
+msgid "Un compte existe déjà avec cette adresse e-mail."
+msgstr "An account already exists with this email address."
+
+#: accounts/forms.py:61
+msgid ""
+"Adresse e-mail ou mot de passe incorrect. Si vous venez de vous inscrire, "
+"activez d’abord votre compte avec le lien reçu par e-mail."
+msgstr ""
+"Incorrect email address or password. If you have just signed up, first "
+"activate your account with the link sent to you by email."
+
+#: accounts/forms.py:81
+msgid "Mot de passe"
+msgstr "Password"
+
+#: accounts/forms.py:93
+msgid "Mot de passe incorrect."
+msgstr "Incorrect password."
+
+#: accounts/limits.py:37
+#, python-format
+msgid ""
+"Un nouveau compte peut faire %(limit)d contribution par jour, jusqu’à sa "
+"première contribution validée."
+msgid_plural ""
+"Un nouveau compte peut faire %(limit)d contributions par jour, jusqu’à sa "
+"première contribution validée."
+msgstr[0] ""
+"A new account can make %(limit)d contribution per day, until its first "
+"validated contribution."
+msgstr[1] ""
+"A new account can make %(limit)d contributions per day, until its first "
+"validated contribution."
+
+#: accounts/limits.py:50
+msgid ""
+"Les liens ne sont pas autorisés tant que le compte n’a pas de contribution "
+"validée."
+msgstr "Links are not allowed until the account has a validated contribution."
+
+#: accounts/models.py:19
+msgid "Un identifiant ORCID s’écrit sous la forme 0000-0002-1825-0097."
+msgstr "An ORCID iD is written as 0000-0002-1825-0097."
+
+#: accounts/models.py:28
+msgid "Cet identifiant ORCID n’existe pas : vérifiez les chiffres."
+msgstr "This ORCID iD does not exist: check the digits."
+
+#: accounts/models.py:75
+msgid "adresse e-mail"
+msgstr "email address"
+
+#: accounts/models.py:77
+msgid "nom affiché"
+msgstr "display name"
+
+#: accounts/models.py:79
+msgid "Nom visible sur vos contributions et votre page publique."
+msgstr "Name shown on your contributions and your public page."
+
+#: accounts/models.py:86
+msgid "Facultatif, par exemple 0000-0002-1825-0097."
+msgstr "Optional, for example 0000-0002-1825-0097."
+
+#: accounts/models.py:88
+msgid "majorité déclarée"
+msgstr "declared adult"
+
+#: accounts/models.py:90
+msgid "date de la déclaration de majorité"
+msgstr "date of the age declaration"
+
+#: accounts/models.py:93
+msgid "langue d’interface"
+msgstr "interface language"
+
+#: accounts/models.py:99
+msgid "compte confirmé"
+msgstr "confirmed account"
+
+#: accounts/models.py:102
+msgid ""
+"Vrai après une première contribution validée : les limites des nouveaux "
+"comptes ne s’appliquent plus."
+msgstr ""
+"True after a first validated contribution: the limits on new accounts no "
+"longer apply."
+
+#: accounts/models.py:106
+msgid "anonymisé le"
+msgstr "anonymized on"
+
+#: accounts/models.py:115
+msgid "utilisateur"
+msgstr "user"
+
+#: accounts/models.py:116
+msgid "utilisateurs"
+msgstr "users"
+
+#: accounts/models.py:131
+msgid "Contributeur anonyme"
+msgstr "Anonymous contributor"
+
+#: accounts/roles.py:19
+msgid "contributeur"
+msgstr "contributor"
+
+#: accounts/roles.py:20
+msgid "relecteur"
+msgstr "reviewer"
+
+#: accounts/roles.py:21
+msgid "administrateur"
+msgstr "administrator"
+
+#: accounts/views.py:69
+msgid "Votre compte est activé. Bienvenue !"
+msgstr "Your account is active. Welcome!"
+
+#: accounts/views.py:91
+msgid "Vos informations sont enregistrées."
+msgstr "Your details have been saved."
+
+#: accounts/views.py:110
+msgid "Votre compte est supprimé. Vos contributions restent, sans votre nom."
+msgstr ""
+"Your account has been deleted. Your contributions remain, without your name."
+
+#: corpus/apps.py:7 corpus/forms.py:46 templates/base.html:14
+#: templates/corpus/index.html:4 templates/corpus/index.html:8
+#: templates/corpus/work.html:8
+msgid "Corpus"
+msgstr "Corpus"
+
+#: corpus/catalog.py:100
+#, python-format
+msgid "%(file)s, ligne %(line)d : %(message)s"
+msgstr "%(file)s, line %(line)d: %(message)s"
+
+#: corpus/catalog.py:107
+#, python-format
+msgid "la colonne « %(column)s » est vide"
+msgstr "column “%(column)s” is empty"
+
+#: corpus/catalog.py:118
+#, python-format
+msgid "« %(value)s » n’est pas une année (colonne %(column)s)"
+msgstr "“%(value)s” is not a year (column %(column)s)"
+
+#: corpus/catalog.py:127
+#, python-format
+msgid "« %(value)s » : écrire oui ou non (colonne %(column)s)"
+msgstr "“%(value)s”: write oui or non (column %(column)s)"
+
+#: corpus/catalog.py:137
+#, python-format
+msgid "« %(value)s » n’est pas permis dans la colonne %(column)s (%(allowed)s)"
+msgstr "“%(value)s” is not allowed in column %(column)s (%(allowed)s)"
+
+#: corpus/catalog.py:145
+#, python-format
+msgid "fichier introuvable : %(path)s"
+msgstr "file not found: %(path)s"
+
+#: corpus/catalog.py:152
+#, python-format
+msgid "%(file)s : colonnes manquantes : %(columns)s"
+msgstr "%(file)s: missing columns: %(columns)s"
+
+#: corpus/catalog.py:174
+#, python-format
+msgid "auteur en double : %(author)s"
+msgstr "duplicate author: %(author)s"
+
+#: corpus/catalog.py:181
+#, python-format
+msgid "URN CTS mal formée : %(urn)s"
+msgstr "malformed CTS URN: %(urn)s"
+
+#: corpus/catalog.py:183
+#, python-format
+msgid "œuvre en double : %(urn)s"
+msgstr "duplicate work: %(urn)s"
+
+#: corpus/catalog.py:185
+#, python-format
+msgid "auteur inconnu : %(author)s"
+msgstr "unknown author: %(author)s"
+
+#: corpus/catalog.py:188
+#, python-format
+msgid "chemin de fichier non valable : %(path)s"
+msgstr "invalid file path: %(path)s"
+
+#: corpus/catalog.py:191
+msgid "la date de début est postérieure à la date de fin"
+msgstr "the start date is later than the end date"
+
+#: corpus/catalog.py:197
+#, python-format
+msgid "expression d’exclusion non valable : %(pattern)s"
+msgstr "invalid exclusion expression: %(pattern)s"
+
+#: corpus/forms.py:23
+msgid "Chercher comme"
+msgstr "Search as"
+
+#: corpus/forms.py:24 corpus/models.py:76
+msgid "forme"
+msgstr "form"
+
+#: corpus/forms.py:24 corpus/models.py:274
+msgid "lemme"
+msgstr "lemma"
+
+#: corpus/forms.py:32
+msgid "Mot"
+msgstr "Word"
+
+#: corpus/forms.py:34
+msgid ""
+"Un mot par case ; * pour un début de mot, | pour des variantes : cap* | cep*"
+msgstr ""
+"One word per box; * for the beginning of a word, | for variants: cap* | cep*"
+
+#: corpus/forms.py:37
+msgid "Deuxième mot"
+msgstr "Second word"
+
+#: corpus/forms.py:39
+msgid "Troisième mot"
+msgstr "Third word"
+
+#: corpus/forms.py:42
+msgid "Distance maximale (en mots)"
+msgstr "Maximum distance (in words)"
+
+#: corpus/forms.py:44
+msgid "Les mots dans cet ordre"
+msgstr "Words in this order"
+
+#: corpus/forms.py:47 corpus/models.py:80
+msgid "noyau"
+msgstr "core"
+
+#: corpus/forms.py:47
+msgid "tout le corpus"
+msgstr "whole corpus"
+
+#: corpus/forms.py:52
+msgid "Auteurs"
+msgstr "Authors"
+
+#: corpus/forms.py:58
+msgid "Œuvres"
+msgstr "Works"
+
+#: corpus/forms.py:64 templates/corpus/work.html:22
+msgid "Forme"
+msgstr "Form"
+
+#: corpus/forms.py:70 templates/corpus/work.html:17
+msgid "Genre"
+msgstr "Genre"
+
+#: corpus/forms.py:76 templates/corpus/work.html:27
+msgid "Registre"
+msgstr "Register"
+
+#: corpus/forms.py:82
+msgid "Époque"
+msgstr "Period"
+
+#: corpus/forms.py:88
+msgid "Écrit en ou après"
+msgstr "Written in or after"
+
+#: corpus/forms.py:89
+msgid "Année ; négative avant notre ère."
+msgstr "Year; negative before the common era."
+
+#: corpus/forms.py:92
+msgid "Écrit en ou avant"
+msgstr "Written in or before"
+
+#: corpus/forms.py:100
+msgid "Écrivez un mot."
+msgstr "Write a word."
+
+#: corpus/forms.py:104
+msgid "Un seul mot par case : utilisez les cases suivantes pour les autres."
+msgstr "One word per box: use the next boxes for the others."
+
+#: corpus/forms.py:108
+msgid "Écrivez au moins deux lettres avant *."
+msgstr "Write at least two letters before *."
+
+#: corpus/forms.py:126
+msgid ""
+"La recherche par lemme n’est pas encore disponible : le corpus n’a pas été "
+"analysé."
+msgstr "Lemma search is not available yet: the corpus has not been analyzed."
+
+#: corpus/importer.py:45
+#, python-format
+msgid "l’édition %(edition)s n’appartient pas à l’œuvre %(work)s"
+msgstr "edition %(edition)s does not belong to work %(work)s"
+
+#: corpus/importer.py:49
+msgid "aucun passage trouvé"
+msgstr "no passage found"
+
+#: corpus/importer.py:54
+#, python-format
+msgid "références en double ou vides : %(references)s"
+msgstr "duplicate or empty references: %(references)s"
+
+#: corpus/management/commands/analyze_corpus.py:40
+#, python-format
+msgid "Analyseur indisponible (%(error)s) : installer requirements-corpus.txt."
+msgstr "Analyzer unavailable (%(error)s): install requirements-corpus.txt."
+
+#: corpus/management/commands/analyze_corpus.py:48
+#, python-format
+msgid "%(work)s : déjà analysée dans cette couche"
+msgstr "%(work)s: already analyzed in this layer"
+
+#: corpus/management/commands/analyze_corpus.py:53
+#, python-format
+msgid "%(work)s : %(rows)d analyses en %(seconds)d s"
+msgstr "%(work)s: %(rows)d analyses in %(seconds)d s"
+
+#: corpus/management/commands/analyze_corpus.py:60
+#, python-format
+msgid "Couche %(layer)d : %(editions)d éditions analysées."
+msgstr "Layer %(layer)d: %(editions)d editions analyzed."
+
+#: corpus/management/commands/analyze_corpus.py:77
+#, python-format
+msgid "Œuvres non importées : %(works)s"
+msgstr "Works not imported: %(works)s"
+
+#: corpus/management/commands/analyze_corpus.py:91
+#, python-format
+msgid "Couche d’analyse inconnue : %(layer)d"
+msgstr "Unknown analysis layer: %(layer)d"
+
+#: corpus/management/commands/import_perseus.py:52
+#, python-format
+msgid "Catalogue mis à jour : %(count)d œuvres."
+msgstr "Catalogue updated: %(count)d works."
+
+#: corpus/management/commands/import_perseus.py:60
+#, python-format
+msgid "Version du dépôt Perseus illisible dans %(path)s."
+msgstr "Cannot read the version of the Perseus repository in %(path)s."
+
+#: corpus/management/commands/import_perseus.py:72
+#, python-format
+msgid "Œuvres absentes du catalogue : %(works)s"
+msgstr "Works missing from the catalogue: %(works)s"
+
+#: corpus/management/commands/import_perseus.py:88
+#, python-format
+msgid "%(work)s : %(passages)d passages, %(tokens)d mots"
+msgstr "%(work)s: %(passages)d passages, %(tokens)d words"
+
+#: corpus/management/commands/import_perseus.py:98
+#, python-format
+msgid "%(work)s : %(passages)d passages, %(tokens)d mots importés"
+msgstr "%(work)s: %(passages)d passages, %(tokens)d words imported"
+
+#: corpus/management/commands/import_perseus.py:102
+#, python-format
+msgid "%(work)s : déjà importée pour cette version de Perseus"
+msgstr "%(work)s: already imported for this version of Perseus"
+
+#: corpus/models.py:17
+msgid "latin archaïque"
+msgstr "archaic Latin"
+
+#: corpus/models.py:18
+msgid "latin classique"
+msgstr "classical Latin"
+
+#: corpus/models.py:19
+msgid "latin impérial"
+msgstr "imperial Latin"
+
+#: corpus/models.py:20
+msgid "latin tardif"
+msgstr "late Latin"
+
+#: corpus/models.py:21
+msgid "latin médiéval"
+msgstr "medieval Latin"
+
+#: corpus/models.py:22
+msgid "néo-latin"
+msgstr "Neo-Latin"
+
+#: corpus/models.py:26
+msgid "identifiant CTS"
+msgstr "CTS identifier"
+
+#: corpus/models.py:27
+msgid "nom en français"
+msgstr "French name"
+
+#: corpus/models.py:28
+msgid "nom en anglais"
+msgstr "English name"
+
+#: corpus/models.py:29
+msgid "nom latin"
+msgstr "Latin name"
+
+#: corpus/models.py:30 corpus/models.py:73
+msgid "abréviation"
+msgstr "abbreviation"
+
+#: corpus/models.py:31
+msgid "année de naissance"
+msgstr "year of birth"
+
+#: corpus/models.py:32
+msgid "année de mort"
+msgstr "year of death"
+
+#: corpus/models.py:33
+msgid "époque"
+msgstr "period"
+
+#: corpus/models.py:36 corpus/models.py:69 moderation/models.py:48
+#: moderation/models.py:122
+msgid "auteur"
+msgstr "author"
+
+#: corpus/models.py:37
+msgid "auteurs"
+msgstr "authors"
+
+#: corpus/models.py:50
+msgid "éloquence"
+msgstr "oratory"
+
+#: corpus/models.py:51
+msgid "rhétorique"
+msgstr "rhetoric"
+
+#: corpus/models.py:52
+msgid "philosophie"
+msgstr "philosophy"
+
+#: corpus/models.py:53
+msgid "lettres"
+msgstr "letters"
+
+#: corpus/models.py:54
+msgid "histoire"
+msgstr "history"
+
+#: corpus/models.py:55
+msgid "tragédie"
+msgstr "tragedy"
+
+#: corpus/models.py:56
+msgid "satire ménippée"
+msgstr "Menippean satire"
+
+#: corpus/models.py:59
+msgid "soutenu"
+msgstr "elevated"
+
+#: corpus/models.py:60
+msgid "courant"
+msgstr "standard"
+
+#: corpus/models.py:61
+msgid "familier"
+msgstr "familiar"
+
+#: corpus/models.py:64
+msgid "prose"
+msgstr "prose"
+
+#: corpus/models.py:65
+msgid "vers"
+msgstr "verse"
+
+#: corpus/models.py:66
+msgid "prosimètre"
+msgstr "prosimetrum"
+
+#: corpus/models.py:71 corpus/models.py:113
+msgid "URN CTS"
+msgstr "CTS URN"
+
+#: corpus/models.py:72 corpus/models.py:151
+msgid "titre"
+msgstr "title"
+
+#: corpus/models.py:74
+msgid "genre"
+msgstr "genre"
+
+#: corpus/models.py:75
+msgid "registre"
+msgstr "register"
+
+#: corpus/models.py:77
+msgid "date de début"
+msgstr "start date"
+
+#: corpus/models.py:78
+msgid "date de fin"
+msgstr "end date"
+
+#: corpus/models.py:82
+msgid "Les attestations du noyau sont vérifiées par des personnes."
+msgstr "Attestations in the core are checked by people."
+
+#: corpus/models.py:84
+msgid "fragmentaire"
+msgstr "fragmentary"
+
+#: corpus/models.py:87 corpus/models.py:111
+msgid "œuvre"
+msgstr "work"
+
+#: corpus/models.py:88
+msgid "œuvres"
+msgstr "works"
+
+#: corpus/models.py:114
+msgid "source"
+msgstr "source"
+
+#: corpus/models.py:115
+msgid "fichier"
+msgstr "file"
+
+#: corpus/models.py:117
+msgid "version de la source"
+msgstr "source version"
+
+#: corpus/models.py:117
+msgid "Commit Git du dépôt importé."
+msgstr "Git commit of the imported repository."
+
+#: corpus/models.py:119
+msgid "licence"
+msgstr "license"
+
+#: corpus/models.py:120
+msgid "schéma de citation"
+msgstr "citation scheme"
+
+#: corpus/models.py:121
+msgid "importée le"
+msgstr "imported on"
+
+#: corpus/models.py:122
+msgid "édition en usage"
+msgstr "current edition"
+
+#: corpus/models.py:123
+msgid "nombre de passages"
+msgstr "number of passages"
+
+#: corpus/models.py:124
+msgid "nombre de mots"
+msgstr "number of words"
+
+#: corpus/models.py:127 corpus/models.py:147 corpus/models.py:188
+msgid "édition"
+msgstr "edition"
+
+#: corpus/models.py:128
+msgid "éditions"
+msgstr "editions"
+
+#: corpus/models.py:149
+msgid "ordre"
+msgstr "order"
+
+#: corpus/models.py:150
+msgid "référence"
+msgstr "reference"
+
+#: corpus/models.py:152
+msgid "texte"
+msgstr "text"
+
+#: corpus/models.py:155 corpus/models.py:191
+msgid "passage"
+msgstr "passage"
+
+#: corpus/models.py:156
+msgid "passages"
+msgstr "passages"
+
+#: corpus/models.py:193
+msgid "position dans l’édition"
+msgstr "position in the edition"
+
+#: corpus/models.py:194
+msgid "forme imprimée"
+msgstr "printed form"
+
+#: corpus/models.py:195
+msgid "forme normalisée"
+msgstr "normalized form"
+
+#: corpus/models.py:196
+msgid "ponctuation avant"
+msgstr "punctuation before"
+
+#: corpus/models.py:197
+msgid "ponctuation et espace après"
+msgstr "punctuation and space after"
+
+#: corpus/models.py:198
+msgid "mot étranger"
+msgstr "foreign word"
+
+#: corpus/models.py:201 corpus/models.py:270
+msgid "mot"
+msgstr "word"
+
+#: corpus/models.py:202
+msgid "mots"
+msgstr "words"
+
+#: corpus/models.py:221
+msgid "outil"
+msgstr "tool"
+
+#: corpus/models.py:222
+msgid "version de l’outil"
+msgstr "tool version"
+
+#: corpus/models.py:223
+msgid "détails"
+msgstr "details"
+
+#: corpus/models.py:224
+msgid "créée le"
+msgstr "created on"
+
+#: corpus/models.py:226
+msgid "éditions analysées"
+msgstr "analyzed editions"
+
+#: corpus/models.py:229
+msgid "couche par défaut"
+msgstr "default layer"
+
+#: corpus/models.py:231
+msgid "Couche utilisée par la recherche par lemme."
+msgstr "Layer used by lemma search."
+
+#: corpus/models.py:235
+msgid "couche d’analyse"
+msgstr "analysis layer"
+
+#: corpus/models.py:236
+msgid "couches d’analyse"
+msgstr "analysis layers"
+
+#: corpus/models.py:262
+msgid "import vérifié"
+msgstr "verified import"
+
+#: corpus/models.py:263
+msgid "automatique"
+msgstr "automatic"
+
+#: corpus/models.py:264
+msgid "correction humaine"
+msgstr "human correction"
+
+#: corpus/models.py:267
+msgid "couche"
+msgstr "layer"
+
+#: corpus/models.py:272
+msgid "partie du mot"
+msgstr "part of the word"
+
+#: corpus/models.py:273
+msgid "texte analysé"
+msgstr "analyzed text"
+
+#: corpus/models.py:275
+msgid "lemme normalisé"
+msgstr "normalized lemma"
+
+#: corpus/models.py:276
+msgid "catégorie"
+msgstr "part of speech"
+
+#: corpus/models.py:277
+msgid "traits morphologiques"
+msgstr "morphological features"
+
+#: corpus/models.py:285
+msgid "tête syntaxique"
+msgstr "syntactic head"
+
+#: corpus/models.py:287
+msgid "partie de la tête"
+msgstr "part of the head"
+
+#: corpus/models.py:288
+msgid "relation syntaxique"
+msgstr "syntactic relation"
+
+#: corpus/models.py:289
+msgid "phrase"
+msgstr "sentence"
+
+#: corpus/models.py:291
+msgid "origine"
+msgstr "origin"
+
+#: corpus/models.py:295
+msgid "analyse d’un mot"
+msgstr "word analysis"
+
+#: corpus/models.py:296
+msgid "analyses des mots"
+msgstr "word analyses"
+
+#: corpus/templatetags/corpus_tags.py:14
+#, python-format
+msgid "%(year)d av. J.-C."
+msgstr "%(year)d BC"
+
+#: moderation/apps.py:7
+msgid "Modération"
+msgstr "Moderation"
+
+#: moderation/forms.py:23
+msgid "Décision"
+msgstr "Decision"
+
+#: moderation/forms.py:25
+msgid "Traité, contenu laissé en ligne"
+msgstr "Handled, content left online"
+
+#: moderation/forms.py:26
+msgid "Traité, contenu masqué"
+msgstr "Handled, content hidden"
+
+#: moderation/forms.py:27
+msgid "Rejeté"
+msgstr "Rejected"
+
+#: moderation/forms.py:32
+msgid "Note"
+msgstr "Note"
+
+#: moderation/models.py:18
+msgid "masqué"
+msgstr "hidden"
+
+#: moderation/models.py:33
+msgid "création"
+msgstr "creation"
+
+#: moderation/models.py:34
+msgid "modification"
+msgstr "change"
+
+#: moderation/models.py:35
+msgid "retour à une version précédente"
+msgstr "return to a previous version"
+
+#: moderation/models.py:36
+msgid "masquage"
+msgstr "hiding"
+
+#: moderation/models.py:37
+msgid "rétablissement"
+msgstr "made visible again"
+
+#: moderation/models.py:40 moderation/models.py:114
+msgid "type de contenu"
+msgstr "content type"
+
+#: moderation/models.py:42 moderation/models.py:116
+msgid "identifiant du contenu"
+msgstr "content identifier"
+
+#: moderation/models.py:50 moderation/models.py:129
+msgid "date"
+msgstr "date"
+
+#: moderation/models.py:51
+msgid "action"
+msgstr "action"
+
+#: moderation/models.py:52
+msgid "état avant"
+msgstr "state before"
+
+#: moderation/models.py:53
+msgid "état après"
+msgstr "state after"
+
+#: moderation/models.py:54
+msgid "commentaire"
+msgstr "comment"
+
+#: moderation/models.py:61
+msgid "version rétablie"
+msgstr "restored version"
+
+#: moderation/models.py:67
+msgid "révision"
+msgstr "revision"
+
+#: moderation/models.py:68
+msgid "révisions"
+msgstr "revisions"
+
+#: moderation/models.py:101
+msgid "contenu manifestement illicite"
+msgstr "manifestly illegal content"
+
+#: moderation/models.py:102
+msgid "propos injurieux ou harcèlement"
+msgstr "abuse or harassment"
+
+#: moderation/models.py:103
+msgid "atteinte au droit d’auteur"
+msgstr "copyright infringement"
+
+#: moderation/models.py:104
+msgid "publicité ou spam"
+msgstr "advertising or spam"
+
+#: moderation/models.py:105
+msgid "erreur manifeste"
+msgstr "obvious error"
+
+#: moderation/models.py:106
+msgid "autre motif"
+msgstr "other reason"
+
+#: moderation/models.py:109
+msgid "ouvert"
+msgstr "open"
+
+#: moderation/models.py:110
+msgid "traité"
+msgstr "handled"
+
+#: moderation/models.py:111
+msgid "rejeté"
+msgstr "rejected"
+
+#: moderation/models.py:124
+msgid "motif"
+msgstr "reason"
+
+#: moderation/models.py:125
+msgid "précisions"
+msgstr "details"
+
+#: moderation/models.py:127
+msgid "statut"
+msgstr "status"
+
+#: moderation/models.py:136
+msgid "traité par"
+msgstr "handled by"
+
+#: moderation/models.py:138
+msgid "traité le"
+msgstr "handled on"
+
+#: moderation/models.py:139
+msgid "suite donnée"
+msgstr "outcome"
+
+#: moderation/models.py:142
+msgid "signalement"
+msgstr "report"
+
+#: moderation/models.py:143
+msgid "signalements"
+msgstr "reports"
+
+#: moderation/services.py:151
+#, python-format
+msgid "Masqué à la suite du signalement n° %(number)s"
+msgstr "Hidden following report no. %(number)s"
+
+#: moderation/views.py:63
+msgid "Le contenu est déjà dans cet état."
+msgstr "The content is already in this state."
+
+#: moderation/views.py:65
+msgid "La version choisie est rétablie."
+msgstr "The chosen version has been restored."
+
+#: moderation/views.py:81
+msgid "Merci : votre signalement sera examiné par l’équipe de relecture."
+msgstr "Thank you: your report will be examined by the review team."
+
+#: moderation/views.py:85
+msgid "Vous avez déjà signalé ce contenu ; il est en cours d’examen."
+msgstr "You have already reported this content; it is being examined."
+
+#: moderation/views.py:130
+msgid "Signalement traité."
+msgstr "Report handled."
+
+#: moderation/views.py:132
+msgid "Choisissez une décision."
+msgstr "Choose a decision."
+
+#: templates/accounts/account.html:4 templates/accounts/account.html:8
+#: templates/base.html:24
+msgid "Mon compte"
+msgstr "My account"
+
+#: templates/accounts/account.html:11
+msgid "Adresse e-mail"
+msgstr "Email address"
+
+#: templates/accounts/account.html:15 templates/accounts/profile.html:13
+msgid "Rôles"
+msgstr "Roles"
+
+#: templates/accounts/account.html:20
+msgid "Compte confirmé"
+msgstr "Confirmed account"
+
+#: templates/accounts/account.html:20
+msgid ""
+"Nouveau compte : contributions limitées jusqu’à une première contribution "
+"validée"
+msgstr ""
+"New account: contributions are limited until a first contribution is "
+"validated"
+
+#: templates/accounts/account.html:26
+msgid "Enregistrer"
+msgstr "Save"
+
+#: templates/accounts/account.html:29
+msgid "Voir ma page publique"
+msgstr "View my public page"
+
+#: templates/accounts/account.html:30 templates/accounts/password_change.html:4
+#: templates/accounts/password_change.html:8
+msgid "Changer de mot de passe"
+msgstr "Change password"
+
+#: templates/accounts/account.html:31 templates/accounts/delete.html:4
+#: templates/accounts/delete.html:8
+msgid "Supprimer mon compte"
+msgstr "Delete my account"
+
+#: templates/accounts/activate.html:4 templates/accounts/activate.html:8
+msgid "Activer votre compte"
+msgstr "Activate your account"
+
+#: templates/accounts/activate.html:9
+#, python-format
+msgid "Compte associé à l’adresse %(email)s."
+msgstr "Account linked to the address %(email)s."
+
+#: templates/accounts/activate.html:14
+msgid "Activer mon compte"
+msgstr "Activate my account"
+
+#: templates/accounts/activation_invalid.html:4
+#: templates/accounts/activation_invalid.html:8
+msgid "Lien d’activation non valide"
+msgstr "Invalid activation link"
+
+#: templates/accounts/activation_invalid.html:9
+msgid ""
+"Ce lien a déjà servi, a expiré ou est incomplet. Si votre compte est activé, "
+"connectez-vous ; sinon, inscrivez-vous à nouveau avec la même adresse pour "
+"recevoir un nouveau lien."
+msgstr ""
+"This link has already been used, has expired or is incomplete. If your "
+"account is active, log in; otherwise, sign up again with the same address to "
+"receive a new link."
+
+#: templates/accounts/activation_invalid.html:14
+#: templates/accounts/login.html:13
+#: templates/accounts/password_reset_complete.html:9
+msgid "Se connecter"
+msgstr "Log in"
+
+#: templates/accounts/activation_invalid.html:15
+#: templates/accounts/login.html:17 templates/accounts/signup.html:4
+#: templates/accounts/signup.html:8
+msgid "Créer un compte"
+msgstr "Create an account"
+
+#: templates/accounts/delete.html:9
+msgid ""
+"Votre nom, votre adresse e-mail et votre ORCID seront effacés, et vous ne "
+"pourrez plus vous connecter. Vos contributions, publiées sous licence CC BY-"
+"SA 4.0, restent en ligne et sont attribuées à un contributeur anonyme. Cette "
+"action est définitive."
+msgstr ""
+"Your name, email address and ORCID iD will be erased, and you will no longer "
+"be able to log in. Your contributions, published under the CC BY-SA 4.0 "
+"license, stay online and are credited to an anonymous contributor. This "
+"cannot be undone."
+
+#: templates/accounts/delete.html:17
+msgid "Supprimer définitivement"
+msgstr "Delete permanently"
+
+#: templates/accounts/delete.html:19 templates/accounts/password_change.html:14
+msgid "Annuler"
+msgstr "Cancel"
+
+#: templates/accounts/email/activation_body.txt:1
+#, python-format
+msgid "Bonjour %(name)s,"
+msgstr "Hello %(name)s,"
+
+#: templates/accounts/email/activation_body.txt:3
+msgid "Pour activer votre compte, ouvrez ce lien :"
+msgstr "To activate your account, open this link:"
+
+#: templates/accounts/email/activation_body.txt:7
+msgid ""
+"Le lien reste valable trois jours. Si vous n’êtes pas à l’origine de cette "
+"inscription, ignorez ce message : le compte ne sera pas activé."
+msgstr ""
+"The link is valid for three days. If you did not sign up, ignore this "
+"message: the account will not be activated."
+
+#: templates/accounts/email/activation_subject.txt:1
+msgid "Activez votre compte"
+msgstr "Activate your account"
+
+#: templates/accounts/email/activation_subject.txt:1
+#: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:6
+#: templates/base.html:12
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
-#: templates/base.html:15
+#: templates/accounts/email/password_reset_body.txt:1
+msgid "Bonjour,"
+msgstr "Hello,"
+
+#: templates/accounts/email/password_reset_body.txt:3
+msgid "Pour choisir un nouveau mot de passe, ouvrez ce lien :"
+msgstr "To choose a new password, open this link:"
+
+#: templates/accounts/email/password_reset_body.txt:7
+msgid ""
+"Le lien reste valable trois jours. Si vous n’avez rien demandé, ignorez ce "
+"message : votre mot de passe ne change pas."
+msgstr ""
+"The link is valid for three days. If you did not ask for it, ignore this "
+"message: your password stays the same."
+
+#: templates/accounts/email/password_reset_subject.txt:1
+#: templates/accounts/password_reset_confirm.html:4
+#: templates/accounts/password_reset_confirm.html:8
+msgid "Nouveau mot de passe"
+msgstr "New password"
+
+#: templates/accounts/login.html:4 templates/accounts/login.html:8
+#: templates/base.html:30
+msgid "Connexion"
+msgstr "Log in"
+
+#: templates/accounts/login.html:16
+msgid "Mot de passe oublié ?"
+msgstr "Forgotten your password?"
+
+#: templates/accounts/password_change.html:12
+msgid "Changer le mot de passe"
+msgstr "Change the password"
+
+#: templates/accounts/password_change_done.html:4
+#: templates/accounts/password_change_done.html:8
+msgid "Mot de passe modifié"
+msgstr "Password changed"
+
+#: templates/accounts/password_change_done.html:9
+msgid "Retour à mon compte"
+msgstr "Back to my account"
+
+#: templates/accounts/password_reset.html:4
+#: templates/accounts/password_reset.html:8
+msgid "Mot de passe oublié"
+msgstr "Forgotten password"
+
+#: templates/accounts/password_reset.html:9
+msgid ""
+"Indiquez l’adresse e-mail de votre compte : vous recevrez un lien pour "
+"choisir un nouveau mot de passe."
+msgstr ""
+"Enter the email address of your account: you will receive a link to choose a "
+"new password."
+
+#: templates/accounts/password_reset.html:16
+msgid "Envoyer le lien"
+msgstr "Send the link"
+
+#: templates/accounts/password_reset_complete.html:4
+#: templates/accounts/password_reset_complete.html:8
+msgid "Mot de passe enregistré"
+msgstr "Password saved"
+
+#: templates/accounts/password_reset_confirm.html:13
+msgid "Enregistrer le mot de passe"
+msgstr "Save the password"
+
+#: templates/accounts/password_reset_confirm.html:16
+msgid "Ce lien a déjà servi ou a expiré."
+msgstr "This link has already been used or has expired."
+
+#: templates/accounts/password_reset_confirm.html:17
+msgid "Demander un nouveau lien"
+msgstr "Ask for a new link"
+
+#: templates/accounts/password_reset_done.html:4
+#: templates/accounts/password_reset_done.html:8
+#: templates/accounts/signup_done.html:4 templates/accounts/signup_done.html:8
+msgid "Vérifiez votre boîte e-mail"
+msgstr "Check your inbox"
+
+#: templates/accounts/password_reset_done.html:9
+msgid ""
+"Si un compte existe avec cette adresse, un e-mail vient de partir. Suivez le "
+"lien qu’il contient ; il reste valable trois jours."
+msgstr ""
+"If an account exists with this address, an email is on its way. Follow the "
+"link it contains; it is valid for three days."
+
+#: templates/accounts/profile.html:8
+msgid "Page de contributeur"
+msgstr "Contributor page"
+
+#: templates/accounts/profile.html:18
+msgid "Membre depuis"
+msgstr "Member since"
+
+#: templates/accounts/profile.html:28
+msgid "Les contributions apparaîtront ici."
+msgstr "Contributions will appear here."
+
+#: templates/accounts/signup.html:9
+msgid ""
+"L’inscription est libre et réservée aux personnes majeures. Nous demandons "
+"seulement une adresse e-mail, pour activer le compte, et un nom affiché sur "
+"vos contributions."
+msgstr ""
+"Anyone aged 18 or over can sign up. We only ask for an email address, to "
+"activate the account, and a name shown on your contributions."
+
+#: templates/accounts/signup.html:16
+msgid "Créer mon compte"
+msgstr "Create my account"
+
+#: templates/accounts/signup.html:18
+msgid ""
+"Vos contributions sont publiées sous licence CC BY-SA 4.0. Si vous supprimez "
+"votre compte, elles restent en ligne, sans votre nom."
+msgstr ""
+"Your contributions are published under the CC BY-SA 4.0 license. If you "
+"delete your account, they stay online, without your name."
+
+#: templates/accounts/signup.html:23
+msgid "Vous avez déjà un compte ? Se connecter"
+msgstr "Already have an account? Log in"
+
+#: templates/accounts/signup_done.html:9
+msgid ""
+"Un e-mail vient de vous être envoyé. Suivez le lien qu’il contient pour "
+"activer votre compte ; il reste valable trois jours."
+msgstr ""
+"An email has just been sent to you. Follow the link it contains to activate "
+"your account; it is valid for three days."
+
+#: templates/accounts/signup_done.html:13
+msgid ""
+"Rien reçu ? Regardez dans les courriers indésirables, ou inscrivez-vous à "
+"nouveau avec la même adresse : un nouveau lien vous sera envoyé."
+msgstr ""
+"Nothing received? Check your spam folder, or sign up again with the same "
+"address: a new link will be sent to you."
+
+#: templates/base.html:13
+msgid "Navigation principale"
+msgstr "Main navigation"
+
+#: templates/base.html:15 templates/corpus/search.html:4
+msgid "Recherche"
+msgstr "Search"
+
+#: templates/base.html:19
+msgid "Compte"
+msgstr "Account"
+
+#: templates/base.html:22 templates/moderation/report_queue.html:4
+msgid "Signalements"
+msgstr "Reports"
+
+#: templates/base.html:27
+msgid "Déconnexion"
+msgstr "Log out"
+
+#: templates/base.html:31
+msgid "Inscription"
+msgstr "Sign up"
+
+#: templates/base.html:37
 msgid "Langue"
 msgstr "Language"
 
-#: templates/base.html:22
+#: templates/base.html:44
 msgid "Changer"
 msgstr "Change"
 
-#: templates/base.html:31
+#: templates/base.html:61
 msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
 msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
 
@@ -72,8 +1321,8 @@ msgid ""
 "Les tournures des auteurs, de <i>consilium capere</i> à <i>quid multa?</i>, "
 "sont réunies en fiches attestées dans le corpus."
 msgstr ""
-"Authors’ expressions, from <i>consilium capere</i> to <i>quid multa?</i>, are "
-"gathered into entries attested in the corpus."
+"Authors’ expressions, from <i>consilium capere</i> to <i>quid multa?</i>, "
+"are gathered into entries attested in the corpus."
 
 #: templates/core/home.html:31
 msgid "Justifier"
@@ -84,11 +1333,230 @@ msgid ""
 "Chaque choix de traduction peut s’appuyer sur des passages d’auteurs, une "
 "règle de grammaire ou un article de dictionnaire."
 msgstr ""
-"Every translation choice can rest on passages from authors, a grammar rule or "
-"a dictionary entry."
+"Every translation choice can rest on passages from authors, a grammar rule "
+"or a dictionary entry."
 
 #: templates/core/home.html:38
 msgid ""
 "Corpus de départ : Cicéron, César, Salluste, Tite-Live, Sénèque, Pline le "
 "Jeune."
-msgstr "Starting corpus: Cicero, Caesar, Sallust, Livy, Seneca, Pliny the Younger."
+msgstr ""
+"Starting corpus: Cicero, Caesar, Sallust, Livy, Seneca, Pliny the Younger."
+
+#: templates/corpus/index.html:9
+msgid ""
+"Textes latins des éditions libres de Perseus, sous licence CC BY-SA 4.0. Les "
+"attestations relevées dans les œuvres du noyau sont vérifiées par des "
+"personnes ; ailleurs, elles sont repérées automatiquement."
+msgstr ""
+"Latin texts from the open editions of Perseus, under the CC BY-SA 4.0 "
+"license. Attestations found in the works of the core are checked by people; "
+"elsewhere, they are found automatically."
+
+#: templates/corpus/index.html:25
+msgid "hors noyau"
+msgstr "outside the core"
+
+#: templates/corpus/index.html:32
+msgid "Aucun texte importé pour l’instant."
+msgstr "No text imported yet."
+
+#: templates/corpus/passage.html:13
+msgid "Passages voisins"
+msgstr "Neighboring passages"
+
+#: templates/corpus/passage.html:20
+msgid "Identifiant"
+msgstr "Identifier"
+
+#: templates/corpus/passage.html:24
+msgid "Source"
+msgstr "Source"
+
+#: templates/corpus/passage.html:25 templates/corpus/work.html:49
+msgid "version"
+msgstr "version"
+
+#: templates/corpus/search.html:8
+msgid "Recherche dans le corpus"
+msgstr "Search the corpus"
+
+#: templates/corpus/search.html:9
+msgid ""
+"Chaque mot se cherche comme forme, sans tenir compte des majuscules, des "
+"macrons ni de u/v et i/j, ou comme lemme, pour trouver toutes ses formes. "
+"Les lemmes viennent d’une analyse automatique et peuvent comporter des "
+"erreurs."
+msgstr ""
+"Each word can be searched as a form, ignoring capitals, macrons, u/v and i/"
+"j, or as a lemma, to find all its forms. Lemmas come from an automatic "
+"analysis and may contain errors."
+
+#: templates/corpus/search.html:28
+msgid "Filtres"
+msgstr "Filters"
+
+#: templates/corpus/search.html:40
+msgid "Chercher"
+msgstr "Search"
+
+#: templates/corpus/search.html:47
+#, python-format
+msgid "%(counter)s occurrence"
+msgid_plural "%(counter)s occurrences"
+msgstr[0] "%(counter)s occurrence"
+msgstr[1] "%(counter)s occurrences"
+
+#: templates/corpus/search.html:62
+msgid "Pages de résultats"
+msgstr "Result pages"
+
+#: templates/corpus/search.html:63 templates/corpus/work.html:65
+msgid "Page précédente"
+msgstr "Previous page"
+
+#: templates/corpus/search.html:64 templates/corpus/work.html:66
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Page %(number)s of %(total)s"
+
+#: templates/corpus/search.html:65 templates/corpus/work.html:67
+msgid "Page suivante"
+msgstr "Next page"
+
+#: templates/corpus/search.html:69
+msgid "Aucune occurrence"
+msgstr "No occurrence"
+
+#: templates/corpus/search.html:70
+#, python-format
+msgid "Introuvable dans le corpus interrogé (version %(label)s)."
+msgstr "Not found in the searched corpus (version %(label)s)."
+
+#: templates/corpus/search.html:72
+msgid "La recherche portait sur le noyau seulement."
+msgstr "The search covered the core only."
+
+#: templates/corpus/search.html:74
+#, python-format
+msgid "Corpus interrogé : %(label)s, %(counter)s édition."
+msgid_plural "Corpus interrogé : %(label)s, %(counter)s éditions."
+msgstr[0] "Searched corpus: %(label)s, %(counter)s edition."
+msgstr[1] "Searched corpus: %(label)s, %(counter)s editions."
+
+#: templates/corpus/work.html:12
+msgid "Citation"
+msgstr "Citation"
+
+#: templates/corpus/work.html:33
+msgid "Date"
+msgstr "Date"
+
+#: templates/corpus/work.html:38
+msgid "Noyau"
+msgstr "Core"
+
+#: templates/corpus/work.html:39
+msgid "oui : attestations vérifiées par des personnes"
+msgstr "yes: attestations checked by people"
+
+#: templates/corpus/work.html:39
+msgid "non : attestations repérées automatiquement"
+msgstr "no: attestations found automatically"
+
+#: templates/corpus/work.html:43
+msgid "État du texte"
+msgstr "State of the text"
+
+#: templates/corpus/work.html:44
+msgid "fragmentaire ou lacunaire"
+msgstr "fragmentary or with gaps"
+
+#: templates/corpus/work.html:48
+msgid "Édition"
+msgstr "Edition"
+
+#: templates/corpus/work.html:64
+msgid "Pages"
+msgstr "Pages"
+
+#: templates/moderation/history.html:4 templates/moderation/links.html:1
+msgid "Historique"
+msgstr "History"
+
+#: templates/moderation/history.html:8
+msgid "Historique des modifications"
+msgstr "Change history"
+
+#: templates/moderation/history.html:11
+msgid "Voir le contenu"
+msgstr "View the content"
+
+#: templates/moderation/history.html:14
+msgid "Ce contenu est masqué à la suite d’un signalement."
+msgstr "This content is hidden following a report."
+
+#: templates/moderation/history.html:29
+msgid "Champ"
+msgstr "Field"
+
+#: templates/moderation/history.html:30
+msgid "Avant"
+msgstr "Before"
+
+#: templates/moderation/history.html:31
+msgid "Après"
+msgstr "After"
+
+#: templates/moderation/history.html:48
+msgid "Rétablir cette version"
+msgstr "Restore this version"
+
+#: templates/moderation/history.html:53
+msgid "Aucune modification enregistrée."
+msgstr "No recorded change."
+
+#: templates/moderation/links.html:1
+msgid "Signaler"
+msgstr "Report"
+
+#: templates/moderation/report.html:4 templates/moderation/report.html:8
+msgid "Signaler un contenu"
+msgstr "Report content"
+
+#: templates/moderation/report.html:9
+#, python-format
+msgid "Contenu signalé : « %(content)s »."
+msgstr "Reported content: “%(content)s”."
+
+#: templates/moderation/report.html:15
+msgid "Envoyer le signalement"
+msgstr "Send the report"
+
+#: templates/moderation/report.html:17
+msgid ""
+"Les signalements sont lus par l’équipe de relecture. Un contenu "
+"manifestement illicite est retiré promptement."
+msgstr ""
+"Reports are read by the review team. Manifestly illegal content is removed "
+"promptly."
+
+#: templates/moderation/report_queue.html:8
+msgid "Signalements à traiter"
+msgstr "Reports to handle"
+
+#: templates/moderation/report_queue.html:18
+msgid "Contenu :"
+msgstr "Content:"
+
+#: templates/moderation/report_queue.html:20
+msgid "historique"
+msgstr "history"
+
+#: templates/moderation/report_queue.html:26
+msgid "Valider la décision"
+msgstr "Confirm the decision"
+
+#: templates/moderation/report_queue.html:31
+msgid "Aucun signalement ouvert."
+msgstr "No open reports."

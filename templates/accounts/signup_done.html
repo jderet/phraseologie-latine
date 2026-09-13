@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Vérifiez votre boîte e-mail" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Vérifiez votre boîte e-mail" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Un e-mail vient de vous être envoyé. Suivez le lien qu’il contient pour activer votre compte ;
+    il reste valable trois jours.
+  {% endblocktranslate %}</p>
+  <p class="note">{% blocktranslate trimmed %}
+    Rien reçu ? Regardez dans les courriers indésirables, ou inscrivez-vous à nouveau avec la même
+    adresse : un nouveau lien vous sera envoyé.
+  {% endblocktranslate %}</p>
+</section>
+{% endblock %}

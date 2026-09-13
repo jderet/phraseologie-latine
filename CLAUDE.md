@@ -30,26 +30,30 @@ python manage.py migrate
 python manage.py makemessages -l en --ignore=.venv --ignore=canonical-latinLit
 python manage.py compilemessages --ignore=.venv --ignore=canonical-latinLit
 docker compose up -d                       # PostgreSQL local (Docker Desktop lancé)
+python manage.py import_perseus            # importer le noyau Perseus (sur le Mac, environ 3 min)
+pip install -r requirements-corpus.txt     # spaCy et LatinCy, sur le Mac seulement
+python manage.py analyze_corpus --make-default   # analyse LatinCy du corpus (sur le Mac, environ 45 min)
 ```
 
 ## Architecture
 
-- Django 6.1, PostgreSQL, HTMX, un seul composant JavaScript pour l'éditeur de traduction. SQLite est accepté en local tant que le corpus n'est pas importé ; l'intégration continue teste sur PostgreSQL.
+- Django 6.1, PostgreSQL, HTMX, un seul composant JavaScript pour l'éditeur de traduction. Le corpus étant importé, PostgreSQL (Docker) est nécessaire en local ; l'intégration continue teste aussi sur PostgreSQL.
 - Réglages lus dans les variables d'environnement (`.env`, modèle dans `.env.example`) avec django-environ.
 - `config/` contient les réglages et les routes. Une application Django par domaine :
 
 | Application | Rôle | État |
 |---|---|---|
-| `accounts` | utilisateurs, rôles, limites des nouveaux comptes | modèle `User` créé |
+| `accounts` | utilisateurs, rôles, limites des nouveaux comptes | connexion par e-mail, inscription, rôles, limites |
 | `core` | pages générales | page d'accueil |
-| `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | étape 1 |
-| `moderation` | révisions, signalements, discussions, votes | étape 1 |
+| `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | noyau importé et analysé (LatinCy), lecture, recherche par forme et par lemme |
+| `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements ; discussions et votes à l'étape 2 |
 | `translations` | textes sources, projets, versions, segments | étape 2 |
 | `justifications` | justifications, preuves, ouvrages, contestations | étape 2 |
 | `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | étape 3 |
 
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.
-- Les traitements lourds du corpus (import TEI, analyse LatinCy) seront des commandes `manage.py` lancées sur le Mac.
+- Les traitements lourds du corpus sont des commandes `manage.py` lancées sur le Mac : `import_perseus` lit le catalogue `corpus/data/` et les fichiers TEI ; `analyze_corpus` crée une couche d'analyse LatinCy, raccrochée aux mots par leur position dans le texte (un seul processus : le modèle ne se transmet pas entre processus).
+- Contenus contribués : hériter de `moderation.models.ModeratedContent`, s'inscrire avec `moderation.registry.register` et enregistrer chaque modification par `moderation.services.save_with_revision`.
 
 ## Conventions
 
