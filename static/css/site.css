@@ -692,6 +692,79 @@ article > h2 {
   margin-top: 40px;
 }
 
+.notice-info {
+  border-left-color: var(--accent);
+}
+
+.bitext {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bitext-row {
+  display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr) minmax(0, 1fr);
+  gap: 4px 20px;
+  padding: 10px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.bitext-row.paragraph-start {
+  margin-top: 14px;
+  border-top-color: var(--ink-2);
+}
+
+.bitext-number {
+  padding-top: 3px;
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+
+.bitext-source,
+.bitext-latin {
+  margin: 0;
+}
+
+.bitext-latin {
+  font-family: var(--serif);
+  font-size: 1.08rem;
+}
+
+.bitext textarea {
+  width: 100%;
+  font: 1.08rem/1.5 var(--serif);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 6px 8px;
+  resize: vertical;
+}
+
+.editor-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding: 12px 0;
+  background: var(--ground);
+  border-top: 1px solid var(--rule);
+}
+
+@media (max-width: 700px) {
+  .bitext-row {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+
+  .bitext-latin {
+    grid-column: 2;
+  }
+}
+
 @media (max-width: 600px) {
   .goals dl > div,
   .facts > div {

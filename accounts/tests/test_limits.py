@@ -18,12 +18,12 @@ from moderation.models import Revision
 from .factories import make_user
 
 
-def record_revision(user, when=None):
+def record_revision(user, when=None, action=Revision.Action.CREATE):
     return Revision.objects.create(
         content_type=ContentType.objects.get_for_model(user),
         object_id=user.pk,
         author=user,
-        action=Revision.Action.UPDATE,
+        action=action,
         after={},
         created_at=when or timezone.now(),
     )
@@ -38,6 +38,21 @@ class DailyLimitTests(TestCase):
         record_revision(user)
         with self.assertRaises(ContributionLimitReached):
             check_can_contribute(user)
+
+    def test_only_creations_count(self):
+        user = make_user()
+        record_revision(user, action=Revision.Action.UPDATE)
+        record_revision(user, action=Revision.Action.REVERT)
+        record_revision(user, action=Revision.Action.UPDATE)
+        self.assertEqual(contributions_today(user), 0)
+
+    def test_uncounted_contributions_are_allowed_at_the_limit(self):
+        user = make_user()
+        record_revision(user)
+        record_revision(user)
+        check_can_contribute(user, counted=False)
+        with self.assertRaises(PermissionDenied):
+            check_can_contribute(make_user(email="inactive@example.org", is_active=False), False)
 
     def test_contributions_of_previous_days_do_not_count(self):
         user = make_user()

@@ -1,0 +1,4 @@
+{% load i18n %}<li>
+  <a class="item-title" href="{{ version.get_absolute_url }}">{{ version.author.public_name }}</a>
+  <span class="muted">{{ version.get_style_display|capfirst }}{% if version.style_note %} ({{ version.style_note }}){% endif %} · {% blocktranslate with done=version.translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{% if version.published_at %} · {% blocktranslate with date=version.published_at|date:"j F Y" %}publiée le {{ date }}{% endblocktranslate %}{% endif %}{% if version.is_hidden %} · {% translate "masquée" %}{% endif %}</span>
+</li>

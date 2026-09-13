@@ -20,25 +20,46 @@ class NotRegistered(ImproperlyConfigured):
 @dataclass(frozen=True)
 class Registration:
     model: type
-    # Foreign key to the user who owns the content (may revert it, sees it when hidden).
+    # Foreign key to the user who owns the content (may revert it, sees it when hidden);
+    # dots follow relations, as in "version.author".
     owner_field: str | None = None
     # Free-text fields checked for links when the author is a new account.
     text_fields: tuple[str, ...] = ()
     # Extra visibility rule, e.g. drafts visible to their author only.
     visible_to: Callable | None = None
+    # Whether creating such a content counts toward the daily limit of new accounts; parts
+    # of a counted content, like the sentences of a translation, do not.
+    counts_toward_limit: bool = True
+    # Fields a revert never restores, e.g. the publication of a version.
+    not_reverted: tuple[str, ...] = ()
 
 
 _registry: dict[type, Registration] = {}
 
 
-def register(model, *, owner_field=None, text_fields=(), visible_to=None):
+def register(
+    model,
+    *,
+    owner_field=None,
+    text_fields=(),
+    visible_to=None,
+    counts_toward_limit=True,
+    not_reverted=(),
+):
     try:
         model._meta.get_field("is_hidden")
     except FieldDoesNotExist as error:
         raise ImproperlyConfigured(
             f"{model._meta.label} must inherit from moderation.models.ModeratedContent."
         ) from error
-    _registry[model] = Registration(model, owner_field, tuple(text_fields), visible_to)
+    _registry[model] = Registration(
+        model,
+        owner_field,
+        tuple(text_fields),
+        visible_to,
+        counts_toward_limit,
+        tuple(not_reverted),
+    )
     return model
 
 
@@ -58,11 +79,25 @@ def find_registration(app_label, model_name):
     return None
 
 
-def is_owner(user, obj):
+def uncounted_models():
+    """Models whose creation does not count toward the daily limit of new accounts."""
+    return [
+        model for model, registration in _registry.items() if not registration.counts_toward_limit
+    ]
+
+
+def owner_id(obj):
     owner_field = get_registration(obj).owner_field
-    return bool(
-        owner_field and user.is_authenticated and getattr(obj, f"{owner_field}_id") == user.pk
-    )
+    if not owner_field:
+        return None
+    *path, name = owner_field.split(".")
+    for step in path:
+        obj = getattr(obj, step)
+    return getattr(obj, f"{name}_id")
+
+
+def is_owner(user, obj):
+    return bool(user.is_authenticated and owner_id(obj) is not None and owner_id(obj) == user.pk)
 
 
 def can_view(user, obj):

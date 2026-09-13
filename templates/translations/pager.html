@@ -1,0 +1,7 @@
+{% load i18n %}{% if page.has_other_pages %}
+<nav class="pager" aria-label="{% translate 'Pages' %}">
+  {% if page.has_previous %}<a rel="prev" href="{% querystring page=page.previous_page_number %}">{% translate "Page précédente" %}</a>{% endif %}
+  <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
+  {% if page.has_next %}<a rel="next" href="{% querystring page=page.next_page_number %}">{% translate "Page suivante" %}</a>{% endif %}
+</nav>
+{% endif %}

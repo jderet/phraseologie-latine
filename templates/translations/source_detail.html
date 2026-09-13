@@ -42,6 +42,21 @@
   {% endif %}
   {% moderation_links source %}
 
+  <h2>{% translate "Projets de traduction" %}</h2>
+  <ul class="item-list">
+    {% for project in projects %}
+    <li>
+      <a class="item-title" href="{{ project.get_absolute_url }}">{{ project.title }}</a>
+      <span class="muted">{% blocktranslate with name=project.created_by.public_name %}lancé par {{ name }}{% endblocktranslate %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucun projet sur ce texte pour l’instant." %}</li>
+    {% endfor %}
+  </ul>
+  {% if user.is_authenticated and not source.is_hidden %}
+  <p class="actions"><a class="button" href="{% url 'translations:project_create' source.pk %}">{% translate "Lancer un projet" %}</a></p>
+  {% endif %}
+
   <h2>{% translate "Phrases" %}</h2>
   <ol class="segments" lang="{{ source.language }}">
     {% for segment in segments %}

@@ -52,8 +52,8 @@ erDiagram
 - **Texte source** (`SourceText`) : titre, auteur, langue, adresse d'origine, licence déclarée, statut juridique (domaine public, licence libre), ajouté par.
 - **Segment** (`Segment`) : texte source, ordre, phrase.
 - **Projet de traduction** (`TranslationProject`) : texte source, créateur, description, version de référence.
-- **Version** (`TranslationVersion`) : projet, auteur, style déclaré, état (brouillon, publiée), date de publication.
-- **Segment traduit** (`TranslatedSegment`) : version, segment, texte latin, révisions.
+- **Version** (`TranslationVersion`) : projet, auteur, style déclaré (liste fermée : classique sans modèle particulier, cicéronien, césarien, sallustien, livien, sénéquien, tacitéen, plinien, latin tardif et chrétien, humaniste, latin vivant contemporain) et précision libre, état (brouillon, publiée), date de publication. Une version publiée reste modifiable par son auteur mais ne redevient jamais brouillon, même par un retour arrière.
+- **Segment traduit** (`TranslatedSegment`) : version, segment, texte latin, révisions. Seul l'auteur de la version l'écrit ; son enregistrement ne compte pas dans la limite des nouveaux comptes.
 - **Alignement fin** (`PhraseAlignment`, facultatif) : segment traduit, empan du texte source, empan du latin.
 
 ## 4. Justification

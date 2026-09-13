@@ -40,10 +40,10 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 - Une **vue de comparaison** aligne toutes les versions publiées, phrase par phrase.
 - Le **créateur du projet** désigne la version de référence (T6).
 - Alignement phrase à phrase, et au niveau du groupe de mots en option (Q39).
-- Écran principal en trois colonnes : texte source, latin, corpus et justifications (Q67). Saisie facilitée des macrons (Q68). Conçu d'abord pour ordinateur (Q69).
+- Écran principal en trois colonnes : texte source, latin, corpus et justifications (Q67). Saisie facilitée des macrons (Q68) : une voyelle suivie de = prend un macron (a= donne ā), et des boutons ā ē ī ō ū ȳ complètent la saisie. Conçu d'abord pour ordinateur (Q69).
 - Réalités modernes : périphrase classique de préférence. Le *Lexicon recentis Latinitatis* est cité par simple référence. La plateforme tient son propre lexique de néologismes, justifiés comme le reste et marqués « néologisme » (Q40, T5).
 - Édition simultanée en temps réel : plus tard (Q38).
-- Exports : texte bilingue, PDF avec notes justificatives, TEI, TMX (Q43).
+- Exports : texte bilingue, PDF avec notes justificatives, TEI, TMX (Q43). Le PDF est enregistré par le navigateur à partir d'une page imprimable, sans outil supplémentaire sur le serveur (choix du 13 septembre 2026).
 
 ### 4.2 Phraséologie
 
@@ -102,7 +102,7 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 - Inscription libre, avec déclaration de majorité (Q51, Q57).
 - Trois rôles au lancement : contributeur, relecteur, administrateur (T9).
 - Validation selon l'objet (fiche, attestation, traduction). Statuts : brouillon, proposé, validé, contesté (Q52).
-- Nouveaux comptes limités (quelques contributions par jour, pas de liens) jusqu'à une première contribution validée (T10).
+- Nouveaux comptes limités jusqu'à une première contribution validée (T10) : pas de liens, et quelques créations de contenu par jour (texte, projet, version, justification, contestation, message). Les modifications et l'enregistrement des phrases d'une version ne comptent pas (choix du 13 septembre 2026).
 - Signalement et retour à une version précédente, sur tout contenu (T10). Historique complet des modifications.
 - Reconnaissance des contributeurs : nom affiché, page de profil, ORCID facultatif (Q55).
 

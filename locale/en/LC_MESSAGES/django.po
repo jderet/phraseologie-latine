@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 22:03+0200\n"
+"POT-Creation-Date: 2026-09-13 22:14+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -63,7 +63,7 @@ msgstr "Password"
 msgid "Mot de passe incorrect."
 msgstr "Incorrect password."
 
-#: accounts/limits.py:37
+#: accounts/limits.py:48
 #, python-format
 msgid ""
 "Un nouveau compte peut faire %(limit)d contribution par jour, jusqu’à sa "
@@ -78,7 +78,7 @@ msgstr[1] ""
 "A new account can make %(limit)d contributions per day, until its first "
 "validated contribution."
 
-#: accounts/limits.py:50
+#: accounts/limits.py:61
 msgid ""
 "Les liens ne sont pas autorisés tant que le compte n’a pas de contribution "
 "validée."
@@ -479,7 +479,7 @@ msgid "époque"
 msgstr "period"
 
 #: corpus/models.py:36 corpus/models.py:69 moderation/models.py:48
-#: moderation/models.py:122
+#: moderation/models.py:122 translations/models.py:249
 msgid "auteur"
 msgstr "author"
 
@@ -543,7 +543,8 @@ msgstr "prosimetrum"
 msgid "URN CTS"
 msgstr "CTS URN"
 
-#: corpus/models.py:72 corpus/models.py:151 translations/models.py:54
+#: corpus/models.py:72 corpus/models.py:151 translations/models.py:55
+#: translations/models.py:201
 msgid "titre"
 msgstr "title"
 
@@ -595,7 +596,7 @@ msgstr "source version"
 msgid "Commit Git du dépôt importé."
 msgstr "Git commit of the imported repository."
 
-#: corpus/models.py:119 translations/models.py:79
+#: corpus/models.py:119 translations/models.py:80
 msgid "licence"
 msgstr "license"
 
@@ -763,7 +764,7 @@ msgstr "part of the head"
 msgid "relation syntaxique"
 msgstr "syntactic relation"
 
-#: corpus/models.py:289 translations/models.py:158
+#: corpus/models.py:289 translations/models.py:159
 msgid "phrase"
 msgstr "sentence"
 
@@ -995,7 +996,10 @@ msgstr ""
 "validated"
 
 #: templates/accounts/account.html:26
+#: templates/translations/project_form.html:21
 #: templates/translations/source_edit.html:14
+#: templates/translations/version_edit.html:28
+#: templates/translations/version_form.html:21
 msgid "Enregistrer"
 msgstr "Save"
 
@@ -1253,7 +1257,8 @@ msgstr "Main navigation"
 msgid "Recherche"
 msgstr "Search"
 
-#: templates/base.html:16 translations/apps.py:7
+#: templates/base.html:16 templates/translations/source_list.html:8
+#: translations/apps.py:7
 msgid "Traduction"
 msgstr "Translation"
 
@@ -1305,7 +1310,9 @@ msgstr ""
 msgid "Trois buts liés"
 msgstr "Three connected goals"
 
-#: templates/core/home.html:18
+#: templates/core/home.html:18 templates/translations/version_detail.html:39
+#: templates/translations/version_edit.html:4
+#: templates/translations/version_edit.html:9
 msgid "Traduire"
 msgstr "Translate"
 
@@ -1379,6 +1386,7 @@ msgid "Source"
 msgstr "Source"
 
 #: templates/corpus/passage.html:25 templates/corpus/work.html:49
+#: translations/models.py:267 translations/models.py:303
 msgid "version"
 msgstr "version"
 
@@ -1417,18 +1425,18 @@ msgid "Pages de résultats"
 msgstr "Result pages"
 
 #: templates/corpus/search.html:63 templates/corpus/work.html:65
-#: templates/translations/source_list.html:30
+#: templates/translations/pager.html:3
 msgid "Page précédente"
 msgstr "Previous page"
 
 #: templates/corpus/search.html:64 templates/corpus/work.html:66
-#: templates/translations/source_list.html:31
+#: templates/translations/pager.html:4
 #, python-format
 msgid "Page %(number)s sur %(total)s"
 msgstr "Page %(number)s of %(total)s"
 
 #: templates/corpus/search.html:65 templates/corpus/work.html:67
-#: templates/translations/source_list.html:32
+#: templates/translations/pager.html:5
 msgid "Page suivante"
 msgstr "Next page"
 
@@ -1484,7 +1492,7 @@ msgstr "fragmentary or with gaps"
 msgid "Édition"
 msgstr "Edition"
 
-#: templates/corpus/work.html:64 templates/translations/source_list.html:29
+#: templates/corpus/work.html:64 templates/translations/pager.html:2
 msgid "Pages"
 msgstr "Pages"
 
@@ -1501,7 +1509,9 @@ msgid "Voir le contenu"
 msgstr "View the content"
 
 #: templates/moderation/history.html:14
+#: templates/translations/project_detail.html:11
 #: templates/translations/source_detail.html:11
+#: templates/translations/version_detail.html:14
 msgid "Ce contenu est masqué à la suite d’un signalement."
 msgstr "This content is hidden following a report."
 
@@ -1570,8 +1580,115 @@ msgstr "Confirm the decision"
 msgid "Aucun signalement ouvert."
 msgstr "No open reports."
 
+#: templates/translations/project_detail.html:8
+msgid "Projet de traduction"
+msgstr "Translation project"
+
+#: templates/translations/project_detail.html:17
+#: templates/translations/source_detail.html:8
+msgid "Texte source"
+msgstr "Source text"
+
+#: templates/translations/project_detail.html:18
+#: templates/translations/source_list.html:22
+#, python-format
+msgid "%(counter)s phrase"
+msgid_plural "%(counter)s phrases"
+msgstr[0] "%(counter)s sentence"
+msgstr[1] "%(counter)s sentences"
+
+#: templates/translations/project_detail.html:21
+msgid "Lancé par"
+msgstr "Started by"
+
+#: templates/translations/project_detail.html:26
+#: templates/translations/version_form.html:4
+#: templates/translations/version_form.html:12
+msgid "Rédiger une version"
+msgstr "Write a version"
+
+#: templates/translations/project_detail.html:27
+#: templates/translations/project_form.html:4
+#: templates/translations/project_form.html:10
+msgid "Modifier le projet"
+msgstr "Edit the project"
+
+#: templates/translations/project_detail.html:32
+msgid "Vos brouillons"
+msgstr "Your drafts"
+
+#: templates/translations/project_detail.html:33
+msgid "Visibles de vous seul, jusqu’à leur publication."
+msgstr "Visible to you only, until they are published."
+
+#: templates/translations/project_detail.html:39
+msgid "Versions publiées"
+msgstr "Published versions"
+
+#: templates/translations/project_detail.html:42
+msgid "Aucune version publiée pour l’instant."
+msgstr "No published version yet."
+
+#: templates/translations/project_form.html:4
+msgid "Nouveau projet"
+msgstr "New project"
+
+#: templates/translations/project_form.html:12
+msgid "Nouveau projet de traduction"
+msgstr "New translation project"
+
+#: templates/translations/project_form.html:13
+msgid ""
+"Le projet réunit les versions latines de ce texte. Vous en serez le "
+"créateur : c’est vous qui choisirez la version de référence."
+msgstr "The project gathers the Latin versions of this text. You will be its creator: you will choose the reference version."
+
+#: templates/translations/project_form.html:21
+msgid "Créer le projet"
+msgstr "Create the project"
+
+#: templates/translations/project_list.html:4
+#: templates/translations/project_list.html:8
+#: templates/translations/source_detail.html:45
+msgid "Projets de traduction"
+msgstr "Translation projects"
+
+#: templates/translations/project_list.html:9
+msgid ""
+"Chaque projet porte sur un texte source. Chacun y rédige sa propre version "
+"latine, dans le style de son choix ; les versions publiées se comparent "
+"phrase par phrase."
+msgstr "Each project is about a source text. Everyone writes their own Latin version in the style of their choice; published versions are compared sentence by sentence."
+
+#: templates/translations/project_list.html:13
+#: templates/translations/source_list.html:4
+#: templates/translations/source_list.html:9
+msgid "Textes à traduire"
+msgstr "Texts to translate"
+
+#: templates/translations/project_list.html:13
+msgid "Pour lancer un projet, choisissez d’abord un texte."
+msgstr "To start a project, first choose a text."
+
+#: templates/translations/project_list.html:19
+#, python-format
+msgid "%(counter)s version publiée"
+msgid_plural "%(counter)s versions publiées"
+msgstr[0] "%(counter)s published version"
+msgstr[1] "%(counter)s published versions"
+
+#: templates/translations/project_list.html:19
+#: templates/translations/source_detail.html:50
+#, python-format
+msgid "lancé par %(name)s"
+msgstr "started by %(name)s"
+
+#: templates/translations/project_list.html:22
+msgid "Aucun projet pour l’instant."
+msgstr "No project yet."
+
 #: templates/translations/source_create.html:4
-#: templates/translations/source_list.html:14
+#: templates/translations/source_list.html:15
 msgid "Ajouter un texte"
 msgstr "Add a text"
 
@@ -1589,15 +1706,24 @@ msgid_plural ""
 "Le texte est découpé en %(counter)s phrases. Vérifiez le découpage avant "
 "d’enregistrer : une phrase par ligne, une ligne vide entre deux paragraphes. "
 "Il ne pourra plus changer ensuite."
-msgstr[0] "The text is split into %(counter)s sentence. Check the split before saving: one sentence per line, a blank line between two paragraphs. It cannot change afterwards."
-msgstr[1] "The text is split into %(counter)s sentences. Check the split before saving: one sentence per line, a blank line between two paragraphs. It cannot change afterwards."
+msgstr[0] ""
+"The text is split into %(counter)s sentence. Check the split before saving: "
+"one sentence per line, a blank line between two paragraphs. It cannot change "
+"afterwards."
+msgstr[1] ""
+"The text is split into %(counter)s sentences. Check the split before saving: "
+"one sentence per line, a blank line between two paragraphs. It cannot change "
+"afterwards."
 
 #: templates/translations/source_create.html:18
 msgid ""
 "Seuls sont acceptés les textes du domaine public (auteur mort depuis plus de "
 "70 ans) et les textes sous licence libre compatible, comme les articles de "
 "Wikipédia (CC BY-SA)."
-msgstr "Only public domain texts (author dead for more than 70 years) and texts under a compatible free license, such as Wikipedia articles (CC BY-SA), are accepted."
+msgstr ""
+"Only public domain texts (author dead for more than 70 years) and texts "
+"under a compatible free license, such as Wikipedia articles (CC BY-SA), are "
+"accepted."
 
 #: templates/translations/source_create.html:28
 msgid "Enregistrer le texte"
@@ -1606,10 +1732,6 @@ msgstr "Save the text"
 #: templates/translations/source_create.html:28
 msgid "Découper en phrases"
 msgstr "Split into sentences"
-
-#: templates/translations/source_detail.html:8
-msgid "Texte source"
-msgstr "Source text"
 
 #: templates/translations/source_detail.html:17
 msgid "Auteur"
@@ -1621,6 +1743,7 @@ msgid "mort en %(year)s"
 msgstr "died in %(year)s"
 
 #: templates/translations/source_detail.html:26
+#: templates/translations/version_detail.html:32
 msgid "Licence"
 msgstr "License"
 
@@ -1636,7 +1759,15 @@ msgstr "Added by"
 msgid "Modifier les informations"
 msgstr "Edit the information"
 
-#: templates/translations/source_detail.html:45
+#: templates/translations/source_detail.html:53
+msgid "Aucun projet sur ce texte pour l’instant."
+msgstr "No project on this text yet."
+
+#: templates/translations/source_detail.html:57
+msgid "Lancer un projet"
+msgstr "Start a project"
+
+#: templates/translations/source_detail.html:60
 msgid "Phrases"
 msgstr "Sentences"
 
@@ -1652,189 +1783,459 @@ msgstr "Edit the information of the text"
 msgid "Le découpage en phrases ne change pas."
 msgstr "The split into sentences does not change."
 
-#: templates/translations/source_list.html:4
-#: templates/translations/source_list.html:8
-msgid "Textes à traduire"
-msgstr "Texts to translate"
-
-#: templates/translations/source_list.html:9
+#: templates/translations/source_list.html:10
 msgid ""
 "Textes en langue moderne, du domaine public ou sous licence libre, découpés "
 "en phrases. Chaque texte peut faire l’objet de projets de traduction vers le "
 "latin."
-msgstr "Texts in modern languages, in the public domain or under a free license, split into sentences. Each text can have projects of translation into Latin."
+msgstr ""
+"Texts in modern languages, in the public domain or under a free license, "
+"split into sentences. Each text can have projects of translation into Latin."
 
-#: templates/translations/source_list.html:21
-#, python-format
-msgid "%(counter)s phrase"
-msgid_plural "%(counter)s phrases"
-msgstr[0] "%(counter)s sentence"
-msgstr[1] "%(counter)s sentences"
-
-#: templates/translations/source_list.html:24
+#: templates/translations/source_list.html:25
 msgid "Aucun texte pour l’instant."
 msgstr "No text yet."
 
-#: translations/forms.py:47
+#: templates/translations/version_detail.html:9
+#: templates/translations/version_edit.html:8
+#, python-format
+msgid "Version de %(name)s"
+msgstr "Version by %(name)s"
+
+#: templates/translations/version_detail.html:11
+msgid "Brouillon : cette version n’est visible que de vous."
+msgstr "Draft: this version is visible to you only."
+
+#: templates/translations/version_detail.html:19
+msgid "Style déclaré"
+msgstr "Declared style"
+
+#: templates/translations/version_detail.html:23
+msgid "État"
+msgstr "Status"
+
+#: templates/translations/version_detail.html:24
+#: templates/translations/version_item.html:3
+#, python-format
+msgid "publiée le %(date)s"
+msgstr "published on %(date)s"
+
+#: templates/translations/version_detail.html:24 translations/models.py:236
+msgid "brouillon"
+msgstr "draft"
+
+#: templates/translations/version_detail.html:27
+msgid "Avancement"
+msgstr "Progress"
+
+#: templates/translations/version_detail.html:28
+#: templates/translations/version_edit.html:11
+#: templates/translations/version_item.html:3
+#: templates/translations/version_publish.html:10
+#, python-format
+msgid "phrases traduites : %(done)s sur %(total)s"
+msgstr "sentences translated: %(done)s of %(total)s"
+
+#: templates/translations/version_detail.html:40
+msgid "Modifier le style"
+msgstr "Edit the style"
+
+#: templates/translations/version_detail.html:41
+#: templates/translations/version_publish.html:18
+msgid "Publier"
+msgstr "Publish"
+
+#: templates/translations/version_detail.html:46
+msgid "Texte et traduction"
+msgstr "Text and translation"
+
+#: templates/translations/version_detail.html:52
+msgid "Phrase masquée à la suite d’un signalement."
+msgstr "Sentence hidden following a report."
+
+#: templates/translations/version_detail.html:52
+msgid "non traduite"
+msgstr "not translated"
+
+#: templates/translations/version_edit.html:10
+msgid "Brouillon visible de vous seul."
+msgstr "Draft visible to you only."
+
+#: templates/translations/version_edit.html:10
+msgid ""
+"Version publiée : chaque modification est visible de tous et reste dans "
+"l’historique."
+msgstr "Published version: every change is visible to all and stays in the history."
+
+#: templates/translations/version_edit.html:29
+msgid "Voir la version"
+msgstr "View the version"
+
+#: templates/translations/version_form.html:4
+#: templates/translations/version_form.html:10
+msgid "Modifier le style déclaré"
+msgstr "Edit the declared style"
+
+#: templates/translations/version_form.html:13
+msgid ""
+"Déclarez le latin que vous visez. Votre version reste un brouillon visible "
+"de vous seul jusqu’à ce que vous la publiiez."
+msgstr "Declare the Latin you are aiming at. Your version stays a draft visible to you only until you publish it."
+
+#: templates/translations/version_form.html:21
+msgid "Commencer la traduction"
+msgstr "Start translating"
+
+#: templates/translations/version_item.html:3
+msgid "masquée"
+msgstr "hidden"
+
+#: templates/translations/version_publish.html:4
+#: templates/translations/version_publish.html:9
+msgid "Publier la version"
+msgstr "Publish the version"
+
+#: templates/translations/version_publish.html:11
+msgid ""
+"Une fois publiée, la version est visible de tous, sous licence CC BY-SA 4.0, "
+"et ne peut plus redevenir un brouillon. Vous pourrez toujours la modifier : "
+"chaque modification restera dans l’historique."
+msgstr "Once published, the version is visible to all, under the CC BY-SA 4.0 license, and can never become a draft again. You will still be able to edit it: every change will stay in the history."
+
+#: translations/forms.py:49
 msgid ""
 "Je déclare que ce texte est dans le domaine public ou publié sous la licence "
 "indiquée."
-msgstr "I declare that this text is in the public domain or published under the stated license."
+msgstr ""
+"I declare that this text is in the public domain or published under the "
+"stated license."
 
-#: translations/forms.py:53
+#: translations/forms.py:55
 msgid "Texte"
 msgstr "Text"
 
-#: translations/forms.py:56
+#: translations/forms.py:58
 msgid ""
 "Collez le texte : il sera découpé en phrases, que vous vérifierez avant "
 "d’enregistrer. Les appels de note de Wikipédia ([1], [réf. nécessaire]) sont "
 "retirés."
-msgstr "Paste the text: it will be split into sentences, which you will check before saving. Wikipedia note calls ([1], [citation needed]) are removed."
+msgstr ""
+"Paste the text: it will be split into sentences, which you will check before "
+"saving. Wikipedia note calls ([1], [citation needed]) are removed."
 
-#: translations/forms.py:67
+#: translations/forms.py:69
 msgid "Le texte est vide."
 msgstr "The text is empty."
 
-#: translations/forms.py:71
+#: translations/forms.py:73
 #, python-format
 msgid ""
 "Un texte compte au plus %(limit)d phrase : découpez-le en plusieurs textes."
 msgid_plural ""
 "Un texte compte au plus %(limit)d phrases : découpez-le en plusieurs textes."
 msgstr[0] "A text has at most %(limit)d sentence: split it into several texts."
-msgstr[1] "A text has at most %(limit)d sentences: split it into several texts."
+msgstr[1] ""
+"A text has at most %(limit)d sentences: split it into several texts."
 
-#: translations/forms.py:80
+#: translations/forms.py:82
 #, python-format
 msgid "Une phrase compte au plus %(limit)d caractères : vérifiez le découpage."
 msgstr "A sentence has at most %(limit)d characters: check the split."
 
-#: translations/models.py:24
+#: translations/models.py:25
 msgid "français"
 msgstr "French"
 
-#: translations/models.py:25
+#: translations/models.py:26
 msgid "anglais"
 msgstr "English"
 
-#: translations/models.py:26
+#: translations/models.py:27
 msgid "allemand"
 msgstr "German"
 
-#: translations/models.py:27
+#: translations/models.py:28
 msgid "italien"
 msgstr "Italian"
 
-#: translations/models.py:28
+#: translations/models.py:29
 msgid "espagnol"
 msgstr "Spanish"
 
-#: translations/models.py:34 translations/models.py:141
+#: translations/models.py:35 translations/models.py:142
 msgid "domaine public"
 msgstr "public domain"
 
-#: translations/models.py:56
+#: translations/models.py:57
 msgid "auteur du texte"
 msgstr "author of the text"
 
-#: translations/models.py:59
+#: translations/models.py:60
 msgid "Pour un article de Wikipédia : « contributeurs de Wikipédia »."
 msgstr "For a Wikipedia article: “Wikipedia contributors”."
 
-#: translations/models.py:62
+#: translations/models.py:63
 msgid "année de mort de l’auteur"
 msgstr "year of the author’s death"
 
-#: translations/models.py:66
+#: translations/models.py:67
 msgid ""
 "Obligatoire pour un texte du domaine public ; pour une œuvre anonyme, année "
 "de publication."
-msgstr "Required for a public domain text; for an anonymous work, year of publication."
+msgstr ""
+"Required for a public domain text; for an anonymous work, year of "
+"publication."
 
-#: translations/models.py:70
+#: translations/models.py:71
 msgid "langue"
 msgstr "language"
 
-#: translations/models.py:72
+#: translations/models.py:73
 msgid "adresse d’origine"
 msgstr "original address"
 
-#: translations/models.py:76
+#: translations/models.py:77
 msgid ""
 "Obligatoire pour un texte sous licence libre, qui demande de citer sa source."
-msgstr "Required for a text under a free license, which requires citing its source."
+msgstr ""
+"Required for a text under a free license, which requires citing its source."
 
-#: translations/models.py:81
+#: translations/models.py:82
 msgid "texte découpé"
 msgstr "split text"
 
-#: translations/models.py:82
+#: translations/models.py:83
 msgid "Une phrase par ligne ; une ligne vide entre deux paragraphes."
 msgstr "One sentence per line; a blank line between two paragraphs."
 
-#: translations/models.py:88
+#: translations/models.py:89
 msgid "ajouté par"
 msgstr "added by"
 
-#: translations/models.py:90
+#: translations/models.py:91
 msgid "ajouté le"
 msgstr "added on"
 
-#: translations/models.py:93 translations/models.py:155
+#: translations/models.py:94 translations/models.py:156
+#: translations/models.py:199
 msgid "texte source"
 msgstr "source text"
 
-#: translations/models.py:94
+#: translations/models.py:95
 msgid "textes sources"
 msgstr "source texts"
 
-#: translations/models.py:120
+#: translations/models.py:121
 msgid ""
 "Indiquez l’année de mort de l’auteur : un texte n’entre dans le domaine "
 "public que 70 ans après."
-msgstr "Give the year of the author’s death: a text enters the public domain only 70 years later."
+msgstr ""
+"Give the year of the author’s death: a text enters the public domain only 70 "
+"years later."
 
-#: translations/models.py:125
+#: translations/models.py:126
 #, python-format
 msgid ""
 "Ce texte n’est pas dans le domaine public : seuls le sont les textes des "
 "auteurs morts en %(year)s ou avant."
-msgstr "This text is not in the public domain: only texts by authors who died in %(year)s or earlier are."
+msgstr ""
+"This text is not in the public domain: only texts by authors who died in "
+"%(year)s or earlier are."
 
-#: translations/models.py:130
+#: translations/models.py:131
 msgid ""
 "Indiquez l’adresse d’origine : une licence libre demande de citer la source."
 msgstr "Give the original address: a free license requires citing the source."
 
-#: translations/models.py:141
+#: translations/models.py:142
 msgid "licence libre"
 msgstr "free license"
 
-#: translations/models.py:157
+#: translations/models.py:158
 msgid "numéro"
 msgstr "number"
 
-#: translations/models.py:159
+#: translations/models.py:160
 msgid "début de paragraphe"
 msgstr "start of paragraph"
 
-#: translations/models.py:162
+#: translations/models.py:163
 msgid "segment"
 msgstr "segment"
 
-#: translations/models.py:163
+#: translations/models.py:164
 msgid "segments"
 msgstr "segments"
 
-#: translations/views.py:78
-msgid "Le texte est ajouté."
-msgstr "The text has been added."
+#: translations/models.py:179
+msgid "classique, sans modèle particulier"
+msgstr "classical, with no particular model"
 
-#: translations/views.py:101
+#: translations/models.py:180
+msgid "cicéronien"
+msgstr "Ciceronian"
+
+#: translations/models.py:181
+msgid "césarien"
+msgstr "Caesarian"
+
+#: translations/models.py:182
+msgid "sallustien"
+msgstr "Sallustian"
+
+#: translations/models.py:183
+msgid "livien"
+msgstr "Livian"
+
+#: translations/models.py:184
+msgid "sénéquien"
+msgstr "Senecan"
+
+#: translations/models.py:185
+msgid "tacitéen"
+msgstr "Tacitean"
+
+#: translations/models.py:186
+msgid "plinien (Pline le Jeune)"
+msgstr "Plinian (Pliny the Younger)"
+
+#: translations/models.py:187
+msgid "latin tardif et chrétien"
+msgstr "late and Christian Latin"
+
+#: translations/models.py:188
+msgid "humaniste"
+msgstr "humanist"
+
+#: translations/models.py:189
+msgid "latin vivant contemporain"
+msgstr "contemporary living Latin"
+
+#: translations/models.py:202
+msgid "description"
+msgstr "description"
+
+#: translations/models.py:207
+msgid "créé par"
+msgstr "created by"
+
+#: translations/models.py:209
+msgid "créé le"
+msgstr "created on"
+
+#: translations/models.py:212
+msgid "projet de traduction"
+msgstr "translation project"
+
+#: translations/models.py:213
+msgid "projets de traduction"
+msgstr "translation projects"
+
+#: translations/models.py:237
+msgid "publiée"
+msgstr "published"
+
+#: translations/models.py:243
+msgid "projet"
+msgstr "project"
+
+#: translations/models.py:251
+msgid "style déclaré"
+msgstr "declared style"
+
+#: translations/models.py:253
+msgid "précision sur le style"
+msgstr "details on the style"
+
+#: translations/models.py:256
+msgid "Facultatif, par exemple : « Cicéron des lettres à Atticus »."
+msgstr "Optional, for example: “Cicero of the letters to Atticus”."
+
+#: translations/models.py:259
+msgid "état"
+msgstr "status"
+
+#: translations/models.py:261
+msgid "commencée le"
+msgstr "started on"
+
+#: translations/models.py:262
+msgid "publiée le"
+msgstr "published on"
+
+#: translations/models.py:268
+msgid "versions"
+msgstr "versions"
+
+#: translations/models.py:279
+#, python-format
+msgid "%(project)s, version de %(author)s"
+msgstr "%(project)s, version by %(author)s"
+
+#: translations/models.py:309
+msgid "phrase source"
+msgstr "source sentence"
+
+#: translations/models.py:311
+msgid "latin"
+msgstr "Latin"
+
+#: translations/models.py:312
+msgid "modifié le"
+msgstr "changed on"
+
+#: translations/models.py:315
+msgid "phrase traduite"
+msgstr "translated sentence"
+
+#: translations/models.py:316
+msgid "phrases traduites"
+msgstr "translated sentences"
+
+#: translations/models.py:325
+#, python-format
+msgid "%(version)s, phrase %(number)s"
+msgstr "%(version)s, sentence %(number)s"
+
+#: translations/services.py:79
+msgid "Traduisez au moins une phrase avant de publier."
+msgstr "Translate at least one sentence before publishing."
+
+#: translations/services.py:83
+msgid "Publication"
+msgstr "Publication"
+
+#: translations/views.py:60 translations/views.py:318
 msgid "Aucune modification."
 msgstr "No change."
 
-#: translations/views.py:103
+#: translations/views.py:62
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
+
+#: translations/views.py:114
+msgid "Le texte est ajouté."
+msgstr "The text has been added."
+
+#: translations/views.py:164
+msgid "Le projet est créé."
+msgstr "The project has been created."
+
+#: translations/views.py:311
+#, python-format
+msgid "%(count)d phrase enregistrée."
+msgid_plural "%(count)d phrases enregistrées."
+msgstr[0] "%(count)d sentence saved."
+msgstr[1] "%(count)d sentences saved."
+
+#: translations/views.py:320
+msgid "Rien n’est enregistré : corrigez les phrases signalées."
+msgstr "Nothing was saved: correct the sentences marked below."
+
+#: translations/views.py:354
+msgid "Cette version est déjà publiée."
+msgstr "This version is already published."
+
+#: translations/views.py:362
+msgid "La version est publiée."
+msgstr "The version has been published."

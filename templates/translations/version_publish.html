@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Publier la version" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <p class="eyebrow"><a href="{{ version.get_absolute_url }}">{{ version }}</a></p>
+  <h1>{% translate "Publier la version" %}</h1>
+  <p class="lede">{% blocktranslate asvar progress with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{{ progress|capfirst }}</p>
+  <p>{% blocktranslate trimmed %}
+    Une fois publiée, la version est visible de tous, sous licence CC BY-SA 4.0, et ne peut plus
+    redevenir un brouillon. Vous pourrez toujours la modifier : chaque modification restera dans
+    l’historique.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    <button type="submit" class="button">{% translate "Publier" %}</button>
+  </form>
+</section>
+{% endblock %}

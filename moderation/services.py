@@ -54,9 +54,9 @@ def _record(obj, author, action, before, comment="", reverted_to=None):
 def save_with_revision(obj, author, comment=""):
     """Save a moderated object and record the change; return None if nothing changed."""
     registration = get_registration(obj)
-    check_can_contribute(author)
-    check_text_for_links(author, *(getattr(obj, name) for name in registration.text_fields))
     creating = obj._state.adding
+    check_can_contribute(author, counted=creating and registration.counts_toward_limit)
+    check_text_for_links(author, *(getattr(obj, name) for name in registration.text_fields))
     before = None if creating else snapshot(_locked(obj))
     obj.save()
     if not creating and snapshot(obj) == before:
@@ -72,8 +72,8 @@ def revert_to(revision, user, comment=""):
     obj = model._base_manager.select_for_update().get(pk=revision.object_id)
     if not can_revert(user, obj):
         raise PermissionDenied
-    if not is_reviewer(user):
-        check_can_contribute(user)
+    check_can_contribute(user, counted=False)
+    skipped = NOT_REVERTED | set(get_registration(obj).not_reverted)
     before = snapshot(obj)
     restored = next(
         serializers.deserialize(
@@ -85,7 +85,7 @@ def revert_to(revision, user, comment=""):
     for field in model._meta.concrete_fields:
         if (
             field.name in revision.after
-            and field.name not in NOT_REVERTED
+            and field.name not in skipped
             and not field.primary_key
             and not getattr(field, "auto_now", False)
         ):

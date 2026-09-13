@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from moderation.models import ModeratedContent
@@ -172,4 +173,181 @@ class Segment(models.Model):
         return self.text
 
 
+class Style(models.TextChoices):
+    """The Latin a version aims at (Q4, Q41)."""
+
+    CLASSICAL = "classical", _("classique, sans modèle particulier")
+    CICERONIAN = "ciceronian", _("cicéronien")
+    CAESARIAN = "caesarian", _("césarien")
+    SALLUSTIAN = "sallustian", _("sallustien")
+    LIVIAN = "livian", _("livien")
+    SENECAN = "senecan", _("sénéquien")
+    TACITEAN = "tacitean", _("tacitéen")
+    PLINIAN = "plinian", _("plinien (Pline le Jeune)")
+    LATE = "late", _("latin tardif et chrétien")
+    HUMANIST = "humanist", _("humaniste")
+    CONTEMPORARY = "contemporary", _("latin vivant contemporain")
+
+
+class TranslationProject(ModeratedContent):
+    """The Latin versions of one source text; its creator chooses the reference version."""
+
+    source_text = models.ForeignKey(
+        SourceText,
+        on_delete=models.PROTECT,
+        related_name="projects",
+        verbose_name=_("texte source"),
+    )
+    title = models.CharField(_("titre"), max_length=300)
+    description = models.TextField(_("description"), max_length=5000, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="translation_projects",
+        verbose_name=_("créé par"),
+    )
+    created_at = models.DateTimeField(_("créé le"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("projet de traduction")
+        verbose_name_plural = _("projets de traduction")
+        ordering = ["-created_at", "-pk"]
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse("translations:project", args=[self.pk])
+
+
+class VersionQuerySet(models.QuerySet):
+    def visible_to(self, user):
+        """Published versions that are not hidden, and the user's own versions (rule 8)."""
+        published = Q(state=TranslationVersion.State.PUBLISHED, is_hidden=False)
+        if not user.is_authenticated:
+            return self.filter(published)
+        return self.filter(published | Q(author=user))
+
+
+class TranslationVersion(ModeratedContent):
+    """One person's Latin version of a project: a private draft until its author publishes it."""
+
+    class State(models.TextChoices):
+        DRAFT = "draft", _("brouillon")
+        PUBLISHED = "published", _("publiée")
+
+    project = models.ForeignKey(
+        TranslationProject,
+        on_delete=models.PROTECT,
+        related_name="versions",
+        verbose_name=_("projet"),
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="translation_versions",
+        verbose_name=_("auteur"),
+    )
+    style = models.CharField(_("style déclaré"), max_length=20, choices=Style.choices)
+    style_note = models.CharField(
+        _("précision sur le style"),
+        max_length=200,
+        blank=True,
+        help_text=_("Facultatif, par exemple : « Cicéron des lettres à Atticus »."),
+    )
+    state = models.CharField(
+        _("état"), max_length=10, choices=State.choices, default=State.DRAFT, editable=False
+    )
+    created_at = models.DateTimeField(_("commencée le"), default=timezone.now, editable=False)
+    published_at = models.DateTimeField(_("publiée le"), null=True, blank=True, editable=False)
+
+    objects = VersionQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("version")
+        verbose_name_plural = _("versions")
+        ordering = ["project", "published_at", "created_at"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(state="draft", published_at__isnull=True)
+                | Q(state="published", published_at__isnull=False),
+                name="translations_version_published_at",
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("%(project)s, version de %(author)s") % {
+            "project": self.project.title,
+            "author": self.author.public_name,
+        }
+
+    def get_absolute_url(self):
+        return reverse("translations:version", args=[self.pk])
+
+    @property
+    def is_published(self):
+        return self.state == self.State.PUBLISHED
+
+    @property
+    def is_draft(self):
+        return self.state == self.State.DRAFT
+
+
+class TranslatedSegment(ModeratedContent):
+    """The Latin of one sentence in a version."""
+
+    version = models.ForeignKey(
+        TranslationVersion,
+        on_delete=models.PROTECT,
+        related_name="segments",
+        verbose_name=_("version"),
+    )
+    segment = models.ForeignKey(
+        Segment,
+        on_delete=models.PROTECT,
+        related_name="translations",
+        verbose_name=_("phrase source"),
+    )
+    text = models.TextField(_("latin"), max_length=4000, blank=True)
+    updated_at = models.DateTimeField(_("modifié le"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("phrase traduite")
+        verbose_name_plural = _("phrases traduites")
+        ordering = ["version", "segment__order"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["version", "segment"], name="translations_one_text_per_segment"
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("%(version)s, phrase %(number)s") % {
+            "version": self.version,
+            "number": self.segment.order,
+        }
+
+    def get_absolute_url(self):
+        return f"{self.version.get_absolute_url()}#phrase-{self.segment.order}"
+
+
+def version_visible_to(user, version):
+    return version.is_published or (user.is_authenticated and user.pk == version.author_id)
+
+
 register(SourceText, owner_field="added_by", text_fields=("title", "author", "text"))
+register(TranslationProject, owner_field="created_by", text_fields=("title", "description"))
+register(
+    TranslationVersion,
+    owner_field="author",
+    text_fields=("style_note",),
+    visible_to=version_visible_to,
+    not_reverted=("state", "published_at"),
+)
+register(
+    TranslatedSegment,
+    owner_field="version.author",
+    text_fields=("text",),
+    visible_to=lambda user, translated: version_visible_to(user, translated.version),
+    counts_toward_limit=False,
+)

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Traduire" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a> · <a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
+  <h1>{% translate "Traduire" %}</h1>
+  <p class="lede">{% if version.is_draft %}{% translate "Brouillon visible de vous seul." %}{% else %}{% translate "Version publiée : chaque modification est visible de tous et reste dans l’historique." %}{% endif %}</p>
+  <p class="note">{% blocktranslate asvar progress with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{{ progress|capfirst }}</p>
+
+  <form method="post" class="editor-form">
+    {% csrf_token %}
+    <ol class="bitext">
+      {% for row in rows %}
+      <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
+        <span class="bitext-number">{{ row.segment.order }}</span>
+        <label class="bitext-source" for="s{{ row.segment.pk }}" lang="{{ source.language }}">{{ row.segment.text }}</label>
+        <div class="bitext-latin">
+          <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false">{{ row.text }}</textarea>
+          {% if row.errors %}{{ row.errors }}{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+    <div class="editor-actions">
+      <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+      <a href="{{ version.get_absolute_url }}">{% translate "Voir la version" %}</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

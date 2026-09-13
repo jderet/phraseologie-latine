@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Projets de traduction" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Projets de traduction" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Chaque projet porte sur un texte source. Chacun y rédige sa propre version latine, dans le
+    style de son choix ; les versions publiées se comparent phrase par phrase.
+  {% endblocktranslate %}</p>
+  <p class="actions"><a href="{% url 'translations:source_list' %}">{% translate "Textes à traduire" %}</a> <span class="muted">{% translate "Pour lancer un projet, choisissez d’abord un texte." %}</span></p>
+
+  <ul class="item-list">
+    {% for project in page %}
+    <li>
+      <a class="item-title" href="{{ project.get_absolute_url }}">{{ project.title }}</a>
+      <span class="muted">{{ project.source_text.get_language_display|capfirst }} · {% blocktranslate count counter=project.published_count %}{{ counter }} version publiée{% plural %}{{ counter }} versions publiées{% endblocktranslate %} · {% blocktranslate with name=project.created_by.public_name %}lancé par {{ name }}{% endblocktranslate %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucun projet pour l’instant." %}</li>
+    {% endfor %}
+  </ul>
+  {% include "translations/pager.html" %}
+</section>
+{% endblock %}

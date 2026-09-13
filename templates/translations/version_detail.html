@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
+  <h1>{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</h1>
+  {% if version.is_draft %}
+  <p class="notice notice-info">{% translate "Brouillon : cette version n’est visible que de vous." %}</p>
+  {% endif %}
+  {% if version.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Style déclaré" %}</dt>
+      <dd>{{ version.get_style_display|capfirst }}{% if version.style_note %} ({{ version.style_note }}){% endif %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "État" %}</dt>
+      <dd>{% if version.is_published %}{% blocktranslate with date=version.published_at|date:"j F Y" %}publiée le {{ date }}{% endblocktranslate %}{% else %}{% translate "brouillon" %}{% endif %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Avancement" %}</dt>
+      <dd>{% blocktranslate with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}</dd>
+    </div>
+    {% if version.is_published %}
+    <div>
+      <dt>{% translate "Licence" %}</dt>
+      <dd><a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noopener">CC BY-SA 4.0</a></dd>
+    </div>
+    {% endif %}
+  </dl>
+  {% if can_translate %}
+  <p class="form-links">
+    <a class="button" href="{% url 'translations:version_edit' version.pk %}">{% translate "Traduire" %}</a>
+    <a href="{% url 'translations:version_settings' version.pk %}">{% translate "Modifier le style" %}</a>
+    {% if version.is_draft %}<a href="{% url 'translations:version_publish' version.pk %}">{% translate "Publier" %}</a>{% endif %}
+  </p>
+  {% endif %}
+  {% moderation_links version %}
+
+  <h2>{% translate "Texte et traduction" %}</h2>
+  <ol class="bitext">
+    {% for row in rows %}
+    <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
+      <span class="bitext-number">{{ row.segment.order }}</span>
+      <p class="bitext-source" lang="{{ source.language }}">{{ row.segment.text }}</p>
+      <p class="bitext-latin" lang="la">{% if row.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif row.saved %}{{ row.saved }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
+    </li>
+    {% endfor %}
+  </ol>
+</article>
+{% endblock %}

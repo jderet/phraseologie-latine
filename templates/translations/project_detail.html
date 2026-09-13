@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <h1>{{ project.title }}</h1>
+  {% if project.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+  {% if project.description %}<p class="lede">{{ project.description|linebreaksbr }}</p>{% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Texte source" %}</dt>
+      <dd><a href="{{ source.get_absolute_url }}">{{ source.title }}</a> <span class="muted">({{ source.get_language_display }}, {% blocktranslate count counter=segment_count %}{{ counter }} phrase{% plural %}{{ counter }} phrases{% endblocktranslate %})</span></dd>
+    </div>
+    <div>
+      <dt>{% translate "Lancé par" %}</dt>
+      <dd><a href="{{ project.created_by.get_absolute_url }}">{{ project.created_by.public_name }}</a>, {{ project.created_at|date:"j F Y" }}</dd>
+    </div>
+  </dl>
+  <p class="form-links">
+    {% if user.is_authenticated and not project.is_hidden %}<a class="button" href="{% url 'translations:version_create' project.pk %}">{% translate "Rédiger une version" %}</a>{% endif %}
+    {% if can_edit %}<a href="{% url 'translations:project_edit' project.pk %}">{% translate "Modifier le projet" %}</a>{% endif %}
+  </p>
+  {% moderation_links project %}
+
+  {% if drafts %}
+  <h2>{% translate "Vos brouillons" %}</h2>
+  <p class="note">{% translate "Visibles de vous seul, jusqu’à leur publication." %}</p>
+  <ul class="item-list">
+    {% for version in drafts %}{% include "translations/version_item.html" %}{% endfor %}
+  </ul>
+  {% endif %}
+
+  <h2>{% translate "Versions publiées" %}</h2>
+  <ul class="item-list">
+    {% for version in published %}{% include "translations/version_item.html" %}{% empty %}
+    <li>{% translate "Aucune version publiée pour l’instant." %}</li>
+    {% endfor %}
+  </ul>
+</article>
+{% endblock %}

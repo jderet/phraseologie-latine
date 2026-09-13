@@ -5,11 +5,13 @@ from django.utils.translation import ngettext
 
 from accounts.limits import check_text_for_links
 
-from .models import SourceText
+from .models import SourceText, TranslationProject, TranslationVersion
 from .segmentation import from_lines
+from .services import normalize_sentence
 
 MAX_SENTENCES = 500
 MAX_SENTENCE_LENGTH = 2000
+MAX_LATIN_LENGTH = 4000
 
 
 class ContributionForm(forms.ModelForm):
@@ -86,3 +88,35 @@ class SourceTextForm(SourceTextEditForm):
     @property
     def sentences(self):
         return from_lines(self.cleaned_data["text"])
+
+
+class ProjectForm(ContributionForm):
+    link_fields = ("title", "description")
+
+    class Meta:
+        model = TranslationProject
+        fields = ("title", "description")
+        widgets = {"description": forms.Textarea(attrs={"rows": 5})}
+
+
+class VersionForm(ContributionForm):
+    link_fields = ("style_note",)
+
+    class Meta:
+        model = TranslationVersion
+        fields = ("style", "style_note")
+
+
+class TranslationTextForm(forms.Form):
+    """The Latin of one sentence."""
+
+    text = forms.CharField(required=False, strip=False, max_length=MAX_LATIN_LENGTH)
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_text(self):
+        text = normalize_sentence(self.cleaned_data["text"])
+        check_text_for_links(self.user, text)
+        return text
