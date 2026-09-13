@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 17:50+0200\n"
-"PO-Revision-Date: 2026-09-13 17:55+0200\n"
+"POT-Creation-Date: 2026-09-13 18:51+0200\n"
+"PO-Revision-Date: 2026-09-13 19:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -15,19 +15,436 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: templates/base.html:6 templates/base.html:11
+#: accounts/admin.py:12
+msgid "Profil"
+msgstr "Profile"
+
+#: accounts/admin.py:14 templates/accounts/account.html:19
+msgid "Statut"
+msgstr "Status"
+
+#: accounts/admin.py:26
+msgid "Permissions"
+msgstr "Permissions"
+
+#: accounts/admin.py:29
+msgid "Dates"
+msgstr "Dates"
+
+#: accounts/apps.py:8
+msgid "Comptes"
+msgstr "Accounts"
+
+#: accounts/forms.py:21
+msgid "Je déclare avoir 18 ans ou plus."
+msgstr "I declare that I am 18 or older."
+
+#: accounts/forms.py:22
+msgid "La plateforme est réservée aux personnes majeures."
+msgstr "The platform is for adults only."
+
+#: accounts/forms.py:39
+msgid "Un compte existe déjà avec cette adresse e-mail."
+msgstr "An account already exists with this email address."
+
+#: accounts/forms.py:61
+msgid ""
+"Adresse e-mail ou mot de passe incorrect. Si vous venez de vous inscrire, "
+"activez d’abord votre compte avec le lien reçu par e-mail."
+msgstr ""
+"Incorrect email address or password. If you have just signed up, first "
+"activate your account with the link sent to you by email."
+
+#: accounts/forms.py:81
+msgid "Mot de passe"
+msgstr "Password"
+
+#: accounts/forms.py:93
+msgid "Mot de passe incorrect."
+msgstr "Incorrect password."
+
+#: accounts/models.py:19
+msgid "Un identifiant ORCID s’écrit sous la forme 0000-0002-1825-0097."
+msgstr "An ORCID iD is written as 0000-0002-1825-0097."
+
+#: accounts/models.py:28
+msgid "Cet identifiant ORCID n’existe pas : vérifiez les chiffres."
+msgstr "This ORCID iD does not exist: check the digits."
+
+#: accounts/models.py:75
+msgid "adresse e-mail"
+msgstr "email address"
+
+#: accounts/models.py:77
+msgid "nom affiché"
+msgstr "display name"
+
+#: accounts/models.py:79
+msgid "Nom visible sur vos contributions et votre page publique."
+msgstr "Name shown on your contributions and your public page."
+
+#: accounts/models.py:86
+msgid "Facultatif, par exemple 0000-0002-1825-0097."
+msgstr "Optional, for example 0000-0002-1825-0097."
+
+#: accounts/models.py:88
+msgid "majorité déclarée"
+msgstr "declared adult"
+
+#: accounts/models.py:90
+msgid "date de la déclaration de majorité"
+msgstr "date of the age declaration"
+
+#: accounts/models.py:93
+msgid "langue d’interface"
+msgstr "interface language"
+
+#: accounts/models.py:99
+msgid "compte confirmé"
+msgstr "confirmed account"
+
+#: accounts/models.py:102
+msgid ""
+"Vrai après une première contribution validée : les limites des nouveaux "
+"comptes ne s’appliquent plus."
+msgstr ""
+"True after a first validated contribution: the limits on new accounts no "
+"longer apply."
+
+#: accounts/models.py:106
+msgid "anonymisé le"
+msgstr "anonymized on"
+
+#: accounts/models.py:115
+msgid "utilisateur"
+msgstr "user"
+
+#: accounts/models.py:116
+msgid "utilisateurs"
+msgstr "users"
+
+#: accounts/models.py:131
+msgid "Contributeur anonyme"
+msgstr "Anonymous contributor"
+
+#: accounts/roles.py:19
+msgid "contributeur"
+msgstr "contributor"
+
+#: accounts/roles.py:20
+msgid "relecteur"
+msgstr "reviewer"
+
+#: accounts/roles.py:21
+msgid "administrateur"
+msgstr "administrator"
+
+#: accounts/views.py:69
+msgid "Votre compte est activé. Bienvenue !"
+msgstr "Your account is active. Welcome!"
+
+#: accounts/views.py:91
+msgid "Vos informations sont enregistrées."
+msgstr "Your details have been saved."
+
+#: accounts/views.py:110
+msgid "Votre compte est supprimé. Vos contributions restent, sans votre nom."
+msgstr "Your account has been deleted. Your contributions remain, without your name."
+
+#: templates/accounts/account.html:4 templates/accounts/account.html:8
+#: templates/base.html:15
+msgid "Mon compte"
+msgstr "My account"
+
+#: templates/accounts/account.html:11
+msgid "Adresse e-mail"
+msgstr "Email address"
+
+#: templates/accounts/account.html:15 templates/accounts/profile.html:13
+msgid "Rôles"
+msgstr "Roles"
+
+#: templates/accounts/account.html:20
+msgid "Compte confirmé"
+msgstr "Confirmed account"
+
+#: templates/accounts/account.html:20
+msgid ""
+"Nouveau compte : contributions limitées jusqu’à une première contribution "
+"validée"
+msgstr "New account: contributions are limited until a first contribution is validated"
+
+#: templates/accounts/account.html:26
+msgid "Enregistrer"
+msgstr "Save"
+
+#: templates/accounts/account.html:29
+msgid "Voir ma page publique"
+msgstr "View my public page"
+
+#: templates/accounts/account.html:30 templates/accounts/password_change.html:4
+#: templates/accounts/password_change.html:8
+msgid "Changer de mot de passe"
+msgstr "Change password"
+
+#: templates/accounts/account.html:31 templates/accounts/delete.html:4
+#: templates/accounts/delete.html:8
+msgid "Supprimer mon compte"
+msgstr "Delete my account"
+
+#: templates/accounts/activate.html:4 templates/accounts/activate.html:8
+msgid "Activer votre compte"
+msgstr "Activate your account"
+
+#: templates/accounts/activate.html:9
+#, python-format
+msgid "Compte associé à l’adresse %(email)s."
+msgstr "Account linked to the address %(email)s."
+
+#: templates/accounts/activate.html:14
+msgid "Activer mon compte"
+msgstr "Activate my account"
+
+#: templates/accounts/activation_invalid.html:4
+#: templates/accounts/activation_invalid.html:8
+msgid "Lien d’activation non valide"
+msgstr "Invalid activation link"
+
+#: templates/accounts/activation_invalid.html:9
+msgid ""
+"Ce lien a déjà servi, a expiré ou est incomplet. Si votre compte est activé, "
+"connectez-vous ; sinon, inscrivez-vous à nouveau avec la même adresse pour "
+"recevoir un nouveau lien."
+msgstr ""
+"This link has already been used, has expired or is incomplete. If your "
+"account is active, log in; otherwise, sign up again with the same address to "
+"receive a new link."
+
+#: templates/accounts/activation_invalid.html:14
+#: templates/accounts/login.html:13
+#: templates/accounts/password_reset_complete.html:9
+msgid "Se connecter"
+msgstr "Log in"
+
+#: templates/accounts/activation_invalid.html:15
+#: templates/accounts/login.html:17 templates/accounts/signup.html:4
+#: templates/accounts/signup.html:8
+msgid "Créer un compte"
+msgstr "Create an account"
+
+#: templates/accounts/delete.html:9
+msgid ""
+"Votre nom, votre adresse e-mail et votre ORCID seront effacés, et vous ne "
+"pourrez plus vous connecter. Vos contributions, publiées sous licence CC BY-"
+"SA 4.0, restent en ligne et sont attribuées à un contributeur anonyme. Cette "
+"action est définitive."
+msgstr ""
+"Your name, email address and ORCID iD will be erased, and you will no longer "
+"be able to log in. Your contributions, published under the CC BY-SA 4.0 "
+"license, stay online and are credited to an anonymous contributor. This "
+"cannot be undone."
+
+#: templates/accounts/delete.html:17
+msgid "Supprimer définitivement"
+msgstr "Delete permanently"
+
+#: templates/accounts/delete.html:19 templates/accounts/password_change.html:14
+msgid "Annuler"
+msgstr "Cancel"
+
+#: templates/accounts/email/activation_body.txt:1
+#, python-format
+msgid "Bonjour %(name)s,"
+msgstr "Hello %(name)s,"
+
+#: templates/accounts/email/activation_body.txt:3
+msgid "Pour activer votre compte, ouvrez ce lien :"
+msgstr "To activate your account, open this link:"
+
+#: templates/accounts/email/activation_body.txt:7
+msgid ""
+"Le lien reste valable trois jours. Si vous n’êtes pas à l’origine de cette "
+"inscription, ignorez ce message : le compte ne sera pas activé."
+msgstr ""
+"The link is valid for three days. If you did not sign up, ignore this "
+"message: the account will not be activated."
+
+#: templates/accounts/email/activation_subject.txt:1
+msgid "Activez votre compte"
+msgstr "Activate your account"
+
+#: templates/accounts/email/activation_subject.txt:1
+#: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:6
+#: templates/base.html:11
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
-#: templates/base.html:15
+#: templates/accounts/email/password_reset_body.txt:1
+msgid "Bonjour,"
+msgstr "Hello,"
+
+#: templates/accounts/email/password_reset_body.txt:3
+msgid "Pour choisir un nouveau mot de passe, ouvrez ce lien :"
+msgstr "To choose a new password, open this link:"
+
+#: templates/accounts/email/password_reset_body.txt:7
+msgid ""
+"Le lien reste valable trois jours. Si vous n’avez rien demandé, ignorez ce "
+"message : votre mot de passe ne change pas."
+msgstr ""
+"The link is valid for three days. If you did not ask for it, ignore this "
+"message: your password stays the same."
+
+#: templates/accounts/email/password_reset_subject.txt:1
+#: templates/accounts/password_reset_confirm.html:4
+#: templates/accounts/password_reset_confirm.html:8
+msgid "Nouveau mot de passe"
+msgstr "New password"
+
+#: templates/accounts/login.html:4 templates/accounts/login.html:8
+#: templates/base.html:21
+msgid "Connexion"
+msgstr "Log in"
+
+#: templates/accounts/login.html:16
+msgid "Mot de passe oublié ?"
+msgstr "Forgotten your password?"
+
+#: templates/accounts/password_change.html:12
+msgid "Changer le mot de passe"
+msgstr "Change the password"
+
+#: templates/accounts/password_change_done.html:4
+#: templates/accounts/password_change_done.html:8
+msgid "Mot de passe modifié"
+msgstr "Password changed"
+
+#: templates/accounts/password_change_done.html:9
+msgid "Retour à mon compte"
+msgstr "Back to my account"
+
+#: templates/accounts/password_reset.html:4
+#: templates/accounts/password_reset.html:8
+msgid "Mot de passe oublié"
+msgstr "Forgotten password"
+
+#: templates/accounts/password_reset.html:9
+msgid ""
+"Indiquez l’adresse e-mail de votre compte : vous recevrez un lien pour "
+"choisir un nouveau mot de passe."
+msgstr ""
+"Enter the email address of your account: you will receive a link to choose a "
+"new password."
+
+#: templates/accounts/password_reset.html:16
+msgid "Envoyer le lien"
+msgstr "Send the link"
+
+#: templates/accounts/password_reset_complete.html:4
+#: templates/accounts/password_reset_complete.html:8
+msgid "Mot de passe enregistré"
+msgstr "Password saved"
+
+#: templates/accounts/password_reset_confirm.html:13
+msgid "Enregistrer le mot de passe"
+msgstr "Save the password"
+
+#: templates/accounts/password_reset_confirm.html:16
+msgid "Ce lien a déjà servi ou a expiré."
+msgstr "This link has already been used or has expired."
+
+#: templates/accounts/password_reset_confirm.html:17
+msgid "Demander un nouveau lien"
+msgstr "Ask for a new link"
+
+#: templates/accounts/password_reset_done.html:4
+#: templates/accounts/password_reset_done.html:8
+#: templates/accounts/signup_done.html:4 templates/accounts/signup_done.html:8
+msgid "Vérifiez votre boîte e-mail"
+msgstr "Check your inbox"
+
+#: templates/accounts/password_reset_done.html:9
+msgid ""
+"Si un compte existe avec cette adresse, un e-mail vient de partir. Suivez le "
+"lien qu’il contient ; il reste valable trois jours."
+msgstr ""
+"If an account exists with this address, an email is on its way. Follow the "
+"link it contains; it is valid for three days."
+
+#: templates/accounts/profile.html:8
+msgid "Page de contributeur"
+msgstr "Contributor page"
+
+#: templates/accounts/profile.html:18
+msgid "Membre depuis"
+msgstr "Member since"
+
+#: templates/accounts/profile.html:28
+msgid "Les contributions apparaîtront ici."
+msgstr "Contributions will appear here."
+
+#: templates/accounts/signup.html:9
+msgid ""
+"L’inscription est libre et réservée aux personnes majeures. Nous demandons "
+"seulement une adresse e-mail, pour activer le compte, et un nom affiché sur "
+"vos contributions."
+msgstr ""
+"Anyone aged 18 or over can sign up. We only ask for an email address, to "
+"activate the account, and a name shown on your contributions."
+
+#: templates/accounts/signup.html:16
+msgid "Créer mon compte"
+msgstr "Create my account"
+
+#: templates/accounts/signup.html:18
+msgid ""
+"Vos contributions sont publiées sous licence CC BY-SA 4.0. Si vous supprimez "
+"votre compte, elles restent en ligne, sans votre nom."
+msgstr ""
+"Your contributions are published under the CC BY-SA 4.0 license. If you "
+"delete your account, they stay online, without your name."
+
+#: templates/accounts/signup.html:23
+msgid "Vous avez déjà un compte ? Se connecter"
+msgstr "Already have an account? Log in"
+
+#: templates/accounts/signup_done.html:9
+msgid ""
+"Un e-mail vient de vous être envoyé. Suivez le lien qu’il contient pour "
+"activer votre compte ; il reste valable trois jours."
+msgstr ""
+"An email has just been sent to you. Follow the link it contains to activate "
+"your account; it is valid for three days."
+
+#: templates/accounts/signup_done.html:13
+msgid ""
+"Rien reçu ? Regardez dans les courriers indésirables, ou inscrivez-vous à "
+"nouveau avec la même adresse : un nouveau lien vous sera envoyé."
+msgstr ""
+"Nothing received? Check your spam folder, or sign up again with the same "
+"address: a new link will be sent to you."
+
+#: templates/base.html:13
+msgid "Compte"
+msgstr "Account"
+
+#: templates/base.html:18
+msgid "Déconnexion"
+msgstr "Log out"
+
+#: templates/base.html:22
+msgid "Inscription"
+msgstr "Sign up"
+
+#: templates/base.html:28
 msgid "Langue"
 msgstr "Language"
 
-#: templates/base.html:22
+#: templates/base.html:35
 msgid "Changer"
 msgstr "Change"
 
-#: templates/base.html:31
+#: templates/base.html:52
 msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
 msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
 
@@ -72,8 +489,8 @@ msgid ""
 "Les tournures des auteurs, de <i>consilium capere</i> à <i>quid multa?</i>, "
 "sont réunies en fiches attestées dans le corpus."
 msgstr ""
-"Authors’ expressions, from <i>consilium capere</i> to <i>quid multa?</i>, are "
-"gathered into entries attested in the corpus."
+"Authors’ expressions, from <i>consilium capere</i> to <i>quid multa?</i>, "
+"are gathered into entries attested in the corpus."
 
 #: templates/core/home.html:31
 msgid "Justifier"
@@ -84,11 +501,12 @@ msgid ""
 "Chaque choix de traduction peut s’appuyer sur des passages d’auteurs, une "
 "règle de grammaire ou un article de dictionnaire."
 msgstr ""
-"Every translation choice can rest on passages from authors, a grammar rule or "
-"a dictionary entry."
+"Every translation choice can rest on passages from authors, a grammar rule "
+"or a dictionary entry."
 
 #: templates/core/home.html:38
 msgid ""
 "Corpus de départ : Cicéron, César, Salluste, Tite-Live, Sénèque, Pline le "
 "Jeune."
-msgstr "Starting corpus: Cicero, Caesar, Sallust, Livy, Seneca, Pliny the Younger."
+msgstr ""
+"Starting corpus: Cicero, Caesar, Sallust, Livy, Seneca, Pliny the Younger."

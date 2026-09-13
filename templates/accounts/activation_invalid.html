@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Lien d’activation non valide" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Lien d’activation non valide" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Ce lien a déjà servi, a expiré ou est incomplet. Si votre compte est activé, connectez-vous ;
+    sinon, inscrivez-vous à nouveau avec la même adresse pour recevoir un nouveau lien.
+  {% endblocktranslate %}</p>
+  <p class="form-links">
+    <a href="{% url 'accounts:login' %}">{% translate "Se connecter" %}</a>
+    <a href="{% url 'accounts:signup' %}">{% translate "Créer un compte" %}</a>
+  </p>
+</section>
+{% endblock %}

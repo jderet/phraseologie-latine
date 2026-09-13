@@ -9,21 +9,42 @@
 <body>
   <header class="site-header">
     <a class="brand" href="{% url 'core:home' %}">{% translate "Phraséologie latine" %}</a>
-    <form class="lang" action="{% url 'set_language' %}" method="post">
-      {% csrf_token %}
-      <input name="next" type="hidden" value="{{ request.get_full_path }}">
-      <label for="language">{% translate "Langue" %}</label>
-      <select id="language" name="language">
-        {% get_available_languages as LANGUAGES %}
-        {% for code, name in LANGUAGES %}
-          <option value="{{ code }}"{% if code == LANGUAGE_CODE %} selected{% endif %}>{{ name }}</option>
-        {% endfor %}
-      </select>
-      <button type="submit">{% translate "Changer" %}</button>
-    </form>
+    <div class="site-tools">
+      <nav class="site-nav" aria-label="{% translate 'Compte' %}">
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a>
+          <form action="{% url 'accounts:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="link-button">{% translate "Déconnexion" %}</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}">{% translate "Connexion" %}</a>
+          <a href="{% url 'accounts:signup' %}">{% translate "Inscription" %}</a>
+        {% endif %}
+      </nav>
+      <form class="lang" action="{% url 'set_language' %}" method="post">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+        <label for="language">{% translate "Langue" %}</label>
+        <select id="language" name="language">
+          {% get_available_languages as LANGUAGES %}
+          {% for code, name in LANGUAGES %}
+            <option value="{{ code }}"{% if code == LANGUAGE_CODE %} selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">{% translate "Changer" %}</button>
+      </form>
+    </div>
   </header>
 
   <main class="site-main">
+    {% if messages %}
+    <ul class="messages" role="status">
+      {% for message in messages %}
+      <li class="message{% if message.tags %} message-{{ message.tags }}{% endif %}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 

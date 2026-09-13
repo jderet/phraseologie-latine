@@ -1,0 +1,1 @@
+{% load i18n %}{% translate "Activez votre compte" %} · {% translate "Phraséologie latine" %}

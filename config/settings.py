@@ -81,6 +81,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "core:home"
+LOGOUT_REDIRECT_URL = "core:home"
+
 
 # Internationalization: interface strings are written in French and translated in locale/.
 
@@ -114,6 +118,7 @@ MAILERS = {
         ),
     },
 }
+DEFAULT_FROM_EMAIL = env("DJANGO_DEFAULT_FROM_EMAIL", default="webmaster@localhost")
 
 
 # Corpus

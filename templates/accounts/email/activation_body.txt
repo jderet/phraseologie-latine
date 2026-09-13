@@ -1,0 +1,8 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate with name=user.display_name %}Bonjour {{ name }},{% endblocktranslate %}
+
+{% translate "Pour activer votre compte, ouvrez ce lien :" %}
+
+{{ activation_url }}
+
+{% translate "Le lien reste valable trois jours. Si vous n’êtes pas à l’origine de cette inscription, ignorez ce message : le compte ne sera pas activé." %}
+{% endautoescape %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Activer votre compte" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Activer votre compte" %}</h1>
+  <p class="lede">{% blocktranslate trimmed with email=activated_user.email %}
+    Compte associé à l’adresse {{ email }}.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    <button type="submit" class="button">{% translate "Activer mon compte" %}</button>
+  </form>
+</section>
+{% endblock %}

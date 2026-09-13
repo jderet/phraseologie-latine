@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Créer un compte" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Créer un compte" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    L’inscription est libre et réservée aux personnes majeures. Nous demandons seulement une adresse
+    e-mail, pour activer le compte, et un nom affiché sur vos contributions.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="button">{% translate "Créer mon compte" %}</button>
+  </form>
+  <p class="note">{% blocktranslate trimmed %}
+    Vos contributions sont publiées sous licence CC BY-SA 4.0. Si vous supprimez votre compte, elles
+    restent en ligne, sans votre nom.
+  {% endblocktranslate %}</p>
+  <p class="form-links">
+    <a href="{% url 'accounts:login' %}">{% translate "Vous avez déjà un compte ? Se connecter" %}</a>
+  </p>
+</section>
+{% endblock %}
