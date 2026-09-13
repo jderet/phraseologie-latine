@@ -29,7 +29,7 @@
           <span class="bitext-number">{{ row.segment.order }}</span>
           <label class="bitext-source" for="s{{ row.segment.pk }}" lang="{{ source.language }}">{{ row.segment.text }}</label>
           <div class="bitext-latin">
-            <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
+            <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false" data-segment="{{ row.segment.pk }}" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
             <p class="save-status" aria-live="polite">{% for error in row.errors %}{{ error }} {% endfor %}</p>
           </div>
         </li>
@@ -44,7 +44,24 @@
       </div>
     </form>
 
-    <aside class="editor-panel" aria-labelledby="panel-corpus">
+    <aside class="editor-panel" aria-label="{% translate 'Justifications et corpus' %}">
+      <section class="panel-section" aria-labelledby="panel-justifications">
+        <h2 id="panel-justifications">{% translate "Justifications" %}</h2>
+        <p class="note panel-hint">{% translate "Placez-vous sur une phrase ; sélectionnez des mots latins pour justifier ce choix." %}</p>
+        {% for row in rows %}
+        <div class="row-panel" data-segment="{{ row.segment.pk }}" hidden>
+          <p class="muted">{% blocktranslate with number=row.segment.order %}Phrase {{ number }}{% endblocktranslate %}</p>
+          {% if row.justifications %}
+          <ul class="row-justifications">
+            {% for justification in row.justifications %}{% include "justifications/justification_item.html" %}{% endfor %}
+          </ul>
+          {% else %}
+          <p class="note">{% translate "Aucune justification pour cette phrase." %}</p>
+          {% endif %}
+          <a class="button button-quiet justify-link" data-segment="{{ row.segment.pk }}" href="{% url 'justifications:create' version.pk row.segment.pk %}">{% translate "Justifier la sélection" %}</a>
+        </div>
+        {% endfor %}
+      </section>
       <h2 id="panel-corpus">{% translate "Corpus" %}</h2>
       <form method="get" action="{% url 'corpus:search' %}" target="_blank" class="panel-search" data-fragment-url="{% url 'corpus:search_fragment' %}">
         <div class="field">{{ search_form.term1.as_field_group }}{{ search_form.mode1.as_field_group }}</div>

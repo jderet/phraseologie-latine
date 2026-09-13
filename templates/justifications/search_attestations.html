@@ -1,0 +1,32 @@
+{% load i18n corpus_tags %}<section class="attestation-search" aria-labelledby="search-title">
+  <h2 id="search-title">{% translate "Chercher des attestations" %}</h2>
+  <form method="get" class="panel-search">
+    {% for name, value in keep.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+    <div class="field">{{ search.form.term1.as_field_group }}{{ search.form.mode1.as_field_group }}</div>
+    <div class="field">{{ search.form.term2.as_field_group }}{{ search.form.mode2.as_field_group }}</div>
+    <div class="field">{{ search.form.scope.as_field_group }}</div>
+    <button type="submit" class="button button-quiet">{% translate "Chercher" %}</button>
+  </form>
+  {% if search.form.is_bound %}{{ search.form.non_field_errors }}{% endif %}
+  {% if search.searched %}
+  {% if search.hits %}
+  <p class="note">{% blocktranslate trimmed count counter=search.page.paginator.count %}
+    {{ counter }} occurrence : cochez celles qui justifient votre choix.
+  {% plural %}
+    {{ counter }} occurrences : cochez celles qui justifient votre choix.
+  {% endblocktranslate %}{% if search.page.has_next %} {% translate "Seules les premières sont affichées : précisez la recherche au besoin." %}{% endif %}</p>
+  <ul class="attestation-choices">
+    {% for hit in search.hits %}
+    <li>
+      <label><input type="checkbox" name="attestation" value="{{ hit.word_ids }}" form="justification-form"{% if hit.word_ids in chosen_ids %} checked{% endif %}> <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span></label>
+      <a class="small-link" href="{{ hit.url }}" target="_blank" rel="noopener">{% translate "contexte" %}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="notice">{% blocktranslate trimmed with label=search.version.label %}
+    Introuvable dans le corpus interrogé (version {{ label }}).
+  {% endblocktranslate %}</p>
+  {% endif %}
+  {% endif %}
+</section>

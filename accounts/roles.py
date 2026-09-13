@@ -31,6 +31,9 @@ ROLE_PERMISSIONS = {
     ADMINISTRATOR: [
         "accounts.view_user",
         "accounts.change_user",
+        "justifications.add_bibliographicwork",
+        "justifications.change_bibliographicwork",
+        "justifications.view_bibliographicwork",
         "moderation.view_report",
         "moderation.view_revision",
     ],

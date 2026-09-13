@@ -126,9 +126,28 @@ class Hit:
         return self.token.passage.citation
 
     @property
+    def word_ids(self):
+        """Identifiers of the highlighted words, as sent by the forms that cite a hit."""
+        return ",".join(str(pk) for pk in sorted(self.highlighted))
+
+    @property
     def url(self):
-        ids = ",".join(str(pk) for pk in sorted(self.highlighted))
-        return f"{self.token.passage.get_absolute_url()}?mots={ids}#mot-{self.token.pk}"
+        return f"{self.token.passage.get_absolute_url()}?mots={self.word_ids}#mot-{self.token.pk}"
+
+
+def quotation(tokens, reach=CONTEXT_WORDS):
+    """A cited attestation: its words, all of one edition, with the words around them."""
+    tokens = sorted(tokens, key=lambda token: token.position)
+    first, last = tokens[0], tokens[-1]
+    words = (
+        Token.objects.filter(
+            edition_id=first.edition_id,
+            position__range=(first.position - reach, last.position + reach),
+        )
+        .only("id", "edition_id", "position", "form", "norm", "before", "after")
+        .order_by("position")
+    )
+    return Hit(first, list(words), {token.pk for token in tokens})
 
 
 def _nearby_words(tokens, reach):

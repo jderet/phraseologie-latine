@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -12,6 +14,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
 from corpus.forms import MODE_FORM, SCOPE_CORE, SearchForm
+from justifications.models import Justification
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
@@ -293,9 +296,22 @@ def _own_version(user, pk):
     return version
 
 
+def _justifications_by_segment(user, version):
+    grouped = defaultdict(list)
+    queryset = Justification.objects.filter(translated_segment__version=version).select_related(
+        "translated_segment"
+    )
+    for justification in queryset:
+        justification.translated_segment.version = version
+        if can_view(user, justification):
+            grouped[justification.translated_segment.segment_id].append(justification)
+    return grouped
+
+
 def _rows(user, version):
-    """Each sentence of the source text with its Latin in the version."""
+    """Each sentence of the source text with its Latin and its justifications in the version."""
     translated = {item.segment_id: item for item in version.segments.all()}
+    justifications = _justifications_by_segment(user, version)
     rows = []
     for source_segment in version.project.source_text.segments.all():
         item = translated.get(source_segment.pk)
@@ -308,6 +324,7 @@ def _rows(user, version):
                 "text": text,
                 "hidden": item is not None and not can_view(user, item),
                 "errors": None,
+                "justifications": justifications.get(source_segment.pk, []),
             }
         )
     return rows

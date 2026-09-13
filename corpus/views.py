@@ -62,7 +62,7 @@ def passage_detail(request, work_id, reference):
     )
 
 
-def _search_context(request, per_page):
+def search_context(request, per_page):
     defaults = {
         "scope": SCOPE_CORE,
         "distance": SearchForm.DEFAULT_DISTANCE,
@@ -92,10 +92,10 @@ def _search_context(request, per_page):
 
 
 def search(request):
-    return render(request, "corpus/search.html", _search_context(request, RESULTS_PER_PAGE))
+    return render(request, "corpus/search.html", search_context(request, RESULTS_PER_PAGE))
 
 
 def search_fragment(request):
     """Search results without the page around them, for the panel of the translation editor."""
-    context = _search_context(request, PANEL_RESULTS)
+    context = search_context(request, PANEL_RESULTS)
     return render(request, "corpus/search_results.html", {**context, "panel": True})

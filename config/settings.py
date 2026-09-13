@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "corpus",
     "moderation",
     "translations",
+    "justifications",
 ]
 
 MIDDLEWARE = [

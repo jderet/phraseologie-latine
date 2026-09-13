@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ justification }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{{ version.get_absolute_url }}#phrase-{{ segment.order }}">{{ version }}</a></p>
+  <h1>{% translate "Justification" %}</h1>
+  {% if version.is_draft %}
+  <p class="notice notice-info">{% translate "Brouillon : cette justification n’est visible que de vous." %}</p>
+  {% endif %}
+  {% if justification.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+  {% if not parts %}
+  <p class="notice">{% blocktranslate trimmed with excerpt=justification.latin_excerpt %}
+    À revoir : la phrase latine ne contient plus le passage justifié, « {{ excerpt }} ».
+  {% endblocktranslate %}</p>
+  {% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Phrase source" %}</dt>
+      <dd lang="{{ source_language }}">{{ segment.text }}{% if justification.source_excerpt %} <span class="muted">(« {{ justification.source_excerpt }} »)</span>{% endif %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Latin" %}</dt>
+      <dd lang="la" class="latin">{% if parts %}{{ parts.0 }}<mark>{{ parts.1 }}</mark>{{ parts.2 }}{% else %}{{ translated.text }}{% endif %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Force de preuve" %}</dt>
+      <dd><span class="strength">{{ justification.strength }}/5</span> {{ justification.get_strength_display }}{% if justification.corpus_version %} <span class="muted">({% blocktranslate with label=justification.corpus_version %}corpus interrogé : version {{ label }}{% endblocktranslate %})</span>{% endif %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Auteur" %}</dt>
+      <dd><a href="{{ justification.author.get_absolute_url }}">{{ justification.author.public_name }}</a>, {{ justification.created_at|date:"j F Y" }}</dd>
+    </div>
+  </dl>
+
+  {% if justification.comment %}
+  <h2>{% translate "Commentaire" %}</h2>
+  <p>{{ justification.comment|linebreaksbr }}</p>
+  {% endif %}
+
+  <h2>{% translate "Preuves" %}</h2>
+  <ul class="evidences">
+    {% for evidence in evidences %}{% include "justifications/evidence_item.html" %}{% empty %}
+    <li>{% translate "Aucune preuve." %}</li>
+    {% endfor %}
+  </ul>
+
+  {% if can_edit %}
+  <p class="form-links">
+    <a class="button" href="{% url 'justifications:edit' justification.pk %}">{% translate "Modifier" %}</a>
+    <a href="{% url 'justifications:evidence_add' justification.pk %}">{% translate "Ajouter des preuves" %}</a>
+  </p>
+  {% endif %}
+  {% moderation_links justification %}
+</article>
+{% endblock %}

@@ -51,14 +51,19 @@ def _record(obj, author, action, before, comment="", reverted_to=None):
 
 
 @transaction.atomic
-def save_with_revision(obj, author, comment=""):
-    """Save a moderated object and record the change; return None if nothing changed."""
+def save_with_revision(obj, author, comment="", m2m=None):
+    """Save a moderated object and record the change; return None if nothing changed.
+
+    ``m2m`` maps many-to-many fields to the values set before the new state is recorded.
+    """
     registration = get_registration(obj)
     creating = obj._state.adding
     check_can_contribute(author, counted=creating and registration.counts_toward_limit)
     check_text_for_links(author, *(getattr(obj, name) for name in registration.text_fields))
     before = None if creating else snapshot(_locked(obj))
     obj.save()
+    for name, values in (m2m or {}).items():
+        getattr(obj, name).set(values)
     if not creating and snapshot(obj) == before:
         return None
     action = Revision.Action.CREATE if creating else Revision.Action.UPDATE

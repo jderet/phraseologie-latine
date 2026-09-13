@@ -51,7 +51,15 @@
     <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
       <span class="bitext-number">{{ row.segment.order }}</span>
       <p class="bitext-source" lang="{{ source.language }}">{{ row.segment.text }}</p>
-      <p class="bitext-latin" lang="la">{% if row.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif row.saved %}{{ row.saved }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
+      <div class="bitext-latin">
+        <p lang="la">{% if row.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif row.saved %}{{ row.saved }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
+        {% if row.justifications %}
+        <ul class="row-justifications">
+          {% for justification in row.justifications %}{% include "justifications/justification_item.html" %}{% endfor %}
+        </ul>
+        {% endif %}
+        {% if can_translate and row.saved %}<a class="small-link" href="{% url 'justifications:create' version.pk row.segment.pk %}">{% translate "Justifier" %}</a>{% endif %}
+      </div>
     </li>
     {% endfor %}
   </ol>

@@ -1,0 +1,6 @@
+{% load i18n %}<li class="justification-item">
+  <a href="{{ justification.get_absolute_url }}" lang="la">« {{ justification.latin_excerpt }} »</a>
+  <span class="strength" title="{{ justification.get_strength_display }}">{{ justification.strength }}/5</span>
+  <span class="muted">{{ justification.get_strength_display }}</span>
+  {% if justification.needs_review %}<span class="badge review-badge">{% translate "à revoir" %}</span>{% endif %}
+</li>

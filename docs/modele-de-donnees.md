@@ -58,9 +58,14 @@ erDiagram
 
 ## 4. Justification
 
-- **Justification** (`Justification`) : segment traduit et révision visée, empan du latin, empan du texte source (facultatif), force de preuve (1 à 5), commentaire, auteur, statut.
-- **Preuve** (`Evidence`) : justification, type (attestation, règle de grammaire, article de dictionnaire), attestation citée ou référence bibliographique avec sa localisation (paragraphe, entrée).
-- **Ouvrage de référence** (`BibliographicWork`) : titre, abréviation (K-St, E-T, A&G, Gaffiot, L&S, TLL…), statut de droits (libre, ou sous droits et donc cité seulement).
+- **Justification** (`Justification`) : segment traduit, passage latin justifié (les mots tels qu'ils étaient écrits, avec leur position), empan du texte source (facultatif), force de preuve (1 à 5), commentaire, version du corpus interrogé (force 5), auteur. Seul l'auteur de la version justifie ses choix. Ce qu'exige chaque force :
+  - 1 à 3 : au moins une attestation du corpus ;
+  - 4, par analogie : un commentaire et au moins une preuve ;
+  - 5, introuvable : la version du corpus interrogé est enregistrée, et un commentaire ou une preuve explique le choix.
+
+  « À revoir » n'est pas enregistré mais calculé : la justification est à revoir quand la phrase latine ne contient plus le passage justifié (un passage seulement déplacé reste valable). Cela vaut aussi après un retour arrière.
+- **Preuve** (`Evidence`) : justification, type (attestation, règle de grammaire, article de dictionnaire), mots cités du corpus (identifiants stables) et leur passage, ou ouvrage de référence avec sa localisation (paragraphe, entrée), note, retirée ou non. Une preuve ne peut être retirée que si la justification garde ce qu'exige sa force. L'attestation (`Attestation`) de l'étape 3 s'y ajoutera.
+- **Ouvrage de référence** (`BibliographicWork`) : titre, abréviation (K-St, E-T, A&G, Gaffiot, L&S, TLL…), type (grammaire, dictionnaire), statut de droits (libre, ou sous droits et donc cité seulement). Liste tenue par les administrateurs ; aucun extrait n'est jamais stocké.
 - **Contestation** (`Challenge`) : objet contesté, auteur, argument, contre-exemples (attestations), discussion, votes.
 
 ## 5. Communauté

@@ -1,5 +1,6 @@
-// Translation editor: saves each sentence when it is left, types macrons, searches the corpus.
-// Without this script the page still works: the form saves every sentence at once.
+// Translation editor: saves each sentence when it is left, types macrons, searches the corpus
+// and prepares justifications. Without this script the page still works: the form saves every
+// sentence at once, and justifications are reached from the page of the version.
 (() => {
   "use strict";
 
@@ -15,6 +16,8 @@
   const csrfToken = editor.querySelector("[name=csrfmiddlewaretoken]").value;
   const fields = [...editor.querySelectorAll("textarea[data-save-url]")];
   const bar = document.getElementById("macron-bar");
+  const panels = [...document.querySelectorAll(".row-panel")];
+  const panelHint = document.querySelector(".panel-hint");
   const states = new Map(fields.map((field) => [field, { saved: field.value }]));
   let activeField = null;
   let submitting = false;
@@ -39,21 +42,11 @@
     status.classList.toggle("is-error", isError);
   }
 
-  async function save(field) {
-    const state = states.get(field);
-    clearTimeout(state.timer);
-    if (field.value === state.saved) {
-      return;
-    }
-    if (state.pending) {
-      state.again = true;
-      return;
-    }
+  async function send(field, state) {
     const text = field.value;
     const body = new FormData();
     body.append("csrfmiddlewaretoken", csrfToken);
     body.append("text", text);
-    state.pending = true;
     showStatus(field, labels.labelSaving);
     try {
       const response = await fetch(field.dataset.saveUrl, {
@@ -74,13 +67,52 @@
       }
     } catch {
       showStatus(field, labels.labelError, true);
-    } finally {
-      state.pending = false;
+    }
+  }
+
+  // Resolves when the sentence is saved, including a change made while it was being saved.
+  function save(field) {
+    const state = states.get(field);
+    clearTimeout(state.timer);
+    if (state.pending) {
+      state.again = true;
+      return state.pending;
+    }
+    if (field.value === state.saved) {
+      return Promise.resolve();
+    }
+    state.pending = send(field, state).finally(() => {
+      state.pending = null;
       if (state.again) {
         state.again = false;
-        save(field);
+        return save(field);
       }
+      return undefined;
+    });
+    return state.pending;
+  }
+
+  function justifyLink(field) {
+    return document.querySelector(`.justify-link[data-segment="${field.dataset.segment}"]`);
+  }
+
+  // The link to justify a choice carries the selected Latin words and their position.
+  function followSelection(field) {
+    const link = justifyLink(field);
+    if (!link) {
+      return;
     }
+    const url = new URL(link.href);
+    const selected = field.value.slice(field.selectionStart, field.selectionEnd);
+    const excerpt = selected.trim();
+    if (excerpt) {
+      url.searchParams.set("extrait", excerpt);
+      url.searchParams.set("debut", String(field.selectionStart + selected.indexOf(excerpt)));
+    } else {
+      url.searchParams.delete("extrait");
+      url.searchParams.delete("debut");
+    }
+    link.href = url.toString();
   }
 
   function activate(field) {
@@ -91,6 +123,12 @@
     field.after(bar);
     bar.hidden = false;
     activeField = field;
+    for (const panel of panels) {
+      panel.hidden = panel.dataset.segment !== field.dataset.segment;
+    }
+    if (panelHint) {
+      panelHint.hidden = true;
+    }
   }
 
   for (const field of fields) {
@@ -104,6 +142,9 @@
     });
     field.addEventListener("focus", () => activate(field));
     field.addEventListener("blur", () => save(field));
+    for (const name of ["select", "keyup", "mouseup"]) {
+      field.addEventListener(name, () => followSelection(field));
+    }
     field.addEventListener("keydown", (event) => {
       if (event.key !== "Enter" || event.shiftKey || event.isComposing) {
         return;
@@ -130,6 +171,18 @@
     activeField.focus();
   });
 
+  // A sentence is saved before its justification page opens.
+  document.addEventListener("click", async (event) => {
+    const link = event.target.closest(".justify-link");
+    const field = link && fields.find((candidate) => candidate.dataset.segment === link.dataset.segment);
+    if (!field) {
+      return;
+    }
+    event.preventDefault();
+    await save(field);
+    window.location.assign(link.href);
+  });
+
   editor.addEventListener("submit", () => {
     submitting = true;
   });
@@ -140,7 +193,7 @@
   });
 
   // Corpus search in the side panel; the results are HTML rendered and escaped by the server.
-  const search = document.querySelector(".panel-search");
+  const search = document.querySelector(".editor-panel .panel-search");
   const results = document.querySelector(".panel-results");
   if (search && results) {
     search.addEventListener("submit", async (event) => {

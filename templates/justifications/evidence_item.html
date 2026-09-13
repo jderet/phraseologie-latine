@@ -1,0 +1,16 @@
+{% load i18n corpus_tags %}<li class="evidence">
+  {% if evidence.quotation %}
+  <a class="hit-ref" href="{{ evidence.quotation.url }}">{{ evidence.quotation.citation }}</a>
+  <span class="kwic" lang="la">… {% render_tokens evidence.quotation.words evidence.quotation.highlighted %} …</span>
+  {% elif evidence.work %}
+  <span class="evidence-reference"><abbr title="{{ evidence.work.title }}">{{ evidence.work.abbreviation }}</abbr> {{ evidence.locator }}</span>
+  <span class="muted">{{ evidence.get_kind_display|capfirst }}{% if evidence.work.rights == "restricted" %} · {% translate "ouvrage sous droits, cité sans extrait" %}{% endif %}</span>
+  {% endif %}
+  {% if evidence.note %}<span class="evidence-note">{{ evidence.note }}</span>{% endif %}
+  {% if can_edit %}
+  <form method="post" action="{% url 'justifications:evidence_withdraw' evidence.pk %}" class="inline-form">
+    {% csrf_token %}
+    <button type="submit" class="link-button">{% translate "Retirer cette preuve" %}</button>
+  </form>
+  {% endif %}
+</li>

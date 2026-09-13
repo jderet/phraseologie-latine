@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{{ heading }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ version.get_absolute_url }}#phrase-{{ segment.order }}">{{ version }}</a>{% if justification %} · <a href="{{ justification.get_absolute_url }}">{% translate "Justification" %}</a>{% endif %}</p>
+  <h1>{{ heading }}</h1>
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Phrase source" %}</dt>
+      <dd lang="{{ source_language }}">{{ segment.text }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Latin" %}</dt>
+      <dd lang="la" class="latin">{{ translated.text }}</dd>
+    </div>
+  </dl>
+
+  {% if search %}{% include "justifications/search_attestations.html" %}{% endif %}
+
+  <form method="post" id="justification-form" class="form">
+    {% csrf_token %}
+    {% if hint is not None %}<input type="hidden" name="debut" value="{{ hint }}">{% endif %}
+    {% if errors %}<ul class="errorlist">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+    {% if chosen %}
+    <fieldset>
+      <legend>{% translate "Attestations retenues" %}</legend>
+      <ul class="attestation-choices">
+        {% for quote in chosen %}
+        <li><label><input type="checkbox" name="attestation" value="{{ quote.word_ids }}" checked> <span class="hit-ref">{{ quote.citation }}</span> <span class="kwic" lang="la">… {% render_tokens quote.words quote.highlighted %} …</span></label></li>
+        {% endfor %}
+      </ul>
+    </fieldset>
+    {% endif %}
+    {% if form %}{{ form }}{% endif %}
+    {% if references %}
+    <fieldset class="references">
+      <legend>{% translate "Grammaires et dictionnaires" %}</legend>
+      {{ references.management_form }}
+      {% for reference in references %}<div class="reference-row">{{ reference }}</div>{% endfor %}
+    </fieldset>
+    {% endif %}
+    {% if show_rules %}
+    <p class="note">{% blocktranslate trimmed %}
+      Forces 1 à 3 : au moins une attestation du corpus. Force 4, par analogie : un commentaire
+      et au moins une preuve. Force 5 : la version du corpus interrogé est enregistrée ;
+      expliquez votre choix par un commentaire ou une preuve.
+    {% endblocktranslate %}</p>
+    {% endif %}
+    <button type="submit" class="button">{{ submit_label }}</button>
+  </form>
+</section>
+{% endblock %}
