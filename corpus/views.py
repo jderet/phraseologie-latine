@@ -8,6 +8,7 @@ from .search import author_distribution, build_hits, corpus_version, default_lay
 
 PASSAGES_PER_PAGE = 50
 RESULTS_PER_PAGE = 50
+PANEL_RESULTS = 20
 MAX_HIGHLIGHTED = 100
 
 
@@ -61,7 +62,7 @@ def passage_detail(request, work_id, reference):
     )
 
 
-def search(request):
+def _search_context(request, per_page):
     defaults = {
         "scope": SCOPE_CORE,
         "distance": SearchForm.DEFAULT_DISTANCE,
@@ -79,7 +80,7 @@ def search(request):
         terms, distance, ordered = form.terms, form.search_distance, form.cleaned_data["ordered"]
         layer = default_layer()
         hits = search_tokens(terms, distance, ordered, form.filters(), layer)
-        page = Paginator(hits, RESULTS_PER_PAGE).get_page(request.GET.get("page"))
+        page = Paginator(hits, per_page).get_page(request.GET.get("page"))
         context.update(
             searched=True,
             page=page,
@@ -87,4 +88,14 @@ def search(request):
             distribution=author_distribution(hits),
             core_only=form.core_only,
         )
-    return render(request, "corpus/search.html", context)
+    return context
+
+
+def search(request):
+    return render(request, "corpus/search.html", _search_context(request, RESULTS_PER_PAGE))
+
+
+def search_fragment(request):
+    """Search results without the page around them, for the panel of the translation editor."""
+    context = _search_context(request, PANEL_RESULTS)
+    return render(request, "corpus/search_results.html", {**context, "panel": True})

@@ -4,13 +4,14 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Q
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
+from corpus.forms import MODE_FORM, SCOPE_CORE, SearchForm
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
@@ -35,6 +36,7 @@ from .services import (
 )
 
 ITEMS_PER_PAGE = 50
+PANEL_SEARCH_DEFAULTS = {"scope": SCOPE_CORE, "mode1": MODE_FORM, "mode2": MODE_FORM}
 
 
 def _visible(user, queryset, pk):
@@ -389,6 +391,7 @@ def version_edit(request, pk):
         request,
         "translations/version_edit.html",
         {
+            "search_form": SearchForm(initial=PANEL_SEARCH_DEFAULTS),
             "version": version,
             "project": version.project,
             "source": version.project.source_text,
@@ -396,6 +399,21 @@ def version_edit(request, pk):
             **_progress(rows),
         },
     )
+
+
+@login_required
+@require_POST
+def translation_save(request, pk, segment_pk):
+    """Save the Latin of one sentence from the editor; the answer is JSON."""
+    version = _own_version(request.user, pk)
+    source_segment = get_object_or_404(version.project.source_text.segments, pk=segment_pk)
+    form = TranslationTextForm(request.POST, user=request.user)
+    if not form.is_valid():
+        errors = [error["message"] for error in form.errors["text"].get_json_data()]
+        return JsonResponse({"errors": errors}, status=400)
+    text = form.cleaned_data["text"]
+    revision = save_translation(version, source_segment, text, request.user)
+    return JsonResponse({"text": text, "changed": revision is not None})
 
 
 @login_required

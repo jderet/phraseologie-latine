@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n corpus_tags %}
+{% load i18n %}
 
 {% block title %}{% translate "Recherche" %} · {{ block.super }}{% endblock %}
 
@@ -41,41 +41,5 @@
   </form>
 </section>
 
-{% if searched %}
-<section class="results" aria-labelledby="results-title">
-  {% if page.paginator.count %}
-  <h2 id="results-title">{% blocktranslate count counter=page.paginator.count %}{{ counter }} occurrence{% plural %}{{ counter }} occurrences{% endblocktranslate %}</h2>
-  <ul class="distribution">
-    {% for author, count in distribution %}
-    <li>{{ author.name }} <span class="muted">{{ count }}</span></li>
-    {% endfor %}
-  </ul>
-  <ol class="hits" start="{{ page.start_index }}">
-    {% for hit in hits %}
-    <li>
-      <a class="hit-ref" href="{{ hit.url }}">{{ hit.citation }}</a>
-      <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
-    </li>
-    {% endfor %}
-  </ol>
-  {% if page.has_other_pages %}
-  <nav class="pager" aria-label="{% translate 'Pages de résultats' %}">
-    {% if page.has_previous %}<a rel="prev" href="{% querystring page=page.previous_page_number %}">{% translate "Page précédente" %}</a>{% endif %}
-    <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
-    {% if page.has_next %}<a rel="next" href="{% querystring page=page.next_page_number %}">{% translate "Page suivante" %}</a>{% endif %}
-  </nav>
-  {% endif %}
-  {% else %}
-  <h2 id="results-title">{% translate "Aucune occurrence" %}</h2>
-  <p class="notice">{% blocktranslate trimmed with label=version.label %}
-    Introuvable dans le corpus interrogé (version {{ label }}).
-  {% endblocktranslate %}{% if core_only %} {% translate "La recherche portait sur le noyau seulement." %}{% endif %}</p>
-  {% endif %}
-  <p class="note">{% blocktranslate trimmed with label=version.label count counter=version.edition_count %}
-    Corpus interrogé : {{ label }}, {{ counter }} édition.
-  {% plural %}
-    Corpus interrogé : {{ label }}, {{ counter }} éditions.
-  {% endblocktranslate %}</p>
-</section>
-{% endif %}
+{% include "corpus/search_results.html" %}
 {% endblock %}

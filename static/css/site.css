@@ -755,6 +755,146 @@ article > h2 {
   border-top: 1px solid var(--rule);
 }
 
+.page-wide .site-header,
+.page-wide .site-main,
+.page-wide .site-footer {
+  max-width: 1480px;
+}
+
+.editor-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 26rem);
+  gap: 32px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+.editor-help {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+}
+
+.bitext-row.is-active {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.save-status {
+  min-height: 1.2em;
+  margin: 2px 0 0;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+
+.save-status.is-error {
+  color: var(--danger);
+}
+
+.macron-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.macron-bar button {
+  min-width: 2rem;
+  padding: 2px 6px;
+  font: 1rem var(--serif);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.macron-bar button:hover {
+  border-color: var(--accent);
+}
+
+.editor-panel {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+}
+
+.editor-panel h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.panel-search {
+  display: grid;
+  gap: 12px;
+}
+
+.panel-search label,
+.panel-search legend {
+  font-weight: 600;
+}
+
+.panel-search input[type="text"] {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.panel-search fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.panel-search fieldset > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+}
+
+.panel-search fieldset label {
+  font-weight: 400;
+}
+
+.panel-results .results h2 {
+  font-size: 1.05rem;
+}
+
+.panel-results .hits {
+  padding-left: 1.8em;
+  font-size: 0.95rem;
+}
+
+.panel-results .hit-ref {
+  display: block;
+  min-width: 0;
+}
+
+.panel-results .kwic {
+  font-size: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .editor-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .editor-panel {
+    position: static;
+    max-height: none;
+  }
+}
+
 .reference-badge {
   color: var(--accent);
   border-color: var(--accent);

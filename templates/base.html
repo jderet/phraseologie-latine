@@ -6,7 +6,7 @@
   <title>{% block title %}{% translate "Phraséologie latine" %}{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
 </head>
-<body>
+<body{% block body_attributes %}{% endblock %}>
   <header class="site-header">
     <div class="site-brand">
       <a class="brand" href="{% url 'core:home' %}">{% translate "Phraséologie latine" %}</a>

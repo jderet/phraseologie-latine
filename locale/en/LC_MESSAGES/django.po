@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 23:48+0200\n"
+"POT-Creation-Date: 2026-09-13 23:54+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -175,7 +175,7 @@ msgstr ""
 
 #: corpus/apps.py:7 corpus/forms.py:46 templates/base.html:14
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
-#: templates/corpus/work.html:8
+#: templates/corpus/work.html:8 templates/translations/version_edit.html:48
 msgid "Corpus"
 msgstr "Corpus"
 
@@ -998,7 +998,7 @@ msgstr ""
 #: templates/accounts/account.html:26
 #: templates/translations/project_form.html:21
 #: templates/translations/source_edit.html:14
-#: templates/translations/version_edit.html:28
+#: templates/translations/version_edit.html:42
 #: templates/translations/version_form.html:21
 msgid "Enregistrer"
 msgstr "Save"
@@ -1312,7 +1312,7 @@ msgstr "Three connected goals"
 
 #: templates/core/home.html:18 templates/translations/version_detail.html:40
 #: templates/translations/version_edit.html:4
-#: templates/translations/version_edit.html:9
+#: templates/translations/version_edit.html:11
 msgid "Traduire"
 msgstr "Translate"
 
@@ -1409,51 +1409,55 @@ msgstr ""
 msgid "Filtres"
 msgstr "Filters"
 
-#: templates/corpus/search.html:40
+#: templates/corpus/search.html:40 templates/translations/version_edit.html:53
 msgid "Chercher"
 msgstr "Search"
 
-#: templates/corpus/search.html:47
+#: templates/corpus/search_results.html:10
 #, python-format
 msgid "%(counter)s occurrence"
 msgid_plural "%(counter)s occurrences"
 msgstr[0] "%(counter)s occurrence"
 msgstr[1] "%(counter)s occurrences"
 
-#: templates/corpus/search.html:62
+#: templates/corpus/search_results.html:26
+msgid "Toutes les occurrences dans la recherche"
+msgstr "All occurrences in the search page"
+
+#: templates/corpus/search_results.html:29
 msgid "Pages de résultats"
 msgstr "Result pages"
 
-#: templates/corpus/search.html:63 templates/corpus/work.html:65
+#: templates/corpus/search_results.html:30 templates/corpus/work.html:65
 #: templates/translations/pager.html:3
 msgid "Page précédente"
 msgstr "Previous page"
 
-#: templates/corpus/search.html:64 templates/corpus/work.html:66
+#: templates/corpus/search_results.html:31 templates/corpus/work.html:66
 #: templates/translations/pager.html:4
 #, python-format
 msgid "Page %(number)s sur %(total)s"
 msgstr "Page %(number)s of %(total)s"
 
-#: templates/corpus/search.html:65 templates/corpus/work.html:67
+#: templates/corpus/search_results.html:32 templates/corpus/work.html:67
 #: templates/translations/pager.html:5
 msgid "Page suivante"
 msgstr "Next page"
 
-#: templates/corpus/search.html:69
+#: templates/corpus/search_results.html:36
 msgid "Aucune occurrence"
 msgstr "No occurrence"
 
-#: templates/corpus/search.html:70
+#: templates/corpus/search_results.html:37
 #, python-format
 msgid "Introuvable dans le corpus interrogé (version %(label)s)."
 msgstr "Not found in the searched corpus (version %(label)s)."
 
-#: templates/corpus/search.html:72
+#: templates/corpus/search_results.html:39
 msgid "La recherche portait sur le noyau seulement."
 msgstr "The search covered the core only."
 
-#: templates/corpus/search.html:74
+#: templates/corpus/search_results.html:41
 #, python-format
 msgid "Corpus interrogé : %(label)s, %(counter)s édition."
 msgid_plural "Corpus interrogé : %(label)s, %(counter)s éditions."
@@ -1596,7 +1600,9 @@ msgstr "No published version yet."
 msgid ""
 "Les versions publiées, alignées phrase par phrase. La version de référence, "
 "choisie par le créateur du projet, vient en premier."
-msgstr "The published versions, aligned sentence by sentence. The reference version, chosen by the creator of the project, comes first."
+msgstr ""
+"The published versions, aligned sentence by sentence. The reference version, "
+"chosen by the creator of the project, comes first."
 
 #: templates/translations/project_compare.html:20
 msgid "Versions affichées"
@@ -1843,7 +1849,7 @@ msgid "Aucun texte pour l’instant."
 msgstr "No text yet."
 
 #: templates/translations/version_detail.html:9
-#: templates/translations/version_edit.html:8
+#: templates/translations/version_edit.html:10
 #, python-format
 msgid "Version de %(name)s"
 msgstr "Version by %(name)s"
@@ -1880,7 +1886,7 @@ msgid "Avancement"
 msgstr "Progress"
 
 #: templates/translations/version_detail.html:29
-#: templates/translations/version_edit.html:11
+#: templates/translations/version_edit.html:13
 #: templates/translations/version_item.html:3
 #: templates/translations/version_publish.html:10
 #, python-format
@@ -1900,18 +1906,41 @@ msgstr "Publish"
 msgid "Texte et traduction"
 msgstr "Text and translation"
 
-#: templates/translations/version_edit.html:10
+#: templates/translations/version_edit.html:12
 msgid "Brouillon visible de vous seul."
 msgstr "Draft visible to you only."
 
-#: templates/translations/version_edit.html:10
+#: templates/translations/version_edit.html:12
 msgid ""
 "Version publiée : chaque modification est visible de tous et reste dans "
 "l’historique."
 msgstr ""
 "Published version: every change is visible to all and stays in the history."
 
-#: templates/translations/version_edit.html:29
+#: templates/translations/version_edit.html:17
+msgid "Enregistrement…"
+msgstr "Saving…"
+
+#: templates/translations/version_edit.html:18
+msgid "Enregistré"
+msgstr "Saved"
+
+#: templates/translations/version_edit.html:19
+msgid "Échec de l’enregistrement : vérifiez la connexion, puis réessayez."
+msgstr "Saving failed: check the connection, then try again."
+
+#: templates/translations/version_edit.html:21
+msgid ""
+"Une voyelle suivie de = prend un macron : a= donne ā (tapez = une seconde "
+"fois pour revenir à a=). Entrée passe à la phrase suivante ; chaque phrase "
+"est enregistrée dès que vous la quittez."
+msgstr "A vowel followed by = takes a macron: a= gives ā (type = a second time to get a= back). Enter moves to the next sentence; each sentence is saved as soon as you leave it."
+
+#: templates/translations/version_edit.html:38
+msgid "Voyelles longues"
+msgstr "Long vowels"
+
+#: templates/translations/version_edit.html:43
 msgid "Voir la version"
 msgstr "View the version"
 
@@ -2274,49 +2303,49 @@ msgstr "The reference version must be a published version of this project."
 msgid "Choix de la version de référence"
 msgstr "Choice of the reference version"
 
-#: translations/views.py:62 translations/views.py:229 translations/views.py:385
+#: translations/views.py:64 translations/views.py:231 translations/views.py:387
 msgid "Aucune modification."
 msgstr "No change."
 
-#: translations/views.py:64
+#: translations/views.py:66
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
-#: translations/views.py:116
+#: translations/views.py:118
 msgid "Le texte est ajouté."
 msgstr "The text has been added."
 
-#: translations/views.py:166
+#: translations/views.py:168
 msgid "Le projet est créé."
 msgstr "The project has been created."
 
-#: translations/views.py:225
+#: translations/views.py:227
 msgid "Choisissez une version publiée de ce projet."
 msgstr "Choose a published version of this project."
 
-#: translations/views.py:231
+#: translations/views.py:233
 msgid "Le projet n’a plus de version de référence."
 msgstr "The project no longer has a reference version."
 
-#: translations/views.py:233
+#: translations/views.py:235
 msgid "La version de référence est choisie."
 msgstr "The reference version has been chosen."
 
-#: translations/views.py:378
+#: translations/views.py:380
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:387
+#: translations/views.py:389
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:421
+#: translations/views.py:439
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:429
+#: translations/views.py:447
 msgid "La version est publiée."
 msgstr "The version has been published."

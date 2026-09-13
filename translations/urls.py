@@ -22,6 +22,11 @@ urlpatterns = [
     ),
     path("versions/<int:pk>/", views.version_detail, name="version"),
     path("versions/<int:pk>/traduire/", views.version_edit, name="version_edit"),
+    path(
+        "versions/<int:pk>/phrases/<int:segment_pk>/",
+        views.translation_save,
+        name="translation_save",
+    ),
     path("versions/<int:pk>/style/", views.version_settings, name="version_settings"),
     path("versions/<int:pk>/publier/", views.version_publish, name="version_publish"),
 ]

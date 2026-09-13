@@ -1,7 +1,9 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% translate "Traduire" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block body_attributes %} class="page-wide"{% endblock %}
 
 {% block content %}
 <section>
@@ -10,24 +12,49 @@
   <p class="lede">{% if version.is_draft %}{% translate "Brouillon visible de vous seul." %}{% else %}{% translate "Version publiée : chaque modification est visible de tous et reste dans l’historique." %}{% endif %}</p>
   <p class="note">{% blocktranslate asvar progress with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{{ progress|capfirst }}</p>
 
-  <form method="post" class="editor-form">
-    {% csrf_token %}
-    <ol class="bitext">
-      {% for row in rows %}
-      <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
-        <span class="bitext-number">{{ row.segment.order }}</span>
-        <label class="bitext-source" for="s{{ row.segment.pk }}" lang="{{ source.language }}">{{ row.segment.text }}</label>
-        <div class="bitext-latin">
-          <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false">{{ row.text }}</textarea>
-          {% if row.errors %}{{ row.errors }}{% endif %}
-        </div>
-      </li>
-      {% endfor %}
-    </ol>
-    <div class="editor-actions">
-      <button type="submit" class="button">{% translate "Enregistrer" %}</button>
-      <a href="{{ version.get_absolute_url }}">{% translate "Voir la version" %}</a>
-    </div>
-  </form>
+  <div class="editor-layout">
+    <form method="post" class="editor-form" id="editor"
+          data-label-saving="{% translate 'Enregistrement…' %}"
+          data-label-saved="{% translate 'Enregistré' %}"
+          data-label-error="{% translate 'Échec de l’enregistrement : vérifiez la connexion, puis réessayez.' %}">
+      {% csrf_token %}
+      <p class="note editor-help">{% blocktranslate trimmed %}
+        Une voyelle suivie de = prend un macron : a= donne ā (tapez = une seconde fois pour
+        revenir à a=). Entrée passe à la phrase suivante ; chaque phrase est enregistrée dès que
+        vous la quittez.
+      {% endblocktranslate %}</p>
+      <ol class="bitext">
+        {% for row in rows %}
+        <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
+          <span class="bitext-number">{{ row.segment.order }}</span>
+          <label class="bitext-source" for="s{{ row.segment.pk }}" lang="{{ source.language }}">{{ row.segment.text }}</label>
+          <div class="bitext-latin">
+            <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
+            <p class="save-status" aria-live="polite">{% for error in row.errors %}{{ error }} {% endfor %}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+      <div class="macron-bar" id="macron-bar" role="toolbar" aria-label="{% translate 'Voyelles longues' %}" hidden>
+        {% for letter in "āēīōūȳĀĒĪŌŪȲ" %}<button type="button" data-insert="{{ letter }}" lang="la">{{ letter }}</button>{% endfor %}
+      </div>
+      <div class="editor-actions">
+        <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+        <a href="{{ version.get_absolute_url }}">{% translate "Voir la version" %}</a>
+      </div>
+    </form>
+
+    <aside class="editor-panel" aria-labelledby="panel-corpus">
+      <h2 id="panel-corpus">{% translate "Corpus" %}</h2>
+      <form method="get" action="{% url 'corpus:search' %}" target="_blank" class="panel-search" data-fragment-url="{% url 'corpus:search_fragment' %}">
+        <div class="field">{{ search_form.term1.as_field_group }}{{ search_form.mode1.as_field_group }}</div>
+        <div class="field">{{ search_form.term2.as_field_group }}{{ search_form.mode2.as_field_group }}</div>
+        <div class="field">{{ search_form.scope.as_field_group }}</div>
+        <button type="submit" class="button">{% translate "Chercher" %}</button>
+      </form>
+      <div class="panel-results" aria-live="polite"></div>
+    </aside>
+  </div>
 </section>
+<script src="{% static 'js/editor.js' %}" defer></script>
 {% endblock %}
