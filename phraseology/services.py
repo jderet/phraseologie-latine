@@ -252,6 +252,18 @@ def _review(attestation, reviewer, status, sense=None, realization=None):
     if not is_reviewer(reviewer) or not can_view(reviewer, attestation):
         raise PermissionDenied
     validating = status == Attestation.Status.VALIDATED
+    if (
+        validating
+        and attestation.level == Attestation.Level.AUTOMATIC
+        and not attestation.passage.edition.work.is_core
+    ):
+        raise ValidationError(
+            gettext(
+                "Hors du noyau, une attestation repérée automatiquement n’est pas validée ; "
+                "un relecteur peut la rejeter."
+            ),
+            code="outside_core",
+        )
     placing = validating and (sense is not None or realization is not None)
     if attestation.is_withdrawn or (attestation.status == status and not placing):
         return None
@@ -276,7 +288,7 @@ def review_attestation(attestation, reviewer, status):
         raise ValueError("An attestation is validated or rejected.")
     attestation = (
         Attestation.objects.select_for_update(of=("self",))
-        .select_related("unit")
+        .select_related("unit", "passage__edition__work")
         .get(pk=attestation.pk)
     )
     revision = _review(attestation, reviewer, status)
@@ -287,10 +299,11 @@ def review_attestation(attestation, reviewer, status):
 
 @transaction.atomic
 def review_attestations(unit, ids, reviewer, status, sense=None, realization=None):
-    """A reviewer validates or rejects attestations of the core in one batch.
+    """A reviewer validates attestations of the core, or rejects attestations, in one batch.
 
-    Batches are for the core, whose attestations are checked by people (T2). The validated
-    attestations may be given a sense or a realization of the unit.
+    Validation is for the core, whose attestations are checked by people; outside it,
+    attestations found automatically stay so (T2). The validated attestations may be given a
+    sense or a realization of the unit.
     """
     if status not in REVIEW_STATUSES:
         raise ValueError("An attestation is validated or rejected.")
@@ -299,11 +312,12 @@ def review_attestations(unit, ids, reviewer, status, sense=None, realization=Non
     for part in (sense, realization):
         if part is not None and part.unit_id != unit.pk:
             raise ValueError("The sense or the realization belongs to another unit.")
+    attestations = unit.attestations.active().filter(pk__in=ids)
+    if status == Attestation.Status.VALIDATED:
+        attestations = attestations.filter(passage__edition__work__is_core=True)
     attestations = (
-        unit.attestations.active()
-        .filter(pk__in=ids, passage__edition__work__is_core=True)
-        .select_for_update(of=("self",))
-        .select_related("unit")
+        attestations.select_for_update(of=("self",))
+        .select_related("unit", "passage__edition__work")
         .order_by("pk")
     )
     revisions = []
@@ -322,10 +336,12 @@ SURVEY_LIMIT = 1000
 
 @transaction.atomic
 def survey_unit(unit, user):
-    """Record the occurrences of the schema in the core as automatic attestations to review.
+    """Record the occurrences of the schema in the corpus as automatic attestations.
 
-    An occurrence whose words an attestation of the unit already covers, even a rejected one,
-    is left aside. A survey adds at most SURVEY_LIMIT attestations; the next one goes on.
+    Those of the core, recorded first, are to be reviewed; the others stay found
+    automatically (T2). An occurrence whose words an attestation of the unit already covers,
+    even a rejected one, is left aside. A survey adds at most SURVEY_LIMIT attestations; the
+    next one goes on.
     """
     _check_edit(user, unit)
     if not unit.schema:
@@ -336,17 +352,20 @@ def survey_unit(unit, user):
     if layer is None:
         raise ValidationError(gettext("Le relevé demande un corpus analysé."), code="no_layer")
     edges = unit.edges
-    roots = (
-        schema_matches(edges, layer, core_only=True)
+    rows = list(
+        schema_matches(edges, layer)
         .order_by(
+            "-token__edition__work__is_core",
             "token__edition__work__author__birth_year",
             "token__edition__work__cts_urn",
             "token__position",
             "part",
         )
-        .values_list("token_id", "part", "token__position")
+        .values_list("token_id", "part", "token__position", "token__edition__work__is_core")
     )
-    occurrences = list(dict.fromkeys(occurrence_words(roots, edges, layer)))
+    words = occurrence_words([row[:3] for row in rows], edges, layer)
+    # Word sets in the order found, each with whether it is in the core.
+    occurrences = dict(zip(words, (row[3] for row in rows), strict=True))
     covered = defaultdict(set)
     rows = Attestation.tokens.through.objects.filter(
         attestation__unit=unit, attestation__is_withdrawn=False
@@ -383,6 +402,7 @@ def survey_unit(unit, user):
             "schema": unit.schema,
             "corpus_version": corpus_version().label,
             "found": len(occurrences),
+            "core_found": sum(occurrences.values()),
             "added": len(added),
             "remaining": len(new) - len(added),
             "surveyed_by": user,

@@ -144,7 +144,7 @@ def quotation(tokens, reach=CONTEXT_WORDS):
             edition_id=first.edition_id,
             position__range=(first.position - reach, last.position + reach),
         )
-        .only("id", "edition_id", "position", "form", "norm", "before", "after")
+        .only("id", "edition_id", "passage_id", "position", "form", "norm", "before", "after")
         .order_by("position")
     )
     return Hit(first, list(words), {token.pk for token in tokens})
@@ -158,7 +158,7 @@ def _nearby_words(tokens, reach):
             position__range=(token.position - reach, token.position + reach),
         )
     nearby = defaultdict(dict)
-    fields = ("id", "edition_id", "position", "form", "norm", "before", "after")
+    fields = ("id", "edition_id", "passage_id", "position", "form", "norm", "before", "after")
     for word in Token.objects.filter(ranges).only(*fields):
         nearby[word.edition_id][word.position] = word
     return nearby

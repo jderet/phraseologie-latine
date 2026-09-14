@@ -6,8 +6,8 @@
 {% block content %}
 <article class="page-medium unit">
   <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a> · <a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a></p>
-  <h1>{% translate "Relevé des occurrences dans le noyau" %}</h1>
-  <p class="lede">{% translate "Le relevé enregistre chaque occurrence du schéma dans le noyau comme une attestation repérée automatiquement. Les relecteurs la valident ou la rejettent, par lots." %}</p>
+  <h1>{% translate "Relevé des occurrences" %}</h1>
+  <p class="lede">{% translate "Le relevé enregistre chaque occurrence du schéma dans le corpus comme une attestation repérée automatiquement. Dans le noyau, les relecteurs la valident ou la rejettent, par lots ; hors du noyau, elle reste repérée automatiquement." %}</p>
 
   <dl class="facts">
     <div>
@@ -18,10 +18,10 @@
       <dt>{% translate "Dernier relevé" %}</dt>
       <dd>
         {% if survey %}
-        {% blocktranslate trimmed with date=survey.surveyed_at|date:"j F Y" name=survey.surveyed_by.public_name count counter=survey.found %}
-          {{ counter }} occurrence repérée automatiquement le {{ date }}, relevé lancé par {{ name }}
+        {% blocktranslate trimmed with core=survey.core_found date=survey.surveyed_at|date:"j F Y" name=survey.surveyed_by.public_name count counter=survey.found %}
+          {{ counter }} occurrence repérée automatiquement, dont {{ core }} dans le noyau, le {{ date }} ; relevé lancé par {{ name }}
         {% plural %}
-          {{ counter }} occurrences repérées automatiquement le {{ date }}, relevé lancé par {{ name }}
+          {{ counter }} occurrences repérées automatiquement, dont {{ core }} dans le noyau, le {{ date }} ; relevé lancé par {{ name }}
         {% endblocktranslate %}
         <span class="muted">({% blocktranslate with label=survey.corpus_version %}corpus version {{ label }}{% endblocktranslate %})</span>
         {% if not survey_is_current %}<span class="badge review-badge">{% translate "à refaire : le schéma a changé" %}</span>{% endif %}
@@ -42,8 +42,17 @@
   <p class="notice">{% translate "Le relevé part du schéma de l’unité, qui reste à indiquer." %}</p>
   {% endif %}
 
+  <nav class="tabs" aria-label="{% translate 'Partie du corpus' %}">
+    {% for value, label, count in scope_tabs %}<a href="{% querystring portee=value statut=None forme=None page=None %}"{% if value == scope %} aria-current="page"{% endif %}>{{ label|capfirst }} <span class="muted">{{ count }}</span></a>{% endfor %}
+  </nav>
+  {% if not core %}
+  <p class="notice notice-info">{% blocktranslate trimmed with label=version.label %}
+    Hors du noyau, les attestations sont repérées automatiquement (corpus version {{ label }}) : elles ne sont pas vérifiées par des personnes et ne sont jamais validées. Un relecteur peut rejeter une erreur.
+  {% endblocktranslate %}</p>
+  {% endif %}
+
   <section class="unit-section" id="formes" aria-labelledby="shapes-title">
-    <h2 id="shapes-title">{% translate "Réalisations relevées" %}</h2>
+    <h2 id="shapes-title">{% if core %}{% translate "Réalisations relevées dans le noyau" %}{% else %}{% translate "Réalisations relevées hors du noyau" %}{% endif %}</h2>
     {% if shapes %}
     <p class="note">{% translate "Les lemmes du schéma dans l’ordre du texte ; « … » marque des mots insérés entre eux." %}</p>
     <div class="table-scroll">
@@ -52,7 +61,7 @@
           <tr>
             <th scope="col">{% translate "Forme" %}</th>
             <th scope="col">{% translate "Attestations" %}</th>
-            <th scope="col">{% translate "À examiner" %}</th>
+            <th scope="col">{% if core %}{% translate "À examiner" %}{% else %}{% translate "Repérées automatiquement" %}{% endif %}</th>
             <th scope="col">{% translate "Validées" %}</th>
             <th scope="col">{% translate "Rejetées" %}</th>
           </tr>
@@ -71,12 +80,12 @@
       </table>
     </div>
     {% else %}
-    <p class="muted">{% translate "Aucune attestation dans le noyau." %}</p>
+    <p class="muted">{% if core %}{% translate "Aucune attestation dans le noyau." %}{% else %}{% translate "Aucune attestation hors du noyau." %}{% endif %}</p>
     {% endif %}
   </section>
 
   <section class="unit-section" id="examen" aria-labelledby="review-title">
-    <h2 id="review-title">{% translate "Attestations du noyau" %}</h2>
+    <h2 id="review-title">{% if core %}{% translate "Attestations du noyau" %}{% else %}{% translate "Attestations hors du noyau" %}{% endif %}</h2>
     <nav class="tabs" aria-label="{% translate 'Statut des attestations' %}">
       {% for value, label, count in tabs %}<a href="{% querystring statut=value page=None %}#examen"{% if value == status %} aria-current="page"{% endif %}>{{ label|capfirst }} <span class="muted">{{ count }}</span></a>{% endfor %}
     </nav>
@@ -86,15 +95,16 @@
     {% if is_reviewer %}
     <form method="post" action="{% url 'phraseology:unit_survey_review' unit.pk %}" class="form" id="review-form">
       {% csrf_token %}
+      <input type="hidden" name="portee" value="{{ scope }}">
       <input type="hidden" name="statut" value="{{ status }}">
       <input type="hidden" name="forme" value="{{ shape }}">
       <input type="hidden" name="page" value="{{ page.number }}">
-      <p class="note">{% translate "Les attestations à examiner sont cochées : décochez celles qui n’attestent pas l’unité avant de valider." %}</p>
+      <p class="note">{% if core %}{% translate "Les attestations à examiner sont cochées : décochez celles qui n’attestent pas l’unité avant de valider." %}{% else %}{% translate "Cochez les attestations qui n’attestent pas l’unité pour les rejeter." %}{% endif %}</p>
     {% endif %}
       <ul class="evidences">
         {% for attestation in attestations %}
         <li class="evidence{% if attestation.status == 'rejected' %} is-rejected{% endif %}" id="attestation-{{ attestation.pk }}">
-          {% if is_reviewer %}<label><input type="checkbox" name="attestation" value="{{ attestation.pk }}"{% if attestation.status == "proposed" %} checked{% endif %}>{% endif %}
+          {% if is_reviewer %}<label><input type="checkbox" name="attestation" value="{{ attestation.pk }}"{% if core and attestation.status == "proposed" %} checked{% endif %}>{% endif %}
           <span class="hit-ref">{{ attestation.quotation.citation }}</span> {% poetry_mark attestation.quotation %}
           <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span>
           {% if is_reviewer %}</label>{% endif %}
@@ -106,7 +116,7 @@
     {% if is_reviewer %}
       <fieldset>
         <legend>{% translate "Décision pour les attestations cochées" %}</legend>
-        {% if realizations %}
+        {% if can_validate and realizations %}
         <div class="field">
           <label for="realisation">{% translate "Rattacher les attestations validées à la réalisation" %}</label>
           <select id="realisation" name="realisation">
@@ -115,7 +125,7 @@
           </select>
         </div>
         {% endif %}
-        {% if senses|length > 1 %}
+        {% if can_validate and senses|length > 1 %}
         <div class="field">
           <label for="sens">{% translate "Rattacher les attestations validées au sens" %}</label>
           <select id="sens" name="sens">
@@ -125,8 +135,8 @@
         </div>
         {% endif %}
         <p class="actions">
-          <button type="submit" name="decision" value="valider" class="button">{% translate "Valider la sélection" %}</button>
-          <button type="submit" name="decision" value="rejeter" class="button button-quiet">{% translate "Rejeter la sélection" %}</button>
+          {% if can_validate %}<button type="submit" name="decision" value="valider" class="button">{% translate "Valider la sélection" %}</button>{% endif %}
+          <button type="submit" name="decision" value="rejeter" class="button{% if can_validate %} button-quiet{% endif %}">{% translate "Rejeter la sélection" %}</button>
         </p>
       </fieldset>
     </form>
@@ -140,7 +150,7 @@
     </nav>
     {% endif %}
     {% else %}
-    <p class="muted">{% translate "Aucune attestation de ce statut dans le noyau." %}</p>
+    <p class="muted">{% translate "Aucune attestation de ce statut." %}</p>
     {% endif %}
   </section>
 </article>

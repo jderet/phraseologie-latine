@@ -62,7 +62,7 @@ Terminé quand une centaine de fiches sont validées.
 ## Étape 4 : exhaustivité et recherche
 
 - [x] Relevé automatique de toutes les réalisations d'une unité, validation par lots sur le noyau
-- [ ] Attestations automatiques hors du noyau, affichées comme telles
+- [x] Attestations automatiques hors du noyau, affichées comme telles
 - [ ] Mention « introuvable dans le corpus (version X) »
 - [ ] Requêtes par schémas
 - [ ] Profils statistiques de collocations

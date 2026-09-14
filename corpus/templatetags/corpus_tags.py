@@ -35,11 +35,22 @@ def _word(token, highlighted):
     return token.form
 
 
+def _between(previous, token):
+    """A space where a quotation goes on into the next passage, which the text lacks there."""
+    if previous is None or previous.passage_id == token.passage_id:
+        return ""
+    return "" if previous.after[-1:].isspace() else " "
+
+
 @register.simple_tag
 def render_tokens(tokens, highlighted=()):
     """Text of a passage rebuilt from its words; highlighted words are marked."""
+    tokens = list(tokens)
     return format_html_join(
         "",
-        "{}{}{}",
-        ((token.before, _word(token, highlighted), token.after) for token in tokens),
+        "{}{}{}{}",
+        (
+            (_between(previous, token), token.before, _word(token, highlighted), token.after)
+            for previous, token in zip([None, *tokens], tokens, strict=False)
+        ),
     )

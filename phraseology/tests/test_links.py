@@ -8,7 +8,7 @@ from justifications.services import (
     update_justification,
 )
 from moderation.models import Revision
-from phraseology.models import Unit
+from phraseology.models import Attestation, Unit
 from translations.services import publish_version, save_translation
 from translations.tests.factories import make_project, make_source_text, make_version
 
@@ -59,6 +59,16 @@ class LinkServicesTests(LinkTestCase):
         revision = update_justification(justification, self.author, units=[self.unit])
         self.assertEqual(revision.after["units"], [self.unit.pk])
         self.assertIsNone(update_justification(justification, self.author, units=[self.unit]))
+
+    def test_evidence_from_an_automatic_attestation_says_so(self):
+        Attestation.objects.filter(pk=self.attestation.pk).update(level=Attestation.Level.AUTOMATIC)
+        self.attestation.refresh_from_db()
+        justification = self.justify()
+        self.client.force_login(self.author)
+        page = self.client.get(justification.get_absolute_url())
+        self.assertContains(
+            page, "attestation reprise d’une fiche phraséologique · repérée automatiquement"
+        )
 
     def test_only_units_the_author_sees_are_cited(self):
         hidden_draft = make_unit(self.other, self.more_words[:2], reference_form="consilia capere")

@@ -2,7 +2,7 @@
   {% if evidence.quotation %}
   <a class="hit-ref" href="{{ evidence.quotation.url }}">{{ evidence.quotation.citation }}</a> {% poetry_mark evidence.quotation %}
   <span class="kwic" lang="la">… {% render_tokens evidence.quotation.words evidence.quotation.highlighted %} …</span>
-  {% if evidence.attestation_id %}<span class="muted">{% translate "attestation reprise d’une fiche phraséologique" %}</span>{% endif %}
+  {% if evidence.attestation_id %}<span class="muted">{% translate "attestation reprise d’une fiche phraséologique" %}{% if evidence.attestation.level == "automatic" %} · {% translate "repérée automatiquement" %}{% endif %}</span>{% endif %}
   {% elif evidence.work %}
   <span class="evidence-reference"><abbr title="{{ evidence.work.title }}">{{ evidence.work.abbreviation }}</abbr> {{ evidence.locator }}</span>
   <span class="muted">{{ evidence.get_kind_display|capfirst }}{% if evidence.work.rights == "restricted" %} · {% translate "ouvrage sous droits, cité sans extrait" %}{% endif %}</span>

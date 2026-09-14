@@ -267,6 +267,15 @@ def _to_review(unit):
     )
 
 
+def _outside_automatic(unit):
+    """Attestations found automatically outside the core, shown as such on the survey page."""
+    return (
+        unit.attestations.active()
+        .filter(level=Attestation.Level.AUTOMATIC)
+        .exclude(passage__edition__work__is_core=True)
+    )
+
+
 def _attestations_of(user, unit):
     """Attestations shown on the unit page, examples first; the survey page shows the others.
 
@@ -276,6 +285,7 @@ def _attestations_of(user, unit):
     queryset = (
         unit.attestations.active()
         .exclude(pk__in=_to_review(unit))
+        .exclude(pk__in=_outside_automatic(unit))
         .select_related("sense", "realization", "created_by")
         .prefetch_related(Prefetch("tokens", queryset=tokens))
     )
@@ -353,6 +363,10 @@ def unit_detail(request, pk):
             "attestations": attestations,
             "attestations_more": attestations_more,
             "attestations_to_review": _to_review(unit).count(),
+            "automatic_outside": _outside_automatic(unit)
+            .filter(is_hidden=False)
+            .exclude(status=Attestation.Status.REJECTED)
+            .count(),
             "relations": _relations_of(user, unit),
             "translations": _translations_of(user, unit),
             "references": _visible_parts(
@@ -690,7 +704,8 @@ def attestation_example(request, pk):
     return redirect(attestation.get_absolute_url())
 
 
-# Survey of the occurrences in the core, reviewed in batches
+# Survey of the occurrences: those of the core reviewed in batches, the others shown as found
+# automatically
 
 SURVEY_PER_PAGE = 50
 SURVEY_TABS = (
@@ -699,12 +714,16 @@ SURVEY_TABS = (
     ("rejetees", Attestation.Status.REJECTED, gettext_lazy("rejetées")),
     ("toutes", None, gettext_lazy("toutes")),
 )
+SURVEY_SCOPES = (
+    ("noyau", True, gettext_lazy("noyau")),
+    ("hors-noyau", False, gettext_lazy("hors du noyau")),
+)
 
 
-def _core_attestations(unit):
+def _scope_attestations(unit, core):
     return (
         unit.attestations.active()
-        .filter(is_hidden=False, passage__edition__work__is_core=True)
+        .filter(is_hidden=False, passage__edition__work__is_core=core)
         .order_by(
             "passage__edition__work__author__birth_year",
             "passage__edition__work__cts_urn",
@@ -730,12 +749,18 @@ def _survey_summary(rows, shapes):
 def unit_survey(request, pk):
     user = request.user
     unit = _unit(user, pk)
-    rows = list(_core_attestations(unit).values_list("pk", "status"))
+    scopes = {value: core for value, core, _label in SURVEY_SCOPES}
+    scope = request.GET.get("portee", "")
+    if scope not in scopes:
+        scope = SURVEY_SCOPES[0][0]
+    core = scopes[scope]
+    rows = list(_scope_attestations(unit, core).values_list("pk", "status"))
     shapes = attestation_shapes([row[0] for row in rows], default_layer(), unit.edges)
     wanted = {value: status for value, status, _label in SURVEY_TABS}
     status = request.GET.get("statut", "")
     if status not in wanted:
-        status = SURVEY_TABS[0][0]
+        # Outside the core, nothing waits for a review.
+        status = "a-examiner" if core else "toutes"
     shape = request.GET.get("forme", "")[:300]
     selected = [
         attestation_id
@@ -758,8 +783,16 @@ def unit_survey(request, pk):
         attestations.append(attestation)
     survey = UnitSurvey.objects.select_related("surveyed_by").filter(unit=unit).first()
     tabs = [
-        (value, label, sum(1 for _pk, row_status in rows if tab_status in (None, row_status)))
+        (
+            value,
+            label if core or value != "a-examiner" else gettext_lazy("repérées automatiquement"),
+            sum(1 for _pk, row_status in rows if tab_status in (None, row_status)),
+        )
         for value, tab_status, label in SURVEY_TABS
+    ]
+    scope_tabs = [
+        (value, label, _scope_attestations(unit, tab_core).count())
+        for value, tab_core, label in SURVEY_SCOPES
     ]
     return render(
         request,
@@ -769,6 +802,10 @@ def unit_survey(request, pk):
             "edges": unit.edges,
             "survey": survey,
             "survey_is_current": survey is not None and survey.schema == unit.schema,
+            "version": corpus_version(),
+            "scope": scope,
+            "core": core,
+            "scope_tabs": scope_tabs,
             "shapes": _survey_summary(rows, shapes),
             "tabs": tabs,
             "status": status,
@@ -777,6 +814,7 @@ def unit_survey(request, pk):
             "attestations": attestations,
             "can_run": bool(unit.schema) and can_edit_unit(user, unit),
             "is_reviewer": is_reviewer(user),
+            "can_validate": core and is_reviewer(user),
             "realizations": _visible_parts(user, unit, unit.realizations.active()),
             "senses": _visible_parts(user, unit, unit.senses.active()),
         },
@@ -855,7 +893,9 @@ def unit_survey_review(request, pk):
                 )
             messages.success(request, message % {"count": count})
     kept = {
-        name: request.POST[name] for name in ("statut", "forme", "page") if request.POST.get(name)
+        name: request.POST[name]
+        for name in ("portee", "statut", "forme", "page")
+        if request.POST.get(name)
     }
     query = f"?{urlencode(kept)}" if kept else ""
     return redirect(f"{reverse('phraseology:unit_survey', args=[unit.pk])}{query}#examen")

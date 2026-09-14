@@ -18,7 +18,7 @@ def visible_evidences(user, queryset, **parent):
     evidences = []
     queryset = (
         queryset.filter(is_withdrawn=False)
-        .select_related("work")
+        .select_related("work", "attestation")
         .prefetch_related(Prefetch("tokens", queryset=tokens))
     )
     for evidence in queryset:

@@ -2,6 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 
 from corpus.models import Token
+from corpus.search import quotation
+from corpus.templatetags.corpus_tags import render_tokens
 
 from .utils import PerseusSourceMixin
 
@@ -53,6 +55,12 @@ class CorpusPagesTests(PerseusSourceMixin, TestCase):
         response = self.client.get(reverse("corpus:search"), {"term1": "Athenis"})
         self.assertContains(response, "Cic. Off. 1, 1")
         self.assertNotContains(response, "poetry-mark")
+
+    def test_quotations_keep_a_space_between_passages(self):
+        word = Token.objects.get(form="Athenis")
+        hit = quotation([word])
+        text = str(render_tokens(hit.words, hit.highlighted))
+        self.assertIn("Athenis</mark>. consilium cepit", text)
 
     def test_unknown_work_or_reference(self):
         response = self.client.get(reverse("corpus:work", args=["phi0474.phi999"]))

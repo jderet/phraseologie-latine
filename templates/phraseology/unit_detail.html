@@ -198,7 +198,8 @@
     {% endif %}
     <p class="actions">
       {% if can_edit %}<a href="{% url 'phraseology:attestation_add' unit.pk %}">{% translate "Ajouter des attestations" %}</a>{% endif %}
-      {% if unit.schema or attestations_to_review %}<a href="{% url 'phraseology:unit_survey' unit.pk %}">{% if attestations_to_review %}{% blocktranslate count counter=attestations_to_review %}{{ counter }} attestation du noyau à examiner dans le relevé{% plural %}{{ counter }} attestations du noyau à examiner dans le relevé{% endblocktranslate %}{% else %}{% translate "Relevé des occurrences dans le noyau" %}{% endif %}</a>{% endif %}
+      {% if unit.schema or attestations_to_review %}<a href="{% url 'phraseology:unit_survey' unit.pk %}">{% if attestations_to_review %}{% blocktranslate count counter=attestations_to_review %}{{ counter }} attestation du noyau à examiner dans le relevé{% plural %}{{ counter }} attestations du noyau à examiner dans le relevé{% endblocktranslate %}{% else %}{% translate "Relevé des occurrences" %}{% endif %}</a>{% endif %}
+      {% if automatic_outside %}<a href="{% url 'phraseology:unit_survey' unit.pk %}?portee=hors-noyau">{% blocktranslate count counter=automatic_outside %}{{ counter }} attestation repérée automatiquement hors du noyau{% plural %}{{ counter }} attestations repérées automatiquement hors du noyau{% endblocktranslate %}</a>{% endif %}
     </p>
   </section>
 

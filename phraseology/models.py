@@ -442,8 +442,8 @@ class UnitFrequency(models.Model):
 
 
 class UnitSurvey(models.Model):
-    """The last survey of a unit: its schema's occurrences in the core, recorded as automatic
-    attestations to review. Computed, not edited."""
+    """The last survey of a unit: its schema's occurrences in the corpus, recorded as automatic
+    attestations; those of the core are to be reviewed. Computed, not edited."""
 
     unit = models.OneToOneField(
         Unit, on_delete=models.CASCADE, related_name="survey", verbose_name=_("unité")
@@ -451,6 +451,7 @@ class UnitSurvey(models.Model):
     schema = models.CharField(_("schéma"), max_length=300)
     corpus_version = models.CharField(_("version du corpus"), max_length=200)
     found = models.PositiveIntegerField(_("occurrences repérées"))
+    core_found = models.PositiveIntegerField(_("dont dans le noyau"), default=0)
     added = models.PositiveIntegerField(_("attestations ajoutées"))
     remaining = models.PositiveIntegerField(_("occurrences restant à relever"))
     surveyed_by = models.ForeignKey(
