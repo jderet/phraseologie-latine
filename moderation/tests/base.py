@@ -9,24 +9,23 @@ from .models import ModerationTestNote
 
 
 class ModerationTestCase(TestCase):
-    """Creates the table of the test-only content model around each test class."""
+    """Creates the table of the test-only content model, kept until the test database goes.
+
+    Once imported, the model stays known to Django for the whole run: deleting a user in any
+    later test looks for notes pointing to that user, so the table must still exist.
+    """
 
     @classmethod
     def setUpClass(cls):
-        with connection.schema_editor() as editor:
-            editor.create_model(ModerationTestNote)
+        if ModerationTestNote._meta.db_table not in connection.introspection.table_names():
+            with connection.schema_editor() as editor:
+                editor.create_model(ModerationTestNote)
         # Migrations do not know this model, so its content type is created here, outside
         # the test transactions: one created inside a test would be rolled back but stay
         # in the content type cache.
         ContentType.objects.clear_cache()
         ContentType.objects.get_for_model(ModerationTestNote)
         super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        with connection.schema_editor() as editor:
-            editor.delete_model(ModerationTestNote)
 
     @classmethod
     def setUpTestData(cls):

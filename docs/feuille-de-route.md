@@ -87,7 +87,7 @@ Terminé quand le site tourne sur le Mac dans sa configuration de production, qu
 
 Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026). Détail dans la section 4.10 du [cahier des charges](cahier-des-charges.md). Dans l'ordre de travail : la lecture d'abord, puis l'annotation.
 
-- [ ] Fiches d'exemple en local : une commande les crée, une autre les efface
+- [x] Fiches d'exemple en local : une commande les crée, une autre les efface
 - [ ] Mode lecture : œuvre en continu, navigation par livre et par chapitre, traduction en regard dans une colonne masquable
 - [ ] Unités soulignées dans le texte : couleur par type, légende, mots d'une occurrence qui s'allument ensemble, traits empilés
 - [ ] Filtres : statuts (validées et proposées par défaut), type, marque d'usage, registre, une seule fiche avec occurrence suivante et précédente

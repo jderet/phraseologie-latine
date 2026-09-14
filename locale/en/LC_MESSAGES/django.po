@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 14:26+0200\n"
+"POT-Creation-Date: 2026-09-14 16:48+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -49,7 +49,8 @@ msgid "Un compte existe déjà avec cette adresse e-mail."
 msgstr "An account already exists with this email address."
 
 #: accounts/forms.py:67
-msgid "Trop de tentatives de connexion pour ce compte. Réessayez dans 15 minutes."
+msgid ""
+"Trop de tentatives de connexion pour ce compte. Réessayez dans 15 minutes."
 msgstr "Too many login attempts for this account. Try again in 15 minutes."
 
 #: accounts/forms.py:89
@@ -1171,6 +1172,7 @@ msgid "justification"
 msgstr "justification"
 
 #: justifications/models.py:127
+#: phraseology/management/commands/delete_examples.py:16
 msgid "justifications"
 msgstr "justifications"
 
@@ -1242,6 +1244,7 @@ msgid "preuve"
 msgstr "evidence"
 
 #: justifications/models.py:244
+#: phraseology/management/commands/delete_examples.py:17
 msgid "preuves"
 msgstr "evidence"
 
@@ -1333,7 +1336,7 @@ msgstr "Explain this choice with a comment or a piece of evidence."
 msgid "Cette fiche phraséologique n’est pas accessible."
 msgstr "This phraseology entry is not accessible."
 
-#: justifications/services.py:198 phraseology/services.py:565
+#: justifications/services.py:198 phraseology/services.py:580
 msgid "Preuve retirée"
 msgstr "Evidence withdrawn"
 
@@ -1740,6 +1743,10 @@ msgstr "Words it modifies"
 msgid "Noms dont il est le complément"
 msgstr "Nouns it modifies"
 
+#: phraseology/examples.py:344
+msgid "Commande réservée à la machine de développement (DJANGO_DEBUG=True)."
+msgstr "Command reserved for the development machine (DJANGO_DEBUG=True)."
+
 #: phraseology/forms.py:38 phraseology/forms.py:273
 msgid "Sens"
 msgstr "Sense"
@@ -1843,6 +1850,57 @@ msgstr "%(scope)s: %(count)d pairs"
 #, python-format
 msgid "Collocations calculées en %(seconds)d s."
 msgstr "Collocations computed in %(seconds)d s."
+
+#: phraseology/management/commands/create_examples.py:25
+msgid "Les fiches d’exemple demandent un corpus analysé."
+msgstr "The example entries need an analysed corpus."
+
+#: phraseology/management/commands/create_examples.py:29
+msgid "Les fiches d’exemple partent du De officiis, qui n’est pas importé."
+msgstr "The example entries start from De officiis, which is not imported."
+
+#: phraseology/management/commands/create_examples.py:33
+msgid "Les fiches d’exemple existent déjà : lancez d’abord delete_examples."
+msgstr "The example entries already exist: run delete_examples first."
+
+#: phraseology/management/commands/create_examples.py:43
+#, python-format
+msgid "%(unit)s : introuvable dans le corpus, fiche non créée."
+msgstr "%(unit)s: not found in the corpus, entry not created."
+
+#: phraseology/management/commands/create_examples.py:51
+#, python-format
+msgid ""
+"%(unit)s (%(status)s) : attestations validées %(validated)d, proposées "
+"%(proposed)d, repérées automatiquement %(automatic)d."
+msgstr "%(unit)s (%(status)s): attestations validated %(validated)d, proposed %(proposed)d, found automatically %(automatic)d."
+
+#: phraseology/management/commands/create_examples.py:63
+#, python-format
+msgid "%(count)d fiche d’exemple créée."
+msgid_plural "%(count)d fiches d’exemple créées."
+msgstr[0] "%(count)d example entry created."
+msgstr[1] "%(count)d example entries created."
+
+#: phraseology/management/commands/delete_examples.py:18
+#: phraseology/models.py:248
+msgid "relations entre unités"
+msgstr "relations between units"
+
+#: phraseology/management/commands/delete_examples.py:23
+#, python-format
+msgid ""
+"D’autres contenus renvoient aux fiches d’exemple (%(links)s) : retirez ces "
+"liens avant de les effacer."
+msgstr "Other contents point to the example entries (%(links)s): remove these links before deleting them."
+
+#: phraseology/management/commands/delete_examples.py:31
+#, python-format
+msgid ""
+"Effacé : fiches d’exemple %(units)d, attestations %(attestations)d, autres "
+"éléments %(parts)d, comptes d’exemple %(accounts)d ; candidats remis à "
+"examiner %(candidates)d."
+msgstr "Deleted: example entries %(units)d, attestations %(attestations)d, other items %(parts)d, example accounts %(accounts)d; candidates put back for review %(candidates)d."
 
 #: phraseology/management/commands/extract_candidates.py:46
 #, python-format
@@ -2098,10 +2156,6 @@ msgstr "relation"
 #: phraseology/models.py:247
 msgid "relation entre unités"
 msgstr "relation between units"
-
-#: phraseology/models.py:248
-msgid "relations entre unités"
-msgstr "relations between units"
 
 #: phraseology/models.py:294
 msgid "renvoi bibliographique"
@@ -2527,7 +2581,7 @@ msgid "Une unité garde au moins un sens."
 msgstr "A unit keeps at least one sense."
 
 #: phraseology/services.py:196 phraseology/services.py:244
-#: phraseology/services.py:548
+#: phraseology/services.py:563
 msgid "Retrait"
 msgstr "Withdrawal"
 
@@ -2551,68 +2605,68 @@ msgstr "Attestation validated"
 msgid "Attestation rejetée"
 msgstr "Attestation rejected"
 
-#: phraseology/services.py:351 templates/phraseology/unit_survey.html:42
-msgid "Le relevé part du schéma de l’unité, qui reste à indiquer."
-msgstr "The survey starts from the unit’s schema, which remains to be given."
-
-#: phraseology/services.py:355
-msgid "Le relevé demande un corpus analysé."
-msgstr "The survey needs an analysed corpus."
-
-#: phraseology/services.py:399
+#: phraseology/services.py:361
 msgid "Relevé automatique"
 msgstr "Automatic survey"
 
-#: phraseology/services.py:423
+#: phraseology/services.py:379 templates/phraseology/unit_survey.html:42
+msgid "Le relevé part du schéma de l’unité, qui reste à indiquer."
+msgstr "The survey starts from the unit’s schema, which remains to be given."
+
+#: phraseology/services.py:383
+msgid "Le relevé demande un corpus analysé."
+msgstr "The survey needs an analysed corpus."
+
+#: phraseology/services.py:438
 msgid "Une attestation rejetée ne sert pas d’exemple."
 msgstr "A rejected attestation cannot be an example."
 
-#: phraseology/services.py:445
+#: phraseology/services.py:460
 msgid "Une fiche proposée a au moins un sens et une attestation."
 msgstr "A proposed entry has at least one sense and one attestation."
 
-#: phraseology/services.py:449
+#: phraseology/services.py:464
 msgid "Proposition"
 msgstr "Proposal"
 
-#: phraseology/services.py:460
+#: phraseology/services.py:475
 msgid "Seule une fiche proposée peut être validée."
 msgstr "Only a proposed entry can be validated."
 
-#: phraseology/services.py:468 phraseology/services.py:578
+#: phraseology/services.py:483 phraseology/services.py:593
 #: templates/phraseology/unit_detail.html:82
 msgid "Validation"
 msgstr "Validation"
 
-#: phraseology/services.py:477
+#: phraseology/services.py:492
 msgid "Cette fiche ne peut pas être contestée."
 msgstr "This entry cannot be challenged."
 
-#: phraseology/services.py:481 templates/justifications/challenge_detail.html:9
+#: phraseology/services.py:496 templates/justifications/challenge_detail.html:9
 msgid "Contestation"
 msgstr "Challenge"
 
-#: phraseology/services.py:493
+#: phraseology/services.py:508
 msgid "Cette fiche n’est pas contestée."
 msgstr "This entry is not challenged."
 
-#: phraseology/services.py:502
+#: phraseology/services.py:517
 msgid "Contestation levée"
 msgstr "Challenge settled"
 
-#: phraseology/services.py:545
+#: phraseology/services.py:560
 msgid "Un néologisme garde au moins un équivalent."
 msgstr "A neologism keeps at least one equivalent."
 
-#: phraseology/services.py:587
+#: phraseology/services.py:602
 msgid "Ce candidat a déjà été examiné."
 msgstr "This candidate has already been reviewed."
 
-#: phraseology/services.py:652
+#: phraseology/services.py:667
 msgid "Cette recherche n’est pas valide : refaites-la."
 msgstr "This search is not valid: run it again."
 
-#: phraseology/services.py:656
+#: phraseology/services.py:671
 msgid "Cette recherche trouve des occurrences : elle n’est pas infructueuse."
 msgstr "This search finds occurrences: it is not unsuccessful."
 
@@ -3948,8 +4002,12 @@ msgid "Chercher"
 msgstr "Search"
 
 #: templates/corpus/search_results.html:8
-msgid "La recherche a pris trop de temps : restreignez-la, par exemple au noyau, à quelques auteurs ou à une distance plus courte."
-msgstr "The search took too long: narrow it down, for example to the core, to a few authors or to a shorter distance."
+msgid ""
+"La recherche a pris trop de temps : restreignez-la, par exemple au noyau, à "
+"quelques auteurs ou à une distance plus courte."
+msgstr ""
+"The search took too long: narrow it down, for example to the core, to a few "
+"authors or to a shorter distance."
 
 #: templates/corpus/search_results.html:13
 #, python-format
@@ -4650,8 +4708,12 @@ msgstr "The corpus has not changed since the search was recorded."
 
 #: templates/phraseology/negative_search_detail.html:28
 #, python-format
-msgid "Le corpus a changé depuis, mais la recherche a pris trop de temps pour être refaite (version %(label)s)."
-msgstr "The corpus has changed since, but the search took too long to be run again (version %(label)s)."
+msgid ""
+"Le corpus a changé depuis, mais la recherche a pris trop de temps pour être "
+"refaite (version %(label)s)."
+msgstr ""
+"The corpus has changed since, but the search took too long to be run again "
+"(version %(label)s)."
 
 #: templates/phraseology/negative_search_detail.html:30
 #, python-format
@@ -4887,8 +4949,12 @@ msgstr ""
 "Search by schema is not available yet: the corpus has not been analysed."
 
 #: templates/phraseology/schema_search.html:31
-msgid "La recherche a pris trop de temps : restreignez-la, par exemple au noyau ou aux textes en prose."
-msgstr "The search took too long: narrow it down, for example to the core or to prose texts."
+msgid ""
+"La recherche a pris trop de temps : restreignez-la, par exemple au noyau ou "
+"aux textes en prose."
+msgstr ""
+"The search took too long: narrow it down, for example to the core or to "
+"prose texts."
 
 #: templates/phraseology/schema_search.html:38
 #, python-format

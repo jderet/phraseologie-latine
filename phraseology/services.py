@@ -337,6 +337,34 @@ SURVEY_LIMIT = 1000
 
 
 @transaction.atomic
+def record_automatic_attestations(unit, occurrences, user):
+    """Record occurrences of the corpus, word identifiers in textual order, as found automatically.
+
+    In the core they are to be reviewed; outside it they stay found automatically (T2).
+    """
+    _check_edit(user, unit)
+    passages = dict(
+        Token.objects.filter(pk__in=[words[0] for words in occurrences]).values_list(
+            "pk", "passage_id"
+        )
+    )
+    created = []
+    for words in occurrences:
+        attestation = Attestation(
+            unit=unit,
+            passage_id=passages[words[0]],
+            level=Attestation.Level.AUTOMATIC,
+            origin=Attestation.Origin.QUERY,
+            created_by=user,
+        )
+        save_with_revision(
+            attestation, user, comment=gettext("Relevé automatique"), m2m={"tokens": list(words)}
+        )
+        created.append(attestation)
+    return created
+
+
+@transaction.atomic
 def survey_unit(unit, user):
     """Record the occurrences of the schema in the corpus as automatic attestations.
 
@@ -384,20 +412,7 @@ def survey_unit(unit, user):
         if not any(set(words) <= attested for attested in by_word[words[0]])
     ]
     added = new[:SURVEY_LIMIT]
-    passages = dict(
-        Token.objects.filter(pk__in=[words[0] for words in added]).values_list("pk", "passage_id")
-    )
-    for words in added:
-        attestation = Attestation(
-            unit=unit,
-            passage_id=passages[words[0]],
-            level=Attestation.Level.AUTOMATIC,
-            origin=Attestation.Origin.QUERY,
-            created_by=user,
-        )
-        save_with_revision(
-            attestation, user, comment=gettext("Relevé automatique"), m2m={"tokens": list(words)}
-        )
+    record_automatic_attestations(unit, added, user)
     survey, _created = UnitSurvey.objects.update_or_create(
         unit=unit,
         defaults={
