@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Q
-from django.http import Http404, HttpResponseBadRequest
+from django.http import Http404, HttpResponseBadRequest, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
@@ -36,6 +36,7 @@ from phraseology.sightings import page_sightings
 from phraseology.suggestions import page_suggestions
 
 from .corrections import correction_changes, current_analysis, propose_correction, review_correction
+from .exports import FORMATS, conllu_export, export_filename, tei_export
 from .forms import (
     MODE_FORM,
     SCOPE_CORE,
@@ -93,6 +94,38 @@ def work_detail(request, work_id):
         "corpus/work.html",
         {"work": edition.work, "edition": edition, "page": page, "progress": progress},
     )
+
+
+def export(request, work_id, kind):
+    """A work, a division or a passage as a TEI or CoNLL-U download, with its units."""
+    if kind not in FORMATS:
+        raise Http404
+    edition = _current_edition(work_id)
+    work = edition.work
+    passages = edition.passages.order_by("order")
+    reference = _typed_reference(request.GET.get("passage", ""))
+    title, path = work.title, work.get_absolute_url()
+    if reference:
+        inside = Q(reference=reference) | Q(reference__startswith=f"{reference}.")
+        passages = passages.filter(inside)
+        title = f"{work.citation_prefix} {reference}"
+        reading = reverse("corpus:reading", args=[work_id])
+        path = f"{reading}?{urlencode({'aller': reference})}"
+    passages = list(passages.only("pk", "reference", "order"))
+    if not passages:
+        raise Http404
+    extension, content_type = FORMATS[kind]
+    if kind == "tei":
+        url = request.build_absolute_uri(path)
+        content = tei_export(
+            request.user, edition, passages, title, url, request.build_absolute_uri
+        )
+    else:
+        content = conllu_export(request.user, edition, passages)
+    response = StreamingHttpResponse(content, content_type=content_type)
+    filename = export_filename(edition, reference, extension)
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 
 def _word_ids(value):

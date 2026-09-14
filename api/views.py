@@ -67,6 +67,9 @@ def index(request):
                 "neologisms": link(reverse("api:neologisms")),
                 "versions": link(reverse("api:versions")),
                 "negative_searches": link(reverse("api:negative_searches")),
+                "sightings": link(reverse("api:sightings")),
+                "reading_notes": link(reverse("api:reading_notes")),
+                "corrections": link(reverse("api:corrections")),
             },
             "full_export": link(reverse("api:data")),
         }
@@ -106,6 +109,21 @@ def version(request, pk):
 @require_GET
 def negative_searches(request):
     return _list(request, serializers.public_negative_searches(), serializers.negative_search_data)
+
+
+@require_GET
+def sightings(request):
+    return _list(request, serializers.public_sightings(), serializers.sighting_data)
+
+
+@require_GET
+def reading_notes(request):
+    return _list(request, serializers.public_reading_notes(), serializers.reading_note_data)
+
+
+@require_GET
+def corrections(request):
+    return _list(request, serializers.validated_corrections(), serializers.correction_data)
 
 
 @require_GET

@@ -7,7 +7,7 @@
 <section>
   <p class="eyebrow"><a href="{% url 'corpus:index' %}">{% translate "Corpus" %}</a> · {{ work.author.name }}</p>
   <h1><i>{{ work.title }}</i></h1>
-  <p class="reading-link"><a class="button" href="{% url 'corpus:reading' work.cts_id %}">{% translate "Lire l’œuvre" %}</a></p>
+  <p class="reading-link"><a class="button" href="{% url 'corpus:reading' work.cts_id %}">{% translate "Lire l’œuvre" %}</a> <span class="muted">{% translate "Exporter avec la phraséologie :" %} <a href="{% url 'corpus:export' work.cts_id 'tei' %}">TEI</a> · <a href="{% url 'corpus:export' work.cts_id 'conllu' %}">CoNLL-U</a></span></p>
   <dl class="facts">
     <div>
       <dt>{% translate "Citation" %}</dt>

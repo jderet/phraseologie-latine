@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 18:49+0200\n"
+"POT-Creation-Date: 2026-09-14 18:57+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -341,7 +341,10 @@ msgid ""
 "%(corpus)s. Statut d’une unité : validated (validée par un relecteur), "
 "proposed (proposée par une personne), automatic (repérée automatiquement, "
 "jamais vérifiée)."
-msgstr "Analysis: %(layer)s, with the validated corrections. Corpus version: %(corpus)s. Status of a unit: validated (validated by a reviewer), proposed (proposed by a person), automatic (found automatically, never checked)."
+msgstr ""
+"Analysis: %(layer)s, with the validated corrections. Corpus version: "
+"%(corpus)s. Status of a unit: validated (validated by a reviewer), proposed "
+"(proposed by a person), automatic (found automatically, never checked)."
 
 #: corpus/forms.py:23
 msgid "Dépend du mot"
@@ -1238,15 +1241,15 @@ msgstr "no part found"
 msgid "références en double : %(references)s"
 msgstr "duplicate references: %(references)s"
 
-#: corpus/views.py:425
+#: corpus/views.py:457
 msgid "La correction est proposée ; un relecteur l’examinera."
 msgstr "The correction is proposed; a reviewer will examine it."
 
-#: corpus/views.py:476
+#: corpus/views.py:508
 msgid "La correction est validée : elle s’applique à l’analyse."
 msgstr "The correction is validated: it applies to the analysis."
 
-#: corpus/views.py:478
+#: corpus/views.py:510
 msgid "La correction est rejetée."
 msgstr "The correction is rejected."
 
@@ -4025,7 +4028,19 @@ msgstr "published versions, sentence by sentence, with their justifications"
 msgid "recherches qui n’ont rien trouvé, avec la version du corpus"
 msgstr "searches that found nothing, with the version of the corpus"
 
+#: templates/api/data.html:41
+msgid "repérages de phraséologie sans fiche, rattachés ou non"
+msgstr "sightings of phraseology without an entry, attached or not"
+
 #: templates/api/data.html:42
+msgid "notes de lecture publiques, avec les mots qu’elles commentent"
+msgstr "public reading notes, with the words they comment on"
+
+#: templates/api/data.html:43
+msgid "corrections validées de l’analyse automatique d’un mot"
+msgstr "validated corrections of the automatic analysis of a word"
+
+#: templates/api/data.html:45
 msgid ""
 "Une attestation de niveau « automatic » a été repérée automatiquement : elle "
 "n’est pas vérifiée par des personnes. Les citations du corpus viennent de "
@@ -4035,11 +4050,11 @@ msgstr ""
 "checked by people. Corpus quotations come from Perseus canonical-latinLit "
 "(CC BY-SA 4.0)."
 
-#: templates/api/data.html:46
+#: templates/api/data.html:49
 msgid "Réutilisation"
 msgstr "Reuse"
 
-#: templates/api/data.html:47
+#: templates/api/data.html:50
 msgid ""
 "Toute réutilisation crédite « contributeurs de Phraséologie latine » et "
 "partage les données sous la même licence (CC BY-SA 4.0). Chaque élément "
@@ -4953,6 +4968,10 @@ msgstr "No text imported yet."
 #: templates/corpus/passage.html:10
 msgid "Lire dans l’œuvre"
 msgstr "Read in the work"
+
+#: templates/corpus/passage.html:10 templates/corpus/work.html:10
+msgid "Exporter avec la phraséologie :"
+msgstr "Export with the phraseology:"
 
 #: templates/corpus/passage.html:11 templates/corpus/reading.html:13
 #: templates/corpus/work.html:24
@@ -6441,7 +6460,9 @@ msgid ""
 "Une note de lecture est publique : tout lecteur la voit avec ces mots, et "
 "chacun peut la signaler. Pour une note visible de vous seulement, choisissez "
 "« Note privée »."
-msgstr "A reading note is public: every reader sees it with these words, and anyone can report it. For a note only you can see, choose “Private note”."
+msgstr ""
+"A reading note is public: every reader sees it with these words, and anyone "
+"can report it. For a note only you can see, choose “Private note”."
 
 #: templates/phraseology/reading_note_panel.html:14
 msgid "Publier la note"

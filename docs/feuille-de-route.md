@@ -103,7 +103,7 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 - [x] Notes de lecture publiques, masquables
 - [x] Carnet personnel : surlignages, notes privées, listes de passages, page « mon carnet »
 - [x] Guide d'annotation en pages datées, lié depuis l'outil d'annotation
-- [ ] Annotations dans l'API et l'export complet ; exports TEI et CoNLL-U d'un passage ou d'une œuvre
+- [x] Annotations dans l'API et l'export complet ; exports TEI et CoNLL-U d'un passage ou d'une œuvre
 
 Terminé quand un livre du noyau (par exemple Cic. *Off.* 1) est entièrement relu, avec ses attestations visibles dans le texte.
 

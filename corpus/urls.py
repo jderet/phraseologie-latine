@@ -12,6 +12,7 @@ urlpatterns = [
     path("corrections/", views.correction_list, name="corrections"),
     path("corrections/<int:pk>/examen/", views.correction_review, name="correction_review"),
     path("corpus/<str:work_id>/", views.work_detail, name="work"),
+    path("corpus/<str:work_id>/export/<slug:kind>/", views.export, name="export"),
     path("corpus/<str:work_id>/lecture/", views.reading, name="reading"),
     path("corpus/<str:work_id>/lecture/<str:part>/", views.reading, name="reading_part"),
     path("corpus/<str:work_id>/<str:reference>/", views.passage_detail, name="passage"),

@@ -31,11 +31,17 @@ Contenu
 - neologismes.json : lexique des néologismes ({neologisms})
 - versions.json : versions de traduction publiées, avec leurs justifications ({versions})
 - recherches-infructueuses.json : recherches qui n'ont rien trouvé ({searches})
+- reperages.json : repérages de phraséologie sans fiche, rattachés ou non ({sightings})
+- notes-de-lecture.json : notes de lecture publiques sur des mots du corpus ({notes})
+- corrections.json : corrections validées de l'analyse automatique ({corrections})
+
+Les attestations sont dans fiches.json. Les mots sont désignés par leur identifiant stable.
 
 Licence : CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
 Créditer « contributeurs de Phraséologie latine » ; chaque élément donne le nom public de
 son auteur. Les citations du corpus viennent de Perseus canonical-latinLit (CC BY-SA 4.0).
-Les brouillons et les contenus masqués ne sont pas exportés, ni aucune adresse e-mail.
+Les brouillons et les contenus masqués ne sont pas exportés, ni aucune adresse e-mail,
+ni le carnet personnel des lecteurs.
 Une attestation de niveau « automatic » a été repérée automatiquement, jamais vérifiée.
 """
 
@@ -68,6 +74,15 @@ def write_export(directory=None, now=None):
             serializers.negative_search_data(s, _link)
             for s in serializers.public_negative_searches()
         ],
+        "reperages.json": [
+            serializers.sighting_data(s, _link) for s in serializers.public_sightings()
+        ],
+        "notes-de-lecture.json": [
+            serializers.reading_note_data(n, _link) for n in serializers.public_reading_notes()
+        ],
+        "corrections.json": [
+            serializers.correction_data(c, _link) for c in serializers.validated_corrections()
+        ],
     }
     counts = {name: len(items) for name, items in datasets.items()}
     notice = NOTICE.format(
@@ -77,6 +92,9 @@ def write_export(directory=None, now=None):
         neologisms=counts["neologismes.json"],
         versions=counts["versions.json"],
         searches=counts["recherches-infructueuses.json"],
+        sightings=counts["reperages.json"],
+        notes=counts["notes-de-lecture.json"],
+        corrections=counts["corrections.json"],
     )
     path = directory / f"{PREFIX}{now:%Y-%m-%d-%H%M%S}.zip"
     partial = path.with_suffix(".part")

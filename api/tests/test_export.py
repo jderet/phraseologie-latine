@@ -32,6 +32,9 @@ class ExportTests(ApiTestCase):
                     "neologismes.json",
                     "versions.json",
                     "recherches-infructueuses.json",
+                    "reperages.json",
+                    "notes-de-lecture.json",
+                    "corrections.json",
                 },
             )
             units = json.loads(archive.read("fiches.json"))

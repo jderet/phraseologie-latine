@@ -60,7 +60,7 @@ Noms de code provisoires, fixés au moment de coder. Les fonctions sont décrite
 
 - **Repérage** (`Sighting`) : passage, mots couverts (identifiants stables), note, statut (ouvert, rattaché, classé sans suite), attestation obtenue, ajouté par, décidé par, date. Contenu modéré. Tout compte actif le rattache à une fiche ; un relecteur le classe sans suite.
 - **Doute sur une attestation** (`AttestationDoubt`) : attestation, motif, statut (ouvert, attestation maintenue, attestation rejetée), signalé par, tranché par, date. Tout compte actif en ouvre un ; un relecteur tranche.
-- **Passage relu** (`PassageReview`) : passage, relu par, date, version du corpus. Seul un relecteur le déclare.
+- **Passage relu** (`PassageReview`) : passage, relu par, date, version du corpus, retrait (par, date). Seul un relecteur le déclare ou retire la déclaration, par exemple quand une unité manque ; une nouvelle déclaration crée une nouvelle ligne.
 - **Correction d'analyse** (`AnalysisCorrection`) : mot et partie du mot, lemme, catégorie, traits, tête et relation proposés (seuls les champs changés), motif, statut (proposée, validée, rejetée), proposée par, examinée par. Elle pointe vers l'identifiant du mot, jamais vers une couche : validée, elle s'applique par-dessus toute couche d'analyse, présente ou future (règle 1).
 - **Note de lecture** (`ReadingNote`) : passage, mots couverts, texte, auteur, date. Contenu modéré, compté dans la limite des nouveaux comptes.
 - **Carnet personnel** : surlignage (`Highlight` : mots, couleur), note privée (`PrivateNote` : mots, texte), liste de passages (`PassageList` : nom, passages). Visible de son seul auteur : aucune page, API ou export ne le renvoie à quelqu'un d'autre (règle 8).

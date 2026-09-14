@@ -6,10 +6,19 @@ contributions. ``link`` turns a site path into the address to give (absolute in 
 """
 
 from django.contrib.auth.models import AnonymousUser
+from django.db.models import Prefetch
 
+from corpus.models import AnalysisCorrection, Token
 from justifications.models import Evidence, Justification
 from moderation.registry import can_view
-from phraseology.models import NegativeSearch, Neologism, Unit, UnitFrequency
+from phraseology.models import (
+    NegativeSearch,
+    Neologism,
+    ReadingNote,
+    Sighting,
+    Unit,
+    UnitFrequency,
+)
 from translations.models import TranslationVersion
 
 LICENSE = "CC BY-SA 4.0"
@@ -90,6 +99,7 @@ def unit_summary(unit, link):
 def unit_data(unit, link):
     attestations = (
         unit.attestations.filter(is_withdrawn=False, is_hidden=False)
+        .select_related("created_by")
         .prefetch_related("tokens__passage__edition__work__author")
         .order_by("pk")
     )
@@ -139,6 +149,8 @@ def unit_data(unit, link):
                 "level": attestation.level,
                 "origin": attestation.origin,
                 "is_example": attestation.is_example,
+                "is_contested": attestation.is_contested,
+                "created_by": attestation.created_by.public_name,
                 "sense": attestation.sense_id,
                 "realization": attestation.realization_id,
                 **(_words(attestation.tokens.all()) or {}),
@@ -290,4 +302,85 @@ def negative_search_data(search, link):
         "note": search.note,
         "created_by": search.created_by.public_name,
         "created_at": _date(search.created_at),
+    }
+
+
+# Annotations of the texts: sightings, reading notes, validated corrections of the analysis.
+# The private notebook is never given.
+
+
+def _with_words():
+    words = Token.objects.select_related("passage__edition__work__author")
+    return Prefetch("tokens", queryset=words)
+
+
+def public_sightings():
+    return (
+        Sighting.objects.filter(is_hidden=False)
+        .select_related("created_by", "attestation__unit")
+        .prefetch_related(_with_words())
+        .order_by("pk")
+    )
+
+
+def sighting_data(sighting, link):
+    attestation = sighting.attestation
+    attached = attestation is not None and not attestation.is_withdrawn and visible(attestation)
+    return {
+        "id": sighting.pk,
+        "status": sighting.status,
+        "note": sighting.note,
+        "attestation": attestation.pk if attached else None,
+        "unit": attestation.unit_id if attached else None,
+        "created_by": sighting.created_by.public_name,
+        "created_at": _date(sighting.created_at),
+        **(_words(sighting.tokens.all()) or {}),
+    }
+
+
+def public_reading_notes():
+    return (
+        ReadingNote.objects.filter(is_hidden=False)
+        .select_related("created_by", "passage__edition__work")
+        .prefetch_related(_with_words())
+        .order_by("pk")
+    )
+
+
+def reading_note_data(note, link):
+    return {
+        "id": note.pk,
+        "url": link(note.get_absolute_url()),
+        "text": note.text,
+        "created_by": note.created_by.public_name,
+        "created_at": _date(note.created_at),
+        **(_words(note.tokens.all()) or {}),
+    }
+
+
+def validated_corrections():
+    return (
+        AnalysisCorrection.objects.filter(
+            status=AnalysisCorrection.Status.VALIDATED, is_hidden=False
+        )
+        .select_related("created_by", "token__passage__edition__work__author")
+        .order_by("pk")
+    )
+
+
+def correction_data(correction, link):
+    return {
+        "id": correction.pk,
+        "word_id": correction.token_id,
+        "part": correction.part,
+        "lemma": correction.lemma,
+        "upos": correction.upos,
+        "feats": correction.feats,
+        "head": correction.head_id,
+        "deprel": correction.deprel,
+        "reason": correction.reason,
+        "created_by": correction.created_by.public_name,
+        "created_at": _date(correction.created_at),
+        "validated_at": _date(correction.reviewed_at),
+        **(_words([correction.token]) or {}),
     }

@@ -2,9 +2,14 @@ from unittest import mock
 
 from django.urls import reverse
 
+from corpus.corrections import propose_correction, review_correction
+from corpus.models import AnalysisCorrection
 from moderation.services import hide_content
+from notebook.services import add_private_note
 from phraseology.models import NegativeSearch
+from phraseology.reading_notes import create_reading_note
 from phraseology.services import propose_unit
+from phraseology.sightings import create_sighting
 from phraseology.tests.factories import make_unit
 from phraseology.tests.test_neologisms import NeologismTestCase
 from translations.tests.factories import (
@@ -43,7 +48,16 @@ class ApiTests(ApiTestCase):
         response, data = self.get("index")
         self.assertEqual(data["license"], "CC BY-SA 4.0")
         self.assertEqual(
-            set(data["endpoints"]), {"units", "neologisms", "versions", "negative_searches"}
+            set(data["endpoints"]),
+            {
+                "units",
+                "neologisms",
+                "versions",
+                "negative_searches",
+                "sightings",
+                "reading_notes",
+                "corrections",
+            },
         )
         self.assertEqual(response["Access-Control-Allow-Origin"], "*")
 
@@ -89,6 +103,26 @@ class ApiTests(ApiTestCase):
         _response, data = self.get("negative_searches")
         self.assertEqual(data["results"][0]["expression"], "birota")
         self.assertTrue(data["results"][0]["search_url"].endswith("/recherche/?term1=birota"))
+
+    def test_annotations_of_the_texts(self):
+        words = ",".join(str(word.pk) for word in self.words[:2])
+        create_sighting(words, self.other, "formule ?")
+        create_reading_note(words, self.other, "Tournure fréquente.")
+        hidden = create_reading_note(words, self.author, "Note masquée.")
+        hide_content(hidden, self.reviewer)
+        add_private_note(self.other, words, "Note privée secrète.")
+        (sighting,) = self.get("sightings")[1]["results"]
+        self.assertEqual((sighting["note"], sighting["status"]), ("formule ?", "open"))
+        self.assertEqual(sighting["word_ids"], [word.pk for word in self.words[:2]])
+        response, notes = self.get("reading_notes")
+        self.assertEqual([note["text"] for note in notes["results"]], ["Tournure fréquente."])
+        self.assertNotIn("secrète", response.content.decode())
+        correction = AnalysisCorrection(token=self.words[0], lemma="consilius", reason="Lemme.")
+        propose_correction(correction, self.other)
+        self.assertEqual(self.get("corrections")[1]["count"], 0)
+        review_correction(correction, self.reviewer, AnalysisCorrection.Status.VALIDATED)
+        (item,) = self.get("corrections")[1]["results"]
+        self.assertEqual((item["word_id"], item["lemma"]), (self.words[0].pk, "consilius"))
 
     def test_pages(self):
         NegativeSearch.objects.create(
