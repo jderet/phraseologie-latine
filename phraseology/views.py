@@ -64,6 +64,7 @@ from .models import (
     UnitRelation,
     UnitSurvey,
 )
+from .panel import unit_card, word_analysis, word_attestations
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
 from .services import (
@@ -684,6 +685,16 @@ def attestation_withdraw(request, pk):
     return redirect(f"{attestation.unit.get_absolute_url()}#attestations")
 
 
+def _return_url(request, name, default):
+    """Where to go back after a form: the address sent, if it belongs to the site."""
+    url = request.POST.get(name) or request.GET.get(name) or ""
+    if url and url_has_allowed_host_and_scheme(
+        url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return url
+    return default
+
+
 @login_required
 @require_POST
 def attestation_review(request, pk):
@@ -700,7 +711,7 @@ def attestation_review(request, pk):
             messages.success(request, _("L’attestation est validée."))
         else:
             messages.success(request, _("L’attestation est rejetée."))
-    return redirect(attestation.get_absolute_url())
+    return redirect(_return_url(request, "next", attestation.get_absolute_url()))
 
 
 @login_required
@@ -711,7 +722,32 @@ def attestation_example(request, pk):
         set_example(attestation, request.user, request.POST.get("exemple") == "1")
     except ValidationError as error:
         messages.error(request, error.messages[0])
-    return redirect(attestation.get_absolute_url())
+    return redirect(_return_url(request, "next", attestation.get_absolute_url()))
+
+
+def reading_word(request, pk):
+    """A word of the corpus: the units it belongs to and its analysis, for the reading panel.
+
+    The panel asks for the fragment; without script, the same content is a page of its own.
+    """
+    token = get_object_or_404(Token.objects.select_related("passage__edition__work__author"), pk=pk)
+    user = request.user
+    work = token.passage.edition.work
+    reading = reverse("corpus:reading", args=[work.cts_id])
+    back = _return_url(
+        request, "retour", f"{reading}?{urlencode({'aller': token.passage.reference})}"
+    )
+    context = {
+        "token": token,
+        "cards": [
+            unit_card(user, attestation, token) for attestation in word_attestations(user, token)
+        ],
+        "analysis": word_analysis(token),
+        "back": back,
+    }
+    fragment = request.GET.get("fragment") == "1"
+    template = "phraseology/word_panel.html" if fragment else "phraseology/word_page.html"
+    return render(request, template, context)
 
 
 # Survey of the occurrences: those of the core reviewed in batches, the others shown as found

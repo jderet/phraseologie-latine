@@ -6,6 +6,7 @@ app_name = "phraseology"
 
 urlpatterns = [
     path("recherche/schema/", views.schema_search, name="schema_search"),
+    path("lecture/mots/<int:pk>/", views.reading_word, name="reading_word"),
     path("profils/", views.collocation_profile, name="collocation_profile"),
     path("profils/<str:lemma>/", views.collocation_profile, name="collocation_lemma"),
     path("fiches/", views.unit_list, name="unit_list"),

@@ -6,7 +6,7 @@
 {% block body_attributes %}{% if translation %} class="page-wide"{% endif %}{% endblock %}
 
 {% block content %}
-<article class="reading{% if translation %} with-translation{% endif %}{% if work.form == 'verse' %} reading-verse{% endif %}">
+<article class="reading{% if translation %} with-translation{% endif %}{% if work.form == 'verse' %} reading-verse{% endif %}" data-word-url="{% url 'phraseology:reading_word' 0 %}" data-label-close="{% translate 'Fermer' %}" data-label-loading="{% translate 'Chargement…' %}" data-label-error="{% translate 'Le panneau n’a pas pu être chargé.' %}">
   <header class="reading-header">
     <p class="eyebrow"><a href="{{ work_url }}">{{ work.author.name }}, {{ work.title }}</a></p>
     <h1>{% if label %}{{ label }}{% else %}<i>{{ work.title }}</i>{% endif %}</h1>

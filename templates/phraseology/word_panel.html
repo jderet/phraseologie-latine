@@ -1,0 +1,91 @@
+{% load i18n corpus_tags %}<div class="word-panel">
+  <p class="eyebrow">{{ token.passage.citation }}</p>
+  <h2 class="word-panel-title" lang="la">{{ token.form }}</h2>
+
+  {% for card in cards %}
+  <section class="unit-card k-{{ card.unit.kind|default:'none' }}" aria-labelledby="card-{{ card.attestation.pk }}">
+    <h3 id="card-{{ card.attestation.pk }}"><span class="swatch s-{{ card.status }}"></span> <a href="{{ card.unit.get_absolute_url }}" lang="la">{{ card.unit.reference_form }}</a></h3>
+    <p class="badges">
+      {% if card.unit.kind %}<span class="badge">{{ card.unit.get_kind_display }}</span>{% endif %}
+      <span class="badge status-{{ card.unit.status }}">{{ card.unit.get_status_display }}</span>
+      {% for label in card.unit.usage_mark_labels %}<span class="badge">{{ label }}</span>{% endfor %}
+    </p>
+    {% for sense in card.senses %}
+    <p class="unit-card-sense">{{ sense.definition }}{% for equivalent in sense.equivalents.all %}{% if forloop.first %} — {% endif %}<span lang="{{ equivalent.language }}">{{ equivalent.expression }}</span>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% endfor %}
+    {% if card.frequency %}
+    <p class="note">{% blocktranslate trimmed with core=card.frequency.core_total label=card.frequency.corpus_version count counter=card.frequency.total %}
+      {{ counter }} occurrence du schéma repérée automatiquement, dont {{ core }} dans le noyau (corpus version {{ label }}).
+    {% plural %}
+      {{ counter }} occurrences du schéma repérées automatiquement, dont {{ core }} dans le noyau (corpus version {{ label }}).
+    {% endblocktranslate %}</p>
+    {% if card.authors %}<ul class="distribution">{% for author, total in card.authors %}<li>{{ author.name }} <span class="muted">{{ total }}</span></li>{% endfor %}</ul>{% endif %}
+    {% endif %}
+    {% if card.examples %}
+    <h4>{% translate "Autres exemples" %}</h4>
+    <ul class="evidences">
+      {% for example in card.examples %}
+      <li class="evidence"><a class="hit-ref" href="{{ example.quotation.url }}">{{ example.quotation.citation }}</a> <span class="kwic" lang="la">… {% render_tokens example.quotation.words example.quotation.highlighted %} …</span> <span class="muted">{{ example.status_label }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <h4>{% translate "Cette attestation" %}</h4>
+    <p>{{ card.attestation.status_label|capfirst }}{% if card.attestation.is_example %} · {% translate "exemple choisi" %}{% endif %} · {% blocktranslate trimmed with name=card.attestation.created_by.public_name date=card.attestation.created_at|date:"j F Y" %}
+      ajoutée par {{ name }} le {{ date }}
+    {% endblocktranslate %}{% if card.attestation.reviewed_by %} · {% blocktranslate trimmed with name=card.attestation.reviewed_by.public_name %}
+      examinée par {{ name }}
+    {% endblocktranslate %}{% endif %}</p>
+    {% if card.attestation.realization or card.attestation.sense %}<p class="muted">{% if card.attestation.realization %}<span lang="la">{{ card.attestation.realization.form }}</span>{% endif %}{% if card.attestation.realization and card.attestation.sense %} · {% endif %}{% if card.attestation.sense %}{{ card.attestation.sense.definition|truncatewords:12 }}{% endif %}</p>{% endif %}
+    {% if card.attestation.note %}<p class="evidence-note">{{ card.attestation.note }}</p>{% endif %}
+    {% if card.can_review or card.can_edit %}
+    <div class="actions">
+      {% if card.can_review %}
+      <form method="post" action="{% url 'phraseology:attestation_review' card.attestation.pk %}" class="inline-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ back }}">
+        {% if card.can_validate %}<button type="submit" name="decision" value="valider" class="button">{% translate "valider" %}</button>{% endif %}
+        <button type="submit" name="decision" value="rejeter" class="button button-quiet">{% translate "rejeter" %}</button>
+      </form>
+      {% endif %}
+      {% if card.can_edit %}
+      <form method="post" action="{% url 'phraseology:attestation_example' card.attestation.pk %}" class="inline-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ back }}">
+        <input type="hidden" name="exemple" value="{% if card.attestation.is_example %}0{% else %}1{% endif %}">
+        <button type="submit" class="link-button small-link">{% if card.attestation.is_example %}{% translate "ne plus montrer en exemple" %}{% else %}{% translate "choisir comme exemple" %}{% endif %}</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+  {% empty %}
+  <p class="muted">{% translate "Ce mot n’appartient à aucune unité soulignée." %}</p>
+  {% endfor %}
+
+  {% if analysis %}
+  <section class="word-analysis" aria-labelledby="analysis-{{ token.pk }}">
+    <h3 id="analysis-{{ token.pk }}">{% translate "Analyse du mot" %}</h3>
+    {% for part in analysis.parts %}
+    <dl class="facts">
+      {% if analysis.parts|length > 1 %}<div><dt>{% translate "Partie du mot" %}</dt><dd lang="la">{{ part.analysis.text }}</dd></div>{% endif %}
+      <div>
+        <dt>{% translate "Lemme" %}</dt>
+        <dd><span lang="la">{{ part.analysis.lemma|default:"—" }}</span>{% if part.analysis.lemma_norm %} <a class="small-link" href="{% url 'corpus:search' %}?term1={{ part.analysis.lemma_norm|urlencode }}&amp;mode1=lemma">{% translate "chercher" %}</a> <a class="small-link" href="{% url 'phraseology:collocation_lemma' part.analysis.lemma_norm %}">{% translate "profil" %}</a>{% endif %}</dd>
+      </div>
+      <div><dt>{% translate "Catégorie" %}</dt><dd>{{ part.part_of_speech|default:"—" }}</dd></div>
+      {% if part.features %}<div><dt>{% translate "Morphologie" %}</dt><dd><code>{{ part.features|join:" · " }}</code></dd></div>{% endif %}
+      <div>
+        <dt>{% translate "Fonction" %}</dt>
+        <dd>{% if part.relation %}{{ part.relation }} {% endif %}<code>{{ part.analysis.deprel|default:"—" }}</code>{% if part.analysis.head %} · {% translate "dépend de" %} <span lang="la">{{ part.analysis.head.form }}</span>{% endif %}</dd>
+      </div>
+      <div><dt>{% translate "Origine" %}</dt><dd>{{ part.analysis.get_origin_display|capfirst }}</dd></div>
+    </dl>
+    {% empty %}
+    <p class="muted">{% translate "Ce mot n’est pas analysé." %}</p>
+    {% endfor %}
+    <p class="note">{% blocktranslate trimmed with layer=analysis.layer.label %}
+      Analyse automatique ({{ layer }}) : lemme, morphologie et fonction peuvent être erronés.
+    {% endblocktranslate %}</p>
+  </section>
+  {% endif %}
+</div>
