@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{% translate "Mon carnet" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium notebook">
+  <p class="eyebrow"><a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a></p>
+  <h1>{% translate "Mon carnet" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Vos surlignages, vos notes privées et vos listes de passages. Vous seul les voyez : ils ne
+    figurent ni dans l’API, ni dans les exports, et la suppression du compte les efface.
+  {% endblocktranslate %}</p>
+  <p class="note">{% blocktranslate trimmed %}
+    Pour en ajouter, lisez une œuvre en mode « annoter », choisissez des mots, puis
+    « Surligner » ou « Note privée » ; un passage s’ajoute à une liste depuis le panneau d’un mot.
+  {% endblocktranslate %}</p>
+
+  <section class="unit-section" id="surlignages" aria-labelledby="highlights-title">
+    <h2 id="highlights-title">{% translate "Surlignages" %}</h2>
+    <ul class="evidences">
+      {% for item in highlights %}
+      <li class="evidence">
+        <a class="hit-ref" href="{{ item.reading_url }}">{{ item.quotation.citation }}</a>
+        <span class="kwic" lang="la">… {% render_tokens item.quotation.words item.quotation.highlighted %} …</span>
+        <span class="muted"><span class="hl hl-{{ item.color }}">{{ item.get_color_display }}</span> · {{ item.created_at|date:"j F Y" }}</span>
+        <form method="post" action="{% url 'notebook:highlight_delete' item.pk %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="link-button small-link">{% translate "retirer" %}</button>
+        </form>
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Aucun surlignage." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="unit-section" id="notes" aria-labelledby="notes-title">
+    <h2 id="notes-title">{% translate "Notes privées" %}</h2>
+    <ul class="evidences">
+      {% for item in notes %}
+      <li class="evidence">
+        <a class="hit-ref" href="{{ item.reading_url }}">{{ item.quotation.citation }}</a>
+        <span class="kwic" lang="la">… {% render_tokens item.quotation.words item.quotation.highlighted %} …</span>
+        <span class="evidence-note">{{ item.text|linebreaksbr }}</span>
+        <form method="post" action="{% url 'notebook:note_delete' item.pk %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="link-button small-link">{% translate "retirer" %}</button>
+        </form>
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune note privée." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="unit-section" id="listes" aria-labelledby="lists-title">
+    <h2 id="lists-title">{% translate "Listes de passages" %}</h2>
+    {% for passage_list in lists %}
+    <h3>{{ passage_list.name }}</h3>
+    <ul class="part-list">
+      {% for entry in passage_list.entries.all %}
+      <li>
+        <a href="{{ entry.reading_url }}">{{ entry.passage.citation }}</a>
+        <form method="post" action="{% url 'notebook:list_entry_delete' entry.pk %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="link-button small-link">{% translate "retirer" %}</button>
+        </form>
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Liste vide." %}</li>
+      {% endfor %}
+    </ul>
+    <form method="post" action="{% url 'notebook:list_delete' passage_list.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="link-button small-link">{% translate "supprimer la liste" %}</button>
+    </form>
+    {% empty %}
+    <p class="muted">{% translate "Aucune liste." %}</p>
+    {% endfor %}
+  </section>
+</article>
+{% endblock %}

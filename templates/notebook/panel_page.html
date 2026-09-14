@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Mon carnet" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p><a href="{{ back }}">← {% translate "Retour" %}</a></p>
+  {% include panel_template %}
+</article>
+{% endblock %}

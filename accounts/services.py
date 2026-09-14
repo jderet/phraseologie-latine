@@ -53,6 +53,11 @@ def anonymize_user(user):
     user.save()
     user.groups.clear()
     user.user_permissions.clear()
+    # The private notebook is personal data, not a contribution: it is deleted. Imported here,
+    # since the notebook application depends on the accounts.
+    from notebook.services import delete_notebook
+
+    delete_notebook(user)
 
 
 @transaction.atomic

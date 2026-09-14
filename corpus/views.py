@@ -15,6 +15,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
 from accounts.roles import is_reviewer
+from notebook.services import notebook_marks
 from phraseology.models import Kind, UsageMark
 from phraseology.reading import (
     STATUS_LABELS,
@@ -241,6 +242,8 @@ def reading(request, work_id, part=None):
         suggestions = page_suggestions(user, passages, token_ids, default_layer())
         marked = [*occurrences, *suggestions, *page_sightings(passages, token_ids)]
         assign_tracks(marked)
+    # The highlights and private notes of the reader, seen by that reader only.
+    marked = [*marked, *notebook_marks(user, passages, token_ids)]
     page_url = _reading_url(work_id, page)
 
     def link(**changes):

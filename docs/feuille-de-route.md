@@ -101,7 +101,7 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 - [ ] Page de l'annotateur, file du relecteur, chiffres publics
 - [x] Corrections d'analyse proposées puis validées, prises en compte par la lecture, la recherche et les relevés
 - [ ] Notes de lecture publiques, masquables
-- [ ] Carnet personnel : surlignages, notes privées, listes de passages, page « mon carnet »
+- [x] Carnet personnel : surlignages, notes privées, listes de passages, page « mon carnet »
 - [x] Guide d'annotation en pages datées, lié depuis l'outil d'annotation
 - [ ] Annotations dans l'API et l'export complet ; exports TEI et CoNLL-U d'un passage ou d'une œuvre
 

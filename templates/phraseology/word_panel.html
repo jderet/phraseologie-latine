@@ -1,5 +1,5 @@
 {% load i18n corpus_tags %}<div class="word-panel">
-  <p class="eyebrow">{{ token.passage.citation }}</p>
+  <p class="eyebrow">{{ token.passage.citation }}{% if user.is_authenticated %} · <a href="{% url 'notebook:list_add' %}?passage={{ token.passage_id }}&amp;retour={{ back|urlencode }}">{% translate "ajouter le passage à une liste" %}</a>{% endif %}</p>
   <h2 class="word-panel-title" lang="la">{{ token.form }}</h2>
 
   {% for card in cards %}

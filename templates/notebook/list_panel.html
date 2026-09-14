@@ -1,0 +1,12 @@
+{% load i18n %}<div class="annotate-panel">
+  <p class="eyebrow"><a href="{% url 'notebook:notebook' %}">{% translate "Mon carnet" %}</a></p>
+  <h2 class="word-panel-title">{% translate "Ajouter à une liste" %}</h2>
+  <p>{{ passage.citation }}</p>
+  <form method="post" action="{% url 'notebook:list_add' %}" class="form">
+    {% csrf_token %}
+    <input type="hidden" name="passage" value="{{ passage.pk }}">
+    <input type="hidden" name="next" value="{{ back }}">
+    {{ form }}
+    <button type="submit" class="button">{% translate "Ajouter le passage" %}</button>
+  </form>
+</div>

@@ -61,6 +61,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | `translations` | textes sources, projets, versions, segments | textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable |
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
 | `api` | API publique en lecture, export complet, page des données ouvertes | API JSON (fiches, néologismes, versions publiées, recherches infructueuses), export zip |
+| `notebook` | carnet personnel : surlignages, notes privées, listes de passages | visible de son seul propriétaire, jamais dans l'API ni les exports, effacé avec le compte |
 | `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications |
 
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.

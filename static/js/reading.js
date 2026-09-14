@@ -146,9 +146,22 @@
       words.className = "reading-selection-words";
       const actions = document.createElement("p");
       actions.className = "reading-selection-actions";
+      // A panel of the private notebook, for the words chosen.
+      const keep = (address) => () => {
+        const chosenWords = inTextOrder();
+        if (!chosenWords.length) {
+          return;
+        }
+        const url = new URL(address, window.location.origin);
+        url.searchParams.set("mots", chosenWords.map((word) => word.dataset.t).join(","));
+        url.searchParams.set("retour", backTo(chosenWords[0]));
+        load(url);
+      };
       actions.append(
         button(labels.labelAttach, attach, "button"),
         button(labels.labelSighting, sight, "button button-quiet"),
+        button(labels.labelHighlight, keep(labels.highlightUrl), "button button-quiet"),
+        button(labels.labelNote, keep(labels.noteUrl), "button button-quiet"),
         button(labels.labelClear, clearChoice, "link-button"),
       );
       bar.append(words, actions);

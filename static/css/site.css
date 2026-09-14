@@ -1926,3 +1926,31 @@ article > h2 {
   border-bottom-style: dashed;
   border-bottom-color: var(--ink-2);
 }
+
+/* Private notebook: highlights and notes seen by their owner only */
+
+.hl {
+  border-radius: 2px;
+}
+
+.hl-yellow {
+  background: color-mix(in srgb, #f2d24b 45%, transparent);
+}
+
+.hl-green {
+  background: color-mix(in srgb, #7ccf8a 40%, transparent);
+}
+
+.hl-blue {
+  background: color-mix(in srgb, #7fb3f0 40%, transparent);
+}
+
+.hl-pink {
+  background: color-mix(in srgb, #f39ac1 40%, transparent);
+}
+
+.pn {
+  text-decoration: underline wavy color-mix(in srgb, var(--accent) 60%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+}
