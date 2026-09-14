@@ -76,7 +76,7 @@ Tout se fait sur le Mac : rien n'est mis en ligne, aucun service payant.
 
 - [x] Réserve contre l'entraînement de modèles, lisible par les robots
 - [x] Mentions légales, politique de confidentialité et conditions d'utilisation, à compléter par le porteur
-- [ ] Interface entièrement traduite en anglais, vérifiée à chaque modification
+- [x] Interface entièrement traduite en anglais, vérifiée à chaque modification
 - [ ] Configuration de production : image Docker, serveur d'application, HTTPS, pages d'erreur, journaux
 - [ ] Sauvegardes quotidiennes et restauration testée en local
 - [ ] Revue de sécurité complète, sans problème ouvert

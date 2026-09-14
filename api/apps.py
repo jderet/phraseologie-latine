@@ -1,6 +1,7 @@
 from django.apps import AppConfig
+from django.utils.translation import gettext_lazy as _
 
 
 class ApiConfig(AppConfig):
     name = "api"
-    verbose_name = "API publique et données ouvertes"
+    verbose_name = _("API publique et données ouvertes")

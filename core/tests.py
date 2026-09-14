@@ -1,3 +1,6 @@
+import ast
+import gettext
+
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
@@ -137,3 +140,54 @@ class LegalCheckTests(SimpleTestCase):
     @override_settings(LEGAL=COMPLETE_LEGAL)
     def test_deploy_check_passes_when_details_are_complete(self):
         self.assertEqual(check_legal_pages(None), [])
+
+
+class EnglishTranslationTests(SimpleTestCase):
+    """The interface is fully translated into English and the compiled catalog is current.
+
+    The continuous integration runs makemessages first, so a string marked for translation
+    but never extracted also makes these tests fail.
+    """
+
+    po_path = settings.BASE_DIR / "locale" / "en" / "LC_MESSAGES" / "django.po"
+
+    def entries(self):
+        """Yield the fields and flags of each active entry of the catalog."""
+        for block in self.po_path.read_text(encoding="utf-8").split("\n\n"):
+            fields, flags, current = {}, set(), None
+            for line in block.splitlines():
+                if line.startswith("#,"):
+                    flags.update(flag.strip() for flag in line[2:].split(","))
+                elif line.startswith('"') and current:
+                    fields[current] += ast.literal_eval(line)
+                elif line and not line.startswith("#"):
+                    current, _space, value = line.partition(" ")
+                    fields[current] = ast.literal_eval(value)
+            if fields.get("msgid"):
+                yield fields, flags
+
+    def test_every_interface_string_has_an_english_translation(self):
+        entries = list(self.entries())
+        self.assertGreater(len(entries), 1000)
+        missing = [
+            fields["msgid"]
+            for fields, flags in entries
+            if "fuzzy" in flags
+            or not all(value for key, value in fields.items() if key.startswith("msgstr"))
+        ]
+        self.assertEqual(missing, [])
+
+    def test_compiled_catalog_matches_the_translations(self):
+        with self.po_path.with_suffix(".mo").open("rb") as compiled:
+            catalog = gettext.GNUTranslations(compiled)
+        stale = []
+        for fields, _flags in self.entries():
+            if "msgid_plural" in fields:
+                plural = (fields["msgid"], fields["msgid_plural"])
+                found = [catalog.ngettext(*plural, 1), catalog.ngettext(*plural, 2)]
+                expected = [fields["msgstr[0]"], fields["msgstr[1]"]]
+            else:
+                found, expected = catalog.gettext(fields["msgid"]), fields["msgstr"]
+            if found != expected:
+                stale.append(fields["msgid"])
+        self.assertEqual(stale, [])

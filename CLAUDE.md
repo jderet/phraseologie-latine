@@ -66,7 +66,7 @@ python manage.py purge_pending_signups     # effacer les inscriptions jamais act
 ## Conventions
 
 - Code, commentaires et docstrings en anglais. Documentation et messages de commit en français.
-- Textes d'interface écrits en français dans le code, toujours marqués pour traduction (`{% translate %}`, `gettext`) ; traduction anglaise dans `locale/en/`, fichiers `.mo` compilés et versionnés.
+- Textes d'interface écrits en français dans le code, toujours marqués pour traduction (`{% translate %}`, `gettext`) ; traduction anglaise dans `locale/en/`, fichiers `.mo` compilés et versionnés. Un test vérifie que tout est traduit et que le `.mo` est à jour ; l'intégration continue relance `makemessages` avant les tests.
 - Chaque fonction arrive avec ses tests. `python manage.py test` et `ruff check .` passent avant chaque commit.
 - Pas de nouvelle dépendance sans raison claire ; versions figées dans `requirements*.txt`.
 - Aucune requête vers des services tiers depuis les pages (polices, scripts, statistiques) : tout est servi par le site.
