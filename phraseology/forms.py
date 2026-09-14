@@ -345,6 +345,15 @@ class SightingForm(forms.Form):
     )
 
 
+class ReadingNoteForm(forms.Form):
+    text = forms.CharField(
+        label=_("Note"),
+        max_length=2000,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text=_("Un commentaire public sur ces mots : tournure, allusion, difficulté."),
+    )
+
+
 class NegativeSearchForm(forms.ModelForm):
     """What a person adds to a search that found nothing; the query comes from the search."""
 

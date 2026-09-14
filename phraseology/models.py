@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import F, Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
@@ -1000,6 +1001,40 @@ class PassageReview(models.Model):
 
     def __str__(self):
         return gettext("%(citation)s, entièrement relu") % {"citation": self.passage.citation}
+
+
+class ReadingNote(ModeratedContent):
+    """A public comment on a group of words, written by any active account; readers may hide
+    the notes of the text."""
+
+    passage = models.ForeignKey(
+        Passage, on_delete=models.PROTECT, related_name="+", verbose_name=_("passage")
+    )
+    # Stable word identifiers (rule 1).
+    tokens = models.ManyToManyField(Token, related_name="+", verbose_name=_("mots"))
+    text = models.TextField(_("note"), max_length=2000)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="reading_notes",
+        verbose_name=_("écrite par"),
+    )
+    created_at = models.DateTimeField(_("écrite le"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("note de lecture")
+        verbose_name_plural = _("notes de lecture")
+        ordering = ["-created_at", "-pk"]
+
+    def __str__(self):
+        return gettext("Note de lecture, %(citation)s") % {"citation": self.passage.citation}
+
+    def get_absolute_url(self):
+        reading = reverse("corpus:reading", args=[self.passage.edition.work.cts_id])
+        return f"{reading}?{urlencode({'aller': self.passage.reference})}"
+
+
+register(ReadingNote, owner_field="created_by", text_fields=("text",))
 
 
 register(

@@ -49,6 +49,7 @@ from .forms import (
     NeologismCreateForm,
     NeologismEquivalentForm,
     NeologismForm,
+    ReadingNoteForm,
     RealizationForm,
     RelationForm,
     ResolveContestForm,
@@ -81,6 +82,7 @@ from .models import (
 )
 from .panel import unit_card, word_analysis, word_attestations
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
+from .reading_notes import create_reading_note, word_reading_notes
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
 from .services import (
     add_attestations,
@@ -913,6 +915,7 @@ def reading_word(request, pk):
             unit_card(user, attestation, token) for attestation in word_attestations(user, token)
         ],
         "analysis": word_analysis(token),
+        "reading_notes": word_reading_notes(token),
         "back": back,
     }
     fragment = request.GET.get("fragment") == "1"
@@ -1067,6 +1070,50 @@ def sighting_create(request):
             messages.success(
                 request, _("Le repérage est enregistré ; chacun peut le rattacher à une fiche.")
             )
+        return redirect(back)
+    return render(
+        request,
+        template,
+        {
+            "quote": quotation(evidence.tokens),
+            "words": ",".join(str(token.pk) for token in evidence.tokens),
+            "back": back,
+            "form": form,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def reading_note_create(request):
+    """A public reading note about the words chosen in the reading."""
+    fragment = request.GET.get("fragment") == "1"
+    template = (
+        "phraseology/reading_note_panel.html" if fragment else "phraseology/reading_note_page.html"
+    )
+    words = request.POST.get("words") or request.GET.get("mots", "")
+    try:
+        evidence = corpus_evidence(words)
+    except ValidationError as error:
+        back = _return_url(request, "retour", reverse("phraseology:annotator"))
+        return render(request, template, {"errors": error.messages, "back": back})
+    first = evidence.tokens[0]
+    reading = reverse("corpus:reading", args=[first.passage.edition.work.cts_id])
+    default = f"{reading}?{urlencode({'aller': first.passage.reference})}"
+    back = _return_url(request, "next", _return_url(request, "retour", default))
+    form = ReadingNoteForm(request.POST or None)
+    if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, _("Écrivez la note."))
+        else:
+            try:
+                create_reading_note(words, request.user, form.cleaned_data["text"])
+            except ContributionLimitReached as error:
+                messages.error(request, str(error))
+            except ValidationError as error:
+                messages.error(request, error.messages[0])
+            else:
+                messages.success(request, _("La note de lecture est publiée."))
         return redirect(back)
     return render(
         request,

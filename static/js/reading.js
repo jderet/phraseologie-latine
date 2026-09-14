@@ -146,7 +146,7 @@
       words.className = "reading-selection-words";
       const actions = document.createElement("p");
       actions.className = "reading-selection-actions";
-      // A panel of the private notebook, for the words chosen.
+      // A panel for the words chosen: a public reading note, or the private notebook.
       const keep = (address) => () => {
         const chosenWords = inTextOrder();
         if (!chosenWords.length) {
@@ -160,6 +160,7 @@
       actions.append(
         button(labels.labelAttach, attach, "button"),
         button(labels.labelSighting, sight, "button button-quiet"),
+        button(labels.labelReadingNote, keep(labels.readingNoteUrl), "button button-quiet"),
         button(labels.labelHighlight, keep(labels.highlightUrl), "button button-quiet"),
         button(labels.labelNote, keep(labels.noteUrl), "button button-quiet"),
         button(labels.labelClear, clearChoice, "link-button"),

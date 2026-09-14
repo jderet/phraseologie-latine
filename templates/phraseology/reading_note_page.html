@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Note de lecture" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p><a href="{{ back }}">← {% translate "Retour à la lecture" %}</a></p>
+  {% include "phraseology/reading_note_panel.html" %}
+</article>
+{% endblock %}

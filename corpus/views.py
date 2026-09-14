@@ -31,6 +31,7 @@ from phraseology.reading import (
     word_marks,
     word_occurrences,
 )
+from phraseology.reading_notes import page_reading_notes
 from phraseology.sightings import page_sightings
 from phraseology.suggestions import page_suggestions
 
@@ -251,7 +252,13 @@ def reading(request, work_id, part=None):
         for passage in passages:
             passage.review = reviews.get(passage.pk)
     # The highlights and private notes of the reader, seen by that reader only.
-    marked = [*marked, *notebook_marks(user, passages, token_ids)]
+    # The public reading notes, unless the reader hides them.
+    notes = page_reading_notes(passages, token_ids) if filters.notes else []
+    forms = {word.pk: word.form for words in tokens.values() for word in words}
+    reading_notes = [
+        {"note": mark.note, "words": " ".join(forms[pk] for pk in mark.words)} for mark in notes
+    ]
+    marked = [*marked, *notes, *notebook_marks(user, passages, token_ids)]
     page_url = _reading_url(work_id, page)
 
     def link(**changes):
@@ -293,6 +300,7 @@ def reading(request, work_id, part=None):
                 page, plan.scheme, passages, tokens, parts, verse=work.form == Work.Form.VERSE
             ),
             "marks": word_marks(marked),
+            "reading_notes": reading_notes,
             "page_units": page_units,
             "legend_kinds": legend_kinds(occurrences),
             "filters": filters,

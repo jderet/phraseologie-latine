@@ -9,7 +9,7 @@ from django.db.models import Count, Prefetch, Q
 from corpus.models import AnalysisCorrection, Passage, Token
 from corpus.search import quotation
 
-from .models import Attestation, AttestationDoubt, PassageReview, Sighting, Unit
+from .models import Attestation, AttestationDoubt, PassageReview, ReadingNote, Sighting, Unit
 
 RECENT = 30
 PASSAGES_SHOWN = 50
@@ -45,7 +45,9 @@ def _with_quotations(items):
 
 
 def annotator_summary(user):
-    """What a user added in the texts: attestations, sightings, doubts and corrections."""
+    """What a user added in the texts: attestations, sightings, doubts, reading notes and
+    corrections."""
+    notes = ReadingNote.objects.filter(created_by=user, is_hidden=False)
     attestations = Attestation.objects.active().filter(created_by=user, is_hidden=False)
     sightings = Sighting.objects.filter(created_by=user, is_hidden=False)
     doubts = AttestationDoubt.objects.filter(created_by=user, is_hidden=False)
@@ -62,6 +64,9 @@ def annotator_summary(user):
             doubts.select_related(
                 "attestation__unit", "attestation__passage__edition__work"
             ).order_by("-created_at", "-pk")[:RECENT]
+        ),
+        "reading_notes": _with_quotations(
+            notes.select_related("passage__edition__work").order_by("-created_at", "-pk")[:RECENT]
         ),
         "correction_figures": _by_status(corrections),
         "corrections": list(

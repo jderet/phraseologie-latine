@@ -56,6 +56,21 @@
     </ul>
   </section>
 
+  <section class="unit-section" id="notes" aria-labelledby="notes-title">
+    <h2 id="notes-title">{% translate "Notes de lecture" %}</h2>
+    <ul class="evidences">
+      {% for note in reading_notes %}
+      <li class="evidence">
+        <a class="hit-ref" href="{{ note.get_absolute_url }}">{{ note.quotation.citation }}</a>
+        <span class="kwic" lang="la">… {% render_tokens note.quotation.words note.quotation.highlighted %} …</span>
+        <span class="muted">{{ note.text|truncatewords:30 }}</span>
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune note de lecture." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
   <section class="unit-section" id="corrections" aria-labelledby="corrections-title">
     <h2 id="corrections-title">{% translate "Corrections d’analyse" %}</h2>
     <ul class="item-list">

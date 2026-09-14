@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% load i18n static corpus_tags %}
+{% load i18n static corpus_tags moderation_tags %}
 
 {% block title %}{% if label %}{{ label }} · {% endif %}{{ work.title }} · {{ block.super }}{% endblock %}
 
 {% block body_attributes %}{% if translation %} class="page-wide"{% endif %}{% endblock %}
 
 {% block content %}
-<article class="reading{% if translation %} with-translation{% endif %}{% if work.form == 'verse' %} reading-verse{% endif %}" data-word-url="{% url 'phraseology:reading_word' 0 %}" data-label-close="{% translate 'Fermer' %}" data-label-loading="{% translate 'Chargement…' %}" data-label-error="{% translate 'Le panneau n’a pas pu être chargé.' %}" data-annotating="{% if annotating %}1{% endif %}" data-annotate-url="{% url 'phraseology:annotate_selection' %}" data-suggestion-url="{% url 'phraseology:suggestion_panel' %}" data-sighting-url="{% url 'phraseology:sighting_create' %}" data-label-sighting="{% translate 'Repérage sans fiche' %}" data-highlight-url="{% url 'notebook:highlight_create' %}" data-label-highlight="{% translate 'Surligner' %}" data-note-url="{% url 'notebook:note_create' %}" data-label-note="{% translate 'Note privée' %}" data-label-chosen="{% translate 'Mots choisis :' %}" data-label-attach="{% translate 'Rattacher à une fiche' %}" data-label-clear="{% translate 'Tout désélectionner' %}">
+<article class="reading{% if translation %} with-translation{% endif %}{% if work.form == 'verse' %} reading-verse{% endif %}" data-word-url="{% url 'phraseology:reading_word' 0 %}" data-label-close="{% translate 'Fermer' %}" data-label-loading="{% translate 'Chargement…' %}" data-label-error="{% translate 'Le panneau n’a pas pu être chargé.' %}" data-annotating="{% if annotating %}1{% endif %}" data-annotate-url="{% url 'phraseology:annotate_selection' %}" data-suggestion-url="{% url 'phraseology:suggestion_panel' %}" data-sighting-url="{% url 'phraseology:sighting_create' %}" data-label-sighting="{% translate 'Repérage sans fiche' %}" data-reading-note-url="{% url 'phraseology:reading_note_create' %}" data-label-reading-note="{% translate 'Note de lecture' %}"data-highlight-url="{% url 'notebook:highlight_create' %}" data-label-highlight="{% translate 'Surligner' %}" data-note-url="{% url 'notebook:note_create' %}" data-label-note="{% translate 'Note privée' %}" data-label-chosen="{% translate 'Mots choisis :' %}" data-label-attach="{% translate 'Rattacher à une fiche' %}" data-label-clear="{% translate 'Tout désélectionner' %}">
   <header class="reading-header">
     <p class="eyebrow"><a href="{{ work_url }}">{{ work.author.name }}, {{ work.title }}</a></p>
     <h1>{% if label %}{{ label }}{% else %}<i>{{ work.title }}</i>{% endif %}</h1>
@@ -67,6 +67,10 @@
           <legend>{% translate "Registres" %} <span class="muted">{% translate "(aucune case : tous)" %}</span></legend>
           {% for value, choice_label in register_choices %}<label><input type="checkbox" name="registre" value="{{ value }}"{% if value in filters.registers %} checked{% endif %}> {{ choice_label }}</label>{% endfor %}
         </fieldset>
+        <fieldset>
+          <legend>{% translate "Notes de lecture" %}</legend>
+          <label><input type="checkbox" name="notes" value="1"{% if filters.notes %} checked{% endif %}> {% translate "Afficher les notes de lecture des lecteurs" %}</label>
+        </fieldset>
         <p class="actions">
           <button type="submit" class="button">{% translate "Appliquer" %}</button>
           <a href="{{ reset_url }}">{% translate "Revenir aux réglages par défaut" %}</a>
@@ -111,6 +115,26 @@
   </div>
 
   {% include "corpus/reading_pager.html" %}
+
+  {% if reading_notes %}
+  <section class="reading-notes" id="notes" aria-labelledby="reading-notes-title">
+    <h2 id="reading-notes-title">{% translate "Notes de lecture" %}</h2>
+    <ul class="item-list">
+      {% for item in reading_notes %}
+      <li id="note-{{ item.note.pk }}">
+        <div>
+          <p><a class="item-title" href="#p-{{ item.note.passage.reference }}">{{ item.note.passage.citation }}</a> <span class="kwic" lang="la">{{ item.words }}</span></p>
+          <p>{{ item.note.text|linebreaksbr }}</p>
+          <p class="muted">{% blocktranslate trimmed with name=item.note.created_by.public_name date=item.note.created_at|date:"j F Y" %}
+            par {{ name }}, le {{ date }}
+          {% endblocktranslate %}</p>
+          {% moderation_links item.note %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
 
   {% if review_passages %}
   <section class="reading-review" aria-labelledby="reading-review-title">

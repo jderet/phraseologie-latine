@@ -10,6 +10,7 @@ urlpatterns = [
     path("lecture/annoter/", views.annotate_selection, name="annotate_selection"),
     path("lecture/annoter/rattacher/", views.annotate_attach, name="annotate_attach"),
     path("lecture/reperages/nouveau/", views.sighting_create, name="sighting_create"),
+    path("lecture/notes/nouvelle/", views.reading_note_create, name="reading_note_create"),
     path("reperages/", views.sighting_list, name="sightings"),
     path("relecture/passages/", views.review_queue, name="review_queue"),
     path("relecture/", views.reviewer_page, name="reviewer"),

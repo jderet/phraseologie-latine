@@ -70,12 +70,18 @@ class FilterTests(SimpleTestCase):
             type="formula",
             marque="poetic",
             registre="elevated",
+            notes="1",
         )
         chosen = ReadingFilters((AUTOMATIC,), ("formula",), ("poetic",), ("elevated",))
         self.assertEqual(reading_filters(sent), chosen)
         self.assertEqual(reading_filters(self.request(sent.session)), chosen)
         self.assertTrue(reading_filters(self.request(sent.session, filtres="defaut")).is_default)
         self.assertTrue(reading_filters(self.request(sent.session)).is_default)
+
+    def test_the_reading_notes_can_be_hidden(self):
+        sent = self.request(filtres="1", statut=["validated", "proposed"])
+        self.assertFalse(reading_filters(sent).notes)
+        self.assertFalse(reading_filters(self.request(sent.session)).notes)
 
 
 class PageAttestationTests(AnalysedCorpusTestCase):

@@ -435,8 +435,21 @@ blockquote {
   content: " ✓";
 }
 
-.reading-review {
+.reading-review,
+.reading-notes {
   margin-block: 2rem;
+}
+
+/* A public reading note: a thin wavy line, closest to the words. */
+.rn {
+  text-decoration: underline wavy var(--ink-2);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.reading-note + .reading-note {
+  border-top: 1px solid var(--rule);
+  margin-top: 0.75rem;
 }
 
 .changes {

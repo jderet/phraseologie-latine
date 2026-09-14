@@ -63,6 +63,8 @@ class ReadingFilters:
     kinds: tuple = ()
     marks: tuple = ()
     registers: tuple = ()
+    # The public reading notes, shown unless the reader hides them.
+    notes: bool = True
 
     @property
     def is_default(self):
@@ -73,12 +75,13 @@ def _chosen(values, allowed):
     return tuple(value for value in dict.fromkeys(values) if value in allowed)
 
 
-def _filters(statuses, kinds, marks, registers):
+def _filters(statuses, kinds, marks, registers, notes=True):
     return ReadingFilters(
         _chosen(statuses, STATUS_LABELS),
         _chosen(kinds, Kind.values),
         _chosen(marks, UsageMark.values),
         _chosen(registers, Work.Register.values),
+        notes is True,
     )
 
 
@@ -90,7 +93,13 @@ def reading_filters(request):
         return ReadingFilters()
     if asked == "1":
         values = request.GET.getlist
-        filters = _filters(values("statut"), values("type"), values("marque"), values("registre"))
+        filters = _filters(
+            values("statut"),
+            values("type"),
+            values("marque"),
+            values("registre"),
+            request.GET.get("notes") == "1",
+        )
         if filters.is_default:
             request.session.pop(SESSION_KEY, None)
         else:
@@ -99,10 +108,11 @@ def reading_filters(request):
                 list(filters.kinds),
                 list(filters.marks),
                 list(filters.registers),
+                filters.notes,
             ]
         return filters
     saved = request.session.get(SESSION_KEY)
-    if isinstance(saved, list) and len(saved) == 4:
+    if isinstance(saved, list) and len(saved) in (4, 5):
         return _filters(*saved)
     return ReadingFilters()
 

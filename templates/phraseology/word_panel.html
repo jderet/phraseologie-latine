@@ -1,4 +1,4 @@
-{% load i18n corpus_tags %}<div class="word-panel">
+{% load i18n corpus_tags moderation_tags %}<div class="word-panel">
   <p class="eyebrow">{{ token.passage.citation }}{% if user.is_authenticated %} · <a href="{% url 'notebook:list_add' %}?passage={{ token.passage_id }}&amp;retour={{ back|urlencode }}">{% translate "ajouter le passage à une liste" %}</a>{% endif %}</p>
   <h2 class="word-panel-title" lang="la">{{ token.form }}</h2>
 
@@ -62,6 +62,21 @@
   {% empty %}
   <p class="muted">{% translate "Ce mot n’appartient à aucune unité soulignée." %}</p>
   {% endfor %}
+
+  {% if reading_notes %}
+  <section class="word-notes" aria-labelledby="notes-{{ token.pk }}">
+    <h3 id="notes-{{ token.pk }}">{% translate "Notes de lecture" %}</h3>
+    {% for note in reading_notes %}
+    <div class="reading-note">
+      <p>{{ note.text|linebreaksbr }}</p>
+      <p class="muted">{% blocktranslate trimmed with name=note.created_by.public_name date=note.created_at|date:"j F Y" %}
+        par {{ name }}, le {{ date }}
+      {% endblocktranslate %}</p>
+      {% moderation_links note %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
 
   {% if analysis %}
   <section class="word-analysis" aria-labelledby="analysis-{{ token.pk }}">
