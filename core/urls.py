@@ -6,4 +6,6 @@ app_name = "core"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("robots.txt", views.robots_txt, name="robots_txt"),
+    path(".well-known/tdmrep.json", views.tdmrep, name="tdmrep"),
 ]

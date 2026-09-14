@@ -70,12 +70,26 @@ Terminé quand une centaine de fiches sont validées.
 - [x] Élargissement au reste de la latinité classique
 - [x] Exports TEI et TMX, API publique, export complet
 
+## Étape 5 : préparation de l'ouverture
+
+Tout se fait sur le Mac : rien n'est mis en ligne, aucun service payant.
+
+- [x] Réserve contre l'entraînement de modèles, lisible par les robots
+- [ ] Mentions légales, politique de confidentialité et conditions d'utilisation, à compléter par le porteur
+- [ ] Interface entièrement traduite en anglais, vérifiée à chaque modification
+- [ ] Configuration de production : image Docker, serveur d'application, HTTPS, pages d'erreur, journaux
+- [ ] Sauvegardes quotidiennes et restauration testée en local
+- [ ] Revue de sécurité complète, sans problème ouvert
+
+Terminé quand le site tourne sur le Mac dans sa configuration de production, qu'une sauvegarde y a été restaurée et que la revue de sécurité ne laisse aucun problème ouvert.
+
 ## Ouverture publique
 
 - [ ] Conditions de la section 7 du cahier des charges remplies
-- [ ] Serveur européen, sauvegardes quotidiennes, restauration testée
-- [ ] Revue de sécurité complète
-- [ ] Mentions légales, politique de confidentialité, conditions d'utilisation, réserve contre l'entraînement de modèles
+- [ ] Choisir l'hébergeur, le nom de domaine et le service d'envoi des e-mails
+- [ ] Serveur européen, sauvegardes copiées hors du serveur, restauration testée sur le serveur
+- [ ] Pages légales complétées et publiées
+- [ ] Décider du préchargement HSTS (difficile à annuler)
 - [ ] Passage à Django 6.2 LTS (sortie prévue en avril 2027)
 
 ## Après l'ouverture

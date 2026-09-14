@@ -1,0 +1,23 @@
+# Phraséologie latine
+#
+# Les contributions sont sous licence CC BY-SA 4.0 ; elles se téléchargent sur /donnees/.
+# Le site refuse l'utilisation de ses pages pour entraîner des modèles d'intelligence
+# artificielle : réserve au sens de l'article 4, paragraphe 3, de la directive (UE) 2019/790,
+# aussi exprimée dans /.well-known/tdmrep.json.
+#
+# Contributions are licensed under CC BY-SA 4.0 and can be downloaded from /donnees/.
+# The site refuses the use of its pages to train artificial intelligence models: reservation
+# under Article 4(3) of Directive (EU) 2019/790, also expressed in /.well-known/tdmrep.json.
+
+# Robots collecting data to train models
+{% for agent in training_agents %}User-agent: {{ agent }}
+{% endfor %}Disallow: /
+
+# Other robots, such as search engines: searches and account pages are costly or private.
+User-agent: *
+Content-Signal: search=yes, ai-train=no
+Disallow: /admin/
+Disallow: /compte/
+Disallow: /recherche/
+Disallow: /donnees/export/
+Disallow: /fiches/*/releve/
