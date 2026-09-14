@@ -46,7 +46,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 
 ## Architecture
 
-- Django 6.1, PostgreSQL, HTMX, un seul composant JavaScript pour l'éditeur de traduction. Le corpus étant importé, PostgreSQL (Docker) est nécessaire en local ; l'intégration continue teste aussi sur PostgreSQL.
+- Django 6.1, PostgreSQL, HTMX, deux composants JavaScript : l'éditeur de traduction et la lecture annotée (étape 6). Le corpus étant importé, PostgreSQL (Docker) est nécessaire en local ; l'intégration continue teste aussi sur PostgreSQL.
 - Réglages lus dans les variables d'environnement (`.env`, modèle dans `.env.example`) avec django-environ.
 - `config/` contient les réglages et les routes. Une application Django par domaine :
 
@@ -65,7 +65,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 - Les traitements lourds du corpus sont des commandes `manage.py` lancées sur le Mac : `import_perseus` lit le catalogue `corpus/data/` et les fichiers TEI ; `analyze_corpus` crée une couche d'analyse LatinCy, raccrochée aux mots par leur position dans le texte (un seul processus : le modèle ne se transmet pas entre processus).
 - Contenus contribués : hériter de `moderation.models.ModeratedContent`, s'inscrire avec `moderation.registry.register` et enregistrer chaque modification par `moderation.services.save_with_revision`. `register` déclare aussi le propriétaire, la règle de visibilité (brouillons), ce qui compte dans la limite des nouveaux comptes, les champs qu'un retour arrière ne rétablit pas, et qui peut discuter ou voter.
 - `deploy/` : scripts d'exploitation (sauvegarde, restauration, vérification) ; procédures et tâches quotidiennes dans [docs/exploitation.md](docs/exploitation.md).
-- L'éditeur de traduction est le seul composant JavaScript (`static/js/editor.js`) ; sans lui, les pages fonctionnent par formulaires. Le PDF est enregistré par le navigateur depuis la page imprimable.
+- Deux composants JavaScript seulement : l'éditeur de traduction (`static/js/editor.js`) et la lecture annotée (étape 6, choix du 14 septembre 2026). Sans eux, les pages fonctionnent par formulaires ; la lecture montre ses soulignements et des liens vers les fiches. Le PDF est enregistré par le navigateur depuis la page imprimable.
 
 ## Conventions
 

@@ -83,6 +83,30 @@ Tout se fait sur le Mac : rien n'est mis en ligne, aucun service payant.
 
 Terminé quand le site tourne sur le Mac dans sa configuration de production, qu'une sauvegarde y a été restaurée et que la revue de sécurité ne laisse aucun problème ouvert.
 
+## Étape 6 : lecture et annotation du corpus
+
+Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026). Détail dans la section 4.10 du [cahier des charges](cahier-des-charges.md). Dans l'ordre de travail : la lecture d'abord, puis l'annotation.
+
+- [ ] Fiches d'exemple en local : une commande les crée, une autre les efface
+- [ ] Mode lecture : œuvre en continu, navigation par livre et par chapitre, traduction en regard dans une colonne masquable
+- [ ] Unités soulignées dans le texte : couleur par type, légende, mots d'une occurrence qui s'allument ensemble, traits empilés
+- [ ] Filtres : statuts (validées et proposées par défaut), type, marque d'usage, registre, une seule fiche avec occurrence suivante et précédente
+- [ ] Panneau latéral de la fiche ; analyse d'un mot au clic
+- [ ] Soulignements dans la page d'un passage, les résultats de recherche, les versions publiées et la comparaison
+- [ ] Mode « annoter » : mots choisis au clic, fiches suggérées, recherche, fiche pré-remplie ; réalisation, sens, note, exemple proposé
+- [ ] Occurrences du schéma des fiches pas encore attestées, confirmées en un clic
+- [ ] Relecture dans le texte, attestation douteuse, contestation d'une attestation
+- [ ] Repérages sans fiche et leur file
+- [ ] Passage entièrement relu, file des passages à relire, progression par œuvre
+- [ ] Page de l'annotateur, file du relecteur, chiffres publics
+- [ ] Corrections d'analyse proposées puis validées, prises en compte par la lecture, la recherche et les relevés
+- [ ] Notes de lecture publiques, masquables
+- [ ] Carnet personnel : surlignages, notes privées, listes de passages, page « mon carnet »
+- [ ] Guide d'annotation en pages datées, lié depuis l'outil d'annotation
+- [ ] Annotations dans l'API et l'export complet ; exports TEI et CoNLL-U d'un passage ou d'une œuvre
+
+Terminé quand un livre du noyau (par exemple Cic. *Off.* 1) est entièrement relu, avec ses attestations visibles dans le texte.
+
 ## Ouverture publique
 
 - [ ] Conditions de la section 7 du cahier des charges remplies

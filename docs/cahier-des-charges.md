@@ -121,6 +121,53 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 - API publique et export complet téléchargeable (Q65). L'API est en lecture seule, au format JSON et sans clé ; l'export complet est une archive de fichiers JSON produite par une commande et téléchargeable sur la page « Données ouvertes ». Ni l'une ni l'autre ne contient de brouillon, de contenu masqué ou d'adresse e-mail. Les versions de traduction s'exportent aussi en TEI et en TMX (choix du 14 septembre 2026).
 - Dépôt périodique des données sur Zenodo, avec la liste des contributeurs qui acceptent d'y figurer (T13, T17). Modalités à préciser.
 
+### 4.10 Lecture et annotation du corpus
+
+Choix du 14 septembre 2026, à la suite d'un questionnaire de 40 questions sur l'annotation. Ces fonctions forment l'étape 6 de la feuille de route, menée avant de finir l'étape 5.
+
+**Lecture**
+
+- Un **mode lecture** présente une œuvre en continu : texte large, navigation par livre et par chapitre, traduction du domaine public dans une colonne à côté, masquable (dessous sur téléphone).
+- La phraséologie apparaît partout où le latin s'affiche : mode lecture, page d'un passage, résultats de recherche, versions latines publiées et vue de comparaison.
+- Chaque occurrence d'unité est soulignée, d'une couleur par type, avec une légende. Au survol ou au toucher, tous les mots de l'occurrence s'allument ensemble, même éloignés. Quand des unités partagent des mots, leurs traits s'empilent ; un clic sur le mot les liste toutes.
+- Le lecteur choisit les statuts affichés : validées, proposées, repérées automatiquement, chacun dans un style distinct (une attestation automatique n'est jamais présentée comme validée). À la première visite, validées et proposées sont cochées ; le site garde ensuite le choix du lecteur. Autres filtres : type d'unité, marque d'usage, registre, et une seule fiche, avec occurrence suivante et précédente dans l'œuvre.
+- Un clic sur une unité ouvre un **panneau latéral** : sens et équivalents, fréquence et répartition par auteur (avec la version du corpus), deux ou trois autres exemples, statut de l'attestation et qui l'a ajoutée, actions du relecteur.
+- Un clic sur un mot montre son analyse (lemme, morphologie, fonction), marquée « analyse automatique » avec l'outil et sa version, ou « corrigée ».
+- Dans les versions latines publiées, les unités connues repérées dans la phrase sont soulignées comme suggestions ; les passages justifiés par une fiche ont leur propre style.
+- La lecture fonctionne sur tout appareil ; l'annotation est pensée pour l'ordinateur (Q69).
+
+**Annotation**
+
+- Un **mode « annoter »**, activé depuis la page de lecture, fait apparaître les outils. On choisit les mots d'une attestation en cliquant chacun d'eux, même éloignés.
+- Le site propose d'abord les fiches dont les lemmes correspondent aux mots choisis, puis une recherche parmi les fiches, enfin une fiche nouvelle pré-remplie (forme de référence, schéma deviné, attestation). On peut préciser la réalisation, le sens et une note, et proposer l'attestation comme exemple choisi, ce qu'un relecteur décide.
+- Un **repérage** signale « il y a de la phraséologie ici » sans choisir de fiche. Il entre dans une file : tout compte actif le rattache à une fiche, existante ou nouvelle, et l'attestation obtenue est proposée ; un relecteur peut classer un repérage sans suite.
+- En mode annoter, les occurrences du schéma des fiches connues qui n'ont pas encore d'attestation s'affichent en pointillé, repérées automatiquement. Dans le noyau, un clic en fait une attestation proposée, qu'un relecteur valide. Hors du noyau, le clic l'enregistre comme attestation repérée automatiquement, jamais validée, comme le relevé (T2). Les candidats sans fiche ne s'affichent pas dans le texte.
+- Un relecteur valide ou rejette une attestation depuis le panneau, en plus de l'examen par lots du relevé. Un contributeur qui juge une attestation fausse la signale **douteuse**, avec un motif ; un relecteur tranche.
+- Une attestation se conteste comme une fiche : un argument ouvre la discussion, avec des votes indicatifs ; un relecteur tranche, et les positions restent affichées (Q53).
+- Un relecteur déclare un passage **entièrement relu** quand toutes ses unités sont relevées. Une file montre, par œuvre, les passages du noyau qui ne le sont pas encore ; chacun y pioche.
+
+**Autres annotations**
+
+- **Correction d'analyse** (Q28) : tout compte actif propose une correction du lemme, de la morphologie ou de la relation syntaxique d'un mot ; un relecteur la valide. Validée, elle remplace l'analyse automatique dans la lecture, la recherche et les relevés, et survit à une nouvelle analyse, puisqu'elle pointe vers l'identifiant stable du mot (Q31).
+- **Note de lecture** : un commentaire public sur un groupe de mots, écrit par tout compte actif. C'est un contenu modéré, qui compte dans la limite des nouveaux comptes. Une case affiche ou masque les notes.
+- **Carnet personnel** : surlignages en quelques couleurs, notes privées et listes de passages nommées, réunis sur une page « mon carnet ». Il n'est visible que de son auteur : aucune autre page, ni l'API, ni les exports ne le montrent.
+
+**Suivi**
+
+- Progression par œuvre : passages entièrement relus, attestations validées.
+- Page de l'annotateur : ses attestations, repérages, corrections et notes, avec leur statut.
+- File du relecteur : attestations proposées ou douteuses, repérages, corrections d'analyse, groupés par passage.
+- Chiffres publics : fiches, attestations, passages relus.
+- Le guide d'annotation vit dans des pages du site, chaque version datée (Q54) ; l'outil d'annotation y renvoie. Le porteur le rédige avec le comité ; les administrateurs le publient.
+
+**Exports**
+
+- Attestations, repérages, notes de lecture et corrections validées entrent dans l'API et l'export complet. Un passage ou une œuvre s'exporte aussi en TEI, avec ses unités, et en CoNLL-U, avec l'analyse corrigée et les unités. Le carnet personnel n'est jamais exporté.
+
+**Technique**
+
+- La lecture annotée est un second composant JavaScript, à côté de l'éditeur : un fichier servi par le site, sans bibliothèque externe. Sans JavaScript, le texte reste lisible, avec ses soulignements et des liens vers les fiches.
+
 ## 5. Règles juridiques
 
 - **Contributions** : CC BY-SA 4.0 (Q61).
@@ -136,7 +183,7 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 ## 6. Contraintes techniques
 
 - Budget : moins de 20 € par mois (T14).
-- Framework éprouvé et outils automatiques de sécurité (T16) : Django, PostgreSQL, HTMX, un composant JavaScript pour l'éditeur.
+- Framework éprouvé et outils automatiques de sécurité (T16) : Django, PostgreSQL, HTMX, deux composants JavaScript : l'éditeur de traduction et la lecture annotée (choix du 14 septembre 2026).
 - Hébergement : petit serveur virtuel européen, Docker, mises à jour automatiques, sauvegardes quotidiennes copiées hors du serveur. Pendant le développement, tout tourne sur le Mac du porteur.
 - Le traitement du corpus (lemmatisation, syntaxe, candidats) tourne sur le Mac du porteur ; le serveur ne sert que les résultats.
 - Standards : TEI et URN CTS en entrée, Universal Dependencies (CoNLL-U) pour l'analyse, exports ouverts.
@@ -167,3 +214,4 @@ Suggestions de traduction par IA, usage en classe (Q56), édition simultanée (Q
 - Typologie détaillée des unités (guide d'annotation v0).
 - Modalités du co-autorat et fréquence des dépôts sur Zenodo.
 - Choix précis de l'hébergeur.
+- Ce que devient un passage « entièrement relu » quand une fiche créée plus tard, ou une nouvelle analyse, y trouve une occurrence pas encore relevée.

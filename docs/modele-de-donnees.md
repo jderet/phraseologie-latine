@@ -54,6 +54,19 @@ erDiagram
 - **Recherche infructueuse** (`NegativeSearch`) : expression cherchée, requête (les paramètres de la recherche, dans un ordre fixe), version du corpus, note, date, auteur. Elle fonde la mention « introuvable dans le corpus (version X) », jamais « non attesté ». Quand une recherche ne trouve rien, tout compte connecté peut l'enregistrer depuis la page de résultats ; le serveur refait la recherche et refuse celle qui trouve des occurrences. C'est un contenu modéré (révision, signalement), qui compte dans la limite des nouveaux comptes. Sa page, publique, donne la mention et la recherche en clair ; si le corpus a changé depuis, la recherche est refaite et le résultat actuel affiché.
 - **Néologisme** (`Neologism`) : forme latine, sens moderne, équivalents (`NeologismEquivalent` : langue, expression ; au moins un), formation (périphrase, dérivation, emprunt), justification (texte obligatoire), preuves (`Evidence` : attestations du corpus, grammaires, dictionnaires), référence éventuelle au *Lexicon recentis Latinitatis* (entrée ou page, citée, jamais recopiée), statut (proposé, validé par un relecteur), proposé par. Un néologisme est public dès sa création et marqué « néologisme » ; tout compte actif le complète, comme une fiche.
 
+### Lecture et annotation (étape 6)
+
+Noms de code provisoires, fixés au moment de coder. Les fonctions sont décrites dans la section 4.10 du cahier des charges.
+
+- **Repérage** (`Sighting`) : passage, mots couverts (identifiants stables), note, statut (ouvert, rattaché, classé sans suite), attestation obtenue, ajouté par, décidé par, date. Contenu modéré. Tout compte actif le rattache à une fiche ; un relecteur le classe sans suite.
+- **Doute sur une attestation** (`AttestationDoubt`) : attestation, motif, statut (ouvert, attestation maintenue, attestation rejetée), signalé par, tranché par, date. Tout compte actif en ouvre un ; un relecteur tranche.
+- **Passage relu** (`PassageReview`) : passage, relu par, date, version du corpus. Seul un relecteur le déclare.
+- **Correction d'analyse** (`AnalysisCorrection`) : mot et partie du mot, lemme, catégorie, traits, tête et relation proposés (seuls les champs changés), motif, statut (proposée, validée, rejetée), proposée par, examinée par. Elle pointe vers l'identifiant du mot, jamais vers une couche : validée, elle s'applique par-dessus toute couche d'analyse, présente ou future (règle 1).
+- **Note de lecture** (`ReadingNote`) : passage, mots couverts, texte, auteur, date. Contenu modéré, compté dans la limite des nouveaux comptes.
+- **Carnet personnel** : surlignage (`Highlight` : mots, couleur), note privée (`PrivateNote` : mots, texte), liste de passages (`PassageList` : nom, passages). Visible de son seul auteur : aucune page, API ou export ne le renvoie à quelqu'un d'autre (règle 8).
+- **Version du guide d'annotation** (`GuideVersion`) : texte, date de publication, publiée par. Chaque version reste consultable.
+- Une suggestion en pointillé (occurrence du schéma d'une fiche, sans attestation) n'est pas enregistrée tant qu'on ne clique pas. Dans le noyau, le clic crée une attestation proposée ; hors du noyau, une attestation repérée automatiquement (origine « requête »), jamais validée.
+
 ## 3. Traduction
 
 - **Texte source** (`SourceText`) : titre, auteur, langue, adresse d'origine, licence déclarée, statut juridique (domaine public, licence libre), ajouté par.
@@ -94,6 +107,10 @@ erDiagram
 | Justification | normale ; contestée ; à revoir quand le latin visé a changé |
 | Contestation | ouverte → retenue ou écartée par un relecteur, ou retirée par son auteur |
 | Candidat | à examiner → retenu ou rejeté |
+| Repérage | ouvert → rattaché à une fiche, ou classé sans suite |
+| Signalement « douteuse » | ouvert → attestation maintenue ou rejetée |
+| Correction d'analyse | proposée → validée ou rejetée |
+| Passage | non relu → entièrement relu |
 | Signalement | ouvert → traité ou rejeté |
 
 ## 7. Règles à respecter
