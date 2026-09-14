@@ -16,6 +16,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from accounts.limits import ContributionLimitReached
 from accounts.roles import is_reviewer
 from notebook.services import notebook_marks
+from phraseology.completeness import current_reviews, work_progress
 from phraseology.models import Kind, UsageMark
 from phraseology.reading import (
     STATUS_LABELS,
@@ -85,8 +86,11 @@ def _current_edition(work_id):
 def work_detail(request, work_id):
     edition = _current_edition(work_id)
     page = Paginator(edition.passages.all(), PASSAGES_PER_PAGE).get_page(request.GET.get("page"))
+    progress = work_progress([edition.work])[0] if edition.work.is_core else None
     return render(
-        request, "corpus/work.html", {"work": edition.work, "edition": edition, "page": page}
+        request,
+        "corpus/work.html",
+        {"work": edition.work, "edition": edition, "page": page, "progress": progress},
     )
 
 
@@ -242,6 +246,10 @@ def reading(request, work_id, part=None):
         suggestions = page_suggestions(user, passages, token_ids, default_layer())
         marked = [*occurrences, *suggestions, *page_sightings(passages, token_ids)]
         assign_tracks(marked)
+        # Whether a reviewer declared each passage entirely reviewed.
+        reviews = current_reviews(passages)
+        for passage in passages:
+            passage.review = reviews.get(passage.pk)
     # The highlights and private notes of the reader, seen by that reader only.
     marked = [*marked, *notebook_marks(user, passages, token_ids)]
     page_url = _reading_url(work_id, page)
@@ -298,6 +306,8 @@ def reading(request, work_id, part=None):
             "unfocus_url": link(fiche=""),
             "keep": [(name, value) for name, value in state.items() if value],
             "annotating": annotating,
+            "review_passages": passages if annotating else [],
+            "can_review": annotating and is_reviewer(user),
             "can_annotate": user.is_authenticated and user.is_active,
             "annotate_url": link(annoter="" if annotating else "1"),
             "translation": translation,

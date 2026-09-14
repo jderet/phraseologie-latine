@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Passages à relire" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "Passages à relire" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Un passage est déclaré entièrement relu par un relecteur quand toutes ses unités sont
+    relevées. Choisissez une œuvre du noyau : ses passages pas encore relus s’y suivent, chacun
+    pioche celui qu’il veut et l’annote dans la lecture.
+  {% endblocktranslate %}</p>
+
+  <p><a href="{% url 'phraseology:figures' %}">{% translate "Chiffres de l’annotation" %}</a></p>
+  <div class="table-scroll">
+    <table class="changes">
+      <thead>
+        <tr>
+          <th scope="col">{% translate "Œuvre" %}</th>
+          <th scope="col">{% translate "Passages relus" %}</th>
+          <th scope="col">{% translate "Attestations validées" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in progress %}
+        <tr{% if row.work == selected.work %} class="is-current"{% endif %}>
+          <td><a href="?oeuvre={{ row.work.cts_id }}">{{ row.work.citation_prefix }}</a> <span class="muted"><i>{{ row.work.title }}</i></span></td>
+          <td><meter min="0" max="{{ row.total }}" value="{{ row.reviewed }}">{{ row.percent }} %</meter> {{ row.reviewed }} / {{ row.total }} <span class="muted">({{ row.percent }} %)</span></td>
+          <td>{{ row.validated }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="muted">{% translate "Aucune œuvre du noyau importée." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if selected %}
+  <section class="unit-section" aria-labelledby="to-review-title">
+    <h2 id="to-review-title">{% blocktranslate with work=selected.work.citation_prefix %}{{ work }} : passages à relire{% endblocktranslate %}</h2>
+    <ul class="item-list">
+      {% for item in passages %}
+      <li>
+        <span><a class="item-title" href="{{ item.reading_url }}">{{ item.passage.citation }}</a> <span class="muted">{% blocktranslate trimmed count counter=item.attestations with validated=item.validated %}
+          {{ counter }} attestation, dont {{ validated }} validée
+        {% plural %}
+          {{ counter }} attestations, dont {{ validated }} validées
+        {% endblocktranslate %}</span></span>
+        {% if is_reviewer %}
+        <form method="post" action="{% url 'phraseology:passage_review' item.passage.pk %}" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" name="action" value="relu" class="link-button small-link">{% translate "déclarer entièrement relu" %}</button>
+        </form>
+        {% endif %}
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Tous les passages de cette œuvre sont relus." %}</li>
+      {% endfor %}
+    </ul>
+    {% if page.has_other_pages %}
+    <nav class="pager" aria-label="{% translate 'Pages' %}">
+      {% if page.has_previous %}<a rel="prev" href="?oeuvre={{ selected.work.cts_id }}&amp;page={{ page.previous_page_number }}">{% translate "Page précédente" %}</a>{% endif %}
+      {% if page.has_next %}<a rel="next" href="?oeuvre={{ selected.work.cts_id }}&amp;page={{ page.next_page_number }}">{% translate "Page suivante" %}</a>{% endif %}
+    </nav>
+    {% endif %}
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

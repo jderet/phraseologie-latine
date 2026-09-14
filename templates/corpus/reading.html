@@ -100,7 +100,7 @@
         {% for item in row.items %}
         {% for heading in item.headings %}<h2 class="reading-heading">{{ heading }}</h2>{% endfor %}
         {% if item.passage.heading %}<p class="passage-heading">{{ item.passage.heading }}</p>{% endif %}
-        <span class="reading-passage" id="p-{{ item.passage.reference }}"><a class="ref{% if item.quiet %} is-quiet{% endif %}" href="{{ work_url }}{{ item.passage.reference|urlencode }}/">{{ item.number }}</a>{% if item.tokens %}{% render_words item.tokens marks %}{% else %}{{ item.passage.text }} {% endif %}</span>
+        <span class="reading-passage{% if item.passage.review %} is-reviewed{% endif %}" id="p-{{ item.passage.reference }}"><a class="ref{% if item.quiet %} is-quiet{% endif %}" href="{{ work_url }}{{ item.passage.reference|urlencode }}/">{{ item.number }}</a>{% if item.tokens %}{% render_words item.tokens marks %}{% else %}{{ item.passage.text }} {% endif %}</span>
         {% endfor %}
       </div>
       {% if translation %}
@@ -111,6 +111,34 @@
   </div>
 
   {% include "corpus/reading_pager.html" %}
+
+  {% if review_passages %}
+  <section class="reading-review" aria-labelledby="reading-review-title">
+    <h2 id="reading-review-title">{% translate "Passages entièrement relus" %}</h2>
+    <p class="note">{% translate "Un relecteur déclare un passage entièrement relu quand toutes ses unités sont relevées." %} <a href="{% url 'phraseology:review_queue' %}?oeuvre={{ work.cts_id }}">{% translate "Passages à relire dans l’œuvre" %}</a></p>
+    <ul class="item-list">
+      {% for passage in review_passages %}
+      <li>
+        <span><a class="item-title" href="#p-{{ passage.reference }}">{{ passage.citation }}</a>
+        {% if passage.review %}<span class="badge">{% translate "entièrement relu" %}</span> <span class="muted">{% blocktranslate trimmed with name=passage.review.reviewed_by.public_name date=passage.review.reviewed_at|date:"j F Y" version=passage.review.corpus_version %}
+          par {{ name }}, le {{ date }}, sur {{ version }}
+        {% endblocktranslate %}</span>{% else %}<span class="muted">{% translate "pas encore relu" %}</span>{% endif %}</span>
+        {% if can_review %}
+        <form method="post" action="{% url 'phraseology:passage_review' passage.pk %}" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          {% if passage.review %}
+          <button type="submit" name="action" value="retirer" class="link-button small-link">{% translate "retirer la déclaration" %}</button>
+          {% else %}
+          <button type="submit" name="action" value="relu" class="link-button small-link">{% translate "déclarer entièrement relu" %}</button>
+          {% endif %}
+        </form>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
 
   <section class="reading-units" aria-labelledby="reading-units-title">
     <h2 id="reading-units-title">{% translate "Phraséologie de cette page" %}</h2>

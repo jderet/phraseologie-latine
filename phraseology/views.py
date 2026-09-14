@@ -15,7 +15,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from accounts.limits import ContributionLimitReached, is_limited
 from accounts.roles import is_reviewer
 from corpus.forms import search_query
-from corpus.models import Author, Token
+from corpus.models import Author, Passage, Token, Work
 from corpus.search import corpus_version, default_layer, quotation
 from corpus.text import normalize
 from corpus.timeouts import TimeLimit
@@ -30,6 +30,14 @@ from translations.permissions import can_translate
 
 from .annotation import guess_schema, search_units, suggested_units
 from .collocations import profile, profile_computed
+from .completeness import (
+    attestation_counts,
+    mark_reviewed,
+    passages_to_review,
+    withdraw_review,
+    work_progress,
+)
+from .dashboards import annotator_summary, public_figures, reviewer_queue
 from .forms import (
     AnnotationForm,
     AttestationPlaceForm,
@@ -1195,6 +1203,101 @@ def suggestion_confirm(request):
         else:
             messages.info(request, _("Ces mots attestent déjà cette fiche."))
     return redirect(back)
+
+
+# Completeness and following of the annotation
+
+REVIEW_PASSAGES_PER_PAGE = 50
+
+
+def _annotating_url(passage):
+    reading = reverse("corpus:reading", args=[passage.edition.work.cts_id])
+    return f"{reading}?{urlencode({'aller': passage.reference, 'annoter': '1'})}"
+
+
+def review_queue(request):
+    """The progress of the works of the core, and the passages of one not yet entirely reviewed."""
+    works = (
+        Work.objects.filter(is_core=True, editions__is_current=True)
+        .select_related("author")
+        .distinct()
+        .order_by("author__birth_year", "cts_urn")
+    )
+    progress = work_progress(works)
+    chosen = request.GET.get("oeuvre", "")
+    selected = next((row for row in progress if row["work"].cts_id == chosen), None)
+    page, items = None, []
+    if selected is not None:
+        passages = passages_to_review(selected["work"]).select_related("edition__work")
+        page = Paginator(passages, REVIEW_PASSAGES_PER_PAGE).get_page(request.GET.get("page"))
+        shown = list(page.object_list)
+        counts, validated = attestation_counts(shown)
+        items = [
+            {
+                "passage": passage,
+                "attestations": counts.get(passage.pk, 0),
+                "validated": validated.get(passage.pk, 0),
+                "reading_url": _annotating_url(passage),
+            }
+            for passage in shown
+        ]
+    return render(
+        request,
+        "phraseology/review_queue.html",
+        {
+            "progress": progress,
+            "selected": selected,
+            "page": page,
+            "passages": items,
+            "is_reviewer": is_reviewer(request.user),
+        },
+    )
+
+
+@login_required
+@require_POST
+def passage_review(request, pk):
+    """A reviewer declares a passage entirely reviewed, or withdraws the declaration."""
+    passage = get_object_or_404(Passage.objects.select_related("edition__work__author"), pk=pk)
+    action = request.POST.get("action", "")
+    if action not in ("relu", "retirer"):
+        return HttpResponseBadRequest()
+    try:
+        if action == "relu":
+            mark_reviewed(passage, request.user)
+        else:
+            withdraw_review(passage, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        if action == "relu":
+            message = _("Le passage %(citation)s est déclaré entièrement relu.")
+        else:
+            message = _("Le passage %(citation)s n’est plus déclaré entièrement relu.")
+        messages.success(request, message % {"citation": passage.citation})
+    return redirect(_return_url(request, "next", _annotating_url(passage)))
+
+
+@login_required
+def annotator_page(request):
+    """What the user added in the texts, with the status of each addition."""
+    return render(request, "phraseology/annotator.html", annotator_summary(request.user))
+
+
+@login_required
+def reviewer_page(request):
+    """What waits for reviewers: proposed attestations by passage, doubts, contests, queues."""
+    if not is_reviewer(request.user):
+        raise PermissionDenied
+    queue = reviewer_queue()
+    for group in queue["groups"]:
+        group["reading_url"] = _annotating_url(group["passage"])
+    return render(request, "phraseology/reviewer.html", queue)
+
+
+def figures_page(request):
+    """The public figures of the annotation."""
+    return render(request, "phraseology/figures.html", public_figures())
 
 
 # Survey of the occurrences: those of the core reviewed in batches, the others shown as found

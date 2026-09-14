@@ -39,6 +39,12 @@
       <dt>{% translate "Noyau" %}</dt>
       <dd>{% if work.is_core %}{% translate "oui : attestations vérifiées par des personnes" %}{% else %}{% translate "non : attestations repérées automatiquement" %}{% endif %}</dd>
     </div>
+    {% if progress %}
+    <div>
+      <dt>{% translate "Passages entièrement relus" %}</dt>
+      <dd><meter min="0" max="{{ progress.total }}" value="{{ progress.reviewed }}">{{ progress.percent }} %</meter> {{ progress.reviewed }} / {{ progress.total }} <span class="muted">({{ progress.percent }} %) · {% blocktranslate count counter=progress.validated %}{{ counter }} attestation validée{% plural %}{{ counter }} attestations validées{% endblocktranslate %}</span> · <a href="{% url 'phraseology:review_queue' %}?oeuvre={{ work.cts_id }}">{% translate "passages à relire" %}</a></dd>
+    </div>
+    {% endif %}
     {% if work.is_fragmentary %}
     <div>
       <dt>{% translate "État du texte" %}</dt>

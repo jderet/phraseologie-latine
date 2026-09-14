@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{% translate "Mes annotations" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a></p>
+  <h1>{% translate "Mes annotations" %}</h1>
+  <p class="lede">{% translate "Ce que vous avez ajouté dans les textes, et où en est chaque ajout." %}</p>
+
+  <section class="unit-section" id="attestations" aria-labelledby="attestations-title">
+    <h2 id="attestations-title">{% translate "Attestations" %}</h2>
+    <ul class="distribution">
+      <li><span class="swatch s-validated"></span> {% translate "validées" %} <span class="muted">{{ attestation_figures.validated }}</span></li>
+      <li><span class="swatch s-proposed"></span> {% translate "proposées" %} <span class="muted">{{ attestation_figures.proposed }}</span></li>
+      <li><span class="swatch s-automatic"></span> {% translate "repérées automatiquement" %} <span class="muted">{{ attestation_figures.automatic }}</span></li>
+      <li>{% translate "rejetées" %} <span class="muted">{{ attestation_figures.rejected }}</span></li>
+    </ul>
+    <ul class="evidences">
+      {% for attestation in attestations %}
+      <li class="evidence">
+        <a class="hit-ref" href="{{ attestation.get_absolute_url }}">{{ attestation.quotation.citation }}</a>
+        <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span>
+        <span class="muted"><a href="{{ attestation.unit.get_absolute_url }}" lang="la">{{ attestation.unit.reference_form }}</a> · {{ attestation.status_label }}{% if attestation.is_contested %} · {% translate "contestée" %}{% endif %}</span>
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune attestation." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="unit-section" id="reperages" aria-labelledby="sightings-title">
+    <h2 id="sightings-title">{% translate "Repérages" %}</h2>
+    <ul class="evidences">
+      {% for sighting in sightings %}
+      <li class="evidence">
+        <a class="hit-ref" href="{{ sighting.get_absolute_url }}">{{ sighting.quotation.citation }}</a>
+        <span class="kwic" lang="la">… {% render_tokens sighting.quotation.words sighting.quotation.highlighted %} …</span>
+        <span class="muted">{{ sighting.get_status_display }}{% if sighting.note %} · {{ sighting.note }}{% endif %}</span>
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Aucun repérage." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="unit-section" id="doutes" aria-labelledby="doubts-title">
+    <h2 id="doubts-title">{% translate "Doutes" %}</h2>
+    <ul class="item-list">
+      {% for doubt in doubts %}
+      <li><a class="item-title" href="{{ doubt.get_absolute_url }}">{{ doubt.attestation }}</a> <span class="muted">{{ doubt.get_status_display }} · {{ doubt.reason|truncatewords:20 }}</span></li>
+      {% empty %}
+      <li class="muted">{% translate "Aucun doute." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="unit-section" id="corrections" aria-labelledby="corrections-title">
+    <h2 id="corrections-title">{% translate "Corrections d’analyse" %}</h2>
+    <ul class="item-list">
+      {% for correction in corrections %}
+      <li><a class="item-title" href="{{ correction.get_absolute_url }}" lang="la">{{ correction.token.form }}</a> <span class="muted">{{ correction.token.passage.citation }} · {{ correction.get_status_display }}</span></li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune correction." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+</article>
+{% endblock %}

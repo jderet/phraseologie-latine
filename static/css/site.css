@@ -426,6 +426,19 @@ blockquote {
   overflow-x: auto;
 }
 
+.changes tr.is-current td {
+  background: var(--ground);
+  font-weight: 600;
+}
+
+.reading-passage.is-reviewed > .ref::after {
+  content: " ✓";
+}
+
+.reading-review {
+  margin-block: 2rem;
+}
+
 .changes {
   width: 100%;
   border-collapse: collapse;

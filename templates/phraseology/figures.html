@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Chiffres" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "Chiffres" %}</h1>
+  <p class="lede">{% translate "Où en est le relevé de la phraséologie, sans les brouillons ni les contenus masqués." %}</p>
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Fiches" %}</dt>
+      <dd>{{ units_total }} <span class="muted">({% for value, count in units.items %}{% if value == "validated" %}{% translate "validées" %}{% elif value == "proposed" %}{% translate "proposées" %}{% else %}{% translate "contestées" %}{% endif %} {{ count }}{% if not forloop.last %}, {% endif %}{% endfor %})</span></dd>
+    </div>
+    <div>
+      <dt>{% translate "Attestations" %}</dt>
+      <dd>{% translate "validées" %} {{ attestations.validated }} · {% translate "proposées" %} {{ attestations.proposed }} · {% translate "repérées automatiquement" %} {{ attestations.automatic }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Passages du noyau relus" %}</dt>
+      <dd><meter min="0" max="{{ core_passages }}" value="{{ reviewed }}">{{ percent }} %</meter> {{ reviewed }} / {{ core_passages }} <span class="muted">({{ percent }} %)</span> · <a href="{% url 'phraseology:review_queue' %}">{% translate "progression par œuvre" %}</a></dd>
+    </div>
+    <div>
+      <dt>{% translate "Repérages à rattacher" %}</dt>
+      <dd>{{ sightings_open }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Corrections d’analyse validées" %}</dt>
+      <dd>{{ corrections_validated }}</dd>
+    </div>
+  </dl>
+</article>
+{% endblock %}

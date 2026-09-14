@@ -22,8 +22,10 @@
       <nav class="site-nav" aria-label="{% translate 'Compte' %}">
         {% if user.is_authenticated %}
           {% if user|is_reviewer %}
+          <a href="{% url 'phraseology:reviewer' %}">{% translate "Relecture" %}</a>
           <a href="{% url 'moderation:report_queue' %}">{% translate "Signalements" %}</a>
           {% endif %}
+          <a href="{% url 'phraseology:annotator' %}">{% translate "Mes annotations" %}</a>
           <a href="{% url 'notebook:notebook' %}">{% translate "Mon carnet" %}</a>
           <a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a>
           <form action="{% url 'accounts:logout' %}" method="post">

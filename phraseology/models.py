@@ -955,6 +955,53 @@ register(
     text_fields=("note",),
     not_reverted=("status", "attestation", "decided_by", "decided_at"),
 )
+
+
+class PassageReview(models.Model):
+    """A reviewer declares that every unit of a passage is noted: the measure of completeness.
+
+    A decision, not a contribution: it keeps its date and the version of the corpus, and a
+    reviewer may withdraw it; a new declaration then makes a new row.
+    """
+
+    passage = models.ForeignKey(
+        Passage, on_delete=models.PROTECT, related_name="+", verbose_name=_("passage")
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="passage_reviews",
+        verbose_name=_("relu par"),
+    )
+    reviewed_at = models.DateTimeField(_("relu le"), default=timezone.now, editable=False)
+    corpus_version = models.CharField(_("version du corpus"), max_length=200)
+    is_withdrawn = models.BooleanField(_("retirée"), default=False)
+    withdrawn_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("retirée par"),
+    )
+    withdrawn_at = models.DateTimeField(_("retirée le"), null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("passage entièrement relu")
+        verbose_name_plural = _("passages entièrement relus")
+        ordering = ["-reviewed_at", "-pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["passage"],
+                condition=Q(is_withdrawn=False),
+                name="phraseology_one_standing_review",
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("%(citation)s, entièrement relu") % {"citation": self.passage.citation}
+
+
 register(
     Neologism,
     owner_field="created_by",

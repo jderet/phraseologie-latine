@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "File du relecteur" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "File du relecteur" %}</h1>
+  <ul class="distribution">
+    <li><a href="{% url 'phraseology:unit_list' %}?statut=proposed">{% translate "fiches proposées" %}</a> <span class="muted">{{ units_proposed }}</span></li>
+    <li><a href="{% url 'phraseology:unit_list' %}?statut=contested">{% translate "fiches contestées" %}</a> <span class="muted">{{ units_contested }}</span></li>
+    <li><a href="{% url 'phraseology:sightings' %}">{% translate "repérages à rattacher" %}</a> <span class="muted">{{ sightings_open }}</span></li>
+    <li><a href="{% url 'corpus:corrections' %}">{% translate "corrections d’analyse proposées" %}</a> <span class="muted">{{ corrections_proposed }}</span></li>
+    <li><a href="{% url 'phraseology:review_queue' %}">{% translate "passages à relire" %}</a></li>
+  </ul>
+
+  <section class="unit-section" id="proposees" aria-labelledby="proposed-title">
+    <h2 id="proposed-title">{% blocktranslate count counter=proposed_total %}{{ counter }} attestation proposée{% plural %}{{ counter }} attestations proposées{% endblocktranslate %}</h2>
+    <p class="note">{% blocktranslate trimmed count counter=automatic_in_core %}
+      S’y ajoute {{ counter }} attestation du noyau repérée automatiquement, à examiner dans les relevés des fiches.
+    {% plural %}
+      S’y ajoutent {{ counter }} attestations du noyau repérées automatiquement, à examiner dans les relevés des fiches.
+    {% endblocktranslate %}</p>
+    <ul class="item-list">
+      {% for group in groups %}
+      <li><a class="item-title" href="{{ group.reading_url }}">{{ group.passage.citation }}</a> <span class="muted">{% blocktranslate count counter=group.count %}{{ counter }} attestation à valider{% plural %}{{ counter }} attestations à valider{% endblocktranslate %}</span></li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune attestation proposée." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="unit-section" id="doutes" aria-labelledby="doubts-title">
+    <h2 id="doubts-title">{% blocktranslate count counter=doubts_total %}{{ counter }} attestation douteuse{% plural %}{{ counter }} attestations douteuses{% endblocktranslate %}</h2>
+    <ul class="item-list">
+      {% for doubt in doubts %}
+      <li><a class="item-title" href="{{ doubt.get_absolute_url }}">{{ doubt.attestation }}</a> <span class="muted">{{ doubt.created_by.public_name }} · {{ doubt.reason|truncatewords:20 }}</span></li>
+      {% empty %}
+      <li class="muted">{% translate "Aucun doute ouvert." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="unit-section" id="contestations" aria-labelledby="contests-title">
+    <h2 id="contests-title">{% blocktranslate count counter=contested_total %}{{ counter }} attestation contestée{% plural %}{{ counter }} attestations contestées{% endblocktranslate %}</h2>
+    <ul class="item-list">
+      {% for attestation in contested %}
+      <li><a class="item-title" href="{{ attestation.get_absolute_url }}#contestation">{{ attestation }}</a></li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune contestation en cours." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+</article>
+{% endblock %}
