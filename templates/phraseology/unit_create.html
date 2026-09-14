@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Créer une fiche" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "Créer une fiche" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Trois champs suffisent : la forme de référence, un sens et une attestation, que vous
+    choisissez ci-dessous dans le corpus. La fiche reste un brouillon visible de vous seul, que
+    vous complétez ensuite.
+  {% endblocktranslate %}</p>
+
+  {% include "justifications/search_attestations.html" %}
+
+  <form method="post" id="unit-form" class="form">
+    {% csrf_token %}
+    {% include "phraseology/chosen_attestations.html" %}
+    {{ form }}
+    <button type="submit" class="button">{% translate "Créer la fiche" %}</button>
+  </form>
+</section>
+{% endblock %}

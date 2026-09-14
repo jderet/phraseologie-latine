@@ -50,7 +50,7 @@ Terminé quand les testeurs ont traduit, comparé et justifié un texte dans plu
 
 ## Étape 3 : phraséologie
 
-- [ ] Fiches : schéma, réalisations, sens, équivalents, relations, marques d'usage
+- [x] Fiches : schéma, réalisations, sens, équivalents, relations, marques d'usage
 - [ ] Création à trois champs, validation à tous les champs, fréquence calculée
 - [ ] Lexique de néologismes justifiés
 - [ ] Candidats extraits automatiquement (paires syntaxiques, score d'association) et file de validation

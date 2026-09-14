@@ -37,12 +37,14 @@ erDiagram
 
 ## 2. Phraséologie
 
-- **Unité phraséologique** (`Unit`) : forme de référence, type (typologie fermée), étiquettes libres, schéma (lemmes et relations syntaxiques, par exemple `gero —obj→ bellum`), construction, registre, marques d'usage (poétique seulement, tardif, à éviter), renvois bibliographiques, statut, auteurs.
-- **Réalisation** (`Realization`) : unité, forme type (*bellum geritur*), nature de la variation (passif, ordre des mots, insertion…).
+- **Unité phraséologique** (`Unit`) : forme de référence, type (typologie fermée, provisoire en attendant le guide d'annotation), étiquettes libres, schéma, construction, registre, marques d'usage (poétique seulement, tardif, à éviter), statut, créée par, validée par. Les auteurs se lisent dans l'historique. Le schéma s'écrit une relation à la fois, le mot qui régit d'abord : `capio -obj-> consilium` ; plusieurs relations, séparées par « ; », forment un arbre (`redigo -obl-> memoria; memoria -case-> in`) ; « | » donne des variantes (`gero -obj|nsubj:pass-> bellum` trouve aussi *bellum geritur*) ; une relation sans sous-type couvre ses sous-types (`obl` couvre `obl:arg`).
+- Sens, équivalents, réalisations, relations et renvois sont des parties de l'unité : ils ne sont jamais supprimés mais retirés, et le retrait reste dans l'historique. Une unité garde au moins un sens et une attestation. Les parties d'un brouillon ne sont visibles que de son créateur, et ne comptent pas dans la limite des nouveaux comptes.
+- **Réalisation** (`Realization`) : unité, forme type (*bellum geritur*), nature de la variation (forme de base, passif, ordre des mots, insertion, variante lexicale, autre), note.
 - **Sens** (`Sense`) : unité, définition, registre, notes d'usage.
 - **Équivalent** (`Equivalent`) : sens, langue, expression (« prendre une décision »).
-- **Relation** (`UnitRelation`) : unité de départ, unité d'arrivée, type (synonyme, variante, antonyme, plus général, plus précis).
-- **Attestation** (`Attestation`) : réalisation, sens, mots couverts (liste ordonnée, éventuellement discontinue), niveau (validée, automatique), origine (saisie manuelle, candidat, requête), statut, validée par, date.
+- **Relation** (`UnitRelation`) : unité de départ, unité d'arrivée (proposée ou validée), type (synonyme, variante, antonyme, plus général, plus précis). Elle s'affiche sur les deux fiches, lue dans l'autre sens sur la seconde (« plus précis que »).
+- **Renvoi bibliographique** (`UnitReference`) : unité, ouvrage de référence, localisation, note ; cité sans extrait.
+- **Attestation** (`Attestation`) : unité, réalisation et sens (facultatifs), passage, mots couverts (identifiants stables, éventuellement discontinus), niveau (vérifiée par des personnes, repérée automatiquement), origine (saisie manuelle, candidat, requête), statut (proposée, validée, rejetée), exemple choisi, note, ajoutée par, examinée par, date. Une attestation automatique n'est jamais validée ; on l'affiche « repérée automatiquement ». Son auteur retire une attestation qui n'est pas validée ; un relecteur, n'importe laquelle.
 - **Candidat** (`Candidate`) : lemmes et relation syntaxique, fréquence, score d'association, statut, unité créée le cas échéant.
 - **Recherche infructueuse** (`NegativeSearch`) : expression, requête, version du corpus, date, auteur. Elle fonde la mention « introuvable dans le corpus (version X) ».
 - **Néologisme** (`Neologism`) : forme latine, sens moderne, équivalents, formation (périphrase, dérivation, emprunt), justification, référence éventuelle au *Lexicon recentis Latinitatis* (citée, jamais recopiée).

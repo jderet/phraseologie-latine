@@ -9,5 +9,6 @@ urlpatterns = [
     path("", include("corpus.urls")),
     path("", include("translations.urls")),
     path("", include("justifications.urls")),
+    path("", include("phraseology.urls")),
     path("", include("core.urls")),
 ]

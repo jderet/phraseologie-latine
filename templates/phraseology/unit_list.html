@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Phraséologie" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Phraséologie" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Chaque fiche décrit une unité phraséologique : son schéma, ses réalisations, ses sens et les
+    passages d’auteurs qui l’attestent.
+  {% endblocktranslate %}</p>
+  {% if user.is_authenticated %}
+  <p class="actions"><a class="button" href="{% url 'phraseology:unit_create' %}">{% translate "Créer une fiche" %}</a></p>
+  {% endif %}
+
+  <form method="get" class="filter-form">
+    <div class="field">
+      <label for="q">{% translate "Forme ou lemme" %}</label>
+      <input type="search" id="q" name="q" value="{{ query }}" lang="la">
+    </div>
+    <div class="field">
+      <label for="type">{% translate "Type" %}</label>
+      <select id="type" name="type">
+        <option value="">{% translate "tous les types" %}</option>
+        {% for value, label in kinds %}<option value="{{ value }}"{% if value == kind %} selected{% endif %}>{{ label|capfirst }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="statut">{% translate "Statut" %}</label>
+      <select id="statut" name="statut">
+        <option value="">{% translate "tous les statuts" %}</option>
+        {% for value, label in statuses %}<option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label|capfirst }}</option>{% endfor %}
+      </select>
+    </div>
+    {% if tag %}<input type="hidden" name="etiquette" value="{{ tag }}">{% endif %}
+    <button type="submit" class="button button-quiet">{% translate "Filtrer" %}</button>
+  </form>
+  {% if tag %}
+  <p class="note">{% blocktranslate %}Étiquette : {{ tag }}{% endblocktranslate %} · <a href="{% url 'phraseology:unit_list' %}">{% translate "toutes les fiches" %}</a></p>
+  {% endif %}
+
+  {% if drafts %}
+  <h2>{% translate "Mes brouillons" %}</h2>
+  <ul class="item-list">
+    {% for unit in drafts %}
+    <li><a class="item-title" lang="la" href="{{ unit.get_absolute_url }}">{{ unit.reference_form }}</a></li>
+    {% endfor %}
+  </ul>
+  <h2>{% translate "Fiches publiques" %}</h2>
+  {% endif %}
+  <ul class="item-list">
+    {% for unit in page %}
+    <li>
+      <a class="item-title" lang="la" href="{{ unit.get_absolute_url }}">{{ unit.reference_form }}</a>
+      <span class="muted">{{ unit.get_status_display|capfirst }}{% if unit.kind %} · {{ unit.get_kind_display }}{% endif %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune fiche." %}</li>
+    {% endfor %}
+  </ul>
+  {% include "translations/pager.html" %}
+</section>
+{% endblock %}

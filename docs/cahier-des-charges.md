@@ -49,7 +49,8 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 
 - Phénomènes retenus (Q10) : collocations (verbe–nom, adjectif–nom, adverbe–verbe…), locutions figées, formules, constructions à case vide, marqueurs de discours, clausules. Les tours purement syntaxiques (ablatif absolu) n'en font pas partie.
 - Une unité est un **schéma** (par exemple *bellum gerere* : verbe *gero* → objet *bellum*), relié à ses **réalisations** (*bellum geritur*, *gerere bella*…) (Q11).
-- Classement : typologie fermée, définie dans le guide d'annotation, complétée par des étiquettes libres (Q12).
+- Classement : typologie fermée, définie dans le guide d'annotation, complétée par des étiquettes libres (Q12). En attendant le guide, une typologie provisoire reprend les phénomènes retenus : collocations verbe–nom, adjectif–nom, adverbe–verbe, nom–nom, locution figée, formule, construction à case vide, marqueur de discours, clausule (choix du 14 septembre 2026).
+- Une fiche en brouillon n'est modifiée que par son créateur ; une fois proposée, tout compte actif la complète ou la corrige, comme un wiki : chaque modification reste dans l'historique, avec retour arrière et signalement. Une fiche validée reste validée (choix du 14 septembre 2026).
 - Relations entre unités : synonyme, variante, antonyme, plus général, plus précis (Q13).
 - Marques d'usage : « poétique seulement », « tardif », « à éviter » (Q13).
 - Une unité peut avoir plusieurs sens ; les équivalents modernes sont rattachés à chaque sens (Q14).

@@ -1,0 +1,462 @@
+from django.conf import settings
+from django.db import models
+from django.db.models import F, Q
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
+
+from corpus.models import Passage, Token, Work
+from justifications.models import BibliographicWork
+from moderation.models import ModeratedContent
+from moderation.registry import can_view, register
+from translations.models import Language
+
+from .schema import parse_schema
+
+
+class Kind(models.TextChoices):
+    """Provisional closed typology (Q10, Q12), until the annotation guide defines it."""
+
+    VERB_NOUN = "verb-noun", _("collocation verbe–nom")
+    ADJECTIVE_NOUN = "adjective-noun", _("collocation adjectif–nom")
+    ADVERB_VERB = "adverb-verb", _("collocation adverbe–verbe")
+    NOUN_NOUN = "noun-noun", _("collocation nom–nom")
+    FIXED = "fixed", _("locution figée")
+    FORMULA = "formula", _("formule")
+    OPEN_SLOT = "open-slot", _("construction à case vide")
+    DISCOURSE = "discourse", _("marqueur de discours")
+    CLAUSULA = "clausula", _("clausule")
+
+
+class UsageMark(models.TextChoices):
+    POETIC = "poetic", _("poétique seulement")
+    LATE = "late", _("tardif")
+    AVOID = "avoid", _("à éviter")
+
+
+class PartQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_withdrawn=False)
+
+
+class Unit(ModeratedContent):
+    """A phraseological unit: a schema of lemmas and its realizations, senses and attestations."""
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", _("brouillon")
+        PROPOSED = "proposed", _("proposée")
+        VALIDATED = "validated", _("validée")
+        CONTESTED = "contested", _("contestée")
+
+    reference_form = models.CharField(
+        _("forme de référence"),
+        max_length=200,
+        help_text=_("La forme sous laquelle on cite l’unité, par exemple : consilium capere."),
+    )
+    kind = models.CharField(_("type"), max_length=20, choices=Kind.choices, blank=True)
+    tags = models.JSONField(_("étiquettes"), default=list, blank=True)
+    schema = models.CharField(
+        _("schéma"),
+        max_length=300,
+        blank=True,
+        help_text=_(
+            "Lemmes et relations syntaxiques, le mot qui régit d’abord : capio -obj-> consilium. "
+            "Plusieurs relations se séparent par « ; », des variantes par « | »."
+        ),
+    )
+    construction = models.CharField(
+        _("construction"),
+        max_length=300,
+        blank=True,
+        help_text=_("Par exemple : consilium capere + infinitif, ou + ut et le subjonctif."),
+    )
+    register = models.CharField(
+        _("registre"), max_length=20, choices=Work.Register.choices, blank=True
+    )
+    usage_marks = models.JSONField(_("marques d’usage"), default=list, blank=True)
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.DRAFT, editable=False
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="units",
+        verbose_name=_("créée par"),
+    )
+    created_at = models.DateTimeField(_("créée le"), default=timezone.now, editable=False)
+    validated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("validée par"),
+    )
+    validated_at = models.DateTimeField(_("validée le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("unité phraséologique")
+        verbose_name_plural = _("unités phraséologiques")
+        ordering = ["reference_form", "pk"]
+        indexes = [
+            models.Index(fields=["status", "reference_form"], name="phraseology_unit_status")
+        ]
+
+    def __str__(self):
+        return self.reference_form
+
+    def get_absolute_url(self):
+        return reverse("phraseology:unit", args=[self.pk])
+
+    @property
+    def is_draft(self):
+        return self.status == self.Status.DRAFT
+
+    @property
+    def edges(self):
+        return parse_schema(self.schema)
+
+    def usage_mark_labels(self):
+        labels = dict(UsageMark.choices)
+        return [labels[mark] for mark in self.usage_marks if mark in labels]
+
+
+class Realization(ModeratedContent):
+    """A typical form of a unit, such as *bellum geritur* for *bellum gerere*."""
+
+    class Variation(models.TextChoices):
+        BASE = "base", _("forme de base")
+        PASSIVE = "passive", _("passif")
+        WORD_ORDER = "word-order", _("ordre des mots")
+        INSERTION = "insertion", _("insertion")
+        LEXICAL = "lexical", _("variante lexicale")
+        OTHER = "other", _("autre")
+
+    unit = models.ForeignKey(
+        Unit, on_delete=models.PROTECT, related_name="realizations", verbose_name=_("unité")
+    )
+    form = models.CharField(_("forme type"), max_length=200)
+    variation = models.CharField(
+        _("nature de la variation"),
+        max_length=20,
+        choices=Variation.choices,
+        default=Variation.BASE,
+    )
+    note = models.CharField(_("note"), max_length=300, blank=True)
+    is_withdrawn = models.BooleanField(_("retirée"), default=False)
+    created_at = models.DateTimeField(_("ajoutée le"), default=timezone.now, editable=False)
+
+    objects = PartQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("réalisation")
+        verbose_name_plural = _("réalisations")
+        ordering = ["unit", "created_at", "pk"]
+
+    def __str__(self):
+        return self.form
+
+    def get_absolute_url(self):
+        return f"{self.unit.get_absolute_url()}#realisations"
+
+
+class Sense(ModeratedContent):
+    """One sense of a unit; modern equivalents are attached to each sense (Q14)."""
+
+    unit = models.ForeignKey(
+        Unit, on_delete=models.PROTECT, related_name="senses", verbose_name=_("unité")
+    )
+    definition = models.TextField(_("sens"), max_length=1000)
+    register = models.CharField(
+        _("registre"), max_length=20, choices=Work.Register.choices, blank=True
+    )
+    usage_note = models.CharField(_("note d’usage"), max_length=300, blank=True)
+    is_withdrawn = models.BooleanField(_("retiré"), default=False)
+    created_at = models.DateTimeField(_("ajouté le"), default=timezone.now, editable=False)
+
+    objects = PartQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("sens")
+        verbose_name_plural = _("sens")
+        ordering = ["unit", "created_at", "pk"]
+
+    def __str__(self):
+        return self.definition
+
+    def get_absolute_url(self):
+        return f"{self.unit.get_absolute_url()}#sens-{self.pk}"
+
+
+class Equivalent(ModeratedContent):
+    """A modern expression that renders a sense, such as « prendre une décision »."""
+
+    sense = models.ForeignKey(
+        Sense, on_delete=models.PROTECT, related_name="equivalents", verbose_name=_("sens")
+    )
+    language = models.CharField(_("langue"), max_length=2, choices=Language.choices)
+    expression = models.CharField(_("expression"), max_length=200)
+    is_withdrawn = models.BooleanField(_("retiré"), default=False)
+    created_at = models.DateTimeField(_("ajouté le"), default=timezone.now, editable=False)
+
+    objects = PartQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("équivalent")
+        verbose_name_plural = _("équivalents")
+        ordering = ["sense", "language", "created_at", "pk"]
+
+    def __str__(self):
+        return self.expression
+
+    @property
+    def unit(self):
+        return self.sense.unit
+
+    def get_absolute_url(self):
+        return self.sense.get_absolute_url()
+
+
+class UnitRelation(ModeratedContent):
+    """A link between two units, read from the first: « A est plus général que B » (Q13)."""
+
+    class Kind(models.TextChoices):
+        SYNONYM = "synonym", _("synonyme de")
+        VARIANT = "variant", _("variante de")
+        ANTONYM = "antonym", _("antonyme de")
+        BROADER = "broader", _("plus général que")
+        NARROWER = "narrower", _("plus précis que")
+
+    INVERSE = {Kind.BROADER: Kind.NARROWER, Kind.NARROWER: Kind.BROADER}
+
+    unit = models.ForeignKey(
+        Unit, on_delete=models.PROTECT, related_name="relations", verbose_name=_("unité")
+    )
+    target = models.ForeignKey(
+        Unit, on_delete=models.PROTECT, related_name="+", verbose_name=_("unité liée")
+    )
+    kind = models.CharField(_("relation"), max_length=10, choices=Kind.choices)
+    is_withdrawn = models.BooleanField(_("retirée"), default=False)
+    created_at = models.DateTimeField(_("ajoutée le"), default=timezone.now, editable=False)
+
+    objects = PartQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("relation entre unités")
+        verbose_name_plural = _("relations entre unités")
+        ordering = ["unit", "kind", "pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(unit=F("target")), name="phraseology_relation_two_units"
+            ),
+            models.UniqueConstraint(
+                fields=["unit", "target", "kind"],
+                condition=Q(is_withdrawn=False),
+                name="phraseology_one_active_relation",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.unit} · {self.get_kind_display()} · {self.target}"
+
+    def get_absolute_url(self):
+        return f"{self.unit.get_absolute_url()}#relations"
+
+    @property
+    def inverse_label(self):
+        """The relation read from the linked unit."""
+        return self.Kind(self.INVERSE.get(self.kind, self.kind)).label
+
+
+class UnitReference(ModeratedContent):
+    """A place in a grammar or a dictionary about the unit, cited without extract (rule 12)."""
+
+    unit = models.ForeignKey(
+        Unit, on_delete=models.PROTECT, related_name="references", verbose_name=_("unité")
+    )
+    work = models.ForeignKey(
+        BibliographicWork, on_delete=models.PROTECT, related_name="+", verbose_name=_("ouvrage")
+    )
+    locator = models.CharField(
+        _("localisation"),
+        max_length=100,
+        help_text=_("Paragraphe, page ou entrée : « § 426 », « s. v. consilium »."),
+    )
+    note = models.CharField(_("note"), max_length=300, blank=True)
+    is_withdrawn = models.BooleanField(_("retiré"), default=False)
+    created_at = models.DateTimeField(_("ajouté le"), default=timezone.now, editable=False)
+
+    objects = PartQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("renvoi bibliographique")
+        verbose_name_plural = _("renvois bibliographiques")
+        ordering = ["unit", "created_at", "pk"]
+
+    def __str__(self):
+        return f"{self.work.abbreviation} {self.locator}"
+
+    def get_absolute_url(self):
+        return f"{self.unit.get_absolute_url()}#renvois"
+
+
+class Attestation(ModeratedContent):
+    """Words of the corpus where a unit occurs, pointed to by their stable identifiers (rule 1).
+
+    Validated attestations are checked by people; automatic ones are found by the machine
+    and never shown as validated (rule 4).
+    """
+
+    class Level(models.TextChoices):
+        VALIDATED = "validated", _("vérifiée par des personnes")
+        AUTOMATIC = "automatic", _("repérée automatiquement")
+
+    class Origin(models.TextChoices):
+        MANUAL = "manual", _("saisie manuelle")
+        CANDIDATE = "candidate", _("candidat")
+        QUERY = "query", _("requête")
+
+    class Status(models.TextChoices):
+        PROPOSED = "proposed", _("proposée")
+        VALIDATED = "validated", _("validée")
+        REJECTED = "rejected", _("rejetée")
+
+    unit = models.ForeignKey(
+        Unit, on_delete=models.PROTECT, related_name="attestations", verbose_name=_("unité")
+    )
+    realization = models.ForeignKey(
+        Realization,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="attestations",
+        verbose_name=_("réalisation"),
+    )
+    sense = models.ForeignKey(
+        Sense,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="attestations",
+        verbose_name=_("sens"),
+    )
+    passage = models.ForeignKey(
+        Passage, on_delete=models.PROTECT, related_name="+", verbose_name=_("passage")
+    )
+    # Stable word identifiers; their order is their position in the edition.
+    tokens = models.ManyToManyField(Token, related_name="+", verbose_name=_("mots couverts"))
+    level = models.CharField(
+        _("niveau"),
+        max_length=10,
+        choices=Level.choices,
+        default=Level.VALIDATED,
+        editable=False,
+    )
+    origin = models.CharField(
+        _("origine"), max_length=10, choices=Origin.choices, default=Origin.MANUAL, editable=False
+    )
+    status = models.CharField(
+        _("statut"),
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PROPOSED,
+        editable=False,
+    )
+    is_example = models.BooleanField(
+        _("exemple choisi"), default=False, help_text=_("Montré en tête de la fiche.")
+    )
+    note = models.CharField(_("note"), max_length=300, blank=True)
+    is_withdrawn = models.BooleanField(_("retirée"), default=False)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="attestations",
+        verbose_name=_("ajoutée par"),
+    )
+    created_at = models.DateTimeField(_("ajoutée le"), default=timezone.now, editable=False)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("examinée par"),
+    )
+    reviewed_at = models.DateTimeField(_("examinée le"), null=True, blank=True, editable=False)
+
+    objects = PartQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("attestation")
+        verbose_name_plural = _("attestations")
+        ordering = ["unit", "-is_example", "created_at", "pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(level="automatic", status="validated"),
+                name="phraseology_automatic_never_validated",
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("%(unit)s, %(citation)s") % {
+            "unit": self.unit.reference_form,
+            "citation": self.passage.citation,
+        }
+
+    def get_absolute_url(self):
+        return f"{self.unit.get_absolute_url()}#attestation-{self.pk}"
+
+    @property
+    def status_label(self):
+        """What the attestation is, as shown: an automatic one is never called validated."""
+        if self.level == self.Level.AUTOMATIC:
+            return self.Level.AUTOMATIC.label
+        return self.get_status_display()
+
+
+def unit_visible_to(user, unit):
+    """A draft is visible to its creator only (rule 8)."""
+    return not unit.is_draft or (user.is_authenticated and user.pk == unit.created_by_id)
+
+
+def part_visible_to(user, part):
+    return can_view(user, part.unit)
+
+
+def unit_owner_id(part):
+    return part.unit.created_by_id
+
+
+register(
+    Unit,
+    owner_field="created_by",
+    text_fields=("reference_form", "schema", "construction"),
+    visible_to=unit_visible_to,
+    not_reverted=("status", "validated_by", "validated_at"),
+    discussion=lambda user, unit: not unit.is_draft,
+)
+for model, text_fields in (
+    (Realization, ("form", "note")),
+    (Sense, ("definition", "usage_note")),
+    (Equivalent, ("expression",)),
+    (UnitRelation, ()),
+    (UnitReference, ("locator", "note")),
+):
+    register(
+        model,
+        owner_field=unit_owner_id,
+        text_fields=text_fields,
+        visible_to=part_visible_to,
+        counts_toward_limit=False,
+    )
+register(
+    Attestation,
+    owner_field="created_by",
+    text_fields=("note",),
+    visible_to=part_visible_to,
+    counts_toward_limit=False,
+    not_reverted=("status", "reviewed_by", "reviewed_at", "level", "origin"),
+)

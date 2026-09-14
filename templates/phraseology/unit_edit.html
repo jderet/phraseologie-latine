@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Modifier la fiche" %} · {{ unit.reference_form }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a></p>
+  <h1>{% translate "Modifier la fiche" %}</h1>
+  {% if not unit.is_draft %}
+  <p class="lede">{% translate "Chaque modification est visible de tous et reste dans l’historique." %}</p>
+  {% endif %}
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <p class="note">{% blocktranslate trimmed %}
+      Relations syntaxiques (Universal Dependencies) : obj pour l’objet, nsubj pour le sujet,
+      nsubj:pass pour le sujet d’un passif, obl pour un complément circonstanciel, amod pour un
+      adjectif épithète, advmod pour un adverbe, nmod pour un complément du nom, case pour une
+      préposition.
+    {% endblocktranslate %}</p>
+    <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+  </form>
+</section>
+{% endblock %}

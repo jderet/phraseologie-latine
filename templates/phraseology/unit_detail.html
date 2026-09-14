@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags moderation_tags %}
+
+{% block title %}{{ unit.reference_form }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium unit">
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1 lang="la">{{ unit.reference_form }}</h1>
+  <p class="badges"><span class="badge status-{{ unit.status }}">{{ unit.get_status_display }}</span>{% for label in unit.usage_mark_labels %} <span class="badge">{{ label }}</span>{% endfor %}</p>
+  {% if unit.is_draft %}
+  <p class="notice notice-info">{% translate "Brouillon : cette fiche n’est visible que de vous." %}</p>
+  {% endif %}
+  {% if unit.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Type" %}</dt>
+      <dd>{{ unit.get_kind_display|capfirst|default:"—" }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Schéma" %}</dt>
+      <dd lang="la">{% for edge in edges %}<span class="schema-edge">{{ edge.label }}</span>{% if not forloop.last %} ; {% endif %}{% empty %}—{% endfor %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Construction" %}</dt>
+      <dd lang="la">{{ unit.construction|default:"—" }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Registre" %}</dt>
+      <dd>{{ unit.get_register_display|capfirst|default:"—" }}</dd>
+    </div>
+    {% if unit.tags %}
+    <div>
+      <dt>{% translate "Étiquettes" %}</dt>
+      <dd>{% for tag in unit.tags %}<a href="{% url 'phraseology:unit_list' %}?etiquette={{ tag|urlencode }}">{{ tag }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Créée par" %}</dt>
+      <dd>{% if unit.created_by.is_active %}<a href="{{ unit.created_by.get_absolute_url }}">{{ unit.created_by.public_name }}</a>{% else %}{{ unit.created_by.public_name }}{% endif %}, {{ unit.created_at|date:"j F Y" }}</dd>
+    </div>
+  </dl>
+  {% if can_edit %}
+  <p class="form-links"><a class="button" href="{% url 'phraseology:unit_edit' unit.pk %}">{% translate "Modifier la fiche" %}</a></p>
+  {% endif %}
+
+  <section class="unit-section" id="sens" aria-labelledby="senses-title">
+    <h2 id="senses-title">{% translate "Sens et équivalents" %}</h2>
+    <ol class="senses">
+      {% for sense in senses %}
+      <li id="sens-{{ sense.pk }}">
+        <p>{{ sense.definition|linebreaksbr }}{% if sense.register %} <span class="muted">({{ sense.get_register_display }})</span>{% endif %}{% include "phraseology/part_actions.html" with kind="sens" part=sense %}</p>
+        {% if sense.usage_note %}<p class="note">{{ sense.usage_note }}</p>{% endif %}
+        <ul class="part-list">
+          {% for equivalent in sense.visible_equivalents %}
+          <li><span class="muted">{{ equivalent.get_language_display }}</span> <span lang="{{ equivalent.language }}">{{ equivalent.expression }}</span>{% include "phraseology/part_actions.html" with kind="equivalents" part=equivalent %}</li>
+          {% empty %}
+          <li class="muted">{% translate "Aucun équivalent." %}</li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ol>
+    {% if can_edit %}
+    <p class="actions"><a href="{% url 'phraseology:part_create' unit.pk 'sens' %}">{% translate "Ajouter un sens" %}</a> <a href="{% url 'phraseology:part_create' unit.pk 'equivalents' %}">{% translate "Ajouter un équivalent" %}</a></p>
+    {% endif %}
+  </section>
+
+  <section class="unit-section" id="realisations" aria-labelledby="realizations-title">
+    <h2 id="realizations-title">{% translate "Réalisations" %}</h2>
+    <ul class="part-list">
+      {% for realization in realizations %}
+      <li><span class="latin" lang="la">{{ realization.form }}</span> <span class="muted">{{ realization.get_variation_display }}</span>{% if realization.note %} · {{ realization.note }}{% endif %}{% include "phraseology/part_actions.html" with kind="realisations" part=realization %}</li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune réalisation indiquée." %}</li>
+      {% endfor %}
+    </ul>
+    {% if can_edit %}
+    <p class="actions"><a href="{% url 'phraseology:part_create' unit.pk 'realisations' %}">{% translate "Ajouter une réalisation" %}</a></p>
+    {% endif %}
+  </section>
+
+  <section class="unit-section" id="attestations" aria-labelledby="attestations-title">
+    <h2 id="attestations-title">{% translate "Attestations" %}</h2>
+    <ul class="evidences">
+      {% for attestation in attestations %}
+      <li class="evidence{% if attestation.status == 'rejected' %} is-rejected{% endif %}" id="attestation-{{ attestation.pk }}">
+        <a class="hit-ref" href="{{ attestation.quotation.url }}">{{ attestation.quotation.citation }}</a>
+        <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span>
+        <span class="muted">{% if attestation.is_example %}{% translate "exemple choisi" %} · {% endif %}{{ attestation.status_label|capfirst }}{% if attestation.realization %} · <span lang="la">{{ attestation.realization.form }}</span>{% endif %}</span>
+        {% if attestation.note %}<span class="evidence-note">{{ attestation.note }}</span>{% endif %}
+        {% if attestation.can_withdraw %}
+        <form method="post" action="{% url 'phraseology:attestation_withdraw' attestation.pk %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="link-button small-link">{% translate "Retirer cette attestation" %}</button>
+        </form>
+        {% endif %}
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune attestation." %}</li>
+      {% endfor %}
+    </ul>
+    {% if can_edit %}
+    <p class="actions"><a href="{% url 'phraseology:attestation_add' unit.pk %}">{% translate "Ajouter des attestations" %}</a></p>
+    {% endif %}
+  </section>
+
+  <section class="unit-section" id="relations" aria-labelledby="relations-title">
+    <h2 id="relations-title">{% translate "Relations" %}</h2>
+    <ul class="part-list">
+      {% for item in relations %}
+      <li>{{ item.label|capfirst }} <a href="{{ item.unit.get_absolute_url }}" lang="la">{{ item.unit.reference_form }}</a>{% if item.outgoing %}{% include "phraseology/part_actions.html" with kind="relations" part=item.relation %}{% endif %}</li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune relation indiquée." %}</li>
+      {% endfor %}
+    </ul>
+    {% if can_edit %}
+    <p class="actions"><a href="{% url 'phraseology:part_create' unit.pk 'relations' %}">{% translate "Ajouter une relation" %}</a></p>
+    {% endif %}
+  </section>
+
+  <section class="unit-section" id="renvois" aria-labelledby="references-title">
+    <h2 id="references-title">{% translate "Renvois bibliographiques" %}</h2>
+    <ul class="part-list">
+      {% for reference in references %}
+      <li><abbr title="{{ reference.work.title }}">{{ reference.work.abbreviation }}</abbr> {{ reference.locator }}{% if reference.note %} · {{ reference.note }}{% endif %}{% if reference.work.rights == "restricted" %} <span class="muted">{% translate "ouvrage sous droits, cité sans extrait" %}</span>{% endif %}{% include "phraseology/part_actions.html" with kind="renvois" part=reference %}</li>
+      {% empty %}
+      <li class="muted">{% translate "Aucun renvoi." %}</li>
+      {% endfor %}
+    </ul>
+    {% if can_edit %}
+    <p class="actions"><a href="{% url 'phraseology:part_create' unit.pk 'renvois' %}">{% translate "Ajouter un renvoi" %}</a></p>
+    {% endif %}
+  </section>
+
+  {% moderation_links unit %}
+  {% if not unit.is_draft %}{% discussion unit %}{% endif %}
+</article>
+{% endblock %}

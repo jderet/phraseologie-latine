@@ -1,0 +1,5 @@
+{% load i18n phraseology_tags %}{% if can_edit %}<span class="part-actions">
+  <a class="small-link" href="{% url 'phraseology:part_edit' kind part.pk %}">{% translate "modifier" %}</a>
+  <form method="post" action="{% url 'phraseology:part_withdraw' kind part.pk %}" class="inline-form">{% csrf_token %}<button type="submit" class="link-button small-link">{% translate "retirer" %}</button></form>
+  <a class="small-link" href="{{ part|history_link }}">{% translate "historique" %}</a>
+</span>{% endif %}

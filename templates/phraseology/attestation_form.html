@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Ajouter des attestations" %} · {{ unit.reference_form }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a></p>
+  <h1>{% translate "Ajouter des attestations" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Cherchez l’unité dans le corpus et cochez les passages qui l’attestent. Une attestation
+    ajoutée est proposée ; un relecteur la valide.
+  {% endblocktranslate %}</p>
+
+  {% include "justifications/search_attestations.html" %}
+
+  <form method="post" id="unit-form" class="form">
+    {% csrf_token %}
+    {% if errors %}<ul class="errorlist">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+    {% include "phraseology/chosen_attestations.html" %}
+    {{ place }}
+    <button type="submit" class="button">{% translate "Ajouter les attestations" %}</button>
+  </form>
+</section>
+{% endblock %}

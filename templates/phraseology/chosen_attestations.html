@@ -1,0 +1,10 @@
+{% load i18n corpus_tags %}{% if chosen %}
+<fieldset>
+  <legend>{% translate "Attestations retenues" %}</legend>
+  <ul class="attestation-choices">
+    {% for quote in chosen %}
+    <li><label><input type="checkbox" name="attestation" value="{{ quote.word_ids }}" checked> <span class="hit-ref">{{ quote.citation }}</span> <span class="kwic" lang="la">… {% render_tokens quote.words quote.highlighted %} …</span></label></li>
+    {% endfor %}
+  </ul>
+</fieldset>
+{% endif %}

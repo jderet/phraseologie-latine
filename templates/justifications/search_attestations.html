@@ -10,15 +10,19 @@
   {% if search.form.is_bound %}{{ search.form.non_field_errors }}{% endif %}
   {% if search.searched %}
   {% if search.hits %}
-  <p class="note">{% blocktranslate trimmed count counter=search.page.paginator.count %}
+  <p class="note">{% if attesting %}{% blocktranslate trimmed count counter=search.page.paginator.count %}
+    {{ counter }} occurrence : cochez celles qui attestent l’unité.
+  {% plural %}
+    {{ counter }} occurrences : cochez celles qui attestent l’unité.
+  {% endblocktranslate %}{% else %}{% blocktranslate trimmed count counter=search.page.paginator.count %}
     {{ counter }} occurrence : cochez celles qui justifient votre choix.
   {% plural %}
     {{ counter }} occurrences : cochez celles qui justifient votre choix.
-  {% endblocktranslate %}{% if search.page.has_next %} {% translate "Seules les premières sont affichées : précisez la recherche au besoin." %}{% endif %}</p>
+  {% endblocktranslate %}{% endif %}{% if search.page.has_next %} {% translate "Seules les premières sont affichées : précisez la recherche au besoin." %}{% endif %}</p>
   <ul class="attestation-choices">
     {% for hit in search.hits %}
     <li>
-      <label><input type="checkbox" name="attestation" value="{{ hit.word_ids }}" form="justification-form"{% if hit.word_ids in chosen_ids %} checked{% endif %}> <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span></label>
+      <label><input type="checkbox" name="attestation" value="{{ hit.word_ids }}" form="{{ form_id|default:'justification-form' }}"{% if hit.word_ids in chosen_ids %} checked{% endif %}> <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span></label>
       <a class="small-link" href="{{ hit.url }}" target="_blank" rel="noopener">{% translate "contexte" %}</a>
     </li>
     {% endfor %}

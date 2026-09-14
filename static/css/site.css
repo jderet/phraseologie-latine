@@ -1292,3 +1292,77 @@ article > h2 {
     gap: 4px;
   }
 }
+
+/* Phraseology */
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 20px;
+  margin: 20px 0;
+}
+
+.filter-form input,
+.filter-form select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.status-validated {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.status-contested {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.unit-section {
+  margin-top: 32px;
+}
+
+.senses {
+  display: grid;
+  gap: 16px;
+  padding-left: 1.4em;
+}
+
+.senses p {
+  margin: 0;
+}
+
+.part-list {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.part-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+  margin-left: 10px;
+}
+
+.schema-edge {
+  white-space: nowrap;
+}
+
+.evidence.is-rejected {
+  opacity: 0.6;
+}
