@@ -1390,3 +1390,36 @@ article > h2 {
   color: var(--ink);
   text-decoration: none;
 }
+
+.row-units {
+  display: grid;
+  gap: 8px;
+  font-size: 0.92rem;
+}
+
+.spotted-sentence {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+
+.spotted-units {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spotted-unit p {
+  margin: 0;
+}
+
+.spotted-unit .evidences {
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.spotted-unit .evidence {
+  padding-top: 6px;
+}

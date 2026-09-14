@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Unités connues" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ version.get_absolute_url }}#phrase-{{ segment.order }}">{{ version }}</a></p>
+  <h1>{% blocktranslate with number=segment.order %}Unités connues dans la phrase {{ number }}{% endblocktranslate %}</h1>
+  <p lang="{{ source_language }}">{{ segment.text }}</p>
+  {% include "phraseology/spotted_units.html" %}
+  {% if can_translate %}
+  <p class="actions"><a href="{% url 'translations:version_edit' version.pk %}#phrase-{{ segment.order }}">{% translate "Retour à l’éditeur" %}</a></p>
+  {% endif %}
+</section>
+{% endblock %}

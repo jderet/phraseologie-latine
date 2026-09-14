@@ -54,7 +54,7 @@ Terminé quand les testeurs ont traduit, comparé et justifié un texte dans plu
 - [x] Création à trois champs, validation à tous les champs, fréquence calculée
 - [x] Lexique de néologismes justifiés
 - [x] Candidats extraits automatiquement (paires syntaxiques, score d'association) et file de validation
-- [ ] Surlignage des unités connues pendant la saisie, avec leurs attestations
+- [x] Surlignage des unités connues pendant la saisie, avec leurs attestations
 - [ ] Liens entre justifications et fiches, dans les deux sens
 
 Terminé quand une centaine de fiches sont validées.

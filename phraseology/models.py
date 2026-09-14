@@ -630,6 +630,31 @@ class Candidate(models.Model):
         return f"{self.head} -{relation}-> {self.dependent}"
 
 
+class UnitForm(models.Model):
+    """A normalized word form that recognizes a unit in a sentence: computed, never edited.
+
+    ``lemma`` is a lemma of the schema, or "=word" for a word of the reference form of a unit
+    without schema.
+    """
+
+    unit = models.ForeignKey(
+        Unit, on_delete=models.CASCADE, related_name="forms", verbose_name=_("unité")
+    )
+    lemma = models.CharField(_("lemme"), max_length=201)
+    norm = models.CharField(_("forme normalisée"), max_length=200)
+
+    class Meta:
+        verbose_name = _("forme d’une unité")
+        verbose_name_plural = _("formes des unités")
+        constraints = [
+            models.UniqueConstraint(fields=["unit", "lemma", "norm"], name="phraseology_unit_form"),
+        ]
+        indexes = [models.Index(fields=["norm"], name="phraseology_unit_form_norm")]
+
+    def __str__(self):
+        return f"{self.unit} · {self.norm}"
+
+
 def unit_visible_to(user, unit):
     """A draft is visible to its creator only (rule 8)."""
     return not unit.is_draft or (user.is_authenticated and user.pk == unit.created_by_id)

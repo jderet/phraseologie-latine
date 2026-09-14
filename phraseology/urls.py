@@ -57,4 +57,9 @@ urlpatterns = [
     path("candidats/<int:pk>/rejeter/", views.candidate_reject, name="candidate_reject"),
     path("candidats/<int:pk>/rouvrir/", views.candidate_reopen, name="candidate_reopen"),
     path("candidats/<int:pk>/rattacher/", views.candidate_attach, name="candidate_attach"),
+    path(
+        "versions/<int:version_pk>/phrases/<int:segment_pk>/unites/",
+        views.units_in_sentence,
+        name="units_in_sentence",
+    ),
 ]

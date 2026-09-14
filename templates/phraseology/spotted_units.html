@@ -1,0 +1,23 @@
+{% load i18n corpus_tags phraseology_tags %}{% if spots %}
+<p class="spotted-sentence" lang="la">{% mark_words tokens marked %}</p>
+<ul class="spotted-units">
+  {% for spot in spots %}
+  <li class="spotted-unit">
+    <p><a class="item-title" href="{{ spot.unit.get_absolute_url }}" lang="la"{% if fragment %} target="_blank" rel="noopener"{% endif %}>{{ spot.unit.reference_form }}</a> <span class="badge status-{{ spot.unit.status }}">{{ spot.unit.get_status_display }}</span> <span class="muted" lang="la">{{ spot.words|join:" … " }}</span></p>
+    {% if spot.sense %}<p class="note">{{ spot.sense.definition|truncatechars:160 }}</p>{% endif %}
+    {% if spot.attestations %}
+    <ul class="evidences">
+      {% for attestation in spot.attestations %}
+      <li class="evidence"><a class="hit-ref" href="{{ attestation.quotation.url }}" target="_blank" rel="noopener">{{ attestation.quotation.citation }}</a> <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span> <span class="muted">{{ attestation.status_label }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+<p class="note">{% translate "Repérage d’après les formes des mots, sans vérifier la construction : à confirmer dans les attestations." %}</p>
+{% elif text %}
+<p class="note">{% translate "Aucune unité connue dans cette phrase." %}</p>
+{% else %}
+<p class="note">{% translate "Phrase pas encore traduite." %}</p>
+{% endif %}

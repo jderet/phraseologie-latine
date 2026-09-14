@@ -62,6 +62,7 @@
       state.saved = text;
       if (response.ok) {
         showStatus(field, labels.labelSaved);
+        showUnits(field);
       } else {
         showStatus(field, data.errors.join(" "), true);
       }
@@ -115,6 +116,32 @@
     link.href = url.toString();
   }
 
+  // Known units of the saved sentence, in its panel. The HTML is rendered and escaped by the
+  // server, as for the corpus search results.
+  const unitsShown = new Map();
+
+  async function showUnits(field) {
+    const box = document.querySelector(`.row-units[data-segment="${field.dataset.segment}"]`);
+    const saved = states.get(field).saved;
+    if (!box || unitsShown.get(field) === saved) {
+      return;
+    }
+    unitsShown.set(field, saved);
+    box.setAttribute("aria-busy", "true");
+    try {
+      const response = await fetch(`${box.dataset.unitsUrl}?fragment=1`, { credentials: "same-origin" });
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      box.innerHTML = await response.text();
+    } catch {
+      unitsShown.delete(field);
+      box.textContent = labels.labelUnitsError;
+    } finally {
+      box.removeAttribute("aria-busy");
+    }
+  }
+
   function activate(field) {
     for (const row of editor.querySelectorAll(".bitext-row.is-active")) {
       row.classList.remove("is-active");
@@ -129,6 +156,7 @@
     if (panelHint) {
       panelHint.hidden = true;
     }
+    showUnits(field);
   }
 
   for (const field of fields) {

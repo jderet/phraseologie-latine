@@ -16,7 +16,8 @@
     <form method="post" class="editor-form" id="editor"
           data-label-saving="{% translate 'Enregistrement…' %}"
           data-label-saved="{% translate 'Enregistré' %}"
-          data-label-error="{% translate 'Échec de l’enregistrement : vérifiez la connexion, puis réessayez.' %}">
+          data-label-error="{% translate 'Échec de l’enregistrement : vérifiez la connexion, puis réessayez.' %}"
+          data-label-units-error="{% translate 'Les unités connues n’ont pas pu être chargées.' %}">
       {% csrf_token %}
       <p class="note editor-help">{% blocktranslate trimmed %}
         Une voyelle suivie de = prend un macron : a= donne ā (tapez = une seconde fois pour
@@ -62,6 +63,10 @@
           <p class="row-alert"><a href="{{ challenge.get_absolute_url }}">{% blocktranslate with excerpt=challenge.latin_excerpt %}Contesté : « {{ excerpt }} »{% endblocktranslate %}</a></p>
           {% endfor %}
           <a class="button button-quiet justify-link" data-segment="{{ row.segment.pk }}" href="{% url 'justifications:create' version.pk row.segment.pk %}">{% translate "Justifier la sélection" %}</a>
+          <p class="muted">{% translate "Unités connues dans cette phrase" %}</p>
+          <div class="row-units" data-segment="{{ row.segment.pk }}" data-units-url="{% url 'phraseology:units_in_sentence' version.pk row.segment.pk %}" aria-live="polite">
+            <a class="small-link" href="{% url 'phraseology:units_in_sentence' version.pk row.segment.pk %}">{% translate "Voir les unités repérées" %}</a>
+          </div>
         </div>
         {% endfor %}
       </section>

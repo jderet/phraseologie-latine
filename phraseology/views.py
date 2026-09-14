@@ -23,6 +23,8 @@ from justifications.forms import ReferenceFormSet
 from justifications.models import Evidence
 from justifications.services import corpus_evidence
 from moderation.registry import can_view
+from translations.models import TranslatedSegment, TranslationVersion
+from translations.permissions import can_translate
 
 from .forms import (
     AttestationPlaceForm,
@@ -83,6 +85,7 @@ from .services import (
     withdraw_neologism_evidence,
     withdraw_part,
 )
+from .spotting import spot_units
 
 UNITS_PER_PAGE = 50
 SEARCH_RESULTS = 20
@@ -1013,3 +1016,39 @@ def candidate_attach(request, pk):
         return redirect(candidate)
     messages.success(request, _("Le candidat est retenu pour cette fiche."))
     return redirect(unit)
+
+
+# Known units in a translated sentence
+
+
+def units_in_sentence(request, version_pk, segment_pk):
+    """Known units of a translated sentence: the editor panel, or a page without script."""
+    version = get_object_or_404(
+        TranslationVersion.objects.select_related("project__source_text", "author"),
+        pk=version_pk,
+    )
+    if not can_view(request.user, version):
+        raise Http404
+    source = version.project.source_text
+    segment = get_object_or_404(source.segments, pk=segment_pk)
+    text = ""
+    translated = TranslatedSegment.objects.filter(version=version, segment=segment).first()
+    if translated is not None:
+        translated.version = version
+        if can_view(request.user, translated):
+            text = translated.text
+    tokens, spots = spot_units(text, request.user)
+    fragment = bool(request.GET.get("fragment"))
+    context = {
+        "version": version,
+        "segment": segment,
+        "source_language": source.language,
+        "text": text,
+        "tokens": tokens,
+        "spots": spots,
+        "marked": {index for spot in spots for index in spot.positions},
+        "fragment": fragment,
+        "can_translate": can_translate(request.user, version),
+    }
+    template = "phraseology/spotted_units.html" if fragment else "phraseology/spotted_page.html"
+    return render(request, template, context)

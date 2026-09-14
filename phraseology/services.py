@@ -25,6 +25,7 @@ from .models import (
     UnitRelation,
 )
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
+from .spotting import refresh_unit_forms
 
 
 def _check_edit(user, unit):
@@ -139,16 +140,20 @@ def create_unit(unit, author, definition, attestations, origin=Attestation.Origi
     sense = Sense(unit=unit, definition=definition)
     save_with_revision(sense, author)
     add_attestations(unit, attestations, author, sense=sense, origin=origin)
+    refresh_unit_forms(unit)
     return unit
 
 
 @transaction.atomic
 def update_unit(unit, user):
-    """Save a changed unit; a new schema has its frequency computed again."""
+    """Save a changed unit; a new schema has its frequency and its forms computed again."""
     _check_edit(user, unit)
+    previous = Unit.objects.values("schema", "reference_form").get(pk=unit.pk)
     revision = save_with_revision(unit, user)
     if current_frequency(unit) is None:
         refresh_frequency(unit)
+    if previous != {"schema": unit.schema, "reference_form": unit.reference_form}:
+        refresh_unit_forms(unit)
     _check_still_complete(unit)
     return revision
 
