@@ -200,9 +200,19 @@ def withdraw_part(part, user):
 
 @transaction.atomic
 def add_attestations(
-    unit, attestations, user, sense=None, realization=None, origin=Attestation.Origin.MANUAL
+    unit,
+    attestations,
+    user,
+    sense=None,
+    realization=None,
+    origin=Attestation.Origin.MANUAL,
+    note="",
+    example_proposed=False,
 ):
-    """Attach corpus words to a unit; words already attested for it are skipped."""
+    """Attach corpus words to a unit; words already attested for it are skipped.
+
+    ``note`` and ``example_proposed`` come with an attestation chosen in the text being read.
+    """
     _check_edit(user, unit)
     for part in (sense, realization):
         if part is not None and part.unit_id != unit.pk:
@@ -223,6 +233,8 @@ def add_attestations(
             realization=realization,
             passage=evidence.tokens[0].passage,
             origin=origin,
+            note=note,
+            example_proposed=example_proposed,
             created_by=user,
         )
         save_with_revision(attestation, user, m2m={"tokens": evidence.tokens})
@@ -438,6 +450,8 @@ def set_example(attestation, user, is_example):
             gettext("Une attestation rejetée ne sert pas d’exemple."), code="rejected_example"
         )
     attestation.is_example = is_example
+    if is_example:
+        attestation.example_proposed = False
     revision = save_with_revision(attestation, user)
     _check_still_complete(attestation.unit)
     return revision

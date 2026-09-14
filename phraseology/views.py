@@ -28,8 +28,10 @@ from moderation.registry import can_view
 from translations.models import TranslatedSegment, TranslationVersion
 from translations.permissions import can_translate
 
+from .annotation import guess_schema, search_units, suggested_units
 from .collocations import profile, profile_computed
 from .forms import (
+    AnnotationForm,
     AttestationPlaceForm,
     ContestForm,
     EquivalentForm,
@@ -230,9 +232,18 @@ def unit_create(request):
     form = UnitCreateForm(
         request.POST or None,
         user=request.user,
-        initial={"reference_form": request.GET.get("forme", "")},
+        initial={
+            "reference_form": request.GET.get("forme", ""),
+            "schema": request.GET.get("schema", ""),
+        },
     )
     evidences, errors = _chosen_attestations(request)
+    if request.method == "GET" and request.GET.get("mots"):
+        # Words chosen in the text being read come ticked.
+        try:
+            evidences = [corpus_evidence(request.GET["mots"])]
+        except ValidationError:
+            evidences = []
     if request.method == "POST":
         valid = form.is_valid()
         for message in errors:
@@ -246,11 +257,13 @@ def unit_create(request):
             except ValidationError as error:
                 form.add_error(None, error)
             else:
+                if unit.schema:
+                    refresh_frequency(unit)
                 messages.success(
                     request, _("La fiche est créée : c’est un brouillon visible de vous seul.")
                 )
                 return redirect(unit)
-    keep = {key: request.GET[key] for key in ("forme",) if request.GET.get(key)}
+    keep = {key: request.GET[key] for key in ("forme", "mots", "schema") if request.GET.get(key)}
     context = _search_page(request, evidences, form=form, keep=keep)
     return render(request, "phraseology/unit_create.html", context)
 
@@ -748,6 +761,113 @@ def reading_word(request, pk):
     fragment = request.GET.get("fragment") == "1"
     template = "phraseology/word_panel.html" if fragment else "phraseology/word_page.html"
     return render(request, template, context)
+
+
+# Annotation of the text being read
+
+
+def _annotation_forms(user, units, words):
+    """A form attaching the chosen words to each of the units the user may complete."""
+    return [
+        (
+            unit,
+            AnnotationForm(
+                unit=unit,
+                user=user,
+                auto_id=f"annotation-{unit.pk}-%s",
+                initial={"unit": unit.pk, "words": words},
+            ),
+        )
+        for unit in units
+        if can_edit_unit(user, unit)
+    ]
+
+
+@login_required
+def annotate_selection(request):
+    """The entries that words chosen in the text may attest: suggested, searched, or new.
+
+    The reading panel asks for the fragment; without script, it is a page of its own.
+    """
+    user = request.user
+    fragment = request.GET.get("fragment") == "1"
+    template = "phraseology/annotate_panel.html" if fragment else "phraseology/annotate_page.html"
+    try:
+        evidence = corpus_evidence(request.GET.get("mots", ""))
+    except ValidationError as error:
+        back = _return_url(request, "retour", reverse("corpus:index"))
+        context = {"errors": error.messages, "back": back, "fragment": fragment}
+        return render(request, template, context)
+    tokens = evidence.tokens
+    first = tokens[0]
+    reading = reverse("corpus:reading", args=[first.passage.edition.work.cts_id])
+    back = _return_url(
+        request, "retour", f"{reading}?{urlencode({'aller': first.passage.reference})}"
+    )
+    words = ",".join(str(token.pk) for token in tokens)
+    query = request.GET.get("q", "")
+    suggested = suggested_units(user, tokens)
+    found = [unit for unit in search_units(user, query) if unit not in suggested]
+    prefilled = {
+        "forme": " ".join(token.form for token in tokens),
+        "mots": words,
+        "schema": guess_schema(tokens),
+    }
+    create_query = urlencode({name: value for name, value in prefilled.items() if value})
+    return render(
+        request,
+        template,
+        {
+            "quote": quotation(tokens),
+            "words": words,
+            "back": back,
+            "query": query,
+            "fragment": fragment,
+            "suggested": _annotation_forms(user, suggested, words),
+            "found": _annotation_forms(user, found, words),
+            "create_url": f"{reverse('phraseology:unit_create')}?{create_query}",
+        },
+    )
+
+
+@login_required
+@require_POST
+def annotate_attach(request):
+    """Attach words chosen in the text to a unit: the attestation is proposed."""
+    value = request.POST.get("unit", "")
+    unit = _editable_unit(request.user, int(value) if value.isdigit() else 0)
+    back = _return_url(request, "next", unit.get_absolute_url())
+    form = AnnotationForm(request.POST, unit=unit, user=request.user)
+    if not form.is_valid():
+        messages.error(
+            request, " ".join(error for errors in form.errors.values() for error in errors)
+        )
+        return redirect(back)
+    data = form.cleaned_data
+    try:
+        created = add_attestations(
+            unit,
+            [corpus_evidence(data["words"])],
+            request.user,
+            sense=data["sense"],
+            realization=data["realization"],
+            note=data["note"],
+            example_proposed=data["example_proposed"],
+        )
+    except ContributionLimitReached as error:
+        messages.error(request, str(error))
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        if created:
+            messages.success(
+                request,
+                _("L’attestation est ajoutée à la fiche « %(unit)s » ; un relecteur l’examinera.")
+                % {"unit": unit.reference_form},
+            )
+        else:
+            messages.info(request, _("Ces mots attestent déjà cette fiche."))
+    return redirect(back)
 
 
 # Survey of the occurrences: those of the core reviewed in batches, the others shown as found

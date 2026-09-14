@@ -43,11 +43,17 @@ class UnitCreateForm(ContributionForm):
 
     class Meta:
         model = Unit
-        fields = ("reference_form",)
-        widgets = {"reference_form": forms.TextInput(attrs={"lang": "la"})}
+        fields = ("reference_form", "schema")
+        widgets = {
+            "reference_form": forms.TextInput(attrs={"lang": "la"}),
+            "schema": forms.TextInput(attrs={"lang": "la", "spellcheck": "false"}),
+        }
 
     def clean_reference_form(self):
         return normalize_sentence(self.cleaned_data["reference_form"])
+
+    def clean_schema(self):
+        return format_schema(parse_schema(self.cleaned_data["schema"]))
 
 
 class UnitForm(ContributionForm):
@@ -282,6 +288,28 @@ class AttestationPlaceForm(forms.Form):
             90
         )
         self.fields["realization"].queryset = unit.realizations.active()
+
+
+class AnnotationForm(AttestationPlaceForm):
+    """Words chosen in the text being read, attached to a unit with what the reader adds."""
+
+    unit = forms.IntegerField(widget=forms.HiddenInput)
+    words = forms.CharField(max_length=2000, widget=forms.HiddenInput)
+    note = forms.CharField(label=_("Note"), max_length=300, required=False)
+    example_proposed = forms.BooleanField(
+        label=_("Proposer comme exemple de la fiche"),
+        required=False,
+        help_text=_("Un relecteur décide d’en faire un exemple choisi."),
+    )
+
+    def __init__(self, *args, unit, user, **kwargs):
+        self.user = user
+        super().__init__(*args, unit=unit, **kwargs)
+
+    def clean_note(self):
+        note = " ".join(self.cleaned_data["note"].split())
+        check_text_for_links(self.user, note)
+        return note
 
 
 class NegativeSearchForm(forms.ModelForm):

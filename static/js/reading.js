@@ -1,6 +1,7 @@
-// Reading a work: the words of one occurrence light up together, and a click on a word opens a
-// panel with the units it belongs to and its analysis. Without this script the page still shows
-// every underline, and the list of the units of the page leads to their entries.
+// Reading a work: the words of one occurrence light up together, a click on a word opens a panel
+// with the units it belongs to and its analysis, and in the mode "annoter" clicks choose the words
+// of an attestation. Without this script the page still shows every underline, and the list of the
+// units of the page leads to their entries.
 (() => {
   "use strict";
 
@@ -10,9 +11,12 @@
     return;
   }
   const labels = article.dataset;
+  const annotating = labels.annotating === "1";
+  const chosen = new Map();
   let lit = [];
   let selected = null;
   let panel = null;
+  let bar = null;
   let request = 0;
 
   // The occurrences a word belongs to, from the closest line to the farthest.
@@ -50,19 +54,34 @@
     }
   }
 
+  function button(label, action, className) {
+    const element = document.createElement("button");
+    element.type = "button";
+    element.className = className;
+    element.textContent = label;
+    element.addEventListener("click", action);
+    return element;
+  }
+
   function panelBody() {
     if (!panel) {
       panel = document.createElement("aside");
       panel.className = "reading-panel";
       panel.setAttribute("aria-live", "polite");
-      const close = document.createElement("button");
-      close.type = "button";
-      close.className = "link-button reading-panel-close";
-      close.textContent = labels.labelClose;
-      close.addEventListener("click", closePanel);
       const body = document.createElement("div");
       body.className = "reading-panel-body";
-      panel.append(close, body);
+      panel.append(button(labels.labelClose, closePanel, "link-button reading-panel-close"), body);
+      // A search inside the panel stays in the panel.
+      panel.addEventListener("submit", (event) => {
+        const form = event.target;
+        if (!form.matches("[data-panel-form]")) {
+          return;
+        }
+        event.preventDefault();
+        const url = new URL(form.action, window.location.origin);
+        new FormData(form).forEach((value, name) => url.searchParams.set(name, value));
+        load(url);
+      });
       document.body.append(panel);
     }
     panel.hidden = false;
@@ -76,15 +95,10 @@
     select(null);
   }
 
-  async function showWord(word) {
-    select(word);
+  async function load(url) {
     const body = panelBody();
     const current = ++request;
-    const passage = word.closest(".reading-passage");
-    const back = `${window.location.pathname}${window.location.search}${passage ? `#${passage.id}` : ""}`;
-    const url = new URL(labels.wordUrl.replace(/\/0\/$/, `/${word.dataset.t}/`), window.location.origin);
     url.searchParams.set("fragment", "1");
-    url.searchParams.set("retour", back);
     body.textContent = labels.labelLoading;
     try {
       const response = await fetch(url, { credentials: "same-origin" });
@@ -103,11 +117,91 @@
     }
   }
 
+  // The reading page to come back to, at the passage of a word.
+  function backTo(word) {
+    const passage = word.closest(".reading-passage");
+    return `${window.location.pathname}${window.location.search}${passage ? `#${passage.id}` : ""}`;
+  }
+
+  function showWord(word) {
+    select(word);
+    const url = new URL(labels.wordUrl.replace(/\/0\/$/, `/${word.dataset.t}/`), window.location.origin);
+    url.searchParams.set("retour", backTo(word));
+    load(url);
+  }
+
+  function inTextOrder() {
+    return [...chosen.values()].sort((first, second) =>
+      first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+    );
+  }
+
+  function selectionBar() {
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.className = "reading-selection";
+      bar.setAttribute("role", "region");
+      bar.setAttribute("aria-label", labels.labelChosen);
+      const words = document.createElement("p");
+      words.className = "reading-selection-words";
+      const actions = document.createElement("p");
+      actions.className = "reading-selection-actions";
+      actions.append(
+        button(labels.labelAttach, attach, "button"),
+        button(labels.labelClear, clearChoice, "link-button"),
+      );
+      bar.append(words, actions);
+      document.body.append(bar);
+    }
+    return bar;
+  }
+
+  function showChoice() {
+    const element = selectionBar();
+    element.hidden = chosen.size === 0;
+    const words = inTextOrder().map((word) => word.textContent);
+    element.querySelector(".reading-selection-words").textContent = `${labels.labelChosen} ${words.join(" … ")}`;
+  }
+
+  function toggle(word) {
+    const key = word.dataset.t;
+    if (chosen.has(key)) {
+      chosen.delete(key);
+      word.classList.remove("is-chosen");
+    } else {
+      chosen.set(key, word);
+      word.classList.add("is-chosen");
+    }
+    showChoice();
+  }
+
+  function clearChoice() {
+    chosen.forEach((word) => word.classList.remove("is-chosen"));
+    chosen.clear();
+    showChoice();
+  }
+
+  function attach() {
+    const words = inTextOrder();
+    if (!words.length) {
+      return;
+    }
+    const url = new URL(labels.annotateUrl, window.location.origin);
+    url.searchParams.set("mots", words.map((word) => word.dataset.t).join(","));
+    url.searchParams.set("retour", backTo(words[0]));
+    load(url);
+  }
+
   text.addEventListener("mouseover", (event) => light(event.target.closest("[data-t]")));
   text.addEventListener("mouseleave", () => light(null));
   text.addEventListener("click", (event) => {
     const word = event.target.closest("[data-t]");
-    if (word && !event.target.closest("a")) {
+    if (!word || event.target.closest("a")) {
+      return;
+    }
+    if (annotating) {
+      toggle(word);
+    } else {
       showWord(word);
     }
   });

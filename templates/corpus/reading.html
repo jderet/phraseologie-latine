@@ -6,7 +6,7 @@
 {% block body_attributes %}{% if translation %} class="page-wide"{% endif %}{% endblock %}
 
 {% block content %}
-<article class="reading{% if translation %} with-translation{% endif %}{% if work.form == 'verse' %} reading-verse{% endif %}" data-word-url="{% url 'phraseology:reading_word' 0 %}" data-label-close="{% translate 'Fermer' %}" data-label-loading="{% translate 'Chargement…' %}" data-label-error="{% translate 'Le panneau n’a pas pu être chargé.' %}">
+<article class="reading{% if translation %} with-translation{% endif %}{% if work.form == 'verse' %} reading-verse{% endif %}" data-word-url="{% url 'phraseology:reading_word' 0 %}" data-label-close="{% translate 'Fermer' %}" data-label-loading="{% translate 'Chargement…' %}" data-label-error="{% translate 'Le panneau n’a pas pu être chargé.' %}" data-annotating="{% if annotating %}1{% endif %}" data-annotate-url="{% url 'phraseology:annotate_selection' %}" data-label-chosen="{% translate 'Mots choisis :' %}" data-label-attach="{% translate 'Rattacher à une fiche' %}" data-label-clear="{% translate 'Tout désélectionner' %}">
   <header class="reading-header">
     <p class="eyebrow"><a href="{{ work_url }}">{{ work.author.name }}, {{ work.title }}</a></p>
     <h1>{% if label %}{{ label }}{% else %}<i>{{ work.title }}</i>{% endif %}</h1>
@@ -26,7 +26,9 @@
         <input id="reading-goto" name="aller" value="{{ goto }}" size="8">
         <button type="submit" class="button-quiet">{% translate "Aller" %}</button>
       </form>
+      {% if can_annotate %}<p class="reading-annotating"><a href="{{ annotate_url }}"{% if annotating %} class="button"{% endif %}>{% if annotating %}{% translate "Terminer l’annotation" %}{% else %}{% translate "Annoter" %}{% endif %}</a></p>{% endif %}
     </div>
+    {% if annotating %}<p class="notice notice-info">{% translate "Mode annoter : cliquez les mots d’une attestation, même éloignés les uns des autres, puis « Rattacher à une fiche »." %}</p>{% endif %}
     {% if goto_missing %}<p class="note" role="status">{% blocktranslate trimmed with reference=goto %}
       Aucun passage « {{ reference }} » dans cette édition.
     {% endblocktranslate %}</p>{% endif %}

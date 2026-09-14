@@ -1844,3 +1844,69 @@ article > h2 {
 .passage-units {
   margin-bottom: 28px;
 }
+
+/* Annotating in the text */
+
+.reading-annotating {
+  margin: 0;
+}
+
+.reading-latin .is-chosen {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 2px;
+  outline: 1px dashed var(--accent);
+}
+
+.reading-selection {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 9;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  max-width: min(40rem, calc(100% - 32px));
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 15%);
+}
+
+.reading-selection p {
+  margin: 0;
+}
+
+.reading-selection-words {
+  font-family: var(--serif);
+}
+
+.reading-selection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.annotate-panel,
+.annotate-section {
+  display: grid;
+  gap: 10px;
+}
+
+.annotate-panel p,
+.annotate-section h3 {
+  margin: 0;
+}
+
+.annotate-section h3 {
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.annotate-unit {
+  display: grid;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 3px solid var(--mark);
+}

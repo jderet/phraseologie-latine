@@ -367,6 +367,11 @@ class Attestation(ModeratedContent):
     is_example = models.BooleanField(
         _("exemple choisi"), default=False, help_text=_("Montré en tête de la fiche.")
     )
+    example_proposed = models.BooleanField(
+        _("proposée comme exemple"),
+        default=False,
+        help_text=_("Proposée en annotant le texte ; un relecteur décide d’en faire un exemple."),
+    )
     note = models.CharField(_("note"), max_length=300, blank=True)
     is_withdrawn = models.BooleanField(_("retirée"), default=False)
     created_by = models.ForeignKey(

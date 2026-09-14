@@ -1,0 +1,16 @@
+{% load i18n %}<form method="post" action="{% url 'phraseology:annotate_attach' %}" class="annotate-unit k-{{ unit.kind|default:'none' }}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ back }}">
+  {{ form.unit }}{{ form.words }}
+  <p class="annotate-unit-title"><span class="swatch"></span> <a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a> <span class="badge status-{{ unit.status }}">{{ unit.get_status_display }}</span></p>
+  <details>
+    <summary>{% translate "Préciser la réalisation, le sens, une note" %}</summary>
+    <div class="form">
+      {{ form.realization.as_field_group }}
+      {{ form.sense.as_field_group }}
+      {{ form.note.as_field_group }}
+      {{ form.example_proposed.as_field_group }}
+    </div>
+  </details>
+  <button type="submit" class="button">{% translate "Rattacher à cette fiche" %}</button>
+</form>

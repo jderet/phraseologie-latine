@@ -1,0 +1,37 @@
+{% load i18n corpus_tags %}<div class="annotate-panel">
+  <p class="eyebrow">{% translate "Annoter" %}</p>
+  {% if errors %}
+  <ul class="errorlist">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+  {% else %}
+  <h2 class="word-panel-title">{% translate "Mots choisis" %}</h2>
+  <p><a class="hit-ref" href="{{ quote.url }}">{{ quote.citation }}</a> <span class="kwic" lang="la">… {% render_tokens quote.words quote.highlighted %} …</span></p>
+
+  <section class="annotate-section" aria-labelledby="annotate-suggested">
+    <h3 id="annotate-suggested">{% translate "Fiches dont les mots correspondent" %}</h3>
+    {% for unit, form in suggested %}{% include "phraseology/annotate_unit.html" %}{% empty %}
+    <p class="muted">{% translate "Aucune fiche connue ne contient tous ces mots." %}</p>
+    {% endfor %}
+  </section>
+
+  <section class="annotate-section" aria-labelledby="annotate-search">
+    <h3 id="annotate-search">{% translate "Chercher une fiche" %}</h3>
+    <form method="get" action="{% url 'phraseology:annotate_selection' %}" class="reading-goto" data-panel-form>
+      <input type="hidden" name="mots" value="{{ words }}">
+      <input type="hidden" name="retour" value="{{ back }}">
+      {% if fragment %}<input type="hidden" name="fragment" value="1">{% endif %}
+      <label for="annotate-query">{% translate "Forme ou schéma" %}</label>
+      <input id="annotate-query" name="q" value="{{ query }}" lang="la">
+      <button type="submit" class="button-quiet">{% translate "Chercher" %}</button>
+    </form>
+    {% for unit, form in found %}{% include "phraseology/annotate_unit.html" %}{% empty %}
+    {% if query %}<p class="muted">{% translate "Aucune fiche trouvée." %}</p>{% endif %}
+    {% endfor %}
+  </section>
+
+  <section class="annotate-section" aria-labelledby="annotate-new">
+    <h3 id="annotate-new">{% translate "Nouvelle fiche" %}</h3>
+    <p><a class="button" href="{{ create_url }}">{% translate "Créer une fiche à partir de ces mots" %}</a></p>
+    <p class="note">{% translate "La forme de référence, le schéma deviné par l’analyse automatique et l’attestation sont pré-remplis ; la fiche reste un brouillon jusqu’à ce que vous la proposiez." %}</p>
+  </section>
+  {% endif %}
+</div>

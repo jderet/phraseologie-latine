@@ -176,8 +176,14 @@ def reading(request, work_id, part=None):
     translations = list(ReferenceTranslation.objects.filter(work=work, is_current=True))
     translation, choice = _translation_choice(request, translations)
     focus = focused_unit(user, request.GET.get("fiche"))
-    focus_id = focus.pk if focus else ""
-    suffix = _query(traduction=choice, fiche=focus_id)
+    annotating = request.GET.get("annoter") == "1" and user.is_authenticated and user.is_active
+    # What the links of the page keep: the translation, the unit followed, the annotation mode.
+    state = {
+        "traduction": choice,
+        "fiche": focus.pk if focus else "",
+        "annoter": "1" if annotating else "",
+    }
+    suffix = _query(**state)
     goto = _typed_reference(request.GET.get("aller", ""))
     if goto:
         passage = (
@@ -201,9 +207,14 @@ def reading(request, work_id, part=None):
         {passage.pk: passage.reference for passage in passages},
     )
     page_url = _reading_url(work_id, page)
+
+    def link(**changes):
+        """This page, its state changed."""
+        return f"{page_url}{_query(**{**state, **changes})}"
+
     page_units = units_on_page(occurrences)
     for entry in page_units:
-        entry["focus_url"] = f"{page_url}{_query(traduction=choice, fiche=entry['unit'].pk)}"
+        entry["focus_url"] = link(fiche=entry["unit"].pk)
     neighbours = None
     if focus is not None:
         found = unit_neighbours(focus, edition, page, filters)
@@ -223,7 +234,6 @@ def reading(request, work_id, part=None):
         )
         if other is not None
     }
-    keep = [(name, value) for name, value in (("traduction", choice), ("fiche", focus_id)) if value]
     return render(
         request,
         "corpus/reading.html",
@@ -244,21 +254,24 @@ def reading(request, work_id, part=None):
             "kind_choices": Kind.choices,
             "mark_choices": UsageMark.choices,
             "register_choices": Work.Register.choices,
-            "reset_url": f"{page_url}{_query(traduction=choice, fiche=focus_id, filtres='defaut')}",
+            "reset_url": link(filtres="defaut"),
             "focus": focus,
             "neighbours": neighbours,
-            "unfocus_url": f"{page_url}{_query(traduction=choice)}",
-            "keep": keep,
+            "unfocus_url": link(fiche=""),
+            "keep": [(name, value) for name, value in state.items() if value],
+            "annotating": annotating,
+            "can_annotate": user.is_authenticated and user.is_active,
+            "annotate_url": link(annoter="" if annotating else "1"),
             "translation": translation,
             "translation_links": [
                 {
                     "translation": item,
-                    "url": f"{page_url}{_query(traduction=item.pk, fiche=focus_id)}",
+                    "url": link(traduction=item.pk),
                     "current": item == translation,
                 }
                 for item in translations
             ],
-            "hide_url": f"{page_url}{_query(traduction=TRANSLATION_HIDDEN, fiche=focus_id)}",
+            "hide_url": link(traduction=TRANSLATION_HIDDEN),
             "contents": _contents(plan, page, work_id, suffix),
             "previous": around.get("previous"),
             "following": around.get("following"),

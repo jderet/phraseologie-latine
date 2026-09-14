@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Annoter" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p><a href="{{ back }}">← {% translate "Retour à la lecture" %}</a></p>
+  {% include "phraseology/annotate_panel.html" %}
+</article>
+{% endblock %}
