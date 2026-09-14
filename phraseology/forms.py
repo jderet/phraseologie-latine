@@ -187,6 +187,29 @@ class UnitReferenceForm(PartForm):
         fields = ("work", "locator", "note")
 
 
+class ContestForm(forms.Form):
+    argument = forms.CharField(
+        label=_("Argument"),
+        max_length=5000,
+        widget=forms.Textarea(attrs={"rows": 6}),
+        help_text=_("Ce qui vous paraît fautif dans la fiche, et ce que vous proposez."),
+    )
+
+
+class ResolveContestForm(forms.Form):
+    status = forms.ChoiceField(
+        label=_("Décision"),
+        choices=[
+            (Unit.Status.VALIDATED, _("Valider la fiche : la contestation est écartée")),
+            (Unit.Status.PROPOSED, _("Remettre la fiche en proposition : elle doit être revue")),
+        ],
+        widget=forms.RadioSelect,
+    )
+    reason = forms.CharField(
+        label=_("Motivation"), max_length=3000, widget=forms.Textarea(attrs={"rows": 3})
+    )
+
+
 class AttestationPlaceForm(forms.Form):
     """The sense and the realization the chosen attestations illustrate, if known."""
 

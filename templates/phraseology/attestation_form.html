@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n corpus_tags %}
 
 {% block title %}{% translate "Ajouter des attestations" %} · {{ unit.reference_form }} · {{ block.super }}{% endblock %}
 
@@ -8,9 +8,48 @@
   <p class="eyebrow"><a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a></p>
   <h1>{% translate "Ajouter des attestations" %}</h1>
   <p class="lede">{% blocktranslate trimmed %}
-    Cherchez l’unité dans le corpus et cochez les passages qui l’attestent. Une attestation
-    ajoutée est proposée ; un relecteur la valide.
+    Cochez les passages qui attestent l’unité, parmi les occurrences de son schéma ou dans une
+    recherche du corpus. Une attestation ajoutée est proposée ; un relecteur la valide.
   {% endblocktranslate %}</p>
+
+  {% if occurrences %}
+  <section class="attestation-search" id="occurrences" aria-labelledby="occurrences-title">
+    <h2 id="occurrences-title">{% translate "Occurrences du schéma" %}</h2>
+    {% if occurrences.hits %}
+    <p class="note">{% blocktranslate trimmed with label=occurrences.version.label count counter=occurrences.page.paginator.count %}
+      {{ counter }} occurrence repérée automatiquement (corpus version {{ label }}) : vérifiez-la avant de la cocher.
+    {% plural %}
+      {{ counter }} occurrences repérées automatiquement (corpus version {{ label }}) : vérifiez-les avant de les cocher.
+    {% endblocktranslate %}</p>
+    <ul class="attestation-choices">
+      {% for hit in occurrences.hits %}
+      <li>
+        {% if hit.attested %}
+        <span class="muted">{% translate "déjà attestée" %}</span> <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
+        {% else %}
+        <label><input type="checkbox" name="occurrence" value="{{ hit.word_ids }}" form="unit-form"> <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span></label>
+        {% endif %}
+        <a class="small-link" href="{{ hit.url }}" target="_blank" rel="noopener">{% translate "contexte" %}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="notice">{% blocktranslate trimmed with label=occurrences.version.label %}
+      Schéma introuvable dans le corpus analysé (version {{ label }}).
+    {% endblocktranslate %}</p>
+    {% endif %}
+    <p class="actions">
+      {% if occurrences.core_only %}<a href="{% querystring occurrences='tout' page_occurrences=None %}#occurrences">{% translate "Occurrences dans tout le corpus" %}</a>{% else %}<a href="{% querystring occurrences=None page_occurrences=None %}#occurrences">{% translate "Occurrences dans le noyau seulement" %}</a>{% endif %}
+    </p>
+    {% with page=occurrences.page %}{% if page.has_other_pages %}
+    <nav class="pager" aria-label="{% translate 'Pages des occurrences' %}">
+      {% if page.has_previous %}<a rel="prev" href="{% querystring page_occurrences=page.previous_page_number %}#occurrences">{% translate "Page précédente" %}</a>{% endif %}
+      <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
+      {% if page.has_next %}<a rel="next" href="{% querystring page_occurrences=page.next_page_number %}#occurrences">{% translate "Page suivante" %}</a>{% endif %}
+    </nav>
+    {% endif %}{% endwith %}
+  </section>
+  {% endif %}
 
   {% include "justifications/search_attestations.html" %}
 

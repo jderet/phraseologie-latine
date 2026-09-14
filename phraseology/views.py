@@ -3,15 +3,16 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Q
-from django.http import Http404
+from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy, ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
-from corpus.models import Token
-from corpus.search import quotation
+from accounts.roles import is_reviewer
+from corpus.models import Author, Token
+from corpus.search import corpus_version, default_layer, quotation
 from corpus.text import normalize
 from corpus.views import search_context
 from justifications.services import corpus_evidence
@@ -19,14 +20,17 @@ from moderation.registry import can_view
 
 from .forms import (
     AttestationPlaceForm,
+    ContestForm,
     EquivalentForm,
     RealizationForm,
     RelationForm,
+    ResolveContestForm,
     SenseForm,
     UnitCreateForm,
     UnitForm,
     UnitReferenceForm,
 )
+from .frequency import load_tokens, occurrence_tokens, schema_matches
 from .models import (
     Attestation,
     Equivalent,
@@ -34,21 +38,31 @@ from .models import (
     Realization,
     Sense,
     Unit,
+    UnitFrequency,
     UnitReference,
     UnitRelation,
 )
 from .permissions import can_edit_unit, can_withdraw_attestation
 from .services import (
     add_attestations,
+    contest_unit,
     create_unit,
+    missing_fields,
+    propose_unit,
+    refresh_frequency,
+    resolve_contest,
+    review_attestation,
     save_part,
+    set_example,
     update_unit,
+    validate_unit,
     withdraw_attestation,
     withdraw_part,
 )
 
 UNITS_PER_PAGE = 50
 SEARCH_RESULTS = 20
+OCCURRENCES_PER_PAGE = 20
 UNIT_FORM_ID = "unit-form"
 
 # The parts of a unit edited by the same views: model, form, titles to add and to change.
@@ -80,9 +94,11 @@ PARTS = {
     ),
 }
 
+DECISIONS = {"valider": Attestation.Status.VALIDATED, "rejeter": Attestation.Status.REJECTED}
+
 
 def _unit(user, pk):
-    unit = get_object_or_404(Unit.objects.select_related("created_by"), pk=pk)
+    unit = get_object_or_404(Unit.objects.select_related("created_by", "validated_by"), pk=pk)
     if not can_view(user, unit):
         raise Http404
     return unit
@@ -102,12 +118,12 @@ def _part_type(kind):
         raise Http404 from error
 
 
-def _chosen_attestations(request):
+def _chosen_attestations(request, name="attestation"):
     """Attestations ticked in the form, and the errors of those that are not valid."""
     evidences, errors = [], []
     if request.method != "POST":
         return evidences, errors
-    for value in dict.fromkeys(request.POST.getlist("attestation")):
+    for value in dict.fromkeys(request.POST.getlist(name)):
         try:
             evidences.append(corpus_evidence(value))
         except ValidationError as error:
@@ -248,6 +264,12 @@ def _relations_of(user, unit):
     ]
 
 
+def _frequency_rows(frequency):
+    """(author, occurrences, occurrences in the core) of a computed frequency."""
+    authors = Author.objects.in_bulk([row[0] for row in frequency.by_author])
+    return [(authors[pk], total, core) for pk, total, core in frequency.by_author if pk in authors]
+
+
 def unit_detail(request, pk):
     user = request.user
     unit = _unit(user, pk)
@@ -260,6 +282,10 @@ def unit_detail(request, pk):
     )
     for sense in senses:
         sense.visible_equivalents = _visible_parts(user, unit, sense.equivalents.all())
+    frequency = UnitFrequency.objects.filter(unit=unit).first()
+    reviewer = is_reviewer(user)
+    missing = missing_fields(unit)
+    public = not unit.is_draft and not unit.is_hidden
     return render(
         request,
         "phraseology/unit_detail.html",
@@ -273,7 +299,23 @@ def unit_detail(request, pk):
             "references": _visible_parts(
                 user, unit, unit.references.active().select_related("work")
             ),
+            "frequency": frequency,
+            "frequency_rows": _frequency_rows(frequency) if frequency else [],
+            "frequency_is_current": frequency is not None and frequency.schema == unit.schema,
+            "missing": missing,
             "can_edit": can_edit_unit(user, unit),
+            "is_reviewer": reviewer,
+            "can_propose": unit.is_draft and user.pk == unit.created_by_id,
+            "can_validate": reviewer and unit.status == Unit.Status.PROPOSED and not missing,
+            "can_contest": (
+                user.is_authenticated
+                and user.is_active
+                and public
+                and unit.status in (Unit.Status.PROPOSED, Unit.Status.VALIDATED)
+            ),
+            "resolve_form": (
+                ResolveContestForm() if reviewer and unit.status == Unit.Status.CONTESTED else None
+            ),
         },
     )
 
@@ -295,6 +337,94 @@ def unit_edit(request, pk):
                 messages.success(request, _("Les modifications sont enregistrées."))
             return redirect(unit)
     return render(request, "phraseology/unit_edit.html", {"unit": unit, "form": form})
+
+
+@login_required
+@require_POST
+def unit_frequency(request, pk):
+    unit = _editable_unit(request.user, pk)
+    frequency = refresh_frequency(unit)
+    if frequency is None:
+        messages.error(
+            request,
+            _("La fréquence ne se calcule qu’à partir d’un schéma, sur un corpus analysé."),
+        )
+    else:
+        messages.success(
+            request,
+            ngettext(
+                "%(count)d occurrence repérée automatiquement.",
+                "%(count)d occurrences repérées automatiquement.",
+                frequency.total,
+            )
+            % {"count": frequency.total},
+        )
+    return redirect(f"{unit.get_absolute_url()}#frequence")
+
+
+def _change_status(request, pk, service, success):
+    unit = _unit(request.user, pk)
+    try:
+        revision = service(unit, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        if revision is not None:
+            messages.success(request, success)
+    return redirect(unit)
+
+
+@login_required
+@require_POST
+def unit_propose(request, pk):
+    success = _("La fiche est proposée : elle est publique, et chacun peut la compléter.")
+    return _change_status(request, pk, propose_unit, success)
+
+
+@login_required
+@require_POST
+def unit_validate(request, pk):
+    return _change_status(request, pk, validate_unit, _("La fiche est validée."))
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def unit_contest(request, pk):
+    unit = _unit(request.user, pk)
+    form = ContestForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            contest_unit(unit, request.user, form.cleaned_data["argument"])
+        except ContributionLimitReached as error:
+            messages.error(request, str(error))
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(
+                request, _("La fiche est contestée ; votre argument ouvre la discussion.")
+            )
+            return redirect(f"{unit.get_absolute_url()}#discussion")
+    return render(request, "phraseology/unit_contest.html", {"unit": unit, "form": form})
+
+
+@login_required
+@require_POST
+def unit_resolve(request, pk):
+    unit = _unit(request.user, pk)
+    if not is_reviewer(request.user):
+        raise PermissionDenied
+    form = ResolveContestForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Choisissez une décision et motivez-la."))
+        return redirect(unit)
+    data = form.cleaned_data
+    try:
+        resolve_contest(unit, request.user, data["status"], data["reason"])
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("La contestation est levée."))
+    return redirect(unit)
 
 
 @login_required
@@ -366,21 +496,61 @@ def part_withdraw(request, kind, pk):
     return redirect(unit)
 
 
+def _occurrences(request, unit):
+    """Occurrences of the schema found automatically, offered as attestations."""
+    layer = default_layer()
+    if not unit.schema or layer is None:
+        return None
+    edges = unit.edges
+    core_only = request.GET.get("occurrences") != "tout"
+    matches = (
+        schema_matches(edges, layer, core_only)
+        .select_related("token")
+        .order_by(
+            "token__edition__work__author__birth_year",
+            "token__edition__work__cts_urn",
+            "token__position",
+            "part",
+        )
+    )
+    page = Paginator(matches, OCCURRENCES_PER_PAGE).get_page(request.GET.get("page_occurrences"))
+    attested = unit.attestations.active().exclude(status=Attestation.Status.REJECTED)
+    known = {
+        frozenset(token.pk for token in attestation.tokens.all())
+        for attestation in attested.prefetch_related("tokens")
+    }
+    hits = []
+    for match in page.object_list:
+        tokens = load_tokens([token.pk for token in occurrence_tokens(match, edges, layer)])
+        hit = quotation(tokens)
+        hit.attested = frozenset(token.pk for token in tokens) in known
+        hits.append(hit)
+    return {"page": page, "hits": hits, "core_only": core_only, "version": corpus_version()}
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def attestation_add(request, pk):
     unit = _editable_unit(request.user, pk)
     place = AttestationPlaceForm(request.POST or None, unit=unit)
     evidences, errors = _chosen_attestations(request)
+    found, found_errors = _chosen_attestations(request, "occurrence")
+    errors += found_errors
     if request.method == "POST" and place.is_valid() and not errors:
-        if evidences:
-            created = add_attestations(
-                unit,
-                evidences,
-                request.user,
-                sense=place.cleaned_data["sense"],
-                realization=place.cleaned_data["realization"],
-            )
+        if evidences or found:
+            created = []
+            for items, origin in (
+                (evidences, Attestation.Origin.MANUAL),
+                (found, Attestation.Origin.QUERY),
+            ):
+                created += add_attestations(
+                    unit,
+                    items,
+                    request.user,
+                    sense=place.cleaned_data["sense"],
+                    realization=place.cleaned_data["realization"],
+                    origin=origin,
+                )
             count = len(created)
             messages.success(
                 request,
@@ -391,22 +561,64 @@ def attestation_add(request, pk):
             )
             return redirect(f"{unit.get_absolute_url()}#attestations")
         errors = [_("Cochez au moins une attestation.")]
-    context = _search_page(request, evidences, unit=unit, place=place, errors=errors, keep={})
+    context = _search_page(
+        request,
+        evidences,
+        unit=unit,
+        place=place,
+        errors=errors,
+        keep={},
+        occurrences=_occurrences(request, unit),
+    )
     return render(request, "phraseology/attestation_form.html", context)
+
+
+def _visible_attestation(user, pk):
+    attestation = get_object_or_404(Attestation.objects.active(), pk=pk)
+    attestation.unit = _unit(user, attestation.unit_id)
+    if not can_view(user, attestation):
+        raise Http404
+    return attestation
 
 
 @login_required
 @require_POST
 def attestation_withdraw(request, pk):
-    attestation = get_object_or_404(Attestation.objects.active().select_related("unit"), pk=pk)
-    unit = _unit(request.user, attestation.unit_id)
-    attestation.unit = unit
-    if not can_view(request.user, attestation):
-        raise Http404
+    attestation = _visible_attestation(request.user, pk)
     try:
         withdraw_attestation(attestation, request.user)
     except ValidationError as error:
         messages.error(request, error.messages[0])
     else:
         messages.success(request, _("L’attestation est retirée ; elle reste dans l’historique."))
-    return redirect(f"{unit.get_absolute_url()}#attestations")
+    return redirect(f"{attestation.unit.get_absolute_url()}#attestations")
+
+
+@login_required
+@require_POST
+def attestation_review(request, pk):
+    attestation = _visible_attestation(request.user, pk)
+    status = DECISIONS.get(request.POST.get("decision", ""))
+    if status is None:
+        return HttpResponseBadRequest()
+    try:
+        review_attestation(attestation, request.user, status)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        if status == Attestation.Status.VALIDATED:
+            messages.success(request, _("L’attestation est validée."))
+        else:
+            messages.success(request, _("L’attestation est rejetée."))
+    return redirect(attestation.get_absolute_url())
+
+
+@login_required
+@require_POST
+def attestation_example(request, pk):
+    attestation = _visible_attestation(request.user, pk)
+    try:
+        set_example(attestation, request.user, request.POST.get("exemple") == "1")
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    return redirect(attestation.get_absolute_url())

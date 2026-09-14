@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Contester la fiche" %} · {{ unit.reference_form }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a></p>
+  <h1>{% translate "Contester la fiche" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Votre argument ouvre la discussion de la fiche, qui passe « contestée ». Un relecteur lève
+    ensuite la contestation : il valide de nouveau la fiche, ou la remet en proposition pour
+    qu’elle soit revue.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="button">{% translate "Contester la fiche" %}</button>
+  </form>
+</section>
+{% endblock %}

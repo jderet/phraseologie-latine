@@ -417,6 +417,30 @@ class Attestation(ModeratedContent):
         return self.get_status_display()
 
 
+class UnitFrequency(models.Model):
+    """Occurrences of the schema of a unit found automatically in the corpus: computed, not edited.
+
+    ``by_author`` lists [author id, occurrences, occurrences in the core], chronologically.
+    """
+
+    unit = models.OneToOneField(
+        Unit, on_delete=models.CASCADE, related_name="frequency", verbose_name=_("unité")
+    )
+    schema = models.CharField(_("schéma"), max_length=300)
+    total = models.PositiveIntegerField(_("occurrences"))
+    core_total = models.PositiveIntegerField(_("occurrences dans le noyau"))
+    by_author = models.JSONField(_("répartition par auteur"), default=list)
+    corpus_version = models.CharField(_("version du corpus"), max_length=200)
+    computed_at = models.DateTimeField(_("calculée le"))
+
+    class Meta:
+        verbose_name = _("fréquence")
+        verbose_name_plural = _("fréquences")
+
+    def __str__(self):
+        return f"{self.unit} · {self.total}"
+
+
 def unit_visible_to(user, unit):
     """A draft is visible to its creator only (rule 8)."""
     return not unit.is_draft or (user.is_authenticated and user.pk == unit.created_by_id)

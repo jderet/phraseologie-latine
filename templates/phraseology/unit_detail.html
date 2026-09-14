@@ -32,6 +32,37 @@
       <dt>{% translate "Registre" %}</dt>
       <dd>{{ unit.get_register_display|capfirst|default:"—" }}</dd>
     </div>
+    <div id="frequence">
+      <dt>{% translate "Fréquence" %}</dt>
+      <dd>
+        {% if frequency %}
+        {% blocktranslate trimmed with core=frequency.core_total count counter=frequency.total %}
+          {{ counter }} occurrence du schéma repérée automatiquement, dont {{ core }} dans le noyau
+        {% plural %}
+          {{ counter }} occurrences du schéma repérées automatiquement, dont {{ core }} dans le noyau
+        {% endblocktranslate %}
+        <span class="muted">({% blocktranslate with label=frequency.corpus_version date=frequency.computed_at|date:"j F Y" %}corpus version {{ label }}, calcul du {{ date }}{% endblocktranslate %})</span>
+        {% if not frequency_is_current %}<span class="badge review-badge">{% translate "à recalculer : le schéma a changé" %}</span>{% endif %}
+        {% if frequency_rows %}
+        <ul class="distribution">
+          {% for author, total, core in frequency_rows %}<li>{{ author.name }} <span class="muted">{{ total }}</span></li>{% endfor %}
+        </ul>
+        {% else %}
+        <span class="notice">{% blocktranslate with label=frequency.corpus_version %}Schéma introuvable dans le corpus analysé (version {{ label }}).{% endblocktranslate %}</span>
+        {% endif %}
+        {% elif unit.schema %}
+        {% translate "pas encore calculée" %}
+        {% else %}
+        {% translate "calculée à partir du schéma, qui reste à indiquer" %}
+        {% endif %}
+        {% if can_edit and unit.schema %}
+        <form method="post" action="{% url 'phraseology:unit_frequency' unit.pk %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="link-button small-link">{% translate "Calculer de nouveau" %}</button>
+        </form>
+        {% endif %}
+      </dd>
+    </div>
     {% if unit.tags %}
     <div>
       <dt>{% translate "Étiquettes" %}</dt>
@@ -46,6 +77,49 @@
   {% if can_edit %}
   <p class="form-links"><a class="button" href="{% url 'phraseology:unit_edit' unit.pk %}">{% translate "Modifier la fiche" %}</a></p>
   {% endif %}
+
+  <section class="unit-section validation-box" id="validation" aria-labelledby="validation-title">
+    <h2 id="validation-title">{% translate "Validation" %}</h2>
+    {% if unit.validated_by and unit.status == "validated" %}
+    <p>{% blocktranslate trimmed with name=unit.validated_by.public_name date=unit.validated_at|date:"j F Y" %}
+      Validée par {{ name }} le {{ date }}.
+    {% endblocktranslate %}</p>
+    {% endif %}
+    {% if unit.status == "contested" %}
+    <p class="notice">{% translate "Cette fiche est contestée : les arguments sont dans la discussion, en bas de page." %}</p>
+    {% endif %}
+    {% if missing %}
+    <p>{% if unit.status == "validated" %}{% translate "Cette fiche validée est devenue incomplète ; il lui manque :" %}{% else %}{% translate "Une fiche n’est validée qu’avec tous ses champs ; il manque :" %}{% endif %}</p>
+    <ul class="missing-fields">
+      {% for field in missing %}<li>{{ field }}</li>{% endfor %}
+    </ul>
+    {% elif unit.status != "validated" %}
+    <p>{% translate "Tous les champs sont remplis : un relecteur peut valider la fiche." %}</p>
+    {% endif %}
+    {% if can_propose %}
+    <form method="post" action="{% url 'phraseology:unit_propose' unit.pk %}" class="actions">
+      {% csrf_token %}
+      <button type="submit" class="button">{% translate "Proposer la fiche" %}</button>
+      <span class="note">{% translate "Une fiche proposée est publique : chacun peut la compléter." %}</span>
+    </form>
+    {% endif %}
+    {% if can_validate %}
+    <form method="post" action="{% url 'phraseology:unit_validate' unit.pk %}" class="actions">
+      {% csrf_token %}
+      <button type="submit" class="button">{% translate "Valider la fiche" %}</button>
+    </form>
+    {% endif %}
+    {% if can_contest %}
+    <p class="actions"><a class="button button-quiet" href="{% url 'phraseology:unit_contest' unit.pk %}">{% translate "Contester la fiche" %}</a></p>
+    {% endif %}
+    {% if resolve_form %}
+    <form method="post" action="{% url 'phraseology:unit_resolve' unit.pk %}" class="form">
+      {% csrf_token %}
+      {{ resolve_form }}
+      <button type="submit" class="button">{% translate "Lever la contestation" %}</button>
+    </form>
+    {% endif %}
+  </section>
 
   <section class="unit-section" id="sens" aria-labelledby="senses-title">
     <h2 id="senses-title">{% translate "Sens et équivalents" %}</h2>
@@ -92,12 +166,28 @@
         <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span>
         <span class="muted">{% if attestation.is_example %}{% translate "exemple choisi" %} · {% endif %}{{ attestation.status_label|capfirst }}{% if attestation.realization %} · <span lang="la">{{ attestation.realization.form }}</span>{% endif %}</span>
         {% if attestation.note %}<span class="evidence-note">{{ attestation.note }}</span>{% endif %}
-        {% if attestation.can_withdraw %}
-        <form method="post" action="{% url 'phraseology:attestation_withdraw' attestation.pk %}" class="inline-form">
-          {% csrf_token %}
-          <button type="submit" class="link-button small-link">{% translate "Retirer cette attestation" %}</button>
-        </form>
-        {% endif %}
+        <span class="part-actions">
+          {% if is_reviewer %}
+          <form method="post" action="{% url 'phraseology:attestation_review' attestation.pk %}" class="inline-form">
+            {% csrf_token %}
+            {% if attestation.status != "validated" %}<button type="submit" name="decision" value="valider" class="link-button small-link">{% translate "valider" %}</button>{% endif %}
+            {% if attestation.status != "rejected" %}<button type="submit" name="decision" value="rejeter" class="link-button small-link">{% translate "rejeter" %}</button>{% endif %}
+          </form>
+          {% endif %}
+          {% if can_edit and attestation.status != "rejected" %}
+          <form method="post" action="{% url 'phraseology:attestation_example' attestation.pk %}" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="exemple" value="{% if attestation.is_example %}0{% else %}1{% endif %}">
+            <button type="submit" class="link-button small-link">{% if attestation.is_example %}{% translate "ne plus montrer en exemple" %}{% else %}{% translate "choisir comme exemple" %}{% endif %}</button>
+          </form>
+          {% endif %}
+          {% if attestation.can_withdraw %}
+          <form method="post" action="{% url 'phraseology:attestation_withdraw' attestation.pk %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="link-button small-link">{% translate "retirer" %}</button>
+          </form>
+          {% endif %}
+        </span>
       </li>
       {% empty %}
       <li class="muted">{% translate "Aucune attestation." %}</li>
