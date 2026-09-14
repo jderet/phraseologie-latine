@@ -7,7 +7,7 @@ from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy, ngettext
 from django.views.decorators.http import require_http_methods, require_POST
@@ -41,7 +41,7 @@ from .forms import (
     UnitForm,
     UnitReferenceForm,
 )
-from .frequency import load_tokens, occurrence_tokens, schema_matches
+from .frequency import load_tokens, occurrence_words, schema_matches
 from .models import (
     Attestation,
     Candidate,
@@ -55,6 +55,7 @@ from .models import (
     UnitFrequency,
     UnitReference,
     UnitRelation,
+    UnitSurvey,
 )
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 from .schema import parse_schema
@@ -73,9 +74,11 @@ from .services import (
     resolve_contest,
     retain_candidate,
     review_attestation,
+    review_attestations,
     save_neologism_equivalent,
     save_part,
     set_example,
+    survey_unit,
     update_neologism,
     update_unit,
     validate_neologism,
@@ -86,10 +89,12 @@ from .services import (
     withdraw_part,
 )
 from .spotting import spot_units
+from .survey import attestation_shapes
 
 UNITS_PER_PAGE = 50
 SEARCH_RESULTS = 20
 OCCURRENCES_PER_PAGE = 20
+ATTESTATIONS_ON_UNIT_PAGE = 30
 UNIT_FORM_ID = "unit-form"
 
 # The parts of a unit edited by the same views: model, form, titles to add and to change.
@@ -252,22 +257,37 @@ def _visible_parts(user, unit, queryset):
     return parts
 
 
+def _to_review(unit):
+    """Attestations of the core found by a survey and not yet reviewed."""
+    return unit.attestations.active().filter(
+        is_hidden=False,
+        level=Attestation.Level.AUTOMATIC,
+        status=Attestation.Status.PROPOSED,
+        passage__edition__work__is_core=True,
+    )
+
+
 def _attestations_of(user, unit):
+    """Attestations shown on the unit page, examples first; the survey page shows the others.
+
+    Returns the attestations and how many more there are.
+    """
     tokens = Token.objects.select_related("passage__edition__work__author")
     queryset = (
         unit.attestations.active()
+        .exclude(pk__in=_to_review(unit))
         .select_related("sense", "realization", "created_by")
         .prefetch_related(Prefetch("tokens", queryset=tokens))
     )
-    attestations = []
-    for attestation in _visible_parts(user, unit, queryset):
-        attestation.quotation = quotation(list(attestation.tokens.all()))
-        attestation.can_withdraw = can_withdraw_attestation(user, attestation)
-        attestations.append(attestation)
-    return sorted(
-        attestations,
+    attestations = sorted(
+        _visible_parts(user, unit, queryset),
         key=lambda item: (item.status == Attestation.Status.REJECTED, not item.is_example),
     )
+    shown = attestations[:ATTESTATIONS_ON_UNIT_PAGE]
+    for attestation in shown:
+        attestation.quotation = quotation(list(attestation.tokens.all()))
+        attestation.can_withdraw = can_withdraw_attestation(user, attestation)
+    return shown, len(attestations) - len(shown)
 
 
 def _relations_of(user, unit):
@@ -321,6 +341,7 @@ def unit_detail(request, pk):
     reviewer = is_reviewer(user)
     missing = missing_fields(unit)
     public = not unit.is_draft and not unit.is_hidden
+    attestations, attestations_more = _attestations_of(user, unit)
     return render(
         request,
         "phraseology/unit_detail.html",
@@ -329,7 +350,9 @@ def unit_detail(request, pk):
             "edges": unit.edges,
             "senses": senses,
             "realizations": _visible_parts(user, unit, unit.realizations.active()),
-            "attestations": _attestations_of(user, unit),
+            "attestations": attestations,
+            "attestations_more": attestations_more,
+            "attestations_to_review": _to_review(unit).count(),
             "relations": _relations_of(user, unit),
             "translations": _translations_of(user, unit),
             "references": _visible_parts(
@@ -561,9 +584,10 @@ def _schema_occurrences(request, edges, known=frozenset()):
         )
     )
     page = Paginator(matches, OCCURRENCES_PER_PAGE).get_page(request.GET.get("page_occurrences"))
+    roots = [(match.token_id, match.part, match.token.position) for match in page.object_list]
     hits = []
-    for match in page.object_list:
-        tokens = load_tokens([token.pk for token in occurrence_tokens(match, edges, layer)])
+    for ids in occurrence_words(roots, edges, layer):
+        tokens = load_tokens(ids)
         hit = quotation(tokens)
         hit.attested = frozenset(token.pk for token in tokens) in known
         hits.append(hit)
@@ -664,6 +688,177 @@ def attestation_example(request, pk):
     except ValidationError as error:
         messages.error(request, error.messages[0])
     return redirect(attestation.get_absolute_url())
+
+
+# Survey of the occurrences in the core, reviewed in batches
+
+SURVEY_PER_PAGE = 50
+SURVEY_TABS = (
+    ("a-examiner", Attestation.Status.PROPOSED, gettext_lazy("à examiner")),
+    ("validees", Attestation.Status.VALIDATED, gettext_lazy("validées")),
+    ("rejetees", Attestation.Status.REJECTED, gettext_lazy("rejetées")),
+    ("toutes", None, gettext_lazy("toutes")),
+)
+
+
+def _core_attestations(unit):
+    return (
+        unit.attestations.active()
+        .filter(is_hidden=False, passage__edition__work__is_core=True)
+        .order_by(
+            "passage__edition__work__author__birth_year",
+            "passage__edition__work__cts_urn",
+            "passage__order",
+            "pk",
+        )
+    )
+
+
+def _survey_summary(rows, shapes):
+    """For each shape, how many attestations realize it, by status."""
+    summary = {}
+    for attestation_id, status in rows:
+        shape = shapes.get(attestation_id, "")
+        row = summary.setdefault(
+            shape, {"shape": shape, "total": 0, "proposed": 0, "validated": 0, "rejected": 0}
+        )
+        row["total"] += 1
+        row[status] += 1
+    return sorted(summary.values(), key=lambda row: (-row["total"], row["shape"]))
+
+
+def unit_survey(request, pk):
+    user = request.user
+    unit = _unit(user, pk)
+    rows = list(_core_attestations(unit).values_list("pk", "status"))
+    shapes = attestation_shapes([row[0] for row in rows], default_layer(), unit.edges)
+    wanted = {value: status for value, status, _label in SURVEY_TABS}
+    status = request.GET.get("statut", "")
+    if status not in wanted:
+        status = SURVEY_TABS[0][0]
+    shape = request.GET.get("forme", "")[:300]
+    selected = [
+        attestation_id
+        for attestation_id, attestation_status in rows
+        if wanted[status] in (None, attestation_status)
+        and (not shape or shapes.get(attestation_id) == shape)
+    ]
+    page = Paginator(selected, SURVEY_PER_PAGE).get_page(request.GET.get("page"))
+    tokens = Token.objects.select_related("passage__edition__work__author")
+    loaded = (
+        Attestation.objects.select_related("realization", "sense")
+        .prefetch_related(Prefetch("tokens", queryset=tokens))
+        .in_bulk(page.object_list)
+    )
+    attestations = []
+    for attestation_id in page.object_list:
+        attestation = loaded[attestation_id]
+        attestation.quotation = quotation(list(attestation.tokens.all()))
+        attestation.shape = shapes.get(attestation_id, "")
+        attestations.append(attestation)
+    survey = UnitSurvey.objects.select_related("surveyed_by").filter(unit=unit).first()
+    tabs = [
+        (value, label, sum(1 for _pk, row_status in rows if tab_status in (None, row_status)))
+        for value, tab_status, label in SURVEY_TABS
+    ]
+    return render(
+        request,
+        "phraseology/unit_survey.html",
+        {
+            "unit": unit,
+            "edges": unit.edges,
+            "survey": survey,
+            "survey_is_current": survey is not None and survey.schema == unit.schema,
+            "shapes": _survey_summary(rows, shapes),
+            "tabs": tabs,
+            "status": status,
+            "shape": shape,
+            "page": page,
+            "attestations": attestations,
+            "can_run": bool(unit.schema) and can_edit_unit(user, unit),
+            "is_reviewer": is_reviewer(user),
+            "realizations": _visible_parts(user, unit, unit.realizations.active()),
+            "senses": _visible_parts(user, unit, unit.senses.active()),
+        },
+    )
+
+
+@login_required
+@require_POST
+def unit_survey_run(request, pk):
+    unit = _editable_unit(request.user, pk)
+    try:
+        survey = survey_unit(unit, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(
+            request,
+            ngettext(
+                "%(count)d attestation ajoutée au relevé.",
+                "%(count)d attestations ajoutées au relevé.",
+                survey.added,
+            )
+            % {"count": survey.added},
+        )
+        if survey.remaining:
+            messages.info(
+                request,
+                ngettext(
+                    "%(count)d occurrence reste à relever : relancez le relevé.",
+                    "%(count)d occurrences restent à relever : relancez le relevé.",
+                    survey.remaining,
+                )
+                % {"count": survey.remaining},
+            )
+    return redirect("phraseology:unit_survey", pk=unit.pk)
+
+
+def _chosen_part(queryset, value):
+    value = value or ""
+    return queryset.active().filter(pk=int(value)).first() if value.isdigit() else None
+
+
+@login_required
+@require_POST
+def unit_survey_review(request, pk):
+    unit = _unit(request.user, pk)
+    if not is_reviewer(request.user):
+        raise PermissionDenied
+    status = DECISIONS.get(request.POST.get("decision", ""))
+    if status is None:
+        return HttpResponseBadRequest()
+    ids = [int(value) for value in request.POST.getlist("attestation") if value.isdigit()]
+    if not ids:
+        messages.error(request, _("Cochez au moins une attestation."))
+    else:
+        try:
+            revisions = review_attestations(
+                unit,
+                ids,
+                request.user,
+                status,
+                sense=_chosen_part(unit.senses, request.POST.get("sens")),
+                realization=_chosen_part(unit.realizations, request.POST.get("realisation")),
+            )
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+        else:
+            count = len(revisions)
+            if status == Attestation.Status.VALIDATED:
+                message = ngettext(
+                    "%(count)d attestation validée.", "%(count)d attestations validées.", count
+                )
+            else:
+                message = ngettext(
+                    "%(count)d attestation rejetée.", "%(count)d attestations rejetées.", count
+                )
+            messages.success(request, message % {"count": count})
+    kept = {
+        name: request.POST[name] for name in ("statut", "forme", "page") if request.POST.get(name)
+    }
+    query = f"?{urlencode(kept)}" if kept else ""
+    return redirect(f"{reverse('phraseology:unit_survey', args=[unit.pk])}{query}#examen")
 
 
 # Neologisms

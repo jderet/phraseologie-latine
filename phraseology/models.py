@@ -441,6 +441,34 @@ class UnitFrequency(models.Model):
         return f"{self.unit} · {self.total}"
 
 
+class UnitSurvey(models.Model):
+    """The last survey of a unit: its schema's occurrences in the core, recorded as automatic
+    attestations to review. Computed, not edited."""
+
+    unit = models.OneToOneField(
+        Unit, on_delete=models.CASCADE, related_name="survey", verbose_name=_("unité")
+    )
+    schema = models.CharField(_("schéma"), max_length=300)
+    corpus_version = models.CharField(_("version du corpus"), max_length=200)
+    found = models.PositiveIntegerField(_("occurrences repérées"))
+    added = models.PositiveIntegerField(_("attestations ajoutées"))
+    remaining = models.PositiveIntegerField(_("occurrences restant à relever"))
+    surveyed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name=_("relevé par"),
+    )
+    surveyed_at = models.DateTimeField(_("relevé le"))
+
+    class Meta:
+        verbose_name = _("relevé")
+        verbose_name_plural = _("relevés")
+
+    def __str__(self):
+        return f"{self.unit} · {self.found}"
+
+
 class Neologism(ModeratedContent):
     """A Latin word or phrase for a modern reality, justified like any translation choice (T5).
 

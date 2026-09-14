@@ -1,5 +1,7 @@
 """Creating, completing and validating phraseological units; every change is recorded."""
 
+from collections import defaultdict
+
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Count, Q
@@ -9,12 +11,13 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.limits import is_limited
 from accounts.roles import is_reviewer
+from corpus.models import Token
 from corpus.search import corpus_version, default_layer
 from justifications.services import attach_evidences
 from moderation.registry import can_view
 from moderation.services import post_comment, save_with_revision
 
-from .frequency import count_by_author, schema_matches
+from .frequency import count_by_author, occurrence_words, schema_matches
 from .models import (
     Attestation,
     Candidate,
@@ -23,6 +26,7 @@ from .models import (
     Unit,
     UnitFrequency,
     UnitRelation,
+    UnitSurvey,
 )
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 from .spotting import refresh_unit_forms
@@ -240,32 +244,152 @@ def withdraw_attestation(attestation, user):
     return revision
 
 
-@transaction.atomic
-def review_attestation(attestation, reviewer, status):
-    """A reviewer validates or rejects an attestation; once checked, it is no longer automatic."""
-    if status not in (Attestation.Status.VALIDATED, Attestation.Status.REJECTED):
-        raise ValueError("An attestation is validated or rejected.")
-    attestation = (
-        Attestation.objects.select_for_update(of=("self",))
-        .select_related("unit")
-        .get(pk=attestation.pk)
-    )
+REVIEW_STATUSES = (Attestation.Status.VALIDATED, Attestation.Status.REJECTED)
+
+
+def _review(attestation, reviewer, status, sense=None, realization=None):
+    """Record a reviewer's decision; a validated one may also receive a sense or a realization."""
     if not is_reviewer(reviewer) or not can_view(reviewer, attestation):
         raise PermissionDenied
-    if attestation.is_withdrawn or attestation.status == status:
+    validating = status == Attestation.Status.VALIDATED
+    placing = validating and (sense is not None or realization is not None)
+    if attestation.is_withdrawn or (attestation.status == status and not placing):
         return None
     attestation.status = status
-    if status == Attestation.Status.VALIDATED:
+    if validating:
         attestation.level = Attestation.Level.VALIDATED
+        attestation.sense = sense or attestation.sense
+        attestation.realization = realization or attestation.realization
         comment = gettext("Attestation validée")
     else:
         attestation.is_example = False
         comment = gettext("Attestation rejetée")
     attestation.reviewed_by = reviewer
     attestation.reviewed_at = timezone.now()
-    revision = save_with_revision(attestation, reviewer, comment=comment)
-    _check_still_complete(attestation.unit)
+    return save_with_revision(attestation, reviewer, comment=comment)
+
+
+@transaction.atomic
+def review_attestation(attestation, reviewer, status):
+    """A reviewer validates or rejects an attestation; once checked, it is no longer automatic."""
+    if status not in REVIEW_STATUSES:
+        raise ValueError("An attestation is validated or rejected.")
+    attestation = (
+        Attestation.objects.select_for_update(of=("self",))
+        .select_related("unit")
+        .get(pk=attestation.pk)
+    )
+    revision = _review(attestation, reviewer, status)
+    if revision is not None:
+        _check_still_complete(attestation.unit)
     return revision
+
+
+@transaction.atomic
+def review_attestations(unit, ids, reviewer, status, sense=None, realization=None):
+    """A reviewer validates or rejects attestations of the core in one batch.
+
+    Batches are for the core, whose attestations are checked by people (T2). The validated
+    attestations may be given a sense or a realization of the unit.
+    """
+    if status not in REVIEW_STATUSES:
+        raise ValueError("An attestation is validated or rejected.")
+    if not is_reviewer(reviewer) or not can_view(reviewer, unit):
+        raise PermissionDenied
+    for part in (sense, realization):
+        if part is not None and part.unit_id != unit.pk:
+            raise ValueError("The sense or the realization belongs to another unit.")
+    attestations = (
+        unit.attestations.active()
+        .filter(pk__in=ids, passage__edition__work__is_core=True)
+        .select_for_update(of=("self",))
+        .select_related("unit")
+        .order_by("pk")
+    )
+    revisions = []
+    for attestation in attestations:
+        revision = _review(attestation, reviewer, status, sense, realization)
+        if revision is not None:
+            revisions.append(revision)
+    _check_still_complete(unit)
+    return revisions
+
+
+# Survey of the occurrences
+
+SURVEY_LIMIT = 1000
+
+
+@transaction.atomic
+def survey_unit(unit, user):
+    """Record the occurrences of the schema in the core as automatic attestations to review.
+
+    An occurrence whose words an attestation of the unit already covers, even a rejected one,
+    is left aside. A survey adds at most SURVEY_LIMIT attestations; the next one goes on.
+    """
+    _check_edit(user, unit)
+    if not unit.schema:
+        raise ValidationError(
+            gettext("Le relevé part du schéma de l’unité, qui reste à indiquer."), code="no_schema"
+        )
+    layer = default_layer()
+    if layer is None:
+        raise ValidationError(gettext("Le relevé demande un corpus analysé."), code="no_layer")
+    edges = unit.edges
+    roots = (
+        schema_matches(edges, layer, core_only=True)
+        .order_by(
+            "token__edition__work__author__birth_year",
+            "token__edition__work__cts_urn",
+            "token__position",
+            "part",
+        )
+        .values_list("token_id", "part", "token__position")
+    )
+    occurrences = list(dict.fromkeys(occurrence_words(roots, edges, layer)))
+    covered = defaultdict(set)
+    rows = Attestation.tokens.through.objects.filter(
+        attestation__unit=unit, attestation__is_withdrawn=False
+    ).values_list("attestation_id", "token_id")
+    for attestation_id, token_id in rows:
+        covered[attestation_id].add(token_id)
+    by_word = defaultdict(list)
+    for words in covered.values():
+        for token_id in words:
+            by_word[token_id].append(words)
+    new = [
+        words
+        for words in occurrences
+        if not any(set(words) <= attested for attested in by_word[words[0]])
+    ]
+    added = new[:SURVEY_LIMIT]
+    passages = dict(
+        Token.objects.filter(pk__in=[words[0] for words in added]).values_list("pk", "passage_id")
+    )
+    for words in added:
+        attestation = Attestation(
+            unit=unit,
+            passage_id=passages[words[0]],
+            level=Attestation.Level.AUTOMATIC,
+            origin=Attestation.Origin.QUERY,
+            created_by=user,
+        )
+        save_with_revision(
+            attestation, user, comment=gettext("Relevé automatique"), m2m={"tokens": list(words)}
+        )
+    survey, _created = UnitSurvey.objects.update_or_create(
+        unit=unit,
+        defaults={
+            "schema": unit.schema,
+            "corpus_version": corpus_version().label,
+            "found": len(occurrences),
+            "added": len(added),
+            "remaining": len(new) - len(added),
+            "surveyed_by": user,
+            "surveyed_at": timezone.now(),
+        },
+    )
+    return survey
 
 
 @transaction.atomic

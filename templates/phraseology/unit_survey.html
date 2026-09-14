@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{% translate "Relevé" %} · {{ unit.reference_form }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium unit">
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a> · <a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a></p>
+  <h1>{% translate "Relevé des occurrences dans le noyau" %}</h1>
+  <p class="lede">{% translate "Le relevé enregistre chaque occurrence du schéma dans le noyau comme une attestation repérée automatiquement. Les relecteurs la valident ou la rejettent, par lots." %}</p>
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Schéma" %}</dt>
+      <dd lang="la">{% for edge in edges %}<span class="schema-edge">{{ edge.label }}</span>{% if not forloop.last %} ; {% endif %}{% empty %}—{% endfor %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Dernier relevé" %}</dt>
+      <dd>
+        {% if survey %}
+        {% blocktranslate trimmed with date=survey.surveyed_at|date:"j F Y" name=survey.surveyed_by.public_name count counter=survey.found %}
+          {{ counter }} occurrence repérée automatiquement le {{ date }}, relevé lancé par {{ name }}
+        {% plural %}
+          {{ counter }} occurrences repérées automatiquement le {{ date }}, relevé lancé par {{ name }}
+        {% endblocktranslate %}
+        <span class="muted">({% blocktranslate with label=survey.corpus_version %}corpus version {{ label }}{% endblocktranslate %})</span>
+        {% if not survey_is_current %}<span class="badge review-badge">{% translate "à refaire : le schéma a changé" %}</span>{% endif %}
+        {% if survey.remaining %}<span class="badge review-badge">{% blocktranslate count counter=survey.remaining %}{{ counter }} occurrence reste à relever{% plural %}{{ counter }} occurrences restent à relever{% endblocktranslate %}</span>{% endif %}
+        {% else %}
+        {% translate "pas encore fait" %}
+        {% endif %}
+      </dd>
+    </div>
+  </dl>
+  {% if can_run %}
+  <form method="post" action="{% url 'phraseology:unit_survey_run' unit.pk %}" class="actions">
+    {% csrf_token %}
+    <button type="submit" class="button">{% if survey %}{% translate "Relever de nouveau" %}{% else %}{% translate "Relever les occurrences" %}{% endif %}</button>
+    <span class="note">{% translate "Les occurrences déjà attestées pour la fiche, même rejetées, ne sont pas reprises." %}</span>
+  </form>
+  {% elif not unit.schema %}
+  <p class="notice">{% translate "Le relevé part du schéma de l’unité, qui reste à indiquer." %}</p>
+  {% endif %}
+
+  <section class="unit-section" id="formes" aria-labelledby="shapes-title">
+    <h2 id="shapes-title">{% translate "Réalisations relevées" %}</h2>
+    {% if shapes %}
+    <p class="note">{% translate "Les lemmes du schéma dans l’ordre du texte ; « … » marque des mots insérés entre eux." %}</p>
+    <div class="table-scroll">
+      <table class="changes">
+        <thead>
+          <tr>
+            <th scope="col">{% translate "Forme" %}</th>
+            <th scope="col">{% translate "Attestations" %}</th>
+            <th scope="col">{% translate "À examiner" %}</th>
+            <th scope="col">{% translate "Validées" %}</th>
+            <th scope="col">{% translate "Rejetées" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in shapes %}
+          <tr>
+            <td lang="la"><a href="{% querystring forme=row.shape page=None %}#examen"{% if row.shape == shape %} aria-current="true"{% endif %}>{{ row.shape }}</a></td>
+            <td>{{ row.total }}</td>
+            <td>{{ row.proposed }}</td>
+            <td>{{ row.validated }}</td>
+            <td>{{ row.rejected }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="muted">{% translate "Aucune attestation dans le noyau." %}</p>
+    {% endif %}
+  </section>
+
+  <section class="unit-section" id="examen" aria-labelledby="review-title">
+    <h2 id="review-title">{% translate "Attestations du noyau" %}</h2>
+    <nav class="tabs" aria-label="{% translate 'Statut des attestations' %}">
+      {% for value, label, count in tabs %}<a href="{% querystring statut=value page=None %}#examen"{% if value == status %} aria-current="page"{% endif %}>{{ label|capfirst }} <span class="muted">{{ count }}</span></a>{% endfor %}
+    </nav>
+    {% if shape %}<p class="note">{% translate "Forme :" %} <span lang="la">{{ shape }}</span> · <a href="{% querystring forme=None page=None %}#examen">{% translate "toutes les formes" %}</a></p>{% endif %}
+
+    {% if attestations %}
+    {% if is_reviewer %}
+    <form method="post" action="{% url 'phraseology:unit_survey_review' unit.pk %}" class="form" id="review-form">
+      {% csrf_token %}
+      <input type="hidden" name="statut" value="{{ status }}">
+      <input type="hidden" name="forme" value="{{ shape }}">
+      <input type="hidden" name="page" value="{{ page.number }}">
+      <p class="note">{% translate "Les attestations à examiner sont cochées : décochez celles qui n’attestent pas l’unité avant de valider." %}</p>
+    {% endif %}
+      <ul class="evidences">
+        {% for attestation in attestations %}
+        <li class="evidence{% if attestation.status == 'rejected' %} is-rejected{% endif %}" id="attestation-{{ attestation.pk }}">
+          {% if is_reviewer %}<label><input type="checkbox" name="attestation" value="{{ attestation.pk }}"{% if attestation.status == "proposed" %} checked{% endif %}>{% endif %}
+          <span class="hit-ref">{{ attestation.quotation.citation }}</span> {% poetry_mark attestation.quotation %}
+          <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span>
+          {% if is_reviewer %}</label>{% endif %}
+          <span class="muted">{{ attestation.status_label|capfirst }} · <span lang="la">{{ attestation.shape }}</span>{% if attestation.realization %} · {% translate "réalisation" %} <span lang="la">{{ attestation.realization.form }}</span>{% endif %}{% if attestation.sense %} · {{ attestation.sense.definition|truncatechars:60 }}{% endif %}</span>
+          <a class="small-link" href="{{ attestation.quotation.url }}" target="_blank" rel="noopener">{% translate "contexte" %}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    {% if is_reviewer %}
+      <fieldset>
+        <legend>{% translate "Décision pour les attestations cochées" %}</legend>
+        {% if realizations %}
+        <div class="field">
+          <label for="realisation">{% translate "Rattacher les attestations validées à la réalisation" %}</label>
+          <select id="realisation" name="realisation">
+            <option value="">—</option>
+            {% for realization in realizations %}<option value="{{ realization.pk }}" lang="la">{{ realization.form }}</option>{% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        {% if senses|length > 1 %}
+        <div class="field">
+          <label for="sens">{% translate "Rattacher les attestations validées au sens" %}</label>
+          <select id="sens" name="sens">
+            <option value="">—</option>
+            {% for sense in senses %}<option value="{{ sense.pk }}">{{ sense.definition|truncatechars:80 }}</option>{% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <p class="actions">
+          <button type="submit" name="decision" value="valider" class="button">{% translate "Valider la sélection" %}</button>
+          <button type="submit" name="decision" value="rejeter" class="button button-quiet">{% translate "Rejeter la sélection" %}</button>
+        </p>
+      </fieldset>
+    </form>
+    {% endif %}
+
+    {% if page.has_other_pages %}
+    <nav class="pager" aria-label="{% translate 'Pages des attestations' %}">
+      {% if page.has_previous %}<a rel="prev" href="{% querystring page=page.previous_page_number %}#examen">{% translate "Page précédente" %}</a>{% endif %}
+      <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
+      {% if page.has_next %}<a rel="next" href="{% querystring page=page.next_page_number %}#examen">{% translate "Page suivante" %}</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <p class="muted">{% translate "Aucune attestation de ce statut dans le noyau." %}</p>
+    {% endif %}
+  </section>
+</article>
+{% endblock %}

@@ -193,9 +193,13 @@
       <li class="muted">{% translate "Aucune attestation." %}</li>
       {% endfor %}
     </ul>
-    {% if can_edit %}
-    <p class="actions"><a href="{% url 'phraseology:attestation_add' unit.pk %}">{% translate "Ajouter des attestations" %}</a></p>
+    {% if attestations_more %}
+    <p class="note">{% blocktranslate count counter=attestations_more %}{{ counter }} autre attestation n’est pas montrée ici.{% plural %}{{ counter }} autres attestations ne sont pas montrées ici.{% endblocktranslate %}</p>
     {% endif %}
+    <p class="actions">
+      {% if can_edit %}<a href="{% url 'phraseology:attestation_add' unit.pk %}">{% translate "Ajouter des attestations" %}</a>{% endif %}
+      {% if unit.schema or attestations_to_review %}<a href="{% url 'phraseology:unit_survey' unit.pk %}">{% if attestations_to_review %}{% blocktranslate count counter=attestations_to_review %}{{ counter }} attestation du noyau à examiner dans le relevé{% plural %}{{ counter }} attestations du noyau à examiner dans le relevé{% endblocktranslate %}{% else %}{% translate "Relevé des occurrences dans le noyau" %}{% endif %}</a>{% endif %}
+    </p>
   </section>
 
   <section class="unit-section" id="relations" aria-labelledby="relations-title">

@@ -9,6 +9,9 @@ from django.db.models import Count, Exists, OuterRef, Q
 
 from corpus.models import Author, Token, TokenAnalysis
 
+# Governing words looked up together when gathering the words of many occurrences.
+CHUNK_SIZE = 5000
+
 
 def _relation_condition(relations):
     """A relation without subtype also matches its subtypes: obl matches obl:arg."""
@@ -48,31 +51,48 @@ def schema_matches(edges, layer, core_only=False):
     return matches
 
 
+def occurrence_words(roots, edges, layer):
+    """The words of each occurrence, as word identifiers in textual order.
+
+    ``roots`` are (word, part, position) of the governing word of each occurrence; for each
+    relation of the schema, the first dependent in the text is kept. A few queries serve
+    any number of occurrences.
+    """
+    roots = list(roots)
+    positions = {token_id: position for token_id, _part, position in roots}
+    found = [{edges[0].head: (token_id, part)} for token_id, part, _position in roots]
+    for edge in edges:
+        heads = sorted({item[edge.head][0] for item in found if edge.head in item})
+        chosen = {}
+        for start in range(0, len(heads), CHUNK_SIZE):
+            dependents = (
+                TokenAnalysis.objects.filter(
+                    _relation_condition(edge.relations),
+                    layer=layer,
+                    lemma_norm=edge.dependent,
+                    head_id__in=heads[start : start + CHUNK_SIZE],
+                )
+                .filter(*_dependents(edge.dependent, edges, layer))
+                .order_by("token__position")
+                .values_list("head_id", "head_part", "token_id", "part", "token__position")
+            )
+            for head_id, head_part, token_id, part, position in dependents:
+                chosen.setdefault((head_id, head_part), (token_id, part))
+                positions[token_id] = position
+        for item in found:
+            dependent = chosen.get(item.get(edge.head))
+            if dependent is not None:
+                item[edge.dependent] = dependent
+    return [
+        tuple(sorted({token_id for token_id, _part in item.values()}, key=positions.get))
+        for item in found
+    ]
+
+
 def occurrence_tokens(match, edges, layer):
     """The words of one occurrence: the governing word, then its dependents in the schema."""
-    tokens = [match.token]
-    heads = {edges[0].head: match}
-    for edge in edges:
-        head = heads.get(edge.head)
-        if head is None:
-            continue
-        dependent = (
-            TokenAnalysis.objects.filter(
-                _relation_condition(edge.relations),
-                layer=layer,
-                head_id=head.token_id,
-                head_part=head.part,
-                lemma_norm=edge.dependent,
-            )
-            .filter(*_dependents(edge.dependent, edges, layer))
-            .select_related("token")
-            .order_by("token__position")
-            .first()
-        )
-        if dependent is not None:
-            heads[edge.dependent] = dependent
-            tokens.append(dependent.token)
-    return sorted({token.pk: token for token in tokens}.values(), key=lambda t: t.position)
+    (ids,) = occurrence_words([(match.token_id, match.part, match.token.position)], edges, layer)
+    return load_tokens(ids)
 
 
 def count_by_author(matches):

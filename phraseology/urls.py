@@ -15,6 +15,9 @@ urlpatterns = [
     path("fiches/<int:pk>/contester/", views.unit_contest, name="unit_contest"),
     path("fiches/<int:pk>/lever/", views.unit_resolve, name="unit_resolve"),
     path("fiches/<int:pk>/attestations/", views.attestation_add, name="attestation_add"),
+    path("fiches/<int:pk>/releve/", views.unit_survey, name="unit_survey"),
+    path("fiches/<int:pk>/releve/lancer/", views.unit_survey_run, name="unit_survey_run"),
+    path("fiches/<int:pk>/releve/examen/", views.unit_survey_review, name="unit_survey_review"),
     path("fiches/<int:pk>/ajouter/<slug:kind>/", views.part_create, name="part_create"),
     path("fiches/elements/<slug:kind>/<int:pk>/", views.part_edit, name="part_edit"),
     path(
