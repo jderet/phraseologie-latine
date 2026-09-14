@@ -42,6 +42,33 @@ def _between(previous, token):
     return "" if previous.after[-1:].isspace() else " "
 
 
+def _target(token, marks):
+    """A word the reader can point at, inside the lines of the occurrences it belongs to."""
+    html = format_html('<span data-t="{}">{}</span>', token.pk, token.form)
+    for mark in sorted(marks.get(token.pk, ()), key=lambda item: item.track):
+        html = format_html('<span class="{}" data-o="{}">{}</span>', mark.css, mark.key, html)
+    return html
+
+
+@register.simple_tag
+def render_words(tokens, marks=None):
+    """Text of a passage for reading: each word is a target, underlined words carry their marks.
+
+    ``marks`` maps word identifiers to objects with ``css``, ``key`` and ``track``; the first
+    track is drawn closest to the word.
+    """
+    tokens = list(tokens)
+    marks = marks or {}
+    return format_html_join(
+        "",
+        "{}{}{}{}",
+        (
+            (_between(previous, token), token.before, _target(token, marks), token.after)
+            for previous, token in zip([None, *tokens], tokens, strict=False)
+        ),
+    )
+
+
 @register.simple_tag
 def render_tokens(tokens, highlighted=()):
     """Text of a passage rebuilt from its words; highlighted words are marked."""

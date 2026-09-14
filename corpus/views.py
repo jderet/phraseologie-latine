@@ -6,6 +6,20 @@ from django.db.models import Prefetch, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import urlencode
+
+from phraseology.models import Kind, UsageMark
+from phraseology.reading import (
+    STATUS_LABELS,
+    focused_unit,
+    legend_kinds,
+    page_attestations,
+    page_occurrences,
+    reading_filters,
+    unit_neighbours,
+    units_on_page,
+    word_marks,
+)
 
 from .forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm, bound_search_form, search_query
 from .models import URN_PREFIX, Author, Edition, ReferenceTranslation, Token, Work
@@ -86,13 +100,19 @@ def _reading_url(work_id, page, suffix="", anchor=""):
     return f"{url}{suffix}{anchor}"
 
 
+def _query(**params):
+    """A query string of the parameters that have a value, in the order given."""
+    kept = {name: value for name, value in params.items() if value not in (None, "")}
+    return f"?{urlencode(kept)}" if kept else ""
+
+
 def _typed_reference(value):
     """A reference as people type it: « 1, 12 » or « 1 12 » is read as 1.12."""
     return re.sub(r"[\s,;]+", ".", value.strip()).strip(".")
 
 
 def _translation_choice(request, translations):
-    """The translation shown beside the Latin, and the query string that keeps the choice."""
+    """The translation shown beside the Latin, and the value that keeps the choice in links."""
     choice = request.GET.get("traduction", "")
     if translations and choice == TRANSLATION_HIDDEN:
         return None, TRANSLATION_HIDDEN
@@ -102,8 +122,43 @@ def _translation_choice(request, translations):
     return (translations[0] if translations else None), ""
 
 
+def _page_words(passages):
+    """The words of the passages of a page, by passage."""
+    words = (
+        Token.objects.filter(passage__in=passages)
+        .only("id", "passage_id", "position", "form", "before", "after")
+        .order_by("position")
+    )
+    return {key: list(group) for key, group in groupby(words, key=lambda word: word.passage_id)}
+
+
+def _contents(plan, page, work_id, suffix):
+    """The entries of the table of contents: the first divisions, or else the pages."""
+    if plan.divisions:
+        return [
+            {
+                "label": capitalized(division_label(plan.scheme, 0, value)),
+                "url": _reading_url(work_id, target, suffix, f"#p-{reference}"),
+                "current": target == page,
+            }
+            for value, reference, order in plan.divisions
+            for target in [plan.page_at(order)]
+        ]
+    if len(plan.pages) > 1:
+        return [
+            {
+                "label": other.label(plan.scheme),
+                "url": _reading_url(work_id, other, suffix),
+                "current": other == page,
+            }
+            for other in plan.pages
+        ]
+    return []
+
+
 def reading(request, work_id, part=None):
-    """A work read from end to end, page by page, with a translation beside it."""
+    """A work read from end to end, page by page, its phraseology underlined."""
+    user = request.user
     edition = _current_edition(work_id)
     work = edition.work
     plan = reading_plan(edition)
@@ -111,7 +166,9 @@ def reading(request, work_id, part=None):
         raise Http404
     translations = list(ReferenceTranslation.objects.filter(work=work, is_current=True))
     translation, choice = _translation_choice(request, translations)
-    suffix = f"?traduction={choice}" if choice else ""
+    focus = focused_unit(user, request.GET.get("fiche"))
+    focus_id = focus.pk if focus else ""
+    suffix = _query(traduction=choice, fiche=focus_id)
     goto = _typed_reference(request.GET.get("aller", ""))
     if goto:
         passage = (
@@ -126,36 +183,30 @@ def reading(request, work_id, part=None):
     if page is None:
         raise Http404
     passages = list(edition.passages.filter(order__range=(page.start, page.end)).order_by("order"))
-    words = (
-        Token.objects.filter(passage__in=passages)
-        .only("id", "passage_id", "position", "form", "before", "after")
-        .order_by("position")
-    )
-    tokens = {key: list(group) for key, group in groupby(words, key=lambda word: word.passage_id)}
+    tokens = _page_words(passages)
     parts = translation.parts_for([item.reference for item in passages]) if translation else {}
-    if plan.divisions:
-        contents = [
-            {
-                "label": capitalized(division_label(plan.scheme, 0, value)),
-                "url": _reading_url(work_id, target, suffix, f"#p-{reference}"),
-                "current": target == page,
-            }
-            for value, reference, order in plan.divisions
-            for target in [plan.page_at(order)]
-        ]
-    elif len(plan.pages) > 1:
-        contents = [
-            {
-                "label": other.label(plan.scheme),
-                "url": _reading_url(work_id, other, suffix),
-                "current": other == page,
-            }
-            for other in plan.pages
-        ]
-    else:
-        contents = []
+    filters = reading_filters(request)
+    occurrences = page_occurrences(
+        page_attestations(user, passages, filters, focus),
+        {word.pk for words in tokens.values() for word in words},
+        {passage.pk: passage.reference for passage in passages},
+    )
+    page_url = _reading_url(work_id, page)
+    page_units = units_on_page(occurrences)
+    for entry in page_units:
+        entry["focus_url"] = f"{page_url}{_query(traduction=choice, fiche=entry['unit'].pk)}"
+    neighbours = None
+    if focus is not None:
+        found = unit_neighbours(focus, edition, page, filters)
+        neighbours = {"total": found["total"]}
+        for name in ("previous", "following"):
+            attestation = found[name]
+            if attestation is not None:
+                target = plan.page_at(attestation.passage.order)
+                anchor = f"#p-{attestation.passage.reference}"
+                neighbours[f"{name}_url"] = _reading_url(work_id, target, suffix, anchor)
     index = plan.pages.index(page)
-    neighbours = {
+    around = {
         name: {"url": _reading_url(work_id, other, suffix), "label": other.label(plan.scheme)}
         for name, other in (
             ("previous", plan.pages[index - 1] if index > 0 else None),
@@ -163,7 +214,6 @@ def reading(request, work_id, part=None):
         )
         if other is not None
     }
-    page_url = _reading_url(work_id, page)
     return render(
         request,
         "corpus/reading.html",
@@ -172,23 +222,40 @@ def reading(request, work_id, part=None):
             "work_url": work.get_absolute_url(),
             "edition": edition,
             "label": page.label(plan.scheme),
+            "page_url": page_url,
             "rows": reading_rows(
                 page, plan.scheme, passages, tokens, parts, verse=work.form == Work.Form.VERSE
             ),
+            "marks": word_marks(occurrences),
+            "page_units": page_units,
+            "legend_kinds": legend_kinds(occurrences),
+            "filters": filters,
+            "status_choices": list(STATUS_LABELS.items()),
+            "kind_choices": Kind.choices,
+            "mark_choices": UsageMark.choices,
+            "register_choices": Work.Register.choices,
+            "reset_url": f"{page_url}{_query(traduction=choice, fiche=focus_id, filtres='defaut')}",
+            "focus": focus,
+            "neighbours": neighbours,
+            "unfocus_url": f"{page_url}{_query(traduction=choice)}",
+            "keep": [
+                (name, value)
+                for name, value in (("traduction", choice), ("fiche", focus_id))
+                if value
+            ],
             "translation": translation,
             "translation_links": [
                 {
                     "translation": item,
-                    "url": f"{page_url}?traduction={item.pk}",
+                    "url": f"{page_url}{_query(traduction=item.pk, fiche=focus_id)}",
                     "current": item == translation,
                 }
                 for item in translations
             ],
-            "hide_url": f"{page_url}?traduction={TRANSLATION_HIDDEN}",
-            "choice": choice,
-            "contents": contents,
-            "previous": neighbours.get("previous"),
-            "following": neighbours.get("following"),
+            "hide_url": f"{page_url}{_query(traduction=TRANSLATION_HIDDEN, fiche=focus_id)}",
+            "contents": _contents(plan, page, work_id, suffix),
+            "previous": around.get("previous"),
+            "following": around.get("following"),
             "goto": request.GET.get("aller", ""),
             "goto_missing": bool(goto),
         },

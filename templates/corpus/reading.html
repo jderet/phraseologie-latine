@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n corpus_tags %}
+{% load i18n static corpus_tags %}
 
 {% block title %}{% if label %}{{ label }} · {% endif %}{{ work.title }} · {{ block.super }}{% endblock %}
 
@@ -21,7 +21,7 @@
       </p>
       {% endif %}
       <form class="reading-goto" method="get" action="{% url 'corpus:reading' work.cts_id %}">
-        {% if choice %}<input type="hidden" name="traduction" value="{{ choice }}">{% endif %}
+        {% for name, value in keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
         <label for="reading-goto">{% translate "Aller au passage" %}</label>
         <input id="reading-goto" name="aller" value="{{ goto }}" size="8">
         <button type="submit" class="button-quiet">{% translate "Aller" %}</button>
@@ -31,6 +31,47 @@
       Aucun passage « {{ reference }} » dans cette édition.
     {% endblocktranslate %}</p>{% endif %}
 
+    {% if focus %}
+    <p class="notice reading-focus" role="status">
+      {% blocktranslate trimmed with unit=focus.reference_form count counter=neighbours.total %}
+        Seule la fiche « {{ unit }} » est soulignée : {{ counter }} occurrence dans l’œuvre.
+      {% plural %}
+        Seule la fiche « {{ unit }} » est soulignée : {{ counter }} occurrences dans l’œuvre.
+      {% endblocktranslate %}
+      {% if neighbours.previous_url %}<a href="{{ neighbours.previous_url }}">← {% translate "occurrence précédente" %}</a>{% endif %}
+      {% if neighbours.following_url %}<a href="{{ neighbours.following_url }}">{% translate "occurrence suivante" %} →</a>{% endif %}
+      <a href="{{ unfocus_url }}">{% translate "Souligner toutes les fiches" %}</a>
+    </p>
+    {% endif %}
+
+    <details class="reading-filters">
+      <summary>{% translate "Phraséologie soulignée" %}{% if not filters.is_default %} <span class="badge">{% translate "réglages personnels" %}</span>{% endif %}</summary>
+      <form method="get" action="{{ page_url }}" class="reading-filter-form">
+        <input type="hidden" name="filtres" value="1">
+        {% for name, value in keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+        <fieldset>
+          <legend>{% translate "Attestations" %}</legend>
+          {% for value, choice_label in status_choices %}<label><input type="checkbox" name="statut" value="{{ value }}"{% if value in filters.statuses %} checked{% endif %}> <span class="swatch s-{{ value }}"></span> {{ choice_label }}</label>{% endfor %}
+        </fieldset>
+        <fieldset>
+          <legend>{% translate "Types" %} <span class="muted">{% translate "(aucune case : tous)" %}</span></legend>
+          {% for value, choice_label in kind_choices %}<label class="k-{{ value }}"><input type="checkbox" name="type" value="{{ value }}"{% if value in filters.kinds %} checked{% endif %}> <span class="swatch"></span> {{ choice_label }}</label>{% endfor %}
+        </fieldset>
+        <fieldset>
+          <legend>{% translate "Marques d’usage" %} <span class="muted">{% translate "(aucune case : toutes les fiches)" %}</span></legend>
+          {% for value, choice_label in mark_choices %}<label><input type="checkbox" name="marque" value="{{ value }}"{% if value in filters.marks %} checked{% endif %}> {{ choice_label }}</label>{% endfor %}
+        </fieldset>
+        <fieldset>
+          <legend>{% translate "Registres" %} <span class="muted">{% translate "(aucune case : tous)" %}</span></legend>
+          {% for value, choice_label in register_choices %}<label><input type="checkbox" name="registre" value="{{ value }}"{% if value in filters.registers %} checked{% endif %}> {{ choice_label }}</label>{% endfor %}
+        </fieldset>
+        <p class="actions">
+          <button type="submit" class="button">{% translate "Appliquer" %}</button>
+          <a href="{{ reset_url }}">{% translate "Revenir aux réglages par défaut" %}</a>
+        </p>
+      </form>
+    </details>
+
     {% if contents %}
     <details class="reading-contents">
       <summary>{% translate "Sommaire" %}</summary>
@@ -38,6 +79,13 @@
         {% for entry in contents %}<li><a href="{{ entry.url }}"{% if entry.current %} aria-current="page"{% endif %}>{{ entry.label }}</a></li>{% endfor %}
       </ol>
     </details>
+    {% endif %}
+
+    {% if page_units %}
+    <ul class="reading-legend" aria-label="{% translate 'Légende' %}">
+      {% for value, kind_label in legend_kinds %}<li class="k-{{ value }}"><span class="swatch"></span> {{ kind_label }}</li>{% endfor %}
+      {% for value, status_label in status_choices %}{% if value in filters.statuses %}<li><span class="swatch s-{{ value }}"></span> {{ status_label }}</li>{% endif %}{% endfor %}
+    </ul>
     {% endif %}
     {% include "corpus/reading_pager.html" %}
   </header>
@@ -49,7 +97,7 @@
         {% for item in row.items %}
         {% for heading in item.headings %}<h2 class="reading-heading">{{ heading }}</h2>{% endfor %}
         {% if item.passage.heading %}<p class="passage-heading">{{ item.passage.heading }}</p>{% endif %}
-        <span class="reading-passage" id="p-{{ item.passage.reference }}"><a class="ref{% if item.quiet %} is-quiet{% endif %}" href="{{ work_url }}{{ item.passage.reference|urlencode }}/">{{ item.number }}</a>{% if item.tokens %}{% render_tokens item.tokens %}{% else %}{{ item.passage.text }} {% endif %}</span>
+        <span class="reading-passage" id="p-{{ item.passage.reference }}"><a class="ref{% if item.quiet %} is-quiet{% endif %}" href="{{ work_url }}{{ item.passage.reference|urlencode }}/">{{ item.number }}</a>{% if item.tokens %}{% render_words item.tokens marks %}{% else %}{{ item.passage.text }} {% endif %}</span>
         {% endfor %}
       </div>
       {% if translation %}
@@ -60,6 +108,25 @@
   </div>
 
   {% include "corpus/reading_pager.html" %}
+
+  <section class="reading-units" aria-labelledby="reading-units-title">
+    <h2 id="reading-units-title">{% translate "Phraséologie de cette page" %}</h2>
+    {% if page_units %}
+    <ul>
+      {% for entry in page_units %}
+      <li class="k-{{ entry.unit.kind|default:'none' }}">
+        <span class="swatch"></span>
+        <a href="{{ entry.unit.get_absolute_url }}" lang="la">{{ entry.unit.reference_form }}</a>
+        <span class="muted">{{ entry.unit.get_kind_display|default:"" }}</span>
+        · {% for occurrence in entry.occurrences %}<a href="#p-{{ occurrence.reference }}">{{ occurrence.reference }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        {% if not focus %}· <a class="small-link" href="{{ entry.focus_url }}">{% translate "ne souligner que cette fiche" %}</a>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">{% translate "Aucune attestation sur cette page avec ces réglages." %}</p>
+    {% endif %}
+  </section>
 
   <dl class="facts">
     <div>
@@ -76,4 +143,5 @@
     {% endif %}
   </dl>
 </article>
+<script src="{% static 'js/reading.js' %}" defer></script>
 {% endblock %}

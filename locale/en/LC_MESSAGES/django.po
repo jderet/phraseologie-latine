@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 17:12+0200\n"
+"POT-Creation-Date: 2026-09-14 17:26+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -1856,7 +1856,7 @@ msgstr "Sense"
 msgid "Une définition courte ; les équivalents modernes s’ajoutent ensuite."
 msgstr "A short definition; modern equivalents are added afterwards."
 
-#: phraseology/forms.py:57
+#: phraseology/forms.py:57 templates/corpus/reading.html:61
 msgid "Marques d’usage"
 msgstr "Usage labels"
 
@@ -2592,6 +2592,22 @@ msgstr "form of a unit"
 msgid "formes des unités"
 msgstr "forms of units"
 
+#: phraseology/reading.py:21 phraseology/views.py:723
+msgid "validées"
+msgstr "validated"
+
+#: phraseology/reading.py:22
+msgid "proposées"
+msgstr "proposed"
+
+#: phraseology/reading.py:23 phraseology/views.py:798
+msgid "repérées automatiquement"
+msgstr "found automatically"
+
+#: phraseology/reading.py:232
+msgid "sans type"
+msgstr "no type"
+
 #: phraseology/schema.py:50
 msgid ""
 "Les relations doivent former un seul ensemble, à partir d’un seul lemme."
@@ -2888,10 +2904,6 @@ msgstr "The attestation is validated."
 msgid "L’attestation est rejetée."
 msgstr "The attestation is rejected."
 
-#: phraseology/views.py:723
-msgid "validées"
-msgstr "validated"
-
 #: phraseology/views.py:724
 msgid "rejetées"
 msgstr "rejected"
@@ -2903,10 +2915,6 @@ msgstr "all"
 #: phraseology/views.py:729
 msgid "hors du noyau"
 msgstr "outside the core"
-
-#: phraseology/views.py:798
-msgid "repérées automatiquement"
-msgstr "found automatically"
 
 #: phraseology/views.py:846
 #, python-format
@@ -3362,7 +3370,7 @@ msgstr "Main navigation"
 msgid "Recherche"
 msgstr "Search"
 
-#: templates/base.html:18 templates/corpus/reading.html:71
+#: templates/base.html:18 templates/corpus/reading.html:138
 #: templates/justifications/challenge_list.html:8
 #: templates/translations/source_list.html:8 translations/apps.py:7
 msgid "Traduction"
@@ -3773,8 +3781,9 @@ msgstr ""
 "consent:"
 
 #: templates/core/privacy.html:106
-msgid "garder votre connexion, deux semaines au plus ;"
-msgstr "keeping you logged in, for two weeks at most;"
+msgid ""
+"garder votre connexion et vos réglages de lecture, deux semaines au plus ;"
+msgstr "keep you logged in and remember your reading settings, for two weeks at most;"
 
 #: templates/core/privacy.html:107
 msgid "protéger les formulaires contre les envois frauduleux ;"
@@ -4052,7 +4061,7 @@ msgstr ""
 "The translation is only divided more broadly: here is the whole of passage "
 "%(reference)s."
 
-#: templates/corpus/passage.html:24 templates/corpus/reading.html:72
+#: templates/corpus/passage.html:24 templates/corpus/reading.html:139
 #, python-format
 msgid "Traduction du domaine public ; numérisation %(source)s, %(license)s."
 msgstr "Public-domain translation; digitization %(source)s, %(license)s."
@@ -4065,11 +4074,11 @@ msgstr "Neighboring passages"
 msgid "Identifiant"
 msgstr "Identifier"
 
-#: templates/corpus/passage.html:41 templates/corpus/reading.html:66
+#: templates/corpus/passage.html:41 templates/corpus/reading.html:133
 msgid "Source"
 msgstr "Source"
 
-#: templates/corpus/passage.html:42 templates/corpus/reading.html:67
+#: templates/corpus/passage.html:42 templates/corpus/reading.html:134
 #: templates/corpus/work.html:50 translations/models.py:277
 #: translations/models.py:313
 msgid "version"
@@ -4101,8 +4110,84 @@ msgid "Aucun passage « %(reference)s » dans cette édition."
 msgstr "No passage “%(reference)s” in this edition."
 
 #: templates/corpus/reading.html:36
+#, python-format
+msgid ""
+"Seule la fiche « %(unit)s » est soulignée : %(counter)s occurrence dans "
+"l’œuvre."
+msgid_plural ""
+"Seule la fiche « %(unit)s » est soulignée : %(counter)s occurrences dans "
+"l’œuvre."
+msgstr[0] "Only the entry “%(unit)s” is underlined: %(counter)s occurrence in the work."
+msgstr[1] "Only the entry “%(unit)s” is underlined: %(counter)s occurrences in the work."
+
+#: templates/corpus/reading.html:41
+msgid "occurrence précédente"
+msgstr "previous occurrence"
+
+#: templates/corpus/reading.html:42
+msgid "occurrence suivante"
+msgstr "next occurrence"
+
+#: templates/corpus/reading.html:43
+msgid "Souligner toutes les fiches"
+msgstr "Underline every entry"
+
+#: templates/corpus/reading.html:48
+msgid "Phraséologie soulignée"
+msgstr "Underlined phraseology"
+
+#: templates/corpus/reading.html:48
+msgid "réglages personnels"
+msgstr "your settings"
+
+#: templates/corpus/reading.html:53 templates/phraseology/unit_detail.html:161
+#: templates/phraseology/unit_survey.html:63
+msgid "Attestations"
+msgstr "Attestations"
+
+#: templates/corpus/reading.html:57
+msgid "Types"
+msgstr "Types"
+
+#: templates/corpus/reading.html:57 templates/corpus/reading.html:65
+msgid "(aucune case : tous)"
+msgstr "(no box ticked: all)"
+
+#: templates/corpus/reading.html:61
+msgid "(aucune case : toutes les fiches)"
+msgstr "(no box ticked: every entry)"
+
+#: templates/corpus/reading.html:65
+msgid "Registres"
+msgstr "Registers"
+
+#: templates/corpus/reading.html:69
+msgid "Appliquer"
+msgstr "Apply"
+
+#: templates/corpus/reading.html:70
+msgid "Revenir aux réglages par défaut"
+msgstr "Back to the default settings"
+
+#: templates/corpus/reading.html:77
 msgid "Sommaire"
 msgstr "Contents"
+
+#: templates/corpus/reading.html:85
+msgid "Légende"
+msgstr "Key"
+
+#: templates/corpus/reading.html:113
+msgid "Phraséologie de cette page"
+msgstr "Phraseology of this page"
+
+#: templates/corpus/reading.html:122
+msgid "ne souligner que cette fiche"
+msgstr "underline this entry only"
+
+#: templates/corpus/reading.html:127
+msgid "Aucune attestation sur cette page avec ces réglages."
+msgstr "No attestation on this page with these settings."
 
 #: templates/corpus/reading_pager.html:2
 msgid "Pages de lecture"
@@ -5320,11 +5405,6 @@ msgstr "Realizations"
 #: templates/phraseology/unit_detail.html:152
 msgid "Aucune réalisation indiquée."
 msgstr "No realization given."
-
-#: templates/phraseology/unit_detail.html:161
-#: templates/phraseology/unit_survey.html:63
-msgid "Attestations"
-msgstr "Attestations"
 
 #: templates/phraseology/unit_detail.html:173
 msgid "valider"
