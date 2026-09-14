@@ -36,6 +36,7 @@ python manage.py analyze_corpus --make-default   # analyse LatinCy du corpus (su
 python manage.py extract_candidates        # candidats de la phraséologie (sur le Mac, quelques secondes)
 python manage.py refresh_units             # fréquences et formes des fiches, après une nouvelle couche d'analyse
 python manage.py compute_collocations      # profils de collocations (sur le Mac, après une analyse)
+python manage.py import_translations       # traductions du domaine public en regard (sur le Mac)
 ```
 
 ## Architecture

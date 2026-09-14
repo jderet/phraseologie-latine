@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc><titleStmt><title>Books</title></titleStmt></fileDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="translation" n="urn:cts:latinLit:phi0474.phi055.perseus-eng9" xml:lang="eng">
+        <div type="textpart" subtype="book" n="1">
+          <p><milestone unit="section" n="1"/>First book.</p>
+        </div>
+        <div type="textpart" subtype="book" n="2">
+          <p><milestone unit="section" n="1"/>Second book.</p>
+        </div>
+        <div type="textpart" subtype="book" n="1">
+          <p><milestone unit="section" n="1"/>Third book, numbered one again.</p>
+        </div>
+      </div>
+    </body>
+  </text>
+</TEI>

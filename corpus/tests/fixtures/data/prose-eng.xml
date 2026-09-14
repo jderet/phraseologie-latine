@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>On Duties</title>
+        <editor role="translator">Walter Miller</editor>
+      </titleStmt>
+    </fileDesc>
+    <encodingDesc>
+      <refsDecl n="CTS">
+        <cRefPattern n="section" matchPattern="(\w+).(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div[@n='$1']/tei:div[@n='$2'])"/>
+        <cRefPattern n="book" matchPattern="(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div[@n='$1'])"/>
+      </refsDecl>
+    </encodingDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="translation" n="urn:cts:latinLit:phi0474.phi055.perseus-eng1" xml:lang="eng">
+        <div type="textpart" subtype="book" n="1">
+          <milestone unit="chapter" n="1"/>
+          <p><milestone unit="section" n="1"/>My dear son Marcus, you have now been studying a full year under Cratippus.
+          <milestone unit="section" n="2"/>He took counsel, as he says, of virtue.</p>
+        </div>
+        <div type="textpart" subtype="book" n="2">
+          <p><milestone unit="section" n="1"/>Why say more? Arms and the man I sing.</p>
+        </div>
+      </div>
+    </body>
+  </text>
+</TEI>

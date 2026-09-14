@@ -149,9 +149,12 @@ class TextBuilder:
     def passage(self, reference, heading=""):
         return _passage("".join(self._parts), self._foreign_spans, reference, heading)
 
-    def milestone_passages(self, references, heading=""):
-        """Passages cut at the milestones of the first unit met; text before joins the first."""
-        unit = self.milestones[0][1]
+    def milestone_passages(self, references, heading="", unit=""):
+        """Passages cut at the milestones of ``unit``, or of the first unit met.
+
+        The text before the first milestone joins the first passage.
+        """
+        unit = unit or self.milestones[0][1]
         cuts = [(offset, number) for offset, kind, number in self.milestones if kind == unit]
         text = "".join(self._parts)
         passages = []
@@ -215,12 +218,23 @@ def _numbered_segments(element):
     return segments
 
 
-def _textpart_passages(edition, wrappers, sections=False, milestones=False):
+def _textpart_passages(
+    edition,
+    wrappers,
+    sections=False,
+    milestones=False,
+    milestone_unit="",
+    uncited=(),
+    renumber=False,
+):
     """Passages of a prose edition: its deepest textpart divisions.
 
     ``wrappers`` is the number of upper division levels that the CTS citation skips. With
     ``sections``, a division whose text is in numbered <seg> elements gives one passage per
-    segment; with ``milestones``, a division is cut at its numbered milestones.
+    segment; with ``milestones``, a division is cut at its numbered milestones, of
+    ``milestone_unit`` if given. Divisions whose subtype is in ``uncited`` are left out of
+    references. With ``renumber``, a division numbered like an earlier sibling follows the
+    previous number (a third book numbered 1 again, for example).
     """
     passages = []
     scheme = []
@@ -237,8 +251,12 @@ def _textpart_passages(edition, wrappers, sections=False, milestones=False):
             return
         builder = TextBuilder()
         builder.add_element(element)
+        if milestone_unit and not any(
+            kind == milestone_unit for _o, kind, _n in builder.milestones
+        ):
+            builder.milestones = []
         if milestones and builder.milestones:
-            unit, cut = builder.milestone_passages(references, heading)
+            unit, cut = builder.milestone_passages(references, heading, milestone_unit)
             scheme[:] = scheme or [*subtypes, unit]
             passages.extend(cut)
             return
@@ -249,20 +267,24 @@ def _textpart_passages(edition, wrappers, sections=False, milestones=False):
         heading = _join(heading, _headings(element))
         divisions = _textparts(element)
         if not divisions:
-            if depth:
+            # Without divisions, a text cut at milestones is cited by them alone.
+            if depth or milestone_unit:
                 leaf(element, references, subtypes, heading)
             return
         first = True
         previous = None
+        seen = set()
         for division in divisions:
             if _is_editorial(division):
                 continue
             number = division.get("n")
+            repeated = renumber and number in seen
             # A division left unnumbered between numbered ones follows the previous number.
-            if not number and depth >= wrappers and previous and previous.isdigit():
+            if (not number or repeated) and depth >= wrappers and previous and previous.isdigit():
                 number = str(int(previous) + 1)
             previous = number
-            cited = depth >= wrappers and bool(number)
+            seen.add(number)
+            cited = depth >= wrappers and bool(number) and _subtype(division).lower() not in uncited
             walk(
                 division,
                 depth + 1,
@@ -365,6 +387,39 @@ def read_edition(path, exclude=""):
         excluded = re.compile(exclude)
         passages = [p for p in passages if not excluded.fullmatch(p.reference)]
     return ParsedEdition(urn, scheme, passages)
+
+
+def read_translation(path, milestone="", uncited=(), exclude=""):
+    """Read a Perseus translation, cut as its citation patterns say, or at ``milestone``s.
+
+    ``uncited`` lists division subtypes left out of references (a chapter grouping sections
+    numbered through a book, for example).
+    """
+    root = _parse(path)
+    body = f"{TEI}text/{TEI}body/{TEI}div"
+    division = root.find(f"{body}[@type='translation']")
+    if division is None:
+        division = root.find(f"{body}[@type='edition']")
+    if division is None:
+        # Some older files put the text right in the body.
+        division = next((element for element in root.iter() if _name(element) == "body"), None)
+    if division is None:
+        raise PerseusError(f'{Path(path).name}: no <div type="translation">')
+    if milestone:
+        passages, scheme = _textpart_passages(
+            division,
+            0,
+            milestones=True,
+            milestone_unit=milestone,
+            uncited=uncited,
+            renumber=True,
+        )
+    else:
+        passages, scheme = _cited_passages(root, division)
+    if exclude:
+        excluded = re.compile(exclude)
+        passages = [p for p in passages if not excluded.fullmatch(p.reference)]
+    return ParsedEdition(division.get("n", ""), scheme, passages)
 
 
 def _cited_passages(root, edition):

@@ -15,6 +15,12 @@ python manage.py import_perseus --work phi0474.phi055   # une seule œuvre
 
 La commande s'arrête avec un message qui indique le fichier, la ligne et le problème si une valeur n'est pas permise.
 
+`translations.csv` décrit les traductions du domaine public affichées en regard du latin :
+
+```bash
+python manage.py import_translations   # importe les traductions (sur le Mac)
+```
+
 ## Colonnes
 
 `authors.csv`
@@ -41,6 +47,21 @@ La commande s'arrête avec un message qui indique le fichier, la ligne et le pro
 | `is_core` | `oui` si l'œuvre fait partie du noyau (attestations vérifiées par des personnes) |
 | `is_fragmentary` | `oui` si le texte est fragmentaire ou lacunaire |
 | `exclude` | expression régulière : les passages dont la référence y correspond entièrement sont écartés |
+
+`translations.csv`
+
+| Colonne | Contenu |
+|---|---|
+| `work` | identifiant de l'œuvre (`phi0474.phi055`) |
+| `language` | langue de la traduction (`en`) |
+| `file` | chemin du fichier TEI de la traduction dans le clone Perseus |
+| `translator` | nom du traducteur |
+| `died`, `published` | année de mort du traducteur, année de parution de la traduction |
+| `milestone` | vide si le fichier est découpé selon ses motifs de citation ; sinon l'unité des jalons où le couper (`section`) |
+| `uncited` | niveaux de divisions à laisser hors des références, séparés par `|` (`chapter`, quand les sections sont numérotées par livre) |
+| `exclude` | expression régulière : les parties dont la référence y correspond entièrement sont écartées |
+
+Une traduction n'est importée que si elle est du domaine public en Europe : traducteur mort depuis plus de 70 ans, ou, si la date de mort est inconnue, parution depuis au moins 170 ans. Chaque partie s'affiche sous le passage latin de même référence, ou sous tous les passages qu'elle couvre quand elle est découpée plus largement (un chapitre pour plusieurs sections).
 
 ## Valeurs permises
 
@@ -69,3 +90,11 @@ Le reste de la latinité classique, du latin archaïque à la fin du IIe siècle
 - **Laissés de côté pour l'instant** : Caton, *De agri cultura* (deux chapitres 1 dans le fichier Perseus) ; *Appendix Vergiliana* (fichiers sans divisions lisibles, textes apocryphes) ; Auguste (absent de Perseus).
 - **Salluste, *Historiae*** : le fichier est désormais lu section par section. L'édition déjà importée reste telle quelle (une édition importée est figée) ; le changement vaudra à la prochaine version de Perseus.
 - **Dates des auteurs** : approximatives quand elles sont incertaines (Phèdre, Juvénal, Suétone) ; vides quand elles sont inconnues.
+
+## Choix faits pour les traductions en regard (14 septembre 2026, à relire)
+
+Traductions anglaises numérisées par Perseus, pour le noyau : 44 œuvres.
+
+- **Retenues** : Cicéron, discours (C. D. Yonge, mort en 1891), *De senectute*, *Laelius* et *De divinatione* (W. A. Falconer, 1927), *De officiis* (W. Miller, 1949) ; César, *Guerre des Gaules* (W. A. McDevitte, parution 1851, date de mort inconnue) et *Guerre civile* (A. G. Peskett, 1931) ; Salluste (J. S. Watson, 1884) ; Tite-Live (W. M. Roberts, 1927 ; environ 30 % des passages) ; Sénèque, *Apocolocyntosis* (W. H. D. Rouse, 1950).
+- **Laissées de côté** : lettres de Cicéron (E. S. Shuckburgh), dont les fichiers ne sont pas découpés par lettre et section ; *Pro M. Aemilio Scauro* (fichier illisible) ; *Guerre civile* de W. Duncan (une traduction par œuvre suffit). Pline le Jeune n'a pas de traduction dans Perseus.
+- **Corrections** : *De senectute* 35 est numérotée deux fois dans le fichier (écartée) ; le livre III du *De officiis* y est numéroté 1 (renuméroté 3 à la lecture).

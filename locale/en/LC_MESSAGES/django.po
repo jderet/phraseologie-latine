@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 12:21+0200\n"
+"POT-Creation-Date: 2026-09-14 12:33+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -206,7 +206,7 @@ msgstr "“%(value)s”: write oui or non (column %(column)s)"
 msgid "« %(value)s » n’est pas permis dans la colonne %(column)s (%(allowed)s)"
 msgstr "“%(value)s” is not allowed in column %(column)s (%(allowed)s)"
 
-#: corpus/catalog.py:145
+#: corpus/catalog.py:145 corpus/translations.py:82
 #, python-format
 msgid "fichier introuvable : %(path)s"
 msgstr "file not found: %(path)s"
@@ -258,7 +258,7 @@ msgstr "Search as"
 msgid "forme"
 msgstr "form"
 
-#: corpus/forms.py:27 corpus/forms.py:177 corpus/models.py:286
+#: corpus/forms.py:27 corpus/forms.py:177 corpus/models.py:354
 #: phraseology/models.py:765
 msgid "lemme"
 msgstr "lemma"
@@ -420,6 +420,7 @@ msgid "Catalogue mis à jour : %(count)d œuvres."
 msgstr "Catalogue updated: %(count)d works."
 
 #: corpus/management/commands/import_perseus.py:60
+#: corpus/management/commands/import_translations.py:37
 #, python-format
 msgid "Version du dépôt Perseus illisible dans %(path)s."
 msgstr "Cannot read the version of the Perseus repository in %(path)s."
@@ -443,6 +444,16 @@ msgstr "%(work)s: %(passages)d passages, %(tokens)d words imported"
 #, python-format
 msgid "%(work)s : déjà importée pour cette version de Perseus"
 msgstr "%(work)s: already imported for this version of Perseus"
+
+#: corpus/management/commands/import_translations.py:52
+#, python-format
+msgid "%(work)s, %(translator)s : %(parts)d parties importées"
+msgstr "%(work)s, %(translator)s: %(parts)d parts imported"
+
+#: corpus/management/commands/import_translations.py:56
+#, python-format
+msgid "%(work)s, %(translator)s : déjà importée"
+msgstr "%(work)s, %(translator)s: already imported"
 
 #: corpus/models.py:17
 msgid "latin archaïque"
@@ -644,7 +655,7 @@ msgstr "Attestations in the core are checked by people."
 msgid "fragmentaire"
 msgstr "fragmentary"
 
-#: corpus/models.py:99 corpus/models.py:123
+#: corpus/models.py:99 corpus/models.py:123 corpus/models.py:238
 msgid "œuvre"
 msgstr "work"
 
@@ -652,15 +663,15 @@ msgstr "work"
 msgid "œuvres"
 msgstr "works"
 
-#: corpus/models.py:126
+#: corpus/models.py:126 corpus/models.py:244
 msgid "source"
 msgstr "source"
 
-#: corpus/models.py:127
+#: corpus/models.py:127 corpus/models.py:245
 msgid "fichier"
 msgstr "file"
 
-#: corpus/models.py:129
+#: corpus/models.py:129 corpus/models.py:246
 msgid "version de la source"
 msgstr "source version"
 
@@ -668,7 +679,7 @@ msgstr "source version"
 msgid "Commit Git du dépôt importé."
 msgstr "Git commit of the imported repository."
 
-#: corpus/models.py:131 translations/models.py:80
+#: corpus/models.py:131 corpus/models.py:247 translations/models.py:80
 msgid "licence"
 msgstr "license"
 
@@ -676,7 +687,7 @@ msgstr "license"
 msgid "schéma de citation"
 msgstr "citation scheme"
 
-#: corpus/models.py:133
+#: corpus/models.py:133 corpus/models.py:248
 msgid "importée le"
 msgstr "imported on"
 
@@ -700,15 +711,16 @@ msgstr "edition"
 msgid "éditions"
 msgstr "editions"
 
-#: corpus/models.py:161
+#: corpus/models.py:161 corpus/models.py:279
 msgid "ordre"
 msgstr "order"
 
-#: corpus/models.py:162 templates/translations/project_compare.html:22
+#: corpus/models.py:162 corpus/models.py:280
+#: templates/translations/project_compare.html:22
 msgid "référence"
 msgstr "reference"
 
-#: corpus/models.py:164
+#: corpus/models.py:164 corpus/models.py:281
 msgid "texte"
 msgstr "text"
 
@@ -745,7 +757,7 @@ msgstr "punctuation and space after"
 msgid "mot étranger"
 msgstr "foreign word"
 
-#: corpus/models.py:213 corpus/models.py:282
+#: corpus/models.py:213 corpus/models.py:350
 msgid "mot"
 msgstr "word"
 
@@ -753,103 +765,144 @@ msgstr "word"
 msgid "mots"
 msgstr "words"
 
-#: corpus/models.py:233
+#: corpus/models.py:240 phraseology/models.py:199 phraseology/models.py:555
+#: translations/models.py:71
+msgid "langue"
+msgstr "language"
+
+#: corpus/models.py:241
+msgid "traducteur"
+msgstr "translator"
+
+#: corpus/models.py:242
+msgid "mort du traducteur"
+msgstr "death of the translator"
+
+#: corpus/models.py:243
+msgid "parution"
+msgstr "publication"
+
+#: corpus/models.py:249
+msgid "traduction en usage"
+msgstr "translation in use"
+
+#: corpus/models.py:252
+msgid "traduction en regard"
+msgstr "parallel translation"
+
+#: corpus/models.py:253
+msgid "traductions en regard"
+msgstr "parallel translations"
+
+#: corpus/models.py:277
+msgid "traduction"
+msgstr "translation"
+
+#: corpus/models.py:284
+msgid "partie d’une traduction"
+msgstr "part of a translation"
+
+#: corpus/models.py:285
+msgid "parties des traductions"
+msgstr "parts of translations"
+
+#: corpus/models.py:301
 msgid "outil"
 msgstr "tool"
 
-#: corpus/models.py:234
+#: corpus/models.py:302
 msgid "version de l’outil"
 msgstr "tool version"
 
-#: corpus/models.py:235
+#: corpus/models.py:303
 msgid "détails"
 msgstr "details"
 
-#: corpus/models.py:236 justifications/models.py:123 phraseology/models.py:87
+#: corpus/models.py:304 justifications/models.py:123 phraseology/models.py:87
 msgid "créée le"
 msgstr "created on"
 
-#: corpus/models.py:238
+#: corpus/models.py:306
 msgid "éditions analysées"
 msgstr "analyzed editions"
 
-#: corpus/models.py:241
+#: corpus/models.py:309
 msgid "couche par défaut"
 msgstr "default layer"
 
-#: corpus/models.py:243
+#: corpus/models.py:311
 msgid "Couche utilisée par la recherche par lemme."
 msgstr "Layer used by lemma search."
 
-#: corpus/models.py:247 phraseology/models.py:645 phraseology/models.py:723
+#: corpus/models.py:315 phraseology/models.py:645 phraseology/models.py:723
 msgid "couche d’analyse"
 msgstr "analysis layer"
 
-#: corpus/models.py:248
+#: corpus/models.py:316
 msgid "couches d’analyse"
 msgstr "analysis layers"
 
-#: corpus/models.py:274
+#: corpus/models.py:342
 msgid "import vérifié"
 msgstr "verified import"
 
-#: corpus/models.py:275
+#: corpus/models.py:343
 msgid "automatique"
 msgstr "automatic"
 
-#: corpus/models.py:276
+#: corpus/models.py:344
 msgid "correction humaine"
 msgstr "human correction"
 
-#: corpus/models.py:279
+#: corpus/models.py:347
 msgid "couche"
 msgstr "layer"
 
-#: corpus/models.py:284
+#: corpus/models.py:352
 msgid "partie du mot"
 msgstr "part of the word"
 
-#: corpus/models.py:285
+#: corpus/models.py:353
 msgid "texte analysé"
 msgstr "analyzed text"
 
-#: corpus/models.py:287
+#: corpus/models.py:355
 msgid "lemme normalisé"
 msgstr "normalized lemma"
 
-#: corpus/models.py:288
+#: corpus/models.py:356
 msgid "catégorie"
 msgstr "part of speech"
 
-#: corpus/models.py:289
+#: corpus/models.py:357
 msgid "traits morphologiques"
 msgstr "morphological features"
 
-#: corpus/models.py:297
+#: corpus/models.py:365
 msgid "tête syntaxique"
 msgstr "syntactic head"
 
-#: corpus/models.py:299
+#: corpus/models.py:367
 msgid "partie de la tête"
 msgstr "part of the head"
 
-#: corpus/models.py:300
+#: corpus/models.py:368
 msgid "relation syntaxique"
 msgstr "syntactic relation"
 
-#: corpus/models.py:301 translations/models.py:159
+#: corpus/models.py:369 translations/models.py:159
 msgid "phrase"
 msgstr "sentence"
 
-#: corpus/models.py:303 phraseology/models.py:358
+#: corpus/models.py:371 phraseology/models.py:358
 msgid "origine"
 msgstr "origin"
 
-#: corpus/models.py:307
+#: corpus/models.py:375
 msgid "analyse d’un mot"
 msgstr "word analysis"
 
-#: corpus/models.py:308
+#: corpus/models.py:376
 msgid "analyses des mots"
 msgstr "word analyses"
 
@@ -865,6 +918,57 @@ msgstr "poetry"
 #, python-format
 msgid "%(year)d av. J.-C."
 msgstr "%(year)d BC"
+
+#: corpus/translations.py:70
+#, python-format
+msgid "%(where)s : « %(value)s » n’est pas une année (colonne %(column)s)"
+msgstr "%(where)s: “%(value)s” is not a year (column %(column)s)"
+
+#: corpus/translations.py:89
+#, python-format
+msgid "translations.csv : colonnes manquantes : %(columns)s"
+msgstr "translations.csv: missing columns: %(columns)s"
+
+#: corpus/translations.py:94
+#, python-format
+msgid "translations.csv, ligne %(line)d"
+msgstr "translations.csv, line %(line)d"
+
+#: corpus/translations.py:110
+#, python-format
+msgid "%(where)s : la colonne « %(column)s » est vide"
+msgstr "%(where)s: the column “%(column)s” is empty"
+
+#: corpus/translations.py:116
+#, python-format
+msgid "%(where)s : chemin de fichier non valable : %(path)s"
+msgstr "%(where)s: invalid file path: %(path)s"
+
+#: corpus/translations.py:124
+#, python-format
+msgid "%(where)s : expression d’exclusion non valable"
+msgstr "%(where)s: invalid exclusion pattern"
+
+#: corpus/translations.py:129
+#, python-format
+msgid ""
+"%(where)s : %(translator)s n’est pas dans le domaine public (mort depuis "
+"plus de %(years)d ans, ou parution connue depuis %(old)d ans)"
+msgstr "%(where)s: %(translator)s is not in the public domain (dead for more than %(years)d years, or published at least %(old)d years ago)"
+
+#: corpus/translations.py:159
+#, python-format
+msgid "œuvre inconnue : %(work)s"
+msgstr "unknown work: %(work)s"
+
+#: corpus/translations.py:168
+msgid "aucune partie trouvée"
+msgstr "no part found"
+
+#: corpus/translations.py:173
+#, python-format
+msgid "références en double : %(references)s"
+msgstr "duplicate references: %(references)s"
 
 #: justifications/apps.py:7
 #: templates/justifications/justification_detail.html:9
@@ -1929,11 +2033,6 @@ msgstr "withdrawn"
 #: translations/models.py:91
 msgid "ajouté le"
 msgstr "added on"
-
-#: phraseology/models.py:199 phraseology/models.py:555
-#: translations/models.py:71
-msgid "langue"
-msgstr "language"
 
 #: phraseology/models.py:200 phraseology/models.py:556
 msgid "expression"
@@ -3092,19 +3191,36 @@ msgstr "No text imported yet."
 msgid "Poésie : ne fait pas norme pour la prose."
 msgstr "Poetry: no norm for prose."
 
-#: templates/corpus/passage.html:14
+#: templates/corpus/passage.html:16
+#, python-format
+msgid "Traduction de %(name)s"
+msgstr "Translation by %(name)s"
+
+#: templates/corpus/passage.html:19
+#, python-format
+msgid ""
+"La traduction n’est découpée que plus largement : voici tout le passage "
+"%(reference)s."
+msgstr "The translation is only divided more broadly: here is the whole of passage %(reference)s."
+
+#: templates/corpus/passage.html:23
+#, python-format
+msgid "Traduction du domaine public ; numérisation %(source)s, %(license)s."
+msgstr "Public-domain translation; digitization %(source)s, %(license)s."
+
+#: templates/corpus/passage.html:29
 msgid "Passages voisins"
 msgstr "Neighboring passages"
 
-#: templates/corpus/passage.html:21
+#: templates/corpus/passage.html:36
 msgid "Identifiant"
 msgstr "Identifier"
 
-#: templates/corpus/passage.html:25
+#: templates/corpus/passage.html:40
 msgid "Source"
 msgstr "Source"
 
-#: templates/corpus/passage.html:26 templates/corpus/work.html:49
+#: templates/corpus/passage.html:41 templates/corpus/work.html:49
 #: translations/models.py:277 translations/models.py:313
 msgid "version"
 msgstr "version"
@@ -3782,7 +3898,11 @@ msgid ""
 "par force d’association (rapport de vraisemblance) : plus le score est haut, "
 "moins la rencontre doit au hasard. Les paires viennent de l’analyse "
 "automatique du corpus."
-msgstr "The words a lemma is construed with, relation by relation, ranked by strength of association (log-likelihood): the higher the score, the less the pairing owes to chance. The pairs come from the automatic analysis of the corpus."
+msgstr ""
+"The words a lemma is construed with, relation by relation, ranked by "
+"strength of association (log-likelihood): the higher the score, the less the "
+"pairing owes to chance. The pairs come from the automatic analysis of the "
+"corpus."
 
 #: templates/phraseology/collocation_profile.html:22
 msgid "Voir le profil"
@@ -3816,7 +3936,9 @@ msgstr "Occurrences"
 msgid ""
 "Aucune collocation de « %(lemma)s » dans cette partie du corpus (%(part)s, "
 "corpus version %(label)s)."
-msgstr "No collocation of “%(lemma)s” in this part of the corpus (%(part)s, corpus version %(label)s)."
+msgstr ""
+"No collocation of “%(lemma)s” in this part of the corpus (%(part)s, corpus "
+"version %(label)s)."
 
 #: templates/phraseology/negative_search_detail.html:8
 #: templates/phraseology/negative_search_list.html:4

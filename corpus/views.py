@@ -3,7 +3,7 @@ from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
 
 from .forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm, bound_search_form, search_query
-from .models import URN_PREFIX, Author, Edition, Work
+from .models import URN_PREFIX, Author, Edition, ReferenceTranslation, Work
 from .search import author_distribution, build_hits, corpus_version, default_layer
 
 PASSAGES_PER_PAGE = 50
@@ -47,6 +47,12 @@ def passage_detail(request, work_id, reference):
     edition = _current_edition(work_id)
     passage = get_object_or_404(edition.passages, reference=reference)
     neighbours = edition.passages.only("reference", "order")
+    translations = ReferenceTranslation.objects.filter(work=edition.work, is_current=True)
+    beside = [
+        (translation, part)
+        for translation in translations
+        if (part := translation.part_for(passage.reference)) is not None
+    ]
     return render(
         request,
         "corpus/passage.html",
@@ -56,6 +62,7 @@ def passage_detail(request, work_id, reference):
             "passage": passage,
             "tokens": list(passage.tokens.order_by("position")),
             "highlighted": _word_ids(request.GET.get("mots", "")),
+            "translations": beside,
             "previous": neighbours.filter(order__lt=passage.order).order_by("-order").first(),
             "following": neighbours.filter(order__gt=passage.order).order_by("order").first(),
         },

@@ -33,7 +33,7 @@ erDiagram
 - **Mot** (`Token`) : passage, position, forme imprimée, forme normalisée (u/v, i/j, ae, sans macrons, minuscules), ponctuation et espace qui suivent. L'identifiant d'un mot ne change jamais pour une édition donnée.
 - **Couche d'analyse** (`AnalysisLayer`) : outil et version (LatinCy, treebank importé…), date. Relancer un outil crée une nouvelle couche.
 - **Analyse d'un mot** (`TokenAnalysis`) : mot, couche, lemme, catégorie (UPOS), traits morphologiques, tête syntaxique, relation UD, origine (import vérifié, automatique, correction humaine).
-- **Traduction en regard** (`ReferenceTranslation`) : œuvre, langue, traducteur, source, licence (domaine public), alignement par passage.
+- **Traduction en regard** (`ReferenceTranslation`) : œuvre, langue, traducteur, année de sa mort, parution, source, fichier, version de la source, licence de la numérisation. Importée depuis le catalogue `corpus/data/translations.csv`, seulement si elle est du domaine public (traducteur mort depuis plus de 70 ans, ou parution depuis au moins 170 ans si la date de mort est inconnue). Ses parties (`TranslationPart` : ordre, référence, texte) s'alignent sur le latin par référence : la page d'un passage montre la partie de même référence, ou celle, plus large, qui la contient.
 
 ## 2. Phraséologie
 

@@ -227,6 +227,74 @@ class Token(models.Model):
         return self.form
 
 
+class ReferenceTranslation(models.Model):
+    """A public-domain translation shown beside the Latin (Q27), in parts aligned by reference.
+
+    Only translations whose translator died more than 70 years ago are imported; the
+    digitization comes from Perseus under CC BY-SA 4.0.
+    """
+
+    work = models.ForeignKey(
+        Work, on_delete=models.PROTECT, related_name="translations", verbose_name=_("œuvre")
+    )
+    language = models.CharField(_("langue"), max_length=5)
+    translator = models.CharField(_("traducteur"), max_length=200)
+    translator_death_year = models.IntegerField(_("mort du traducteur"), null=True, blank=True)
+    published = models.IntegerField(_("parution"), null=True, blank=True)
+    source = models.CharField(_("source"), max_length=100)
+    source_path = models.CharField(_("fichier"), max_length=255)
+    source_version = models.CharField(_("version de la source"), max_length=40)
+    license = models.CharField(_("licence"), max_length=100)
+    imported_at = models.DateTimeField(_("importée le"), default=timezone.now)
+    is_current = models.BooleanField(_("traduction en usage"), default=True)
+
+    class Meta:
+        verbose_name = _("traduction en regard")
+        verbose_name_plural = _("traductions en regard")
+        ordering = ["work", "language", "translator"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source_path", "source_version"], name="corpus_translation_version"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.work} · {self.translator}"
+
+    def part_for(self, reference):
+        """The part that translates a Latin reference: the one with the longest common start."""
+        levels = reference.split(".")
+        candidates = [".".join(levels[:size]) for size in range(len(levels), 0, -1)]
+        parts = {part.reference: part for part in self.parts.filter(reference__in=candidates)}
+        return next((parts[candidate] for candidate in candidates if candidate in parts), None)
+
+
+class TranslationPart(models.Model):
+    translation = models.ForeignKey(
+        ReferenceTranslation,
+        on_delete=models.CASCADE,
+        related_name="parts",
+        verbose_name=_("traduction"),
+    )
+    order = models.PositiveIntegerField(_("ordre"))
+    reference = models.CharField(_("référence"), max_length=50)
+    text = models.TextField(_("texte"))
+
+    class Meta:
+        verbose_name = _("partie d’une traduction")
+        verbose_name_plural = _("parties des traductions")
+        ordering = ["translation", "order"]
+        constraints = [
+            models.UniqueConstraint(fields=["translation", "order"], name="corpus_part_order"),
+            models.UniqueConstraint(
+                fields=["translation", "reference"], name="corpus_part_reference"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.translation} · {self.reference}"
+
+
 class AnalysisLayer(models.Model):
     """One run of an analysis tool over the corpus; running a tool again creates a new layer."""
 

@@ -11,6 +11,21 @@
   {% if passage.heading %}<p class="passage-heading">{{ passage.heading }}</p>{% endif %}
   <div class="passage-text" lang="la">{% if tokens %}{% render_tokens tokens highlighted %}{% else %}{{ passage.text }}{% endif %}</div>
 
+  {% for translation, part in translations %}
+  <section class="reference-translation" aria-labelledby="translation-{{ translation.pk }}">
+    <h2 id="translation-{{ translation.pk }}">{% blocktranslate trimmed with name=translation.translator %}
+      Traduction de {{ name }}
+    {% endblocktranslate %}{% if translation.published %} <span class="muted">({{ translation.published }})</span>{% endif %}</h2>
+    {% if part.reference != passage.reference %}<p class="note">{% blocktranslate trimmed with reference=part.reference %}
+      La traduction n’est découpée que plus largement : voici tout le passage {{ reference }}.
+    {% endblocktranslate %}</p>{% endif %}
+    <div class="translation-text" lang="{{ translation.language }}">{{ part.text|linebreaksbr }}</div>
+    <p class="note">{% blocktranslate trimmed with source=translation.source license=translation.license %}
+      Traduction du domaine public ; numérisation {{ source }}, {{ license }}.
+    {% endblocktranslate %}</p>
+  </section>
+  {% endfor %}
+
   <nav class="pager" aria-label="{% translate 'Passages voisins' %}">
     {% if previous %}<a rel="prev" href="{% url 'corpus:passage' work.cts_id previous.reference %}">← {{ previous.reference }}</a>{% endif %}
     {% if following %}<a rel="next" href="{% url 'corpus:passage' work.cts_id following.reference %}">{{ following.reference }} →</a>{% endif %}

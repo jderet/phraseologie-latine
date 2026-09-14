@@ -1,0 +1,45 @@
+work,language,file,translator,died,published,milestone,uncited,exclude
+phi0474.phi001,en,data/phi0474/phi001/phi0474.phi001.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi002,en,data/phi0474/phi002/phi0474.phi002.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi003,en,data/phi0474/phi003/phi0474.phi003.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi004,en,data/phi0474/phi004/phi0474.phi004.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi005,en,data/phi0474/phi005/phi0474.phi005.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi006,en,data/phi0474/phi006/phi0474.phi006.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi007,en,data/phi0474/phi007/phi0474.phi007.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi008,en,data/phi0474/phi008/phi0474.phi008.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi009,en,data/phi0474/phi009/phi0474.phi009.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi010,en,data/phi0474/phi010/phi0474.phi010.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi011,en,data/phi0474/phi011/phi0474.phi011.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi012,en,data/phi0474/phi012/phi0474.phi012.perseus-eng3.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi013,en,data/phi0474/phi013/phi0474.phi013.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi014,en,data/phi0474/phi014/phi0474.phi014.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi015,en,data/phi0474/phi015/phi0474.phi015.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi016,en,data/phi0474/phi016/phi0474.phi016.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi017,en,data/phi0474/phi017/phi0474.phi017.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi018,en,data/phi0474/phi018/phi0474.phi018.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi019,en,data/phi0474/phi019/phi0474.phi019.perseus-eng2.xml,Charles Duke Yonge,1891,1856,,,
+phi0474.phi020,en,data/phi0474/phi020/phi0474.phi020.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi021,en,data/phi0474/phi021/phi0474.phi021.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi022,en,data/phi0474/phi022/phi0474.phi022.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi023,en,data/phi0474/phi023/phi0474.phi023.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi024,en,data/phi0474/phi024/phi0474.phi024.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi025,en,data/phi0474/phi025/phi0474.phi025.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi026,en,data/phi0474/phi026/phi0474.phi026.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi027,en,data/phi0474/phi027/phi0474.phi027.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi028,en,data/phi0474/phi028/phi0474.phi028.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi030,en,data/phi0474/phi030/phi0474.phi030.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi031,en,data/phi0474/phi031/phi0474.phi031.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi032,en,data/phi0474/phi032/phi0474.phi032.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi033,en,data/phi0474/phi033/phi0474.phi033.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi034,en,data/phi0474/phi034/phi0474.phi034.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi035,en,data/phi0474/phi035/phi0474.phi035.perseus-eng1.xml,Charles Duke Yonge,1891,1856,section,chapter,(.*\.)?arg
+phi0474.phi051,en,data/phi0474/phi051/phi0474.phi051.perseus-eng1.xml,William Armistead Falconer,1927,1923,section,chapter,(.*\.)?arg|35
+phi0474.phi052,en,data/phi0474/phi052/phi0474.phi052.perseus-eng2.xml,William Armistead Falconer,1927,1923,,,
+phi0474.phi053,en,data/phi0474/phi053/phi0474.phi053.perseus-eng1.xml,William Armistead Falconer,1927,1923,section,chapter,(.*\.)?arg
+phi0474.phi055,en,data/phi0474/phi055/phi0474.phi055.perseus-eng1.xml,Walter Miller,1949,1913,section,chapter,(.*\.)?arg
+phi0448.phi001,en,data/phi0448/phi001/phi0448.phi001.perseus-eng2.xml,William Alexander McDevitte,,1851,,,
+phi0448.phi002,en,data/phi0448/phi002/phi0448.phi002.perseus-eng2.xml,Arthur George Peskett,1931,1914,,,
+phi0631.phi001,en,data/phi0631/phi001/phi0631.phi001.perseus-eng2.xml,John Selby Watson,1884,1852,,,
+phi0631.phi002,en,data/phi0631/phi002/phi0631.phi002.perseus-eng2.xml,John Selby Watson,1884,1852,,,
+phi0914.phi001,en,data/phi0914/phi001/phi0914.phi001.perseus-eng3.xml,Rev. Canon Roberts,1927,1912,,,
+phi1017.phi011,en,data/phi1017/phi011/phi1017.phi011.perseus-eng2.xml,William Henry Denham Rouse,1950,1913,,,

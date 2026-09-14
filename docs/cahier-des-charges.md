@@ -89,7 +89,7 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 - Graphie de l'édition conservée ; recherche sur une forme normalisée (u/v, i/j, ae/æ, macrons…) (Q24).
 - Citation par référence usuelle (Cic. *Off.* 1, 23) et par identifiant stable, l'URN CTS (Q25).
 - Métadonnées de filtrage : date, genre, registre, prose ou vers, œuvre et livre (Q26).
-- Traductions du domaine public affichées en regard (Q27).
+- Traductions du domaine public affichées en regard (Q27). Source retenue pour commencer : les traductions anglaises numérisées par Perseus, dont le traducteur est mort depuis plus de 70 ans ; le français viendra plus tard (choix du 14 septembre 2026).
 
 ### 4.5 Analyse linguistique et recherche
 
@@ -167,4 +167,3 @@ Suggestions de traduction par IA, usage en classe (Q56), édition simultanée (Q
 - Typologie détaillée des unités (guide d'annotation v0).
 - Modalités du co-autorat et fréquence des dépôts sur Zenodo.
 - Choix précis de l'hébergeur.
-- Source des traductions du domaine public affichées en regard.
