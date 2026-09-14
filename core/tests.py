@@ -191,3 +191,12 @@ class EnglishTranslationTests(SimpleTestCase):
             if found != expected:
                 stale.append(fields["msgid"])
         self.assertEqual(stale, [])
+
+
+class ContentSecurityPolicyTests(TestCase):
+    def test_pages_load_content_from_the_site_only(self):
+        policy = self.client.get(reverse("core:home"))["Content-Security-Policy"]
+        self.assertIn("default-src 'self'", policy)
+        self.assertIn("object-src 'none'", policy)
+        self.assertIn("form-action 'self'", policy)
+        self.assertIn("frame-ancestors 'none'", policy)

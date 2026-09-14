@@ -7,6 +7,7 @@ local .env file when present (see .env.example).
 from pathlib import Path
 
 import environ
+from django.utils.csp import CSP
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -75,6 +77,24 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+}
+
+# Longest duration of one query, in seconds (0: none). Set on the server for the site, so
+# that a very broad search cannot hold the database; the commands that import or analyse
+# the corpus run without it.
+DATABASE_STATEMENT_TIMEOUT = env.int("DATABASE_STATEMENT_TIMEOUT", default=0)
+if DATABASE_STATEMENT_TIMEOUT and "postgresql" in DATABASES["default"]["ENGINE"]:
+    DATABASES["default"].setdefault("OPTIONS", {})["options"] = (
+        f"-c statement_timeout={DATABASE_STATEMENT_TIMEOUT * 1000}"
+    )
+
+# Cache: counters of repeated login attempts, shared by every process of the site. Its
+# table is created by: python manage.py createcachetable
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+    }
 }
 
 
@@ -158,6 +178,17 @@ PERSEUS_LATIN_DIR = Path(env("PERSEUS_LATIN_DIR", default=str(BASE_DIR / "canoni
 
 # Full exports of the public data (manage.py export_data), offered for download.
 EXPORT_DIR = Path(env("EXPORT_DIR", default=str(BASE_DIR / "exports")))
+
+
+# Content Security Policy: scripts, styles, images and fonts come from the site only, no
+# page can be framed by another site, and forms post to the site only.
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "object-src": [CSP.NONE],
+    "base-uri": [CSP.SELF],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.NONE],
+}
 
 
 # Security for every non-debug run (production and CI).

@@ -27,6 +27,9 @@
   {% if form.is_bound and not layer %}
   <p class="notice">{% translate "La recherche par schéma n’est pas encore disponible : le corpus n’a pas été analysé." %}</p>
   {% endif %}
+  {% if too_broad %}
+  <p class="notice">{% translate "La recherche a pris trop de temps : restreignez-la, par exemple au noyau ou aux textes en prose." %}</p>
+  {% endif %}
 </section>
 
 {% if searched %}

@@ -18,6 +18,7 @@ from corpus.forms import search_query
 from corpus.models import Author, Token
 from corpus.search import corpus_version, default_layer, quotation
 from corpus.text import normalize
+from corpus.timeouts import TimeLimit
 from corpus.views import search_context
 from justifications.display import visible_evidences
 from justifications.forms import ReferenceFormSet
@@ -1333,6 +1334,11 @@ def negative_search_detail(request, pk):
     form = recorded_search_form(search)
     version = corpus_version()
     unchanged = search.corpus_version == version.label
+    hits = None
+    # The search is run again only on a corpus that changed since it was recorded.
+    with TimeLimit() as limit:
+        if form is not None and not unchanged:
+            hits = form.hits().count()
     return render(
         request,
         "phraseology/negative_search_detail.html",
@@ -1342,8 +1348,8 @@ def negative_search_detail(request, pk):
             "description": form.description if form is not None else "",
             "version": version,
             "unchanged": unchanged,
-            # The search is run again only on a corpus that changed since it was recorded.
-            "hits": form.hits().count() if form is not None and not unchanged else None,
+            "hits": hits,
+            "too_broad": limit.exceeded,
         },
     )
 
@@ -1403,20 +1409,24 @@ def schema_search(request):
             "token__position",
             "part",
         )
-        page = Paginator(ordered, SCHEMA_RESULTS_PER_PAGE).get_page(request.GET.get("page"))
-        roots = [(match.token_id, match.part, match.token.position) for match in page.object_list]
         has_slot = any(edge.dependent == SLOT for edge in edges)
-        context.update(
-            searched=True,
-            edges=edges,
-            page=page,
-            hits=[quotation(load_tokens(ids)) for ids in occurrence_words(roots, edges, layer)],
-            distribution=[(author, total) for author, total, _core in count_by_author(matches)],
-            core_only=form.core_only,
-            has_slot=has_slot,
-        )
-        if has_slot:
-            context["fillers"], context["filler_count"] = _filler_rows(matches, edges, layer)
+        with TimeLimit() as limit:
+            page = Paginator(ordered, SCHEMA_RESULTS_PER_PAGE).get_page(request.GET.get("page"))
+            roots = [
+                (match.token_id, match.part, match.token.position) for match in page.object_list
+            ]
+            context.update(
+                searched=True,
+                edges=edges,
+                page=page,
+                hits=[quotation(load_tokens(ids)) for ids in occurrence_words(roots, edges, layer)],
+                distribution=[(author, total) for author, total, _core in count_by_author(matches)],
+                core_only=form.core_only,
+                has_slot=has_slot,
+            )
+            if has_slot:
+                context["fillers"], context["filler_count"] = _filler_rows(matches, edges, layer)
+        context["too_broad"] = limit.exceeded
     return render(request, "phraseology/schema_search.html", context)
 
 

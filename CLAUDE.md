@@ -27,6 +27,7 @@ python manage.py test                      # tests
 ruff check . && ruff format --check .      # style et analyse de sécurité statique
 python manage.py makemigrations            # après modification d'un modèle
 python manage.py migrate
+python manage.py createcachetable          # table du cache (compteurs d'essais), après migrate
 python manage.py makemessages -l en --ignore=.venv --ignore=canonical-latinLit
 python manage.py compilemessages --ignore=.venv --ignore=canonical-latinLit
 docker compose up -d                       # PostgreSQL local (Docker Desktop lancé)
@@ -115,4 +116,6 @@ Le détail est dans la section 7 du [modèle de données](docs/modele-de-donnees
 - Aucun secret dans le dépôt : `.env` est ignoré par Git.
 - S'appuyer sur les protections de Django (ORM, échappement des gabarits, CSRF). Ne jamais marquer du contenu saisi par un utilisateur comme sûr (`mark_safe`, filtre `safe`).
 - Toute vue qui modifie des données vérifie les permissions côté serveur.
+- La politique de sécurité du contenu (`SECURE_CSP`) n'autorise que le site : aucun script, style ni gestionnaire d'événement écrit dans les gabarits, tout passe par des fichiers statiques.
+- Les essais répétés contre une adresse (connexion, e-mails) sont limités par `accounts/throttle.py` ; une requête lourde se place dans `corpus.timeouts.TimeLimit`. Bilan et points ouverts : [revue de sécurité](docs/revue-de-securite.md).
 - Avant une mise en ligne : `python manage.py check --deploy`, et une revue de sécurité des changements (`/security-review`), surtout pour les comptes, les permissions et les données saisies.

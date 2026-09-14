@@ -13,6 +13,7 @@ from .forms import AccountForm, DeleteAccountForm, LoginForm, SignupForm
 from .models import User
 from .roles import role_labels
 from .services import activate_user, anonymize_user, send_activation_email
+from .throttle import ACTIVATION_EMAILS
 from .tokens import activation_token_generator
 
 
@@ -39,7 +40,10 @@ def signup(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
-            send_activation_email(request, user)
+            # Signing up again resends the link, a few times per hour at most per address.
+            if not ACTIVATION_EMAILS.is_blocked(user.email):
+                ACTIVATION_EMAILS.hit(user.email)
+                send_activation_email(request, user)
             return redirect("accounts:signup_done")
     else:
         form = SignupForm()

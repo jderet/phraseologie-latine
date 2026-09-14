@@ -4,6 +4,9 @@
   {% for field in form %}{{ field.errors }}{% endfor %}
 </div>
 {% endif %}
+{% if too_broad %}
+<p class="notice">{% translate "La recherche a pris trop de temps : restreignez-la, par exemple au noyau, à quelques auteurs ou à une distance plus courte." %}</p>
+{% endif %}
 {% if searched %}
 <section class="results" aria-labelledby="results-title">
   {% if page.paginator.count %}

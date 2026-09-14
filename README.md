@@ -21,6 +21,7 @@ pip install -r requirements-dev.txt
 cp .env.example .env
 docker compose up -d
 python manage.py migrate
+python manage.py createcachetable
 python manage.py runserver
 ```
 

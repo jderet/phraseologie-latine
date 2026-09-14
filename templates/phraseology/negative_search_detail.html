@@ -24,6 +24,8 @@
       <dd>
         {% if unchanged %}
         {% translate "Le corpus n’a pas changé depuis l’enregistrement." %}
+        {% elif too_broad %}
+        {% blocktranslate with label=version.label %}Le corpus a changé depuis, mais la recherche a pris trop de temps pour être refaite (version {{ label }}).{% endblocktranslate %}
         {% elif hits is None %}
         {% blocktranslate with label=version.label %}Le corpus a changé depuis (version {{ label }}) ; la recherche ne peut plus être refaite telle quelle.{% endblocktranslate %}
         {% elif hits %}

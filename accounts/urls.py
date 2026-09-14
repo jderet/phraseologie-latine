@@ -3,6 +3,7 @@ from django.urls import path, reverse_lazy
 from django.views.generic import TemplateView
 
 from . import views
+from .forms import PasswordResetForm
 
 app_name = "accounts"
 
@@ -36,6 +37,7 @@ urlpatterns = [
     path(
         "compte/mot-de-passe/oublie/",
         auth_views.PasswordResetView.as_view(
+            form_class=PasswordResetForm,
             template_name="accounts/password_reset.html",
             email_template_name="accounts/email/password_reset_body.txt",
             subject_template_name="accounts/email/password_reset_subject.txt",

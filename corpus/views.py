@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, render
 from .forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm, bound_search_form, search_query
 from .models import URN_PREFIX, Author, Edition, ReferenceTranslation, Work
 from .search import author_distribution, build_hits, corpus_version, default_layer
+from .timeouts import TimeLimit
 
 PASSAGES_PER_PAGE = 50
 RESULTS_PER_PAGE = 50
@@ -85,21 +86,23 @@ def search_context(request, per_page):
         terms, distance, ordered = form.terms, form.search_distance, form.cleaned_data["ordered"]
         layer = default_layer()
         hits = form.hits(layer)
-        page = Paginator(hits, per_page).get_page(request.GET.get("page"))
-        context.update(
-            searched=True,
-            page=page,
-            hits=build_hits(page.object_list, terms, distance, ordered, layer),
-            distribution=author_distribution(hits),
-            core_only=form.core_only,
-            # What a search that finds nothing needs to be recorded.
-            query=search_query(request.GET),
-            expression=" ".join(
-                form.cleaned_data[f"term{n}"]
-                for n in TERM_NUMBERS
-                if form.cleaned_data.get(f"term{n}")
-            ),
-        )
+        with TimeLimit() as limit:
+            page = Paginator(hits, per_page).get_page(request.GET.get("page"))
+            context.update(
+                searched=True,
+                page=page,
+                hits=build_hits(page.object_list, terms, distance, ordered, layer),
+                distribution=author_distribution(hits),
+                core_only=form.core_only,
+                # What a search that finds nothing needs to be recorded.
+                query=search_query(request.GET),
+                expression=" ".join(
+                    form.cleaned_data[f"term{n}"]
+                    for n in TERM_NUMBERS
+                    if form.cleaned_data.get(f"term{n}")
+                ),
+            )
+        context["too_broad"] = limit.exceeded
     return context
 
 

@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth import forms as auth_forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -7,6 +8,7 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext_lazy as _
 
 from .models import User
+from .throttle import LOGIN_FAILURES, RESET_EMAILS
 
 
 def current_interface_language():
@@ -54,7 +56,33 @@ class SignupForm(auth_forms.BaseUserCreationForm):
         return user
 
 
-class LoginForm(auth_forms.AuthenticationForm):
+class ThrottledLoginMixin:
+    """Stop checking the password of an address after repeated failed logins.
+
+    The limit applies to the address typed, whether an account exists or not, so it reveals
+    nothing about accounts.
+    """
+
+    too_many_attempts_message = _(
+        "Trop de tentatives de connexion pour ce compte. Réessayez dans 15 minutes."
+    )
+
+    def clean(self):
+        email = self.cleaned_data.get("username") or ""
+        if email and LOGIN_FAILURES.is_blocked(email):
+            raise ValidationError(self.too_many_attempts_message, code="too_many_attempts")
+        try:
+            cleaned_data = super().clean()
+        except ValidationError as error:
+            if email and error.code == "invalid_login":
+                LOGIN_FAILURES.hit(email)
+            raise
+        if email:
+            LOGIN_FAILURES.reset(email)
+        return cleaned_data
+
+
+class LoginForm(ThrottledLoginMixin, auth_forms.AuthenticationForm):
     error_messages = {
         **auth_forms.AuthenticationForm.error_messages,
         "invalid_login": _(
@@ -92,3 +120,18 @@ class DeleteAccountForm(forms.Form):
         if not self.user.check_password(password):
             raise ValidationError(_("Mot de passe incorrect."), code="password_incorrect")
         return password
+
+
+class AdminLoginForm(ThrottledLoginMixin, AdminAuthenticationForm):
+    """Login form of the admin, limited like the site's."""
+
+
+class PasswordResetForm(auth_forms.PasswordResetForm):
+    """Send a few reset emails per address at most; the page answers the same way."""
+
+    def save(self, *args, **kwargs):
+        email = self.cleaned_data["email"]
+        if RESET_EMAILS.is_blocked(email):
+            return
+        RESET_EMAILS.hit(email)
+        super().save(*args, **kwargs)
