@@ -38,12 +38,13 @@ from .forms import (
     RealizationForm,
     RelationForm,
     ResolveContestForm,
+    SchemaSearchForm,
     SenseForm,
     UnitCreateForm,
     UnitForm,
     UnitReferenceForm,
 )
-from .frequency import load_tokens, occurrence_words, schema_matches
+from .frequency import count_by_author, load_tokens, occurrence_words, schema_matches, slot_fillers
 from .models import (
     Attestation,
     Candidate,
@@ -61,7 +62,7 @@ from .models import (
     UnitSurvey,
 )
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
-from .schema import parse_schema
+from .schema import SLOT, format_schema, parse_schema
 from .services import (
     add_attestations,
     add_neologism_evidences,
@@ -1367,3 +1368,50 @@ def negative_search_create(request):
         messages.error(request, _("Indiquez l’expression cherchée."))
     url = reverse("corpus:search")
     return redirect(f"{url}?{query}" if query else url)
+
+
+# Queries by schema
+
+SCHEMA_RESULTS_PER_PAGE = 50
+SLOT_ROWS = 100
+
+
+def _filler_rows(matches, edges, layer):
+    """The most frequent lemmas of the open slot, each with the schema that names it."""
+    written = format_schema(edges)
+    rows = slot_fillers(matches, edges, layer)
+    return [(lemma, count, written.replace(SLOT, lemma)) for lemma, count in rows[:SLOT_ROWS]], len(
+        rows
+    )
+
+
+def schema_search(request):
+    form = SchemaSearchForm(request.GET if "schema" in request.GET else None)
+    layer = default_layer()
+    context = {"form": form, "version": corpus_version(), "searched": False, "layer": layer}
+    if form.is_bound and form.is_valid() and layer is not None:
+        edges = form.cleaned_data["schema"]
+        matches = schema_matches(edges, layer, form.core_only)
+        if form.cleaned_data["text_forms"]:
+            matches = matches.filter(token__edition__work__form__in=form.cleaned_data["text_forms"])
+        ordered = matches.select_related("token").order_by(
+            "token__edition__work__author__birth_year",
+            "token__edition__work__cts_urn",
+            "token__position",
+            "part",
+        )
+        page = Paginator(ordered, SCHEMA_RESULTS_PER_PAGE).get_page(request.GET.get("page"))
+        roots = [(match.token_id, match.part, match.token.position) for match in page.object_list]
+        has_slot = any(edge.dependent == SLOT for edge in edges)
+        context.update(
+            searched=True,
+            edges=edges,
+            page=page,
+            hits=[quotation(load_tokens(ids)) for ids in occurrence_words(roots, edges, layer)],
+            distribution=[(author, total) for author, total, _core in count_by_author(matches)],
+            core_only=form.core_only,
+            has_slot=has_slot,
+        )
+        if has_slot:
+            context["fillers"], context["filler_count"] = _filler_rows(matches, edges, layer)
+    return render(request, "phraseology/schema_search.html", context)

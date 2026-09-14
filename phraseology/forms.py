@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
 from accounts.limits import check_text_for_links
+from corpus.forms import SCOPE_ALL, SCOPE_CORE
+from corpus.models import Work
 from translations.forms import ContributionForm
 from translations.models import Language
 from translations.services import normalize_sentence
@@ -292,3 +294,39 @@ class NegativeSearchForm(forms.ModelForm):
             "expression": forms.TextInput(attrs={"lang": "la"}),
             "note": forms.Textarea(attrs={"rows": 2}),
         }
+
+
+class SchemaSearchForm(forms.Form):
+    """A query by schema: lemmas linked by syntactic relations, one of them possibly left open."""
+
+    schema = forms.CharField(
+        label=_("Schéma"),
+        max_length=300,
+        help_text=_(
+            "Le lemme qui régit d’abord : capio -obj|nsubj:pass-> consilium ; "
+            "« ; » entre les relations ; * pour une case vide : capio -obj-> *"
+        ),
+        widget=forms.TextInput(attrs={"lang": "la"}),
+    )
+    scope = forms.ChoiceField(
+        label=_("Corpus"),
+        choices=[(SCOPE_CORE, _("noyau")), (SCOPE_ALL, _("tout le corpus"))],
+        widget=forms.RadioSelect,
+        required=False,
+    )
+    text_forms = forms.MultipleChoiceField(
+        label=_("Forme"),
+        choices=Work.Form.choices,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
+    def clean_schema(self):
+        edges = parse_schema(self.cleaned_data["schema"], slot=True)
+        if not edges:
+            raise ValidationError(_("Écrivez au moins une relation."), code="empty")
+        return edges
+
+    @property
+    def core_only(self):
+        return self.cleaned_data.get("scope") != SCOPE_ALL

@@ -22,7 +22,7 @@
     </div>
     <div>
       <dt>{% translate "Schéma" %}</dt>
-      <dd lang="la">{% for edge in edges %}<span class="schema-edge">{{ edge.label }}</span>{% if not forloop.last %} ; {% endif %}{% empty %}—{% endfor %}</dd>
+      <dd lang="la">{% for edge in edges %}<span class="schema-edge">{{ edge.label }}</span>{% if not forloop.last %} ; {% endif %}{% empty %}—{% endfor %}{% if unit.schema %} <a class="small-link" href="{% url 'phraseology:schema_search' %}?schema={{ unit.schema|urlencode }}&amp;scope=all" lang="fr">{% translate "chercher ce schéma" %}</a>{% endif %}</dd>
     </div>
     <div>
       <dt>{% translate "Construction" %}</dt>

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{% translate "Recherche par schéma" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'corpus:search' %}">{% translate "Recherche" %}</a></p>
+  <h1>{% translate "Recherche par schéma" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Un schéma relie des lemmes par des relations syntaxiques (Universal Dependencies) : il trouve
+    une construction quels que soient la forme des mots, leur ordre et les mots insérés. Une case
+    vide * montre les lemmes qui la remplissent. L’analyse syntaxique est automatique : elle
+    manque des occurrences et en trouve de fausses.
+  {% endblocktranslate %}</p>
+
+  <form method="get" class="form search-form">
+    {{ form.non_field_errors }}
+    <div class="field">{{ form.schema.as_field_group }}</div>
+    <div class="options">
+      <div class="field">{{ form.scope.as_field_group }}</div>
+      <div class="field">{{ form.text_forms.as_field_group }}</div>
+    </div>
+    <button type="submit" class="button">{% translate "Chercher" %}</button>
+  </form>
+  <p class="note">{% translate "Relations les plus utiles : obj (objet), nsubj (sujet), nsubj:pass (sujet d’un passif), obl (complément du verbe), amod (adjectif épithète), advmod (adverbe), nmod (complément du nom), case (préposition), xcomp (infinitif complément)." %}</p>
+  {% if form.is_bound and not layer %}
+  <p class="notice">{% translate "La recherche par schéma n’est pas encore disponible : le corpus n’a pas été analysé." %}</p>
+  {% endif %}
+</section>
+
+{% if searched %}
+<section class="results" aria-labelledby="results-title">
+  {% if page.paginator.count %}
+  <h2 id="results-title">{% blocktranslate count counter=page.paginator.count %}{{ counter }} occurrence repérée automatiquement{% plural %}{{ counter }} occurrences repérées automatiquement{% endblocktranslate %}</h2>
+  <p class="note" lang="la">{% for edge in edges %}<span class="schema-edge">{{ edge.label }}</span>{% if not forloop.last %} ; {% endif %}{% endfor %}</p>
+  <ul class="distribution">
+    {% for author, count in distribution %}<li>{{ author.name }} <span class="muted">{{ count }}</span></li>{% endfor %}
+  </ul>
+
+  {% if has_slot %}
+  <h3>{% translate "Lemmes de la case vide" %}</h3>
+  {% if filler_count > fillers|length %}<p class="note">{% blocktranslate with shown=fillers|length count counter=filler_count %}Les {{ shown }} plus fréquents, sur {{ counter }} lemme.{% plural %}Les {{ shown }} plus fréquents, sur {{ counter }} lemmes.{% endblocktranslate %}</p>{% endif %}
+  <div class="table-scroll">
+    <table class="changes">
+      <thead>
+        <tr><th scope="col">{% translate "Lemme" %}</th><th scope="col">{% translate "Occurrences" %}</th></tr>
+      </thead>
+      <tbody>
+        {% for lemma, count, schema in fillers %}
+        <tr><td lang="la"><a href="{% querystring schema=schema page=None %}">{{ lemma }}</a></td><td>{{ count }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <ol class="hits" start="{{ page.start_index }}">
+    {% for hit in hits %}
+    <li>
+      <a class="hit-ref" href="{{ hit.url }}">{{ hit.citation }}</a> {% poetry_mark hit %}
+      <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
+    </li>
+    {% endfor %}
+  </ol>
+  {% if page.has_other_pages %}
+  <nav class="pager" aria-label="{% translate 'Pages de résultats' %}">
+    {% if page.has_previous %}<a rel="prev" href="{% querystring page=page.previous_page_number %}">{% translate "Page précédente" %}</a>{% endif %}
+    <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
+    {% if page.has_next %}<a rel="next" href="{% querystring page=page.next_page_number %}">{% translate "Page suivante" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <h2 id="results-title">{% translate "Aucune occurrence" %}</h2>
+  <p class="notice">{% blocktranslate trimmed with label=version.label %}
+    Schéma introuvable dans le corpus analysé (version {{ label }}).
+  {% endblocktranslate %}{% if core_only %} {% translate "La recherche portait sur le noyau seulement." %}{% endif %}</p>
+  {% endif %}
+  <p class="note">{% blocktranslate trimmed with label=version.label %}Corpus interrogé : {{ label }}.{% endblocktranslate %}</p>
+</section>
+{% endif %}
+{% endblock %}

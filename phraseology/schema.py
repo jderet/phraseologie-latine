@@ -4,7 +4,8 @@ A schema is written one relation at a time, the governing lemma first:
 ``capio -obj-> consilium``. Several relations are separated by ";" and form a tree, as in
 ``redigo -obl-> memoria; memoria -case-> in``. A relation may have alternatives separated
 by "|": ``gero -obj|nsubj:pass-> bellum`` also finds the passive *bellum geritur*. A
-relation without subtype also matches its subtypes: ``obl`` matches ``obl:arg``.
+relation without subtype also matches its subtypes: ``obl`` matches ``obl:arg``. A query may
+leave one dependent open, written ``*``: ``capio -obj-> *`` finds every object of *capio*.
 """
 
 import re
@@ -22,10 +23,12 @@ RELATIONS = frozenset(
     "orphan parataxis punct reparandum root vocative xcomp".split()
 )
 MAX_RELATIONS = 4
+# An open dependent, in queries only.
+SLOT = "*"
 
 EDGE_PATTERN = re.compile(
     r"^(?P<head>[^\W\d_]+)\s*[-—–]\s*(?P<relations>[a-zA-Z:|\s]+?)\s*(?:->|→)\s*"
-    r"(?P<dependent>[^\W\d_]+)$"
+    r"(?P<dependent>[^\W\d_]+|\*)$"
 )
 
 
@@ -63,8 +66,11 @@ def _relations(text):
     return tuple(relations)
 
 
-def parse_schema(text):
-    """The relations of a schema, the root's first; raise ValidationError if it is not valid."""
+def parse_schema(text, slot=False):
+    """The relations of a schema, the root's first; raise ValidationError if it is not valid.
+
+    With ``slot``, one dependent may be left open (``*``), as queries allow.
+    """
     parts = [part.strip() for part in (text or "").split(";") if part.strip()]
     if len(parts) > MAX_RELATIONS:
         raise ValidationError(
@@ -82,8 +88,15 @@ def parse_schema(text):
                 % {"part": part},
                 code="syntax",
             )
-        head, dependent = normalize(match["head"]), normalize(match["dependent"])
-        edges.append(Edge(head, _relations(match["relations"]), dependent))
+        dependent = match["dependent"]
+        if dependent == SLOT and not slot:
+            raise ValidationError(
+                gettext("La case vide * ne sert qu’à chercher : écrivez un lemme."), code="slot"
+            )
+        dependent = dependent if dependent == SLOT else normalize(dependent)
+        edges.append(Edge(normalize(match["head"]), _relations(match["relations"]), dependent))
+    if sum(edge.dependent == SLOT for edge in edges) > 1:
+        raise ValidationError(gettext("Un schéma n’a qu’une case vide."), code="two_slots")
     return _as_tree(edges)
 
 

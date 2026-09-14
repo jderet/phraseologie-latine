@@ -5,12 +5,23 @@ layer): they are counted and shown as found automatically, with the version of t
 (rules 4 and 7), never as attestations checked by people.
 """
 
+from collections import Counter
+
 from django.db.models import Count, Exists, OuterRef, Q
 
 from corpus.models import Author, Token, TokenAnalysis
 
+from .schema import SLOT
+
 # Governing words looked up together when gathering the words of many occurrences.
 CHUNK_SIZE = 5000
+# Occurrences whose open dependent is counted by lemma.
+SLOT_LIMIT = 50000
+
+
+def _lemma(edge):
+    """The condition on the dependent's lemma; an open dependent may have any."""
+    return {} if edge.dependent == SLOT else {"lemma_norm": edge.dependent}
 
 
 def _relation_condition(relations):
@@ -34,7 +45,7 @@ def _dependents(lemma, edges, layer):
             layer=layer,
             head_id=OuterRef("token_id"),
             head_part=OuterRef("part"),
-            lemma_norm=edge.dependent,
+            **_lemma(edge),
         ).filter(*_dependents(edge.dependent, edges, layer))
         conditions.append(Exists(dependents))
     return conditions
@@ -51,8 +62,8 @@ def schema_matches(edges, layer, core_only=False):
     return matches
 
 
-def occurrence_words(roots, edges, layer):
-    """The words of each occurrence, as word identifiers in textual order.
+def occurrence_parts(roots, edges, layer):
+    """For each occurrence, the (word, part) of each lemma of the schema, and word positions.
 
     ``roots`` are (word, part, position) of the governing word of each occurrence; for each
     relation of the schema, the first dependent in the text is kept. A few queries serve
@@ -69,8 +80,8 @@ def occurrence_words(roots, edges, layer):
                 TokenAnalysis.objects.filter(
                     _relation_condition(edge.relations),
                     layer=layer,
-                    lemma_norm=edge.dependent,
                     head_id__in=heads[start : start + CHUNK_SIZE],
+                    **_lemma(edge),
                 )
                 .filter(*_dependents(edge.dependent, edges, layer))
                 .order_by("token__position")
@@ -83,10 +94,32 @@ def occurrence_words(roots, edges, layer):
             dependent = chosen.get(item.get(edge.head))
             if dependent is not None:
                 item[edge.dependent] = dependent
+    return found, positions
+
+
+def occurrence_words(roots, edges, layer):
+    """The words of each occurrence, as word identifiers in textual order."""
+    found, positions = occurrence_parts(roots, edges, layer)
     return [
         tuple(sorted({token_id for token_id, _part in item.values()}, key=positions.get))
         for item in found
     ]
+
+
+def slot_fillers(matches, edges, layer, limit=SLOT_LIMIT):
+    """The lemmas found in the open dependent of a query, the most frequent first."""
+    roots = matches.order_by().values_list("token_id", "part", "token__position")[:limit]
+    found, _positions = occurrence_parts(roots, edges, layer)
+    filled = [item[SLOT] for item in found if SLOT in item]
+    ids = sorted({token_id for token_id, _part in filled})
+    lemmas = {}
+    for start in range(0, len(ids), CHUNK_SIZE):
+        rows = TokenAnalysis.objects.filter(
+            layer=layer, token_id__in=ids[start : start + CHUNK_SIZE]
+        ).values_list("token_id", "part", "lemma_norm")
+        lemmas.update({(token_id, part): lemma for token_id, part, lemma in rows})
+    counts = Counter(lemmas[key] for key in filled if key in lemmas)
+    return sorted(counts.items(), key=lambda row: (-row[1], row[0]))
 
 
 def occurrence_tokens(match, edges, layer):

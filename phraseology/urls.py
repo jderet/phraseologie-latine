@@ -5,6 +5,7 @@ from . import views
 app_name = "phraseology"
 
 urlpatterns = [
+    path("recherche/schema/", views.schema_search, name="schema_search"),
     path("fiches/", views.unit_list, name="unit_list"),
     path("fiches/nouvelle/", views.unit_create, name="unit_create"),
     path("fiches/<int:pk>/", views.unit_detail, name="unit"),

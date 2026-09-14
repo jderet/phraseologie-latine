@@ -11,6 +11,7 @@
     et i/j, ou comme lemme, pour trouver toutes ses formes. Les lemmes viennent d’une analyse
     automatique et peuvent comporter des erreurs.
   {% endblocktranslate %}</p>
+  <p class="note"><a href="{% url 'phraseology:schema_search' %}">{% translate "Recherche par schéma syntaxique" %}</a> · <a href="{% url 'phraseology:negative_search_list' %}">{% translate "Recherches infructueuses enregistrées" %}</a></p>
 
   <form method="get" class="form search-form">
     {{ form.non_field_errors }}
