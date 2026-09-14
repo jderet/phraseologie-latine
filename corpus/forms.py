@@ -1,9 +1,12 @@
+from urllib.parse import urlencode
+
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext, ngettext
 from django.utils.translation import gettext_lazy as _
 
 from .models import Author, Period, Work
-from .search import default_layer, parse_term
+from .search import default_layer, parse_term, search_tokens
 from .text import normalize
 
 SCOPE_CORE = "core"
@@ -156,3 +159,84 @@ class SearchForm(forms.Form):
             "date_from": data.get("date_from"),
             "date_to": data.get("date_to"),
         }
+
+    def hits(self, layer=None):
+        """The words found by the valid search."""
+        ordered = self.cleaned_data["ordered"]
+        return search_tokens(self.terms, self.search_distance, ordered, self.filters(), layer)
+
+    @property
+    def filtered(self):
+        keys = ("authors", "works", "text_forms", "genres", "registers", "periods")
+        data = self.cleaned_data
+        dates = (data.get("date_from"), data.get("date_to"))
+        return any(data.get(key) for key in keys) or any(date is not None for date in dates)
+
+    def _mode_label(self, number):
+        lemma = self.cleaned_data.get(f"mode{number}") == MODE_LEMMA
+        return gettext("lemme") if lemma else gettext("forme")
+
+    @property
+    def description(self):
+        """The valid search in words: its terms, their distance, the part of the corpus."""
+        data = self.cleaned_data
+        terms = [
+            f"{data[f'term{number}']} ({self._mode_label(number)})"
+            for number in TERM_NUMBERS
+            if data.get(f"term{number}")
+        ]
+        parts = [" + ".join(terms)]
+        if len(terms) > 1:
+            distance = self.search_distance
+            parts.append(
+                ngettext("à %(count)d mot au plus", "à %(count)d mots au plus", distance)
+                % {"count": distance}
+            )
+            if data["ordered"]:
+                parts.append(gettext("dans cet ordre"))
+        parts.append(gettext("noyau") if self.core_only else gettext("tout le corpus"))
+        if self.filtered:
+            parts.append(gettext("avec filtres"))
+        return ", ".join(parts)
+
+
+# The parameters of a search, in the order they are written in a stored query.
+SEARCH_FIELDS = (
+    "term1",
+    "mode1",
+    "term2",
+    "mode2",
+    "term3",
+    "mode3",
+    "distance",
+    "ordered",
+    "scope",
+    "authors",
+    "works",
+    "text_forms",
+    "genres",
+    "registers",
+    "periods",
+    "date_from",
+    "date_to",
+)
+
+
+def bound_search_form(data):
+    """A search form bound to query parameters (a QueryDict), defaults filling the gaps."""
+    data = data.copy()
+    defaults = {
+        "scope": SCOPE_CORE,
+        "distance": SearchForm.DEFAULT_DISTANCE,
+        **{f"mode{number}": MODE_FORM for number in TERM_NUMBERS},
+    }
+    for key, value in defaults.items():
+        data.setdefault(key, str(value))
+    return SearchForm(data)
+
+
+def search_query(data):
+    """The search parameters of a QueryDict as a query string, nothing else and in order."""
+    return urlencode(
+        [(key, value) for key in SEARCH_FIELDS for value in data.getlist(key) if value]
+    )

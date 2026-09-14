@@ -37,6 +37,25 @@
   <p class="notice">{% blocktranslate trimmed with label=version.label %}
     Introuvable dans le corpus interrogé (version {{ label }}).
   {% endblocktranslate %}{% if core_only %} {% translate "La recherche portait sur le noyau seulement." %}{% endif %}</p>
+  {% if not panel %}
+  {% if user.is_authenticated %}
+  <form method="post" action="{% url 'phraseology:negative_search_create' %}" class="form negative-search-form">
+    {% csrf_token %}
+    <input type="hidden" name="query" value="{{ query }}">
+    <p class="note">{% translate "Enregistrez cette recherche pour la citer : elle sera mentionnée « introuvable dans le corpus », avec la version interrogée." %}</p>
+    <div class="field">
+      <label for="id_expression">{% translate "Expression cherchée" %}</label>
+      <input type="text" id="id_expression" name="expression" maxlength="200" required value="{{ expression }}" lang="la">
+    </div>
+    <div class="field">
+      <label for="id_note">{% translate "Note" %}</label>
+      <textarea id="id_note" name="note" rows="2" maxlength="1000"></textarea>
+    </div>
+    <button type="submit" class="button button-quiet">{% translate "Enregistrer cette recherche infructueuse" %}</button>
+  </form>
+  {% endif %}
+  <p class="note"><a href="{% url 'phraseology:negative_search_list' %}">{% translate "Recherches infructueuses enregistrées" %}</a></p>
+  {% endif %}
   {% endif %}
   <p class="note">{% blocktranslate trimmed with label=version.label count counter=version.edition_count %}
     Corpus interrogé : {{ label }}, {{ counter }} édition.

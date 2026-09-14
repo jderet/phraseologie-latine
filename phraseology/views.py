@@ -4,7 +4,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
-from django.http import Http404, HttpResponseBadRequest
+from django.http import Http404, HttpResponseBadRequest, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
@@ -14,6 +14,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached, is_limited
 from accounts.roles import is_reviewer
+from corpus.forms import search_query
 from corpus.models import Author, Token
 from corpus.search import corpus_version, default_layer, quotation
 from corpus.text import normalize
@@ -30,6 +31,7 @@ from .forms import (
     AttestationPlaceForm,
     ContestForm,
     EquivalentForm,
+    NegativeSearchForm,
     NeologismCreateForm,
     NeologismEquivalentForm,
     NeologismForm,
@@ -47,6 +49,7 @@ from .models import (
     Candidate,
     Equivalent,
     Kind,
+    NegativeSearch,
     Neologism,
     NeologismEquivalent,
     Realization,
@@ -68,6 +71,8 @@ from .services import (
     create_unit_from_candidate,
     missing_fields,
     propose_unit,
+    record_negative_search,
+    recorded_search_form,
     refresh_frequency,
     reject_candidate,
     reopen_candidate,
@@ -1296,3 +1301,69 @@ def units_in_sentence(request, version_pk, segment_pk):
     }
     template = "phraseology/spotted_units.html" if fragment else "phraseology/spotted_page.html"
     return render(request, template, context)
+
+
+# Searches that find nothing
+
+NEGATIVE_SEARCHES_PER_PAGE = 50
+
+
+def negative_search_list(request):
+    searches = NegativeSearch.objects.filter(is_hidden=False).select_related("created_by")
+    page = Paginator(searches, NEGATIVE_SEARCHES_PER_PAGE).get_page(request.GET.get("page"))
+    page.object_list = list(page.object_list)
+    for search in page.object_list:
+        form = recorded_search_form(search)
+        search.description = form.description if form is not None else ""
+    return render(
+        request,
+        "phraseology/negative_search_list.html",
+        {"page": page, "version": corpus_version()},
+    )
+
+
+def negative_search_detail(request, pk):
+    search = get_object_or_404(NegativeSearch.objects.select_related("created_by"), pk=pk)
+    if not can_view(request.user, search):
+        raise Http404
+    form = recorded_search_form(search)
+    version = corpus_version()
+    unchanged = search.corpus_version == version.label
+    return render(
+        request,
+        "phraseology/negative_search_detail.html",
+        {
+            "search": search,
+            "valid": form is not None,
+            "description": form.description if form is not None else "",
+            "version": version,
+            "unchanged": unchanged,
+            # The search is run again only on a corpus that changed since it was recorded.
+            "hits": form.hits().count() if form is not None and not unchanged else None,
+        },
+    )
+
+
+@login_required
+@require_POST
+def negative_search_create(request):
+    form = NegativeSearchForm(request.POST)
+    query = search_query(QueryDict(request.POST.get("query", "")))
+    if form.is_valid():
+        search = form.save(commit=False)
+        search.query = query
+        try:
+            record_negative_search(search, request.user)
+        except ContributionLimitReached as error:
+            messages.error(request, str(error))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+        else:
+            messages.success(
+                request, _("La recherche infructueuse est enregistrée, avec la version du corpus.")
+            )
+            return redirect(search)
+    else:
+        messages.error(request, _("Indiquez l’expression cherchée."))
+    url = reverse("corpus:search")
+    return redirect(f"{url}?{query}" if query else url)

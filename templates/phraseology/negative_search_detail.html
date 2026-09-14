@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ search.expression }} · {% translate "recherche infructueuse" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:negative_search_list' %}">{% translate "Recherches infructueuses" %}</a></p>
+  <h1 lang="la">{{ search.expression }}</h1>
+  {% if search.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+  <p class="notice">{% blocktranslate trimmed with label=search.corpus_version %}
+    Introuvable dans le corpus (version {{ label }}).
+  {% endblocktranslate %}</p>
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Recherche" %}</dt>
+      <dd>{% if valid %}<span lang="la">{{ description }}</span> · <a href="{{ search.search_url }}">{% translate "refaire la recherche" %}</a>{% else %}{% translate "cette recherche n’est plus valable" %}{% endif %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Dans le corpus actuel" %}</dt>
+      <dd>
+        {% if unchanged %}
+        {% translate "Le corpus n’a pas changé depuis l’enregistrement." %}
+        {% elif hits is None %}
+        {% blocktranslate with label=version.label %}Le corpus a changé depuis (version {{ label }}) ; la recherche ne peut plus être refaite telle quelle.{% endblocktranslate %}
+        {% elif hits %}
+        <span class="badge review-badge">{% blocktranslate trimmed with label=version.label count counter=hits %}
+          Le corpus a changé depuis : {{ counter }} occurrence dans la version {{ label }}.
+        {% plural %}
+          Le corpus a changé depuis : {{ counter }} occurrences dans la version {{ label }}.
+        {% endblocktranslate %}</span>
+        {% else %}
+        {% blocktranslate with label=version.label %}Le corpus a changé depuis, et la recherche reste infructueuse (version {{ label }}).{% endblocktranslate %}
+        {% endif %}
+      </dd>
+    </div>
+    {% if search.note %}
+    <div>
+      <dt>{% translate "Note" %}</dt>
+      <dd>{{ search.note|linebreaksbr }}</dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Enregistrée par" %}</dt>
+      <dd>{% if search.created_by.is_active %}<a href="{{ search.created_by.get_absolute_url }}">{{ search.created_by.public_name }}</a>{% else %}{{ search.created_by.public_name }}{% endif %}, {{ search.created_at|date:"j F Y" }}</dd>
+    </div>
+  </dl>
+  <p class="note">{% translate "Une absence dans le corpus ne prouve pas qu’une expression est « non attestée » : elle vaut pour la version interrogée." %}</p>
+
+  {% moderation_links search %}
+</article>
+{% endblock %}

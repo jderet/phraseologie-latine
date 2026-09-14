@@ -11,6 +11,7 @@ from translations.services import normalize_sentence
 
 from .models import (
     Equivalent,
+    NegativeSearch,
     Neologism,
     NeologismEquivalent,
     Realization,
@@ -279,3 +280,15 @@ class AttestationPlaceForm(forms.Form):
             90
         )
         self.fields["realization"].queryset = unit.realizations.active()
+
+
+class NegativeSearchForm(forms.ModelForm):
+    """What a person adds to a search that found nothing; the query comes from the search."""
+
+    class Meta:
+        model = NegativeSearch
+        fields = ("expression", "note")
+        widgets = {
+            "expression": forms.TextInput(attrs={"lang": "la"}),
+            "note": forms.Textarea(attrs={"rows": 2}),
+        }

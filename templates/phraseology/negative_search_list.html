@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Recherches infructueuses" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <h1>{% translate "Recherches infructueuses" %}</h1>
+  <p class="lede">{% translate "Des recherches qui n’ont rien trouvé, enregistrées avec la version du corpus interrogée : chacune fonde la mention « introuvable dans le corpus (version X) ». Pour en ajouter une, faites la recherche : si elle ne trouve rien, vous pourrez l’enregistrer." %}</p>
+  <p class="note">{% blocktranslate with label=version.label %}Version actuelle du corpus : {{ label }}.{% endblocktranslate %}</p>
+
+  <div class="table-scroll">
+    <table class="changes">
+      <thead>
+        <tr>
+          <th scope="col">{% translate "Expression cherchée" %}</th>
+          <th scope="col">{% translate "Recherche" %}</th>
+          <th scope="col">{% translate "Version du corpus" %}</th>
+          <th scope="col">{% translate "Date" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for search in page %}
+        <tr>
+          <td><a href="{{ search.get_absolute_url }}" lang="la">{{ search.expression }}</a></td>
+          <td lang="la">{{ search.description|default:"—" }}</td>
+          <td>{{ search.corpus_version }}{% if search.corpus_version != version.label %} <span class="badge review-badge">{% translate "ancienne version" %}</span>{% endif %}</td>
+          <td>{{ search.created_at|date:"j F Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">{% translate "Aucune recherche infructueuse enregistrée." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page.has_other_pages %}
+  <nav class="pager" aria-label="{% translate 'Pages' %}">
+    {% if page.has_previous %}<a rel="prev" href="?page={{ page.previous_page_number }}">{% translate "Page précédente" %}</a>{% endif %}
+    <span>{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktranslate %}</span>
+    {% if page.has_next %}<a rel="next" href="?page={{ page.next_page_number }}">{% translate "Page suivante" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

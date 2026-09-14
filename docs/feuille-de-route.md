@@ -63,7 +63,7 @@ Terminé quand une centaine de fiches sont validées.
 
 - [x] Relevé automatique de toutes les réalisations d'une unité, validation par lots sur le noyau
 - [x] Attestations automatiques hors du noyau, affichées comme telles
-- [ ] Mention « introuvable dans le corpus (version X) »
+- [x] Mention « introuvable dans le corpus (version X) »
 - [ ] Requêtes par schémas
 - [ ] Profils statistiques de collocations
 - [ ] Traductions du domaine public en regard

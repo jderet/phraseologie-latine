@@ -5,12 +5,14 @@ from collections import defaultdict
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Count, Q
+from django.http import QueryDict
 from django.utils import timezone
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from accounts.limits import is_limited
 from accounts.roles import is_reviewer
+from corpus.forms import bound_search_form, search_query
 from corpus.models import Token
 from corpus.search import corpus_version, default_layer
 from justifications.services import attach_evidences
@@ -629,3 +631,32 @@ def reopen_candidate(candidate, reviewer):
     candidate.decided_at = None
     candidate.save()
     return candidate
+
+
+# Searches that find nothing
+
+
+def recorded_search_form(search):
+    """The search form of a recorded search, validated; None if the search is no longer valid."""
+    form = bound_search_form(QueryDict(search.query))
+    return form if form.is_valid() else None
+
+
+@transaction.atomic
+def record_negative_search(search, author):
+    """Record a search that finds nothing, with the version of the corpus searched (rule 7)."""
+    search.query = search_query(QueryDict(search.query))
+    form = recorded_search_form(search)
+    if form is None:
+        raise ValidationError(
+            gettext("Cette recherche n’est pas valide : refaites-la."), code="invalid_search"
+        )
+    if form.hits().exists():
+        raise ValidationError(
+            gettext("Cette recherche trouve des occurrences : elle n’est pas infructueuse."),
+            code="found",
+        )
+    search.corpus_version = corpus_version().label
+    search.created_by = author
+    save_with_revision(search, author)
+    return search

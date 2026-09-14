@@ -2,9 +2,9 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
 
-from .forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm
+from .forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm, bound_search_form, search_query
 from .models import URN_PREFIX, Author, Edition, Work
-from .search import author_distribution, build_hits, corpus_version, default_layer, search_tokens
+from .search import author_distribution, build_hits, corpus_version, default_layer
 
 PASSAGES_PER_PAGE = 50
 RESULTS_PER_PAGE = 50
@@ -63,23 +63,21 @@ def passage_detail(request, work_id, reference):
 
 
 def search_context(request, per_page):
-    defaults = {
-        "scope": SCOPE_CORE,
-        "distance": SearchForm.DEFAULT_DISTANCE,
-        **{f"mode{number}": MODE_FORM for number in TERM_NUMBERS},
-    }
     if "term1" in request.GET:
-        data = request.GET.copy()
-        for key, value in defaults.items():
-            data.setdefault(key, str(value))
-        form = SearchForm(data)
+        form = bound_search_form(request.GET)
     else:
-        form = SearchForm(initial=defaults)
+        form = SearchForm(
+            initial={
+                "scope": SCOPE_CORE,
+                "distance": SearchForm.DEFAULT_DISTANCE,
+                **{f"mode{number}": MODE_FORM for number in TERM_NUMBERS},
+            }
+        )
     context = {"form": form, "version": corpus_version(), "searched": False}
     if form.is_bound and form.is_valid():
         terms, distance, ordered = form.terms, form.search_distance, form.cleaned_data["ordered"]
         layer = default_layer()
-        hits = search_tokens(terms, distance, ordered, form.filters(), layer)
+        hits = form.hits(layer)
         page = Paginator(hits, per_page).get_page(request.GET.get("page"))
         context.update(
             searched=True,
@@ -87,6 +85,13 @@ def search_context(request, per_page):
             hits=build_hits(page.object_list, terms, distance, ordered, layer),
             distribution=author_distribution(hits),
             core_only=form.core_only,
+            # What a search that finds nothing needs to be recorded.
+            query=search_query(request.GET),
+            expression=" ".join(
+                form.cleaned_data[f"term{n}"]
+                for n in TERM_NUMBERS
+                if form.cleaned_data.get(f"term{n}")
+            ),
         )
     return context
 

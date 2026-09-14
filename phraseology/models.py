@@ -571,6 +571,45 @@ class NeologismEquivalent(ModeratedContent):
         return f"{self.neologism.get_absolute_url()}#equivalents"
 
 
+class NegativeSearch(ModeratedContent):
+    """A search that found nothing, recorded with the version of the corpus searched.
+
+    It grounds the mention « introuvable dans le corpus (version X) », never « non attesté »
+    (Q18, rule 7).
+    """
+
+    expression = models.CharField(
+        _("expression cherchée"),
+        max_length=200,
+        help_text=_("Ce que la recherche devait trouver, par exemple : consilium sumere."),
+    )
+    query = models.CharField(_("requête"), max_length=2000, editable=False)
+    corpus_version = models.CharField(_("version du corpus"), max_length=200, editable=False)
+    note = models.TextField(_("note"), max_length=1000, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="negative_searches",
+        verbose_name=_("enregistrée par"),
+    )
+    created_at = models.DateTimeField(_("enregistrée le"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("recherche infructueuse")
+        verbose_name_plural = _("recherches infructueuses")
+        ordering = ["-created_at", "-pk"]
+
+    def __str__(self):
+        return self.expression
+
+    def get_absolute_url(self):
+        return reverse("phraseology:negative_search", args=[self.pk])
+
+    @property
+    def search_url(self):
+        return f"{reverse('corpus:search')}?{self.query}"
+
+
 class Candidate(models.Model):
     """Two lemmas linked by a syntactic relation, found by the machine as a possible unit (Q16).
 
@@ -733,6 +772,12 @@ register(
     text_fields=("form", "meaning", "justification", "lrl_reference"),
     not_reverted=("status", "validated_by", "validated_at"),
     discussion=lambda user, neologism: True,
+)
+register(
+    NegativeSearch,
+    owner_field="created_by",
+    text_fields=("expression", "note"),
+    not_reverted=("query", "corpus_version"),
 )
 register(
     NeologismEquivalent,

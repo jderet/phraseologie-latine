@@ -55,6 +55,15 @@ urlpatterns = [
         views.neologism_evidence_withdraw,
         name="neologism_evidence_withdraw",
     ),
+    path("recherches-infructueuses/", views.negative_search_list, name="negative_search_list"),
+    path(
+        "recherches-infructueuses/nouvelle/",
+        views.negative_search_create,
+        name="negative_search_create",
+    ),
+    path(
+        "recherches-infructueuses/<int:pk>/", views.negative_search_detail, name="negative_search"
+    ),
     path("candidats/", views.candidate_list, name="candidate_list"),
     path("candidats/<int:pk>/", views.candidate_detail, name="candidate"),
     path("candidats/<int:pk>/rejeter/", views.candidate_reject, name="candidate_reject"),
