@@ -27,6 +27,7 @@ from moderation.registry import can_view
 from translations.models import TranslatedSegment, TranslationVersion
 from translations.permissions import can_translate
 
+from .collocations import profile, profile_computed
 from .forms import (
     AttestationPlaceForm,
     ContestForm,
@@ -48,6 +49,7 @@ from .frequency import count_by_author, load_tokens, occurrence_words, schema_ma
 from .models import (
     Attestation,
     Candidate,
+    Collocation,
     Equivalent,
     Kind,
     NegativeSearch,
@@ -62,7 +64,7 @@ from .models import (
     UnitSurvey,
 )
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
-from .schema import SLOT, format_schema, parse_schema
+from .schema import SLOT, format_schema, parse_schema, schema_lemmas
 from .services import (
     add_attestations,
     add_neologism_evidences,
@@ -364,6 +366,7 @@ def unit_detail(request, pk):
         {
             "unit": unit,
             "edges": unit.edges,
+            "schema_lemmas": schema_lemmas(unit.edges),
             "senses": senses,
             "realizations": _visible_parts(user, unit, unit.realizations.active()),
             "attestations": attestations,
@@ -1415,3 +1418,31 @@ def schema_search(request):
         if has_slot:
             context["fillers"], context["filler_count"] = _filler_rows(matches, edges, layer)
     return render(request, "phraseology/schema_search.html", context)
+
+
+# Profiles of collocations
+
+
+def collocation_profile(request, lemma=""):
+    scope = request.GET.get("portee", "")
+    if scope not in Collocation.Scope.values:
+        scope = Collocation.Scope.CORE
+    asked = normalize(request.GET.get("lemme", "").strip())[:200]
+    if asked and asked != lemma:
+        url = reverse("phraseology:collocation_lemma", args=[asked])
+        return redirect(f"{url}?{urlencode({'portee': scope})}")
+    lemma = normalize(lemma)[:200]
+    return render(
+        request,
+        "phraseology/collocation_profile.html",
+        {
+            "lemma": lemma,
+            "scope": scope,
+            "scope_label": Collocation.Scope(scope).label,
+            "scopes": Collocation.Scope.choices,
+            "sections": profile(lemma, scope) if lemma else [],
+            "computed": profile_computed(scope),
+            "schema_scope": "core" if scope == Collocation.Scope.CORE else "all",
+            "prose_only": scope == Collocation.Scope.PROSE,
+        },
+    )

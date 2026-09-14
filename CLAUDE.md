@@ -35,6 +35,7 @@ pip install -r requirements-corpus.txt     # spaCy et LatinCy, sur le Mac seulem
 python manage.py analyze_corpus --make-default   # analyse LatinCy du corpus (sur le Mac, environ 45 min)
 python manage.py extract_candidates        # candidats de la phraséologie (sur le Mac, quelques secondes)
 python manage.py refresh_units             # fréquences et formes des fiches, après une nouvelle couche d'analyse
+python manage.py compute_collocations      # profils de collocations (sur le Mac, après une analyse)
 ```
 
 ## Architecture

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if lemma %}{{ lemma }} · {% endif %}{% translate "Profils de collocations" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{% url 'corpus:search' %}">{% translate "Recherche" %}</a> · <a href="{% url 'phraseology:collocation_profile' %}">{% translate "Profils de collocations" %}</a></p>
+  <h1>{% if lemma %}<span lang="la">{{ lemma }}</span>{% else %}{% translate "Profils de collocations" %}{% endif %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Les mots avec lesquels un lemme se construit, relation par relation, classés par force
+    d’association (rapport de vraisemblance) : plus le score est haut, moins la rencontre doit au
+    hasard. Les paires viennent de l’analyse automatique du corpus.
+  {% endblocktranslate %}</p>
+
+  <form method="get" action="{% url 'phraseology:collocation_profile' %}" class="form panel-search">
+    <input type="hidden" name="portee" value="{{ scope }}">
+    <div class="field">
+      <label for="lemme">{% translate "Lemme" %}</label>
+      <input type="text" id="lemme" name="lemme" value="{{ lemma }}" maxlength="200" lang="la" required>
+    </div>
+    <button type="submit" class="button button-quiet">{% translate "Voir le profil" %}</button>
+  </form>
+
+  <nav class="tabs" aria-label="{% translate 'Partie du corpus' %}">
+    {% for value, label in scopes %}<a href="?portee={{ value }}"{% if value == scope %} aria-current="page"{% endif %}>{{ label|capfirst }}</a>{% endfor %}
+  </nav>
+  {% if computed %}
+  <p class="note">{% blocktranslate trimmed with label=computed.corpus_version date=computed.computed_at|date:"j F Y" %}
+    Repéré automatiquement (corpus version {{ label }}, calcul du {{ date }}).
+  {% endblocktranslate %}{% if scope == "all" %} {% translate "Poésie comprise, qui ne fait pas norme pour la prose." %}{% endif %}</p>
+  {% else %}
+  <p class="notice">{% translate "Les profils n’ont pas encore été calculés pour cette partie du corpus." %}</p>
+  {% endif %}
+
+  {% if lemma and computed %}
+  {% for section in sections %}
+  <section class="unit-section" aria-labelledby="section-{{ forloop.counter }}">
+    <h2 id="section-{{ forloop.counter }}">{{ section.title }}</h2>
+    <div class="table-scroll">
+      <table class="changes">
+        <thead>
+          <tr>
+            <th scope="col">{% translate "Lemme" %}</th>
+            <th scope="col">{% translate "Fréquence" %}</th>
+            <th scope="col">{% translate "Score" %}</th>
+            <th scope="col">{% translate "Occurrences" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in section.rows %}
+          <tr>
+            <td lang="la"><a href="{% url 'phraseology:collocation_lemma' row.collocate %}?portee={{ scope }}">{{ row.collocate }}</a></td>
+            <td>{{ row.frequency }}</td>
+            <td>{{ row.score|floatformat:0 }}</td>
+            <td><a class="small-link" href="{% url 'phraseology:schema_search' %}?schema={{ row.schema|urlencode }}&amp;scope={{ schema_scope }}{% if prose_only %}&amp;text_forms=prose{% endif %}" lang="la">{{ row.schema }}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% empty %}
+  <p class="notice">{% blocktranslate trimmed with lemma=lemma part=scope_label label=computed.corpus_version %}
+    Aucune collocation de « {{ lemma }} » dans cette partie du corpus ({{ part }}, corpus version {{ label }}).
+  {% endblocktranslate %}</p>
+  {% endfor %}
+  {% endif %}
+</section>
+{% endblock %}

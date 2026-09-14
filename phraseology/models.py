@@ -698,6 +698,60 @@ class Candidate(models.Model):
         return f"{self.head} -{relation}-> {self.dependent}"
 
 
+class Collocation(models.Model):
+    """Two lemmas linked by a syntactic relation, counted in a part of the corpus (Q33).
+
+    Computed on the Mac (``compute_collocations``), never edited; the pairs come from the
+    automatic analysis and are ranked by log-likelihood, like candidates.
+    """
+
+    class Scope(models.TextChoices):
+        CORE = "core", _("noyau")
+        PROSE = "prose", _("toute la prose")
+        ALL = "all", _("tout le corpus")
+
+    scope = models.CharField(_("partie du corpus"), max_length=10, choices=Scope.choices)
+    head = models.CharField(_("lemme qui régit"), max_length=200)
+    relation = models.CharField(_("relation"), max_length=30)
+    dependent = models.CharField(_("lemme dépendant"), max_length=200)
+    frequency = models.PositiveIntegerField(_("fréquence"))
+    score = models.FloatField(_("score d’association"))
+    layer = models.ForeignKey(
+        AnalysisLayer,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name=_("couche d’analyse"),
+    )
+    corpus_version = models.CharField(_("version du corpus"), max_length=200)
+    computed_at = models.DateTimeField(_("calculée le"))
+
+    class Meta:
+        verbose_name = _("collocation")
+        verbose_name_plural = _("collocations")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["scope", "head", "relation", "dependent"],
+                name="phraseology_one_collocation_per_pair",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["scope", "head", "relation", "-score"], name="phraseology_colloc_head"
+            ),
+            models.Index(
+                fields=["scope", "dependent", "relation", "-score"], name="phraseology_colloc_dep"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.head} —{self.relation}→ {self.dependent}"
+
+    @property
+    def schema(self):
+        relation = Candidate.SCHEMA_RELATIONS.get(self.relation, self.relation)
+        return f"{self.head} -{relation}-> {self.dependent}"
+
+
 class UnitForm(models.Model):
     """A normalized word form that recognizes a unit in a sentence: computed, never edited.
 

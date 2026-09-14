@@ -65,7 +65,7 @@ Terminé quand une centaine de fiches sont validées.
 - [x] Attestations automatiques hors du noyau, affichées comme telles
 - [x] Mention « introuvable dans le corpus (version X) »
 - [x] Requêtes par schémas
-- [ ] Profils statistiques de collocations
+- [x] Profils statistiques de collocations
 - [ ] Traductions du domaine public en regard
 - [x] Élargissement au reste de la latinité classique
 - [ ] Exports TEI et TMX, API publique, export complet

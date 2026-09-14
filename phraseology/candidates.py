@@ -35,6 +35,7 @@ WITH pairs AS (
   JOIN corpus_edition e ON e.id = t.edition_id
   JOIN corpus_work w ON w.id = e.work_id
   WHERE d.layer_id = %(layer)s AND e.is_current AND (w.is_core OR NOT %(core_only)s)
+    AND (w.form = 'prose' OR NOT %(prose_only)s)
     AND split_part(d.deprel, ':', 1) = ANY(%(relations)s)
     AND d.deprel <> ALL(%(excluded_relations)s)
     AND d.upos = ANY(%(dependent_tags)s) AND h.upos = ANY(%(head_tags)s)
@@ -53,11 +54,12 @@ WHERE n >= %(min_frequency)s
 """
 
 
-def pair_counts(layer, core_only=True, min_frequency=MIN_FREQUENCY):
+def pair_counts(layer, core_only=True, min_frequency=MIN_FREQUENCY, prose_only=False):
     """(head, relation, dependent, pair, head, dependent, total) counts of the analysed pairs."""
     params = {
         "layer": layer.pk,
         "core_only": core_only,
+        "prose_only": prose_only,
         "relations": RELATIONS,
         "excluded_relations": EXCLUDED_RELATIONS,
         "head_tags": HEAD_TAGS,
