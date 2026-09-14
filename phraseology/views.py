@@ -15,6 +15,9 @@ from corpus.models import Author, Token
 from corpus.search import corpus_version, default_layer, quotation
 from corpus.text import normalize
 from corpus.views import search_context
+from justifications.display import visible_evidences
+from justifications.forms import ReferenceFormSet
+from justifications.models import Evidence
 from justifications.services import corpus_evidence
 from moderation.registry import can_view
 
@@ -22,6 +25,9 @@ from .forms import (
     AttestationPlaceForm,
     ContestForm,
     EquivalentForm,
+    NeologismCreateForm,
+    NeologismEquivalentForm,
+    NeologismForm,
     RealizationForm,
     RelationForm,
     ResolveContestForm,
@@ -35,6 +41,8 @@ from .models import (
     Attestation,
     Equivalent,
     Kind,
+    Neologism,
+    NeologismEquivalent,
     Realization,
     Sense,
     Unit,
@@ -42,21 +50,28 @@ from .models import (
     UnitReference,
     UnitRelation,
 )
-from .permissions import can_edit_unit, can_withdraw_attestation
+from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 from .services import (
     add_attestations,
+    add_neologism_evidences,
     contest_unit,
+    create_neologism,
     create_unit,
     missing_fields,
     propose_unit,
     refresh_frequency,
     resolve_contest,
     review_attestation,
+    save_neologism_equivalent,
     save_part,
     set_example,
+    update_neologism,
     update_unit,
+    validate_neologism,
     validate_unit,
     withdraw_attestation,
+    withdraw_neologism_equivalent,
+    withdraw_neologism_evidence,
     withdraw_part,
 )
 
@@ -446,7 +461,7 @@ def part_create(request, pk, kind):
             messages.success(request, _("L’ajout est enregistré."))
             return redirect(part)
     return render(
-        request, "phraseology/part_form.html", {"unit": unit, "form": form, "heading": heading}
+        request, "phraseology/part_form.html", {"parent": unit, "form": form, "heading": heading}
     )
 
 
@@ -479,7 +494,7 @@ def part_edit(request, kind, pk):
     return render(
         request,
         "phraseology/part_form.html",
-        {"unit": unit, "form": form, "heading": heading, "part": part, "kind": kind},
+        {"parent": unit, "form": form, "heading": heading, "part": part, "kind": kind},
     )
 
 
@@ -622,3 +637,214 @@ def attestation_example(request, pk):
     except ValidationError as error:
         messages.error(request, error.messages[0])
     return redirect(attestation.get_absolute_url())
+
+
+# Neologisms
+
+NEOLOGISMS_PER_PAGE = 50
+
+
+def _neologism(user, pk):
+    neologism = get_object_or_404(
+        Neologism.objects.select_related("created_by", "validated_by"), pk=pk
+    )
+    if not can_view(user, neologism):
+        raise Http404
+    return neologism
+
+
+def _editable_neologism(user, pk):
+    neologism = _neologism(user, pk)
+    if not can_edit_neologism(user, neologism):
+        raise PermissionDenied
+    return neologism
+
+
+def _references(request):
+    data = request.POST if request.method == "POST" else None
+    return ReferenceFormSet(data, prefix="references", form_kwargs={"user": request.user})
+
+
+def _reference_evidences(references):
+    return [evidence for evidence in (form.evidence() for form in references) if evidence]
+
+
+def neologism_list(request):
+    active = NeologismEquivalent.objects.active().filter(is_hidden=False)
+    neologisms = Neologism.objects.filter(is_hidden=False).prefetch_related(
+        Prefetch("equivalents", queryset=active, to_attr="shown_equivalents")
+    )
+    query = " ".join(request.GET.get("q", "").split())[:100]
+    if query:
+        matching = active.filter(expression__icontains=query).values("neologism")
+        neologisms = neologisms.filter(Q(form__icontains=query) | Q(pk__in=matching))
+    formation = request.GET.get("formation", "")
+    if formation in Neologism.Formation.values:
+        neologisms = neologisms.filter(formation=formation)
+    page = Paginator(neologisms, NEOLOGISMS_PER_PAGE).get_page(request.GET.get("page"))
+    return render(
+        request,
+        "phraseology/neologism_list.html",
+        {
+            "page": page,
+            "query": query,
+            "formation": formation,
+            "formations": Neologism.Formation.choices,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def neologism_create(request):
+    form = NeologismCreateForm(request.POST or None, user=request.user)
+    references = _references(request)
+    evidences, errors = _chosen_attestations(request)
+    if request.method == "POST":
+        valid = form.is_valid() & references.is_valid()
+        for message in errors:
+            form.add_error(None, message)
+        if valid and not errors:
+            data = form.cleaned_data
+            equivalent = NeologismEquivalent(
+                language=data["language"], expression=data["expression"]
+            )
+            all_evidences = evidences + _reference_evidences(references)
+            neologism = form.save(commit=False)
+            try:
+                create_neologism(neologism, request.user, equivalent, all_evidences)
+            except ContributionLimitReached as error:
+                messages.error(request, str(error))
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                messages.success(request, _("Le néologisme est ajouté au lexique."))
+                return redirect(neologism)
+    context = _search_page(
+        request, evidences, form=form, references=references, keep={}, attesting=False
+    )
+    return render(request, "phraseology/neologism_create.html", context)
+
+
+def neologism_detail(request, pk):
+    user = request.user
+    neologism = _neologism(user, pk)
+    equivalents = []
+    for equivalent in neologism.equivalents.active():
+        equivalent.neologism = neologism
+        if can_view(user, equivalent):
+            equivalents.append(equivalent)
+    can_edit = can_edit_neologism(user, neologism)
+    return render(
+        request,
+        "phraseology/neologism_detail.html",
+        {
+            "neologism": neologism,
+            "equivalents": equivalents,
+            "evidences": visible_evidences(user, neologism.evidences.all(), neologism=neologism),
+            "can_edit": can_edit,
+            "withdraw_url": "phraseology:neologism_evidence_withdraw",
+            "can_validate": (is_reviewer(user) and neologism.status == Neologism.Status.PROPOSED),
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def neologism_edit(request, pk):
+    neologism = _editable_neologism(request.user, pk)
+    form = NeologismForm(request.POST or None, instance=neologism, user=request.user)
+    if request.method == "POST" and form.is_valid():
+        revision = update_neologism(form.save(commit=False), request.user)
+        if revision is None:
+            messages.info(request, _("Aucune modification."))
+        else:
+            messages.success(request, _("Les modifications sont enregistrées."))
+        return redirect(neologism)
+    context = {"form": form, "parent": neologism, "heading": _("Modifier le néologisme")}
+    return render(request, "phraseology/part_form.html", context)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def neologism_equivalent_add(request, pk):
+    neologism = _editable_neologism(request.user, pk)
+    form = NeologismEquivalentForm(
+        request.POST or None, instance=NeologismEquivalent(neologism=neologism), user=request.user
+    )
+    if request.method == "POST" and form.is_valid():
+        equivalent = form.save(commit=False)
+        save_neologism_equivalent(equivalent, request.user)
+        messages.success(request, _("L’ajout est enregistré."))
+        return redirect(equivalent)
+    context = {"form": form, "parent": neologism, "heading": _("Ajouter un équivalent")}
+    return render(request, "phraseology/part_form.html", context)
+
+
+@login_required
+@require_POST
+def neologism_equivalent_withdraw(request, pk):
+    equivalent = get_object_or_404(NeologismEquivalent.objects.active(), pk=pk)
+    equivalent.neologism = _neologism(request.user, equivalent.neologism_id)
+    if not can_view(request.user, equivalent):
+        raise Http404
+    try:
+        withdraw_neologism_equivalent(equivalent, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("Le retrait est enregistré ; il reste dans l’historique."))
+    return redirect(equivalent.neologism)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def neologism_evidence_add(request, pk):
+    neologism = _editable_neologism(request.user, pk)
+    references = _references(request)
+    evidences, errors = _chosen_attestations(request)
+    if request.method == "POST" and references.is_valid() and not errors:
+        new_evidences = evidences + _reference_evidences(references)
+        if new_evidences:
+            add_neologism_evidences(neologism, new_evidences, request.user)
+            count = len(new_evidences)
+            messages.success(
+                request,
+                ngettext("%(count)d preuve ajoutée.", "%(count)d preuves ajoutées.", count)
+                % {"count": count},
+            )
+            return redirect(f"{neologism.get_absolute_url()}#preuves")
+        errors = [_("Cochez une attestation ou citez un ouvrage.")]
+    context = _search_page(
+        request,
+        evidences,
+        neologism=neologism,
+        references=references,
+        errors=errors,
+        keep={},
+        attesting=False,
+    )
+    return render(request, "phraseology/neologism_evidence_form.html", context)
+
+
+@login_required
+@require_POST
+def neologism_evidence_withdraw(request, pk):
+    evidence = get_object_or_404(Evidence, pk=pk, neologism__isnull=False)
+    evidence.neologism = _neologism(request.user, evidence.neologism_id)
+    try:
+        withdraw_neologism_evidence(evidence, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("La preuve est retirée."))
+    return redirect(f"{evidence.neologism.get_absolute_url()}#preuves")
+
+
+@login_required
+@require_POST
+def neologism_validate(request, pk):
+    neologism = _neologism(request.user, pk)
+    if validate_neologism(neologism, request.user) is not None:
+        messages.success(request, _("Le néologisme est validé."))
+    return redirect(neologism)

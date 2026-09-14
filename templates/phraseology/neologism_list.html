@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Lexique des néologismes" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "Lexique des néologismes" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Pour les réalités modernes, la périphrase classique reste préférée. Quand un mot nouveau
+    s’impose, il est justifié comme tout choix de traduction. Le Lexicon recentis Latinitatis est
+    cité par référence, jamais recopié.
+  {% endblocktranslate %}</p>
+  {% if user.is_authenticated %}
+  <p class="actions"><a class="button" href="{% url 'phraseology:neologism_create' %}">{% translate "Proposer un néologisme" %}</a></p>
+  {% endif %}
+
+  <form method="get" class="filter-form">
+    <div class="field">
+      <label for="q">{% translate "Mot latin ou moderne" %}</label>
+      <input type="search" id="q" name="q" value="{{ query }}">
+    </div>
+    <div class="field">
+      <label for="formation">{% translate "Formation" %}</label>
+      <select id="formation" name="formation">
+        <option value="">{% translate "toutes les formations" %}</option>
+        {% for value, label in formations %}<option value="{{ value }}"{% if value == formation %} selected{% endif %}>{{ label|capfirst }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="button button-quiet">{% translate "Filtrer" %}</button>
+  </form>
+
+  <ul class="item-list">
+    {% for neologism in page %}
+    <li>
+      <a class="item-title" lang="la" href="{{ neologism.get_absolute_url }}">{{ neologism.form }}</a>
+      <span class="muted">{% for equivalent in neologism.shown_equivalents %}<span lang="{{ equivalent.language }}">{{ equivalent.expression }}</span>{% if not forloop.last %}, {% endif %}{% endfor %} · {{ neologism.get_formation_display }} · {{ neologism.get_status_display }}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucun néologisme." %}</li>
+    {% endfor %}
+  </ul>
+  {% include "translations/pager.html" %}
+</section>
+{% endblock %}

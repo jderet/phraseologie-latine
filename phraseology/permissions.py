@@ -16,6 +16,13 @@ def can_edit_unit(user, unit):
     return not unit.is_draft or user.pk == unit.created_by_id
 
 
+def can_edit_neologism(user, neologism):
+    """Neologisms are public from the start: any active account completes them, like units."""
+    if not (user.is_authenticated and user.is_active and can_view(user, neologism)):
+        return False
+    return not neologism.is_hidden or is_reviewer(user)
+
+
 def can_withdraw_attestation(user, attestation):
     """Its author withdraws an attestation not yet validated; a reviewer, any attestation."""
     if not can_edit_unit(user, attestation.unit) or attestation.is_withdrawn:

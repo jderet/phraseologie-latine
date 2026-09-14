@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from corpus.models import Passage, Token
 from moderation.models import ModeratedContent
-from moderation.registry import register
+from moderation.registry import can_view, register
 from translations.models import TranslatedSegment, version_visible_to
 
 
@@ -162,7 +162,7 @@ class Justification(ModeratedContent):
 class Evidence(ModeratedContent):
     """One piece of evidence: words of the corpus, or a place in a grammar or a dictionary.
 
-    It supports a justification, or a challenge as a counter-example.
+    It supports a justification, a challenge as a counter-example, or a neologism.
     """
 
     class Kind(models.TextChoices):
@@ -185,6 +185,14 @@ class Evidence(ModeratedContent):
         blank=True,
         related_name="evidences",
         verbose_name=_("contestation"),
+    )
+    neologism = models.ForeignKey(
+        "phraseology.Neologism",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="evidences",
+        verbose_name=_("néologisme"),
     )
     kind = models.CharField(_("type"), max_length=20, choices=Kind.choices)
     passage = models.ForeignKey(
@@ -230,8 +238,11 @@ class Evidence(ModeratedContent):
                 name="justifications_evidence_kind",
             ),
             models.CheckConstraint(
-                condition=Q(justification__isnull=False, challenge__isnull=True)
-                | Q(justification__isnull=True, challenge__isnull=False),
+                condition=Q(
+                    justification__isnull=False, challenge__isnull=True, neologism__isnull=True
+                )
+                | Q(justification__isnull=True, challenge__isnull=False, neologism__isnull=True)
+                | Q(justification__isnull=True, challenge__isnull=True, neologism__isnull=False),
                 name="justifications_evidence_one_parent",
             ),
         ]
@@ -343,11 +354,15 @@ class Challenge(ModeratedContent):
 
 
 def evidence_visible_to(user, evidence):
+    if evidence.neologism_id:
+        return can_view(user, evidence.neologism)
     parent = evidence.justification or evidence.challenge
     return version_visible_to(user, parent.translated_segment.version)
 
 
 def evidence_owner_id(evidence):
+    if evidence.neologism_id:
+        return evidence.neologism.created_by_id
     return (evidence.justification or evidence.challenge).author_id
 
 

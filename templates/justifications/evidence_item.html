@@ -8,7 +8,7 @@
   {% endif %}
   {% if evidence.note %}<span class="evidence-note">{{ evidence.note }}</span>{% endif %}
   {% if can_edit %}
-  <form method="post" action="{% url 'justifications:evidence_withdraw' evidence.pk %}" class="inline-form">
+  <form method="post" action="{% url withdraw_url|default:'justifications:evidence_withdraw' evidence.pk %}" class="inline-form">
     {% csrf_token %}
     <button type="submit" class="link-button">{% translate "Retirer cette preuve" %}</button>
   </form>

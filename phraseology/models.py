@@ -441,6 +441,107 @@ class UnitFrequency(models.Model):
         return f"{self.unit} · {self.total}"
 
 
+class Neologism(ModeratedContent):
+    """A Latin word or phrase for a modern reality, justified like any translation choice (T5).
+
+    The Lexicon recentis Latinitatis is cited by reference only, never copied (rule 12).
+    """
+
+    class Formation(models.TextChoices):
+        PERIPHRASIS = "periphrasis", _("périphrase")
+        DERIVATION = "derivation", _("dérivation")
+        BORROWING = "borrowing", _("emprunt")
+
+    class Status(models.TextChoices):
+        PROPOSED = "proposed", _("proposé")
+        VALIDATED = "validated", _("validé")
+
+    form = models.CharField(_("forme latine"), max_length=200)
+    meaning = models.TextField(
+        _("sens moderne"),
+        max_length=1000,
+        help_text=_("La réalité moderne que le mot désigne, par exemple : la bicyclette."),
+    )
+    formation = models.CharField(_("formation"), max_length=20, choices=Formation.choices)
+    justification = models.TextField(
+        _("justification"),
+        max_length=3000,
+        help_text=_(
+            "Pourquoi ce choix : modèles anciens, analogies, usage des latinistes modernes. "
+            "Les preuves du corpus et des ouvrages s’ajoutent ci-dessous."
+        ),
+    )
+    lrl_reference = models.CharField(
+        _("Lexicon recentis Latinitatis"),
+        max_length=100,
+        blank=True,
+        help_text=_("Facultatif : l’entrée ou la page, citée sans extrait (« s. v. birota »)."),
+    )
+    status = models.CharField(
+        _("statut"),
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PROPOSED,
+        editable=False,
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="neologisms",
+        verbose_name=_("proposé par"),
+    )
+    created_at = models.DateTimeField(_("proposé le"), default=timezone.now, editable=False)
+    validated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("validé par"),
+    )
+    validated_at = models.DateTimeField(_("validé le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("néologisme")
+        verbose_name_plural = _("néologismes")
+        ordering = ["form", "pk"]
+
+    def __str__(self):
+        return self.form
+
+    def get_absolute_url(self):
+        return reverse("phraseology:neologism", args=[self.pk])
+
+
+class NeologismEquivalent(ModeratedContent):
+    """A modern word rendered by a neologism, such as « vélo » for *birota*."""
+
+    neologism = models.ForeignKey(
+        Neologism,
+        on_delete=models.PROTECT,
+        related_name="equivalents",
+        verbose_name=_("néologisme"),
+    )
+    language = models.CharField(_("langue"), max_length=2, choices=Language.choices)
+    expression = models.CharField(_("expression"), max_length=200)
+    is_withdrawn = models.BooleanField(_("retiré"), default=False)
+    created_at = models.DateTimeField(_("ajouté le"), default=timezone.now, editable=False)
+
+    objects = PartQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("équivalent d’un néologisme")
+        verbose_name_plural = _("équivalents des néologismes")
+        ordering = ["neologism", "language", "created_at", "pk"]
+
+    def __str__(self):
+        return self.expression
+
+    def get_absolute_url(self):
+        return f"{self.neologism.get_absolute_url()}#equivalents"
+
+
 def unit_visible_to(user, unit):
     """A draft is visible to its creator only (rule 8)."""
     return not unit.is_draft or (user.is_authenticated and user.pk == unit.created_by_id)
@@ -483,4 +584,18 @@ register(
     visible_to=part_visible_to,
     counts_toward_limit=False,
     not_reverted=("status", "reviewed_by", "reviewed_at", "level", "origin"),
+)
+register(
+    Neologism,
+    owner_field="created_by",
+    text_fields=("form", "meaning", "justification", "lrl_reference"),
+    not_reverted=("status", "validated_by", "validated_at"),
+    discussion=lambda user, neologism: True,
+)
+register(
+    NeologismEquivalent,
+    owner_field=lambda equivalent: equivalent.neologism.created_by_id,
+    text_fields=("expression",),
+    visible_to=lambda user, equivalent: can_view(user, equivalent.neologism),
+    counts_toward_limit=False,
 )

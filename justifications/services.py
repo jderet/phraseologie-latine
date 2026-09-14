@@ -94,10 +94,9 @@ def active_evidences(justification):
     return list(justification.evidences.filter(is_withdrawn=False))
 
 
-def _save_evidence(evidence, author, justification=None, challenge=None):
+def _save_evidence(evidence, author, **parent):
     obj = Evidence(
-        justification=justification,
-        challenge=challenge,
+        **parent,
         kind=evidence.kind,
         passage=evidence.tokens[0].passage if evidence.tokens else None,
         work=evidence.work,
@@ -106,6 +105,11 @@ def _save_evidence(evidence, author, justification=None, challenge=None):
     )
     save_with_revision(obj, author, m2m={"tokens": evidence.tokens})
     return obj
+
+
+def attach_evidences(evidences, author, **parent):
+    """Save evidence for its parent, given by name: justification, challenge or neologism."""
+    return [_save_evidence(evidence, author, **parent) for evidence in evidences]
 
 
 @transaction.atomic

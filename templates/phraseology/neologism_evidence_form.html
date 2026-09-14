@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Ajouter des preuves" %} · {{ neologism.form }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ neologism.get_absolute_url }}" lang="la">{{ neologism.form }}</a></p>
+  <h1>{% translate "Ajouter des preuves" %}</h1>
+
+  {% include "justifications/search_attestations.html" %}
+
+  <form method="post" id="unit-form" class="form">
+    {% csrf_token %}
+    {% if errors %}<ul class="errorlist">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+    {% include "phraseology/chosen_attestations.html" %}
+    <fieldset class="references">
+      <legend>{% translate "Grammaires et dictionnaires" %}</legend>
+      {{ references.management_form }}
+      {% for reference in references %}<div class="reference-row">{{ reference }}</div>{% endfor %}
+    </fieldset>
+    <button type="submit" class="button">{% translate "Ajouter les preuves" %}</button>
+  </form>
+</section>
+{% endblock %}

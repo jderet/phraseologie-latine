@@ -6,9 +6,20 @@ from django.utils.translation import ngettext
 
 from accounts.limits import check_text_for_links
 from translations.forms import ContributionForm
+from translations.models import Language
 from translations.services import normalize_sentence
 
-from .models import Equivalent, Realization, Sense, Unit, UnitReference, UnitRelation, UsageMark
+from .models import (
+    Equivalent,
+    Neologism,
+    NeologismEquivalent,
+    Realization,
+    Sense,
+    Unit,
+    UnitReference,
+    UnitRelation,
+    UsageMark,
+)
 from .schema import format_schema, parse_schema
 
 MAX_TAGS = 10
@@ -185,6 +196,49 @@ class UnitReferenceForm(PartForm):
     class Meta:
         model = UnitReference
         fields = ("work", "locator", "note")
+
+
+class NeologismForm(ContributionForm):
+    link_fields = ("form", "meaning", "justification", "lrl_reference")
+
+    class Meta:
+        model = Neologism
+        fields = ("form", "meaning", "formation", "justification", "lrl_reference")
+        widgets = {
+            "form": forms.TextInput(attrs={"lang": "la"}),
+            "meaning": forms.Textarea(attrs={"rows": 2}),
+            "justification": forms.Textarea(attrs={"rows": 5}),
+        }
+
+    def clean_form(self):
+        return normalize_sentence(self.cleaned_data["form"])
+
+
+class NeologismCreateForm(NeologismForm):
+    link_fields = (*NeologismForm.link_fields, "expression")
+
+    language = forms.ChoiceField(
+        label=_("Langue de l’équivalent"), choices=Language.choices, initial=Language.FRENCH
+    )
+    expression = forms.CharField(
+        label=_("Équivalent moderne"),
+        max_length=200,
+        help_text=_("Le mot courant, par exemple : vélo. D’autres s’ajoutent ensuite."),
+    )
+
+    def clean_expression(self):
+        return normalize_sentence(self.cleaned_data["expression"])
+
+
+class NeologismEquivalentForm(ContributionForm):
+    link_fields = ("expression",)
+
+    class Meta:
+        model = NeologismEquivalent
+        fields = ("language", "expression")
+
+    def clean_expression(self):
+        return normalize_sentence(self.cleaned_data["expression"])
 
 
 class ContestForm(forms.Form):

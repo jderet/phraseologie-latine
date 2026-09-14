@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ heading }} · {{ unit.reference_form }} · {{ block.super }}{% endblock %}
+{% block title %}{{ heading }} · {{ parent }} · {{ block.super }}{% endblock %}
 
 {% block content %}
 <section class="page-medium">
-  <p class="eyebrow"><a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a></p>
+  <p class="eyebrow"><a href="{{ parent.get_absolute_url }}" lang="la">{{ parent }}</a></p>
   <h1>{{ heading }}</h1>
   <form method="post" class="form">
     {% csrf_token %}

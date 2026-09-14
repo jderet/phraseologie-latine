@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 07:43+0200\n"
+"POT-Creation-Date: 2026-09-14 07:51+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -20,7 +20,7 @@ msgid "Profil"
 msgstr "Profile"
 
 #: accounts/admin.py:14 templates/accounts/account.html:19
-#: templates/phraseology/unit_list.html:30
+#: templates/phraseology/unit_list.html:28
 msgid "Statut"
 msgstr "Status"
 
@@ -481,7 +481,7 @@ msgid "époque"
 msgstr "period"
 
 #: corpus/models.py:36 corpus/models.py:69 justifications/models.py:86
-#: justifications/models.py:284 moderation/models.py:53
+#: justifications/models.py:295 moderation/models.py:53
 #: moderation/models.py:127 moderation/models.py:175 moderation/models.py:217
 #: translations/models.py:259
 msgid "auteur"
@@ -644,7 +644,7 @@ msgstr "reference"
 msgid "texte"
 msgstr "text"
 
-#: corpus/models.py:155 corpus/models.py:191 justifications/models.py:196
+#: corpus/models.py:155 corpus/models.py:191 justifications/models.py:204
 #: phraseology/models.py:346
 msgid "passage"
 msgstr "passage"
@@ -793,6 +793,7 @@ msgstr "%(year)d BC"
 #: justifications/apps.py:7
 #: templates/justifications/justification_detail.html:9
 #: templates/justifications/justification_form.html:8
+#: templates/phraseology/neologism_detail.html:66
 msgid "Justification"
 msgstr "Justification"
 
@@ -804,7 +805,7 @@ msgstr "This passage is not in the Latin sentence: copy it exactly."
 msgid "Ce passage ne figure pas dans la phrase source."
 msgstr "This passage is not in the source sentence."
 
-#: justifications/forms.py:65 moderation/forms.py:31 phraseology/forms.py:201
+#: justifications/forms.py:65 moderation/forms.py:31 phraseology/forms.py:255
 #: templates/justifications/challenge_detail.html:50
 msgid "Décision"
 msgstr "Decision"
@@ -817,7 +818,7 @@ msgstr "Uphold: the contested choice must be revised"
 msgid "Écarter : le choix contesté est défendable"
 msgstr "Dismiss: the contested choice is defensible"
 
-#: justifications/forms.py:73 phraseology/forms.py:209
+#: justifications/forms.py:73 phraseology/forms.py:263
 msgid "Motivation"
 msgstr "Reasons"
 
@@ -829,7 +830,7 @@ msgstr "Work"
 msgid "Localisation"
 msgstr "Location"
 
-#: justifications/forms.py:87 justifications/models.py:214
+#: justifications/forms.py:87 justifications/models.py:222
 #: phraseology/models.py:285
 msgid "Paragraphe, page ou entrée : « § 426 », « s. v. consilium »."
 msgstr "Paragraph, page or entry: “§ 426”, “s.v. consilium”."
@@ -862,7 +863,7 @@ msgstr "copyright-free"
 msgid "sous droits : cité seulement"
 msgstr "under copyright: cited only"
 
-#: justifications/models.py:42 justifications/models.py:189
+#: justifications/models.py:42 justifications/models.py:197
 #: phraseology/models.py:57
 msgid "type"
 msgstr "type"
@@ -899,7 +900,7 @@ msgstr "by analogy"
 msgid "introuvable dans le corpus"
 msgstr "not found in the corpus"
 
-#: justifications/models.py:80 justifications/models.py:270
+#: justifications/models.py:80 justifications/models.py:281
 #: translations/models.py:325
 msgid "phrase traduite"
 msgstr "translated sentence"
@@ -912,7 +913,7 @@ msgstr "justified Latin passage"
 msgid "Les mots de votre phrase latine que vous justifiez, tels quels."
 msgstr "The words of your Latin sentence that you justify, exactly as written."
 
-#: justifications/models.py:93 justifications/models.py:291
+#: justifications/models.py:93 justifications/models.py:302
 msgid "position du passage"
 msgstr "position of the passage"
 
@@ -949,6 +950,7 @@ msgid "Enregistrée quand le passage est introuvable dans le corpus (règle 7)."
 msgstr "Recorded when the passage is not found in the corpus (rule 7)."
 
 #: justifications/models.py:120 justifications/models.py:179
+#: phraseology/models.py:467
 msgid "justification"
 msgstr "justification"
 
@@ -977,108 +979,114 @@ msgstr "grammar rule"
 msgid "article de dictionnaire"
 msgstr "dictionary entry"
 
-#: justifications/models.py:187 justifications/models.py:316
+#: justifications/models.py:187 justifications/models.py:327
 msgid "contestation"
 msgstr "challenge"
 
-#: justifications/models.py:200
+#: justifications/models.py:195 phraseology/models.py:506
+#: phraseology/models.py:524 templates/phraseology/neologism_detail.html:4
+#: templates/phraseology/neologism_detail.html:10
+msgid "néologisme"
+msgstr "neologism"
+
+#: justifications/models.py:208
 msgid "mots cités"
 msgstr "cited words"
 
-#: justifications/models.py:208 phraseology/models.py:280
+#: justifications/models.py:216 phraseology/models.py:280
 msgid "ouvrage"
 msgstr "work"
 
-#: justifications/models.py:211 phraseology/models.py:283
+#: justifications/models.py:219 phraseology/models.py:283
 msgid "localisation"
 msgstr "location"
 
-#: justifications/models.py:216 phraseology/models.py:147
+#: justifications/models.py:224 phraseology/models.py:147
 #: phraseology/models.py:287 phraseology/models.py:370
 msgid "note"
 msgstr "note"
 
-#: justifications/models.py:217 phraseology/models.py:148
+#: justifications/models.py:225 phraseology/models.py:148
 #: phraseology/models.py:241 phraseology/models.py:371
 msgid "retirée"
 msgstr "withdrawn"
 
-#: justifications/models.py:218 phraseology/models.py:149
+#: justifications/models.py:226 phraseology/models.py:149
 #: phraseology/models.py:242 phraseology/models.py:378
 msgid "ajoutée le"
 msgstr "added on"
 
-#: justifications/models.py:221
+#: justifications/models.py:229
 msgid "preuve"
 msgstr "evidence"
 
-#: justifications/models.py:222
+#: justifications/models.py:230
 msgid "preuves"
 msgstr "evidence"
 
-#: justifications/models.py:261
+#: justifications/models.py:272
 msgid "ouverte"
 msgstr "open"
 
-#: justifications/models.py:262
+#: justifications/models.py:273
 msgid "retenue"
 msgstr "upheld"
 
-#: justifications/models.py:263
+#: justifications/models.py:274
 msgid "écartée"
 msgstr "dismissed"
 
-#: justifications/models.py:264
+#: justifications/models.py:275
 msgid "retirée par son auteur"
 msgstr "withdrawn by its author"
 
-#: justifications/models.py:278
+#: justifications/models.py:289
 msgid "justification contestée"
 msgstr "contested justification"
 
-#: justifications/models.py:287
+#: justifications/models.py:298
 msgid "passage contesté"
 msgstr "contested passage"
 
-#: justifications/models.py:289
+#: justifications/models.py:300
 msgid "Les mots contestés, tels qu’ils sont écrits."
 msgstr "The contested words, exactly as written."
 
-#: justifications/models.py:293
+#: justifications/models.py:304
 msgid "argument"
 msgstr "argument"
 
-#: justifications/models.py:295
+#: justifications/models.py:306
 msgid ""
 "Pourquoi ce choix vous paraît fautif, et ce que vous proposez à la place."
 msgstr "Why this choice seems wrong to you, and what you suggest instead."
 
-#: justifications/models.py:298 moderation/models.py:132
-#: phraseology/models.py:79 phraseology/models.py:361
+#: justifications/models.py:309 moderation/models.py:132
+#: phraseology/models.py:79 phraseology/models.py:361 phraseology/models.py:481
 msgid "statut"
 msgstr "status"
 
-#: justifications/models.py:301
+#: justifications/models.py:312
 msgid "décision motivée"
 msgstr "reasoned decision"
 
-#: justifications/models.py:310
+#: justifications/models.py:321
 msgid "close par"
 msgstr "closed by"
 
-#: justifications/models.py:312
+#: justifications/models.py:323
 msgid "close le"
 msgstr "closed on"
 
-#: justifications/models.py:313
+#: justifications/models.py:324
 msgid "ouverte le"
 msgstr "opened on"
 
-#: justifications/models.py:317
+#: justifications/models.py:328
 msgid "contestations"
 msgstr "challenges"
 
-#: justifications/models.py:328
+#: justifications/models.py:339
 #, python-format
 msgid "Contestation de « %(excerpt)s »"
 msgstr "Challenge of “%(excerpt)s”"
@@ -1099,19 +1107,19 @@ msgstr "A justification by analogy rests on at least one piece of evidence."
 msgid "Expliquez ce choix par un commentaire ou par une preuve."
 msgstr "Explain this choice with a comment or a piece of evidence."
 
-#: justifications/services.py:162
+#: justifications/services.py:166 phraseology/services.py:405
 msgid "Preuve retirée"
 msgstr "Evidence withdrawn"
 
-#: justifications/services.py:186
+#: justifications/services.py:190
 msgid "Cette contestation est déjà close."
 msgstr "This challenge is already closed."
 
-#: justifications/services.py:202
+#: justifications/services.py:206
 msgid "Contestation close"
 msgstr "Challenge closed"
 
-#: justifications/services.py:209
+#: justifications/services.py:213
 msgid "Contestation retirée"
 msgstr "Challenge withdrawn"
 
@@ -1131,14 +1139,14 @@ msgstr "Justify a translation choice"
 msgid "Enregistrer la justification"
 msgstr "Save the justification"
 
-#: justifications/views.py:221 phraseology/views.py:335
-#: phraseology/views.py:475 translations/views.py:70 translations/views.py:237
-#: translations/views.py:429
+#: justifications/views.py:221 phraseology/views.py:350
+#: phraseology/views.py:490 phraseology/views.py:760 translations/views.py:70
+#: translations/views.py:237 translations/views.py:429
 msgid "Aucune modification."
 msgstr "No change."
 
-#: justifications/views.py:223 phraseology/views.py:337
-#: phraseology/views.py:477 translations/views.py:72
+#: justifications/views.py:223 phraseology/views.py:352
+#: phraseology/views.py:492 phraseology/views.py:762 translations/views.py:72
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
@@ -1156,27 +1164,31 @@ msgstr "Edit the justification"
 msgid "Enregistrer"
 msgstr "Save"
 
-#: justifications/views.py:250
+#: justifications/views.py:250 phraseology/views.py:813
 #, python-format
 msgid "%(count)d preuve ajoutée."
 msgid_plural "%(count)d preuves ajoutées."
 msgstr[0] "%(count)d piece of evidence added."
 msgstr[1] "%(count)d pieces of evidence added."
 
-#: justifications/views.py:254
+#: justifications/views.py:254 phraseology/views.py:817
 msgid "Cochez une attestation ou citez un ouvrage."
 msgstr "Tick an attestation or cite a work."
 
 #: justifications/views.py:263
 #: templates/justifications/justification_detail.html:73
+#: templates/phraseology/neologism_detail.html:77
+#: templates/phraseology/neologism_evidence_form.html:4
+#: templates/phraseology/neologism_evidence_form.html:9
 msgid "Ajouter des preuves"
 msgstr "Add evidence"
 
 #: justifications/views.py:264
+#: templates/phraseology/neologism_evidence_form.html:22
 msgid "Ajouter les preuves"
 msgstr "Add the evidence"
 
-#: justifications/views.py:280
+#: justifications/views.py:280 phraseology/views.py:840
 msgid "La preuve est retirée."
 msgstr "The evidence has been withdrawn."
 
@@ -1202,7 +1214,7 @@ msgstr ""
 msgid "Publier la contestation"
 msgstr "Publish the challenge"
 
-#: justifications/views.py:423 phraseology/views.py:418
+#: justifications/views.py:423 phraseology/views.py:433
 msgid "Choisissez une décision et motivez-la."
 msgstr "Choose a decision and give your reasons."
 
@@ -1444,6 +1456,7 @@ msgid "Votre avis est enregistré."
 msgstr "Your opinion has been recorded."
 
 #: phraseology/apps.py:7 templates/base.html:16
+#: templates/phraseology/neologism_list.html:8
 #: templates/phraseology/unit_create.html:8
 #: templates/phraseology/unit_detail.html:8
 #: templates/phraseology/unit_list.html:4
@@ -1451,63 +1464,75 @@ msgstr "Your opinion has been recorded."
 msgid "Phraséologie"
 msgstr "Phraseology"
 
-#: phraseology/forms.py:24 phraseology/forms.py:216
+#: phraseology/forms.py:35 phraseology/forms.py:270
 msgid "Sens"
 msgstr "Sense"
 
-#: phraseology/forms.py:27
+#: phraseology/forms.py:38
 msgid "Une définition courte ; les équivalents modernes s’ajoutent ensuite."
 msgstr "A short definition; modern equivalents are added afterwards."
 
-#: phraseology/forms.py:43
+#: phraseology/forms.py:54
 msgid "Marques d’usage"
 msgstr "Usage labels"
 
-#: phraseology/forms.py:49 templates/phraseology/unit_detail.html:68
+#: phraseology/forms.py:60 templates/phraseology/unit_detail.html:68
 msgid "Étiquettes"
 msgstr "Tags"
 
-#: phraseology/forms.py:52
+#: phraseology/forms.py:63
 msgid "Libres, séparées par des virgules : guerre, décision."
 msgstr "Free, separated by commas: war, decision."
 
-#: phraseology/forms.py:67
+#: phraseology/forms.py:78
 msgid "Typologie provisoire, en attendant le guide d’annotation."
 msgstr "Provisional typology, until the annotation guide is written."
 
-#: phraseology/forms.py:94
+#: phraseology/forms.py:105
 #, python-format
 msgid "%(limit)d étiquette au plus."
 msgid_plural "%(limit)d étiquettes au plus."
 msgstr[0] "At most %(limit)d tag."
 msgstr[1] "At most %(limit)d tags."
 
-#: phraseology/forms.py:100
+#: phraseology/forms.py:111
 #, python-format
 msgid "Une étiquette compte au plus %(limit)d caractères."
 msgstr "A tag has at most %(limit)d characters."
 
-#: phraseology/forms.py:178
+#: phraseology/forms.py:189
 msgid "Cette relation est déjà indiquée."
 msgstr "This relation is already given."
 
-#: phraseology/forms.py:192 templates/justifications/challenge_detail.html:39
+#: phraseology/forms.py:221
+msgid "Langue de l’équivalent"
+msgstr "Language of the equivalent"
+
+#: phraseology/forms.py:224
+msgid "Équivalent moderne"
+msgstr "Modern equivalent"
+
+#: phraseology/forms.py:226
+msgid "Le mot courant, par exemple : vélo. D’autres s’ajoutent ensuite."
+msgstr "The everyday word, for example: bike. Others are added afterwards."
+
+#: phraseology/forms.py:246 templates/justifications/challenge_detail.html:39
 msgid "Argument"
 msgstr "Argument"
 
-#: phraseology/forms.py:195
+#: phraseology/forms.py:249
 msgid "Ce qui vous paraît fautif dans la fiche, et ce que vous proposez."
 msgstr "What seems wrong to you in the entry, and what you suggest."
 
-#: phraseology/forms.py:203
+#: phraseology/forms.py:257
 msgid "Valider la fiche : la contestation est écartée"
 msgstr "Validate the entry: the challenge is dismissed"
 
-#: phraseology/forms.py:204
+#: phraseology/forms.py:258
 msgid "Remettre la fiche en proposition : elle doit être revue"
 msgstr "Send the entry back to proposal: it must be revised"
 
-#: phraseology/forms.py:218
+#: phraseology/forms.py:272
 msgid "Réalisation"
 msgstr "Realization"
 
@@ -1692,20 +1717,22 @@ msgid "note d’usage"
 msgstr "usage note"
 
 #: phraseology/models.py:176 phraseology/models.py:201
-#: phraseology/models.py:288
+#: phraseology/models.py:288 phraseology/models.py:528
 msgid "retiré"
 msgstr "withdrawn"
 
 #: phraseology/models.py:177 phraseology/models.py:202
-#: phraseology/models.py:289 translations/models.py:91
+#: phraseology/models.py:289 phraseology/models.py:529
+#: translations/models.py:91
 msgid "ajouté le"
 msgstr "added on"
 
-#: phraseology/models.py:199 translations/models.py:71
+#: phraseology/models.py:199 phraseology/models.py:526
+#: translations/models.py:71
 msgid "langue"
 msgstr "language"
 
-#: phraseology/models.py:200
+#: phraseology/models.py:200 phraseology/models.py:527
 msgid "expression"
 msgstr "expression"
 
@@ -1854,6 +1881,85 @@ msgstr "frequency"
 msgid "fréquences"
 msgstr "frequencies"
 
+#: phraseology/models.py:451
+msgid "périphrase"
+msgstr "periphrasis"
+
+#: phraseology/models.py:452
+msgid "dérivation"
+msgstr "derivation"
+
+#: phraseology/models.py:453
+msgid "emprunt"
+msgstr "borrowing"
+
+#: phraseology/models.py:456
+msgid "proposé"
+msgstr "proposed"
+
+#: phraseology/models.py:457
+msgid "validé"
+msgstr "validated"
+
+#: phraseology/models.py:459
+msgid "forme latine"
+msgstr "Latin form"
+
+#: phraseology/models.py:461
+msgid "sens moderne"
+msgstr "modern meaning"
+
+#: phraseology/models.py:463
+msgid "La réalité moderne que le mot désigne, par exemple : la bicyclette."
+msgstr "The modern reality the word denotes, for example: the bicycle."
+
+#: phraseology/models.py:465
+msgid "formation"
+msgstr "formation"
+
+#: phraseology/models.py:470
+msgid ""
+"Pourquoi ce choix : modèles anciens, analogies, usage des latinistes "
+"modernes. Les preuves du corpus et des ouvrages s’ajoutent ci-dessous."
+msgstr "Why this choice: ancient models, analogies, usage of modern Latinists. Evidence from the corpus and from reference works is added below."
+
+#: phraseology/models.py:475 templates/phraseology/neologism_detail.html:38
+msgid "Lexicon recentis Latinitatis"
+msgstr "Lexicon recentis Latinitatis"
+
+#: phraseology/models.py:478
+msgid ""
+"Facultatif : l’entrée ou la page, citée sans extrait (« s. v. birota »)."
+msgstr "Optional: the entry or the page, cited without extract (“s. v. birota”)."
+
+#: phraseology/models.py:491
+msgid "proposé par"
+msgstr "proposed by"
+
+#: phraseology/models.py:493
+msgid "proposé le"
+msgstr "proposed on"
+
+#: phraseology/models.py:501
+msgid "validé par"
+msgstr "validated by"
+
+#: phraseology/models.py:503
+msgid "validé le"
+msgstr "validated on"
+
+#: phraseology/models.py:507
+msgid "néologismes"
+msgstr "neologisms"
+
+#: phraseology/models.py:534
+msgid "équivalent d’un néologisme"
+msgstr "equivalent of a neologism"
+
+#: phraseology/models.py:535
+msgid "équivalents des néologismes"
+msgstr "equivalents of neologisms"
+
 #: phraseology/schema.py:47
 msgid ""
 "Les relations doivent former un seul ensemble, à partir d’un seul lemme."
@@ -1880,222 +1986,242 @@ msgstr ""
 msgid "Chaque lemme ne dépend que d’un seul autre."
 msgstr "Each lemma depends on one other lemma only."
 
-#: phraseology/services.py:61
+#: phraseology/services.py:62
 msgid "le type"
 msgstr "the type"
 
-#: phraseology/services.py:63
+#: phraseology/services.py:64
 msgid "le schéma"
 msgstr "the schema"
 
-#: phraseology/services.py:65
+#: phraseology/services.py:66
 msgid "la fréquence, calculée pour le schéma actuel"
 msgstr "the frequency, computed for the present schema"
 
-#: phraseology/services.py:67
+#: phraseology/services.py:68
 msgid "la construction"
 msgstr "the construction"
 
-#: phraseology/services.py:69
+#: phraseology/services.py:70
 msgid "le registre"
 msgstr "the register"
 
-#: phraseology/services.py:73
+#: phraseology/services.py:74
 msgid "un sens"
 msgstr "a sense"
 
-#: phraseology/services.py:75
+#: phraseology/services.py:76
 msgid "un équivalent pour chaque sens"
 msgstr "an equivalent for each sense"
 
-#: phraseology/services.py:80
+#: phraseology/services.py:81
 msgid "un exemple choisi parmi les attestations validées"
 msgstr "an example chosen among the validated attestations"
 
-#: phraseology/services.py:82
+#: phraseology/services.py:83
 msgid "un renvoi bibliographique"
 msgstr "a bibliographic reference"
 
-#: phraseology/services.py:92
+#: phraseology/services.py:93
 #, python-format
 msgid "Il manque : %(fields)s."
 msgstr "Missing: %(fields)s."
 
-#: phraseology/services.py:103
+#: phraseology/services.py:104
 #, python-format
 msgid "Une fiche validée reste complète ; il lui manquerait : %(fields)s."
 msgstr "A validated entry stays complete; it would lack: %(fields)s."
 
-#: phraseology/services.py:120
+#: phraseology/services.py:121
 msgid "Indiquez le sens de l’unité."
 msgstr "Give the sense of the unit."
 
-#: phraseology/services.py:123
+#: phraseology/services.py:124
 msgid "Choisissez au moins une attestation dans le corpus."
 msgstr "Choose at least one attestation in the corpus."
 
-#: phraseology/services.py:153
+#: phraseology/services.py:154
 msgid "Choisissez une autre unité, proposée ou validée."
 msgstr "Choose another unit, proposed or validated."
 
-#: phraseology/services.py:173
+#: phraseology/services.py:174
 msgid "Une unité garde au moins un sens."
 msgstr "A unit keeps at least one sense."
 
-#: phraseology/services.py:175 phraseology/services.py:223
+#: phraseology/services.py:176 phraseology/services.py:224
+#: phraseology/services.py:388
 msgid "Retrait"
 msgstr "Withdrawal"
 
-#: phraseology/services.py:220
+#: phraseology/services.py:221
 msgid "Une unité garde au moins une attestation."
 msgstr "A unit keeps at least one attestation."
 
-#: phraseology/services.py:245
+#: phraseology/services.py:246
 msgid "Attestation validée"
 msgstr "Attestation validated"
 
-#: phraseology/services.py:248
+#: phraseology/services.py:249
 msgid "Attestation rejetée"
 msgstr "Attestation rejected"
 
-#: phraseology/services.py:262
+#: phraseology/services.py:263
 msgid "Une attestation rejetée ne sert pas d’exemple."
 msgstr "A rejected attestation cannot be an example."
 
-#: phraseology/services.py:284
+#: phraseology/services.py:285
 msgid "Une fiche proposée a au moins un sens et une attestation."
 msgstr "A proposed entry has at least one sense and one attestation."
 
-#: phraseology/services.py:288
+#: phraseology/services.py:289
 msgid "Proposition"
 msgstr "Proposal"
 
-#: phraseology/services.py:299
+#: phraseology/services.py:300
 msgid "Seule une fiche proposée peut être validée."
 msgstr "Only a proposed entry can be validated."
 
-#: phraseology/services.py:307 templates/phraseology/unit_detail.html:82
+#: phraseology/services.py:308 phraseology/services.py:418
+#: templates/phraseology/unit_detail.html:82
 msgid "Validation"
 msgstr "Validation"
 
-#: phraseology/services.py:316
+#: phraseology/services.py:317
 msgid "Cette fiche ne peut pas être contestée."
 msgstr "This entry cannot be challenged."
 
-#: phraseology/services.py:320 templates/justifications/challenge_detail.html:9
+#: phraseology/services.py:321 templates/justifications/challenge_detail.html:9
 msgid "Contestation"
 msgstr "Challenge"
 
-#: phraseology/services.py:332
+#: phraseology/services.py:333
 msgid "Cette fiche n’est pas contestée."
 msgstr "This entry is not challenged."
 
-#: phraseology/services.py:341
+#: phraseology/services.py:342
 msgid "Contestation levée"
 msgstr "Challenge settled"
 
-#: phraseology/views.py:70 templates/phraseology/unit_detail.html:142
+#: phraseology/services.py:385
+msgid "Un néologisme garde au moins un équivalent."
+msgstr "A neologism keeps at least one equivalent."
+
+#: phraseology/views.py:85 templates/phraseology/unit_detail.html:142
 msgid "Ajouter un sens"
 msgstr "Add a sense"
 
-#: phraseology/views.py:70
+#: phraseology/views.py:85
 msgid "Modifier le sens"
 msgstr "Edit the sense"
 
-#: phraseology/views.py:74 templates/phraseology/unit_detail.html:142
+#: phraseology/views.py:89 phraseology/views.py:780
+#: templates/phraseology/neologism_detail.html:29
+#: templates/phraseology/unit_detail.html:142
 msgid "Ajouter un équivalent"
 msgstr "Add an equivalent"
 
-#: phraseology/views.py:75
+#: phraseology/views.py:90
 msgid "Modifier l’équivalent"
 msgstr "Edit the equivalent"
 
-#: phraseology/views.py:80 templates/phraseology/unit_detail.html:156
+#: phraseology/views.py:95 templates/phraseology/unit_detail.html:156
 msgid "Ajouter une réalisation"
 msgstr "Add a realization"
 
-#: phraseology/views.py:81
+#: phraseology/views.py:96
 msgid "Modifier la réalisation"
 msgstr "Edit the realization"
 
-#: phraseology/views.py:86 templates/phraseology/unit_detail.html:211
+#: phraseology/views.py:101 templates/phraseology/unit_detail.html:211
 msgid "Ajouter une relation"
 msgstr "Add a relation"
 
-#: phraseology/views.py:87
+#: phraseology/views.py:102
 msgid "Modifier la relation"
 msgstr "Edit the relation"
 
-#: phraseology/views.py:92
+#: phraseology/views.py:107
 msgid "Ajouter un renvoi bibliographique"
 msgstr "Add a bibliographic reference"
 
-#: phraseology/views.py:93
+#: phraseology/views.py:108
 msgid "Modifier le renvoi bibliographique"
 msgstr "Edit the bibliographic reference"
 
-#: phraseology/views.py:208
+#: phraseology/views.py:223
 msgid "La fiche est créée : c’est un brouillon visible de vous seul."
 msgstr "The entry is created: it is a draft visible to you only."
 
-#: phraseology/views.py:350
+#: phraseology/views.py:365
 msgid ""
 "La fréquence ne se calcule qu’à partir d’un schéma, sur un corpus analysé."
 msgstr "The frequency is computed only from a schema, on an analysed corpus."
 
-#: phraseology/views.py:356
+#: phraseology/views.py:371
 #, python-format
 msgid "%(count)d occurrence repérée automatiquement."
 msgid_plural "%(count)d occurrences repérées automatiquement."
 msgstr[0] "%(count)d occurrence found automatically."
 msgstr[1] "%(count)d occurrences found automatically."
 
-#: phraseology/views.py:380
+#: phraseology/views.py:395
 msgid "La fiche est proposée : elle est publique, et chacun peut la compléter."
 msgstr "The entry is proposed: it is public, and anyone can complete it."
 
-#: phraseology/views.py:387
+#: phraseology/views.py:402
 msgid "La fiche est validée."
 msgstr "The entry is validated."
 
-#: phraseology/views.py:404
+#: phraseology/views.py:419
 msgid "La fiche est contestée ; votre argument ouvre la discussion."
 msgstr "The entry is challenged; your argument opens the discussion."
 
-#: phraseology/views.py:426
+#: phraseology/views.py:441
 msgid "La contestation est levée."
 msgstr "The challenge is settled."
 
-#: phraseology/views.py:446
+#: phraseology/views.py:461 phraseology/views.py:778
 msgid "L’ajout est enregistré."
 msgstr "The addition is saved."
 
-#: phraseology/views.py:495
+#: phraseology/views.py:510 phraseology/views.py:796
 msgid "Le retrait est enregistré ; il reste dans l’historique."
 msgstr "The withdrawal is saved; it stays in the history."
 
-#: phraseology/views.py:558
+#: phraseology/views.py:573
 #, python-format
 msgid "%(count)d attestation ajoutée."
 msgid_plural "%(count)d attestations ajoutées."
 msgstr[0] "%(count)d attestation added."
 msgstr[1] "%(count)d attestations added."
 
-#: phraseology/views.py:563
+#: phraseology/views.py:578
 msgid "Cochez au moins une attestation."
 msgstr "Tick at least one attestation."
 
-#: phraseology/views.py:593
+#: phraseology/views.py:608
 msgid "L’attestation est retirée ; elle reste dans l’historique."
 msgstr "The attestation is withdrawn; it stays in the history."
 
-#: phraseology/views.py:610
+#: phraseology/views.py:625
 msgid "L’attestation est validée."
 msgstr "The attestation is validated."
 
-#: phraseology/views.py:612
+#: phraseology/views.py:627
 msgid "L’attestation est rejetée."
 msgstr "The attestation is rejected."
+
+#: phraseology/views.py:721
+msgid "Le néologisme est ajouté au lexique."
+msgstr "The neologism is added to the lexicon."
+
+#: phraseology/views.py:764
+msgid "Modifier le néologisme"
+msgstr "Edit the neologism"
+
+#: phraseology/views.py:849
+msgid "Le néologisme est validé."
+msgstr "The neologism is validated."
 
 #: templates/accounts/account.html:4 templates/accounts/account.html:8
 #: templates/base.html:26
@@ -2638,6 +2764,7 @@ msgstr "Challenges"
 #: templates/justifications/challenge_detail.html:12
 #: templates/justifications/justification_detail.html:14
 #: templates/moderation/discussion.html:7 templates/moderation/history.html:14
+#: templates/phraseology/neologism_detail.html:12
 #: templates/phraseology/unit_detail.html:15
 #: templates/translations/project_detail.html:11
 #: templates/translations/source_detail.html:11
@@ -2748,6 +2875,7 @@ msgid "Aucune contestation pour l’instant."
 msgstr "No challenge yet."
 
 #: templates/justifications/evidence_item.html:7
+#: templates/phraseology/neologism_detail.html:39
 #: templates/phraseology/unit_detail.html:219
 msgid "ouvrage sous droits, cité sans extrait"
 msgstr "work under copyright, cited without excerpt"
@@ -2784,10 +2912,12 @@ msgid "Commentaire"
 msgstr "Comment"
 
 #: templates/justifications/justification_detail.html:46
+#: templates/phraseology/neologism_detail.html:71
 msgid "Preuves"
 msgstr "Evidence"
 
 #: templates/justifications/justification_detail.html:49
+#: templates/phraseology/neologism_detail.html:74
 msgid "Aucune preuve."
 msgstr "No evidence."
 
@@ -2800,6 +2930,7 @@ msgid "Contester cette justification"
 msgstr "Challenge this justification"
 
 #: templates/justifications/justification_detail.html:72
+#: templates/phraseology/neologism_detail.html:55
 msgid "Modifier"
 msgstr "Edit"
 
@@ -2809,6 +2940,8 @@ msgid "Attestations retenues"
 msgstr "Chosen attestations"
 
 #: templates/justifications/justification_form.html:41
+#: templates/phraseology/neologism_create.html:22
+#: templates/phraseology/neologism_evidence_form.html:18
 msgid "Grammaires et dictionnaires"
 msgstr "Grammars and dictionaries"
 
@@ -2962,7 +3095,10 @@ msgid ""
 "Cochez les passages qui attestent l’unité, parmi les occurrences de son "
 "schéma ou dans une recherche du corpus. Une attestation ajoutée est "
 "proposée ; un relecteur la valide."
-msgstr "Tick the passages that attest the unit, among the occurrences of its schema or in a corpus search. An added attestation is proposed; a reviewer validates it."
+msgstr ""
+"Tick the passages that attest the unit, among the occurrences of its schema "
+"or in a corpus search. An added attestation is proposed; a reviewer "
+"validates it."
 
 #: templates/phraseology/attestation_form.html:17
 msgid "Occurrences du schéma"
@@ -2976,8 +3112,12 @@ msgid ""
 msgid_plural ""
 "%(counter)s occurrences repérées automatiquement (corpus version "
 "%(label)s) : vérifiez-les avant de les cocher."
-msgstr[0] "%(counter)s occurrence found automatically (corpus version %(label)s): check it before ticking it."
-msgstr[1] "%(counter)s occurrences found automatically (corpus version %(label)s): check them before ticking them."
+msgstr[0] ""
+"%(counter)s occurrence found automatically (corpus version %(label)s): check "
+"it before ticking it."
+msgstr[1] ""
+"%(counter)s occurrences found automatically (corpus version %(label)s): "
+"check them before ticking them."
 
 #: templates/phraseology/attestation_form.html:28
 msgid "déjà attestée"
@@ -3005,14 +3145,89 @@ msgstr "Pages of occurrences"
 msgid "Ajouter les attestations"
 msgstr "Add the attestations"
 
-#: templates/phraseology/part_actions.html:2
-msgid "modifier"
-msgstr "edit"
+#: templates/phraseology/neologism_create.html:4
+#: templates/phraseology/neologism_create.html:9
+#: templates/phraseology/neologism_list.html:16
+msgid "Proposer un néologisme"
+msgstr "Propose a neologism"
 
+#: templates/phraseology/neologism_create.html:8
+#: templates/phraseology/neologism_detail.html:8
+#: templates/phraseology/neologism_list.html:4
+#: templates/phraseology/neologism_list.html:9
+#: templates/phraseology/unit_list.html:13
+msgid "Lexique des néologismes"
+msgstr "Lexicon of neologisms"
+
+#: templates/phraseology/neologism_create.html:10
+msgid ""
+"Un néologisme est public dès qu’il est proposé. Justifiez-le : formation, "
+"modèles anciens, et au besoin des attestations du corpus ou des ouvrages de "
+"référence."
+msgstr "A neologism is public as soon as it is proposed. Justify it: formation, ancient models, and if needed attestations from the corpus or reference works."
+
+#: templates/phraseology/neologism_create.html:26
+msgid "Proposer le néologisme"
+msgstr "Propose the neologism"
+
+#: templates/phraseology/neologism_detail.html:17
+msgid "Sens moderne"
+msgstr "Modern meaning"
+
+#: templates/phraseology/neologism_detail.html:21
+msgid "Équivalents"
+msgstr "Equivalents"
+
+#: templates/phraseology/neologism_detail.html:26
 #: templates/phraseology/part_actions.html:3
 #: templates/phraseology/unit_detail.html:187
 msgid "retirer"
 msgstr "withdraw"
+
+#: templates/phraseology/neologism_detail.html:33
+#: templates/phraseology/neologism_list.html:25
+msgid "Formation"
+msgstr "Formation"
+
+#: templates/phraseology/neologism_detail.html:43
+msgid "Proposé par"
+msgstr "Proposed by"
+
+#: templates/phraseology/neologism_detail.html:48
+msgid "Validé par"
+msgstr "Validated by"
+
+#: templates/phraseology/neologism_detail.html:59
+msgid "Valider le néologisme"
+msgstr "Validate the neologism"
+
+#: templates/phraseology/neologism_list.html:10
+msgid ""
+"Pour les réalités modernes, la périphrase classique reste préférée. Quand un "
+"mot nouveau s’impose, il est justifié comme tout choix de traduction. Le "
+"Lexicon recentis Latinitatis est cité par référence, jamais recopié."
+msgstr "For modern realities, a classical periphrasis remains preferred. When a new word is needed, it is justified like any translation choice. The Lexicon recentis Latinitatis is cited by reference, never copied."
+
+#: templates/phraseology/neologism_list.html:21
+msgid "Mot latin ou moderne"
+msgstr "Latin or modern word"
+
+#: templates/phraseology/neologism_list.html:27
+msgid "toutes les formations"
+msgstr "all formations"
+
+#: templates/phraseology/neologism_list.html:31
+#: templates/phraseology/unit_list.html:35
+msgid "Filtrer"
+msgstr "Filter"
+
+#: templates/phraseology/neologism_list.html:41
+msgid "Aucun néologisme."
+msgstr "No neologism."
+
+#: templates/phraseology/part_actions.html:2
+msgid "modifier"
+msgstr "edit"
 
 #: templates/phraseology/unit_contest.html:4
 #: templates/phraseology/unit_contest.html:9
@@ -3026,11 +3241,14 @@ msgid ""
 "Votre argument ouvre la discussion de la fiche, qui passe « contestée ». Un "
 "relecteur lève ensuite la contestation : il valide de nouveau la fiche, ou "
 "la remet en proposition pour qu’elle soit revue."
-msgstr "Your argument opens the discussion of the entry, which becomes “challenged”. A reviewer then settles the challenge: they validate the entry again, or send it back to proposal to be revised."
+msgstr ""
+"Your argument opens the discussion of the entry, which becomes “challenged”. "
+"A reviewer then settles the challenge: they validate the entry again, or "
+"send it back to proposal to be revised."
 
 #: templates/phraseology/unit_create.html:4
 #: templates/phraseology/unit_create.html:9
-#: templates/phraseology/unit_list.html:14
+#: templates/phraseology/unit_list.html:13
 msgid "Créer une fiche"
 msgstr "Create an entry"
 
@@ -3053,7 +3271,7 @@ msgid "Brouillon : cette fiche n’est visible que de vous."
 msgstr "Draft: this entry is visible to you only."
 
 #: templates/phraseology/unit_detail.html:20
-#: templates/phraseology/unit_list.html:23
+#: templates/phraseology/unit_list.html:21
 msgid "Type"
 msgstr "Type"
 
@@ -3077,8 +3295,12 @@ msgid ""
 msgid_plural ""
 "%(counter)s occurrences du schéma repérées automatiquement, dont %(core)s "
 "dans le noyau"
-msgstr[0] "%(counter)s occurrence of the schema found automatically, %(core)s of them in the core"
-msgstr[1] "%(counter)s occurrences of the schema found automatically, %(core)s of them in the core"
+msgstr[0] ""
+"%(counter)s occurrence of the schema found automatically, %(core)s of them "
+"in the core"
+msgstr[1] ""
+"%(counter)s occurrences of the schema found automatically, %(core)s of them "
+"in the core"
 
 #: templates/phraseology/unit_detail.html:44
 #, python-format
@@ -3120,7 +3342,9 @@ msgstr "Validated by %(name)s on %(date)s."
 msgid ""
 "Cette fiche est contestée : les arguments sont dans la discussion, en bas de "
 "page."
-msgstr "This entry is challenged: the arguments are in the discussion, at the bottom of the page."
+msgstr ""
+"This entry is challenged: the arguments are in the discussion, at the bottom "
+"of the page."
 
 #: templates/phraseology/unit_detail.html:92
 msgid "Cette fiche validée est devenue incomplète ; il lui manque :"
@@ -3234,40 +3458,36 @@ msgstr ""
 "Each entry describes a phraseological unit: its schema, its realizations, "
 "its senses and the passages of authors that attest it."
 
-#: templates/phraseology/unit_list.html:19
+#: templates/phraseology/unit_list.html:17
 msgid "Forme ou lemme"
 msgstr "Form or lemma"
 
-#: templates/phraseology/unit_list.html:25
+#: templates/phraseology/unit_list.html:23
 msgid "tous les types"
 msgstr "all types"
 
-#: templates/phraseology/unit_list.html:32
+#: templates/phraseology/unit_list.html:30
 msgid "tous les statuts"
 msgstr "all statuses"
 
-#: templates/phraseology/unit_list.html:37
-msgid "Filtrer"
-msgstr "Filter"
-
-#: templates/phraseology/unit_list.html:40
+#: templates/phraseology/unit_list.html:38
 #, python-format
 msgid "Étiquette : %(tag)s"
 msgstr "Tag: %(tag)s"
 
-#: templates/phraseology/unit_list.html:40
+#: templates/phraseology/unit_list.html:38
 msgid "toutes les fiches"
 msgstr "all entries"
 
-#: templates/phraseology/unit_list.html:44
+#: templates/phraseology/unit_list.html:42
 msgid "Mes brouillons"
 msgstr "My drafts"
 
-#: templates/phraseology/unit_list.html:50
+#: templates/phraseology/unit_list.html:48
 msgid "Fiches publiques"
 msgstr "Public entries"
 
-#: templates/phraseology/unit_list.html:59
+#: templates/phraseology/unit_list.html:57
 msgid "Aucune fiche."
 msgstr "No entry."
 

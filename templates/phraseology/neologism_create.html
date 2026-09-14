@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Proposer un néologisme" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:neologism_list' %}">{% translate "Lexique des néologismes" %}</a></p>
+  <h1>{% translate "Proposer un néologisme" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Un néologisme est public dès qu’il est proposé. Justifiez-le : formation, modèles anciens,
+    et au besoin des attestations du corpus ou des ouvrages de référence.
+  {% endblocktranslate %}</p>
+
+  {% include "justifications/search_attestations.html" %}
+
+  <form method="post" id="unit-form" class="form">
+    {% csrf_token %}
+    {% include "phraseology/chosen_attestations.html" %}
+    {{ form }}
+    <fieldset class="references">
+      <legend>{% translate "Grammaires et dictionnaires" %}</legend>
+      {{ references.management_form }}
+      {% for reference in references %}<div class="reference-row">{{ reference }}</div>{% endfor %}
+    </fieldset>
+    <button type="submit" class="button">{% translate "Proposer le néologisme" %}</button>
+  </form>
+</section>
+{% endblock %}

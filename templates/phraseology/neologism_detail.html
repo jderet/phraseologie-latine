@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ neologism.form }} · {% translate "néologisme" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:neologism_list' %}">{% translate "Lexique des néologismes" %}</a></p>
+  <h1 lang="la">{{ neologism.form }}</h1>
+  <p class="badges"><span class="badge neologism-badge">{% translate "néologisme" %}</span> <span class="badge status-{{ neologism.status }}">{{ neologism.get_status_display }}</span></p>
+  {% if neologism.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Sens moderne" %}</dt>
+      <dd>{{ neologism.meaning|linebreaksbr }}</dd>
+    </div>
+    <div id="equivalents">
+      <dt>{% translate "Équivalents" %}</dt>
+      <dd>
+        <ul class="part-list">
+          {% for equivalent in equivalents %}
+          <li><span class="muted">{{ equivalent.get_language_display }}</span> <span lang="{{ equivalent.language }}">{{ equivalent.expression }}</span>{% if can_edit %}
+            <form method="post" action="{% url 'phraseology:neologism_equivalent_withdraw' equivalent.pk %}" class="inline-form part-actions">{% csrf_token %}<button type="submit" class="link-button small-link">{% translate "retirer" %}</button></form>{% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% if can_edit %}<a class="small-link" href="{% url 'phraseology:neologism_equivalent_add' neologism.pk %}">{% translate "Ajouter un équivalent" %}</a>{% endif %}
+      </dd>
+    </div>
+    <div>
+      <dt>{% translate "Formation" %}</dt>
+      <dd>{{ neologism.get_formation_display|capfirst }}</dd>
+    </div>
+    {% if neologism.lrl_reference %}
+    <div>
+      <dt>{% translate "Lexicon recentis Latinitatis" %}</dt>
+      <dd>{{ neologism.lrl_reference }} <span class="muted">{% translate "ouvrage sous droits, cité sans extrait" %}</span></dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt>{% translate "Proposé par" %}</dt>
+      <dd>{% if neologism.created_by.is_active %}<a href="{{ neologism.created_by.get_absolute_url }}">{{ neologism.created_by.public_name }}</a>{% else %}{{ neologism.created_by.public_name }}{% endif %}, {{ neologism.created_at|date:"j F Y" }}</dd>
+    </div>
+    {% if neologism.validated_by %}
+    <div>
+      <dt>{% translate "Validé par" %}</dt>
+      <dd>{{ neologism.validated_by.public_name }}, {{ neologism.validated_at|date:"j F Y" }}</dd>
+    </div>
+    {% endif %}
+  </dl>
+  {% if can_edit or can_validate %}
+  <div class="form-links">
+    {% if can_edit %}<a class="button" href="{% url 'phraseology:neologism_edit' neologism.pk %}">{% translate "Modifier" %}</a>{% endif %}
+    {% if can_validate %}
+    <form method="post" action="{% url 'phraseology:neologism_validate' neologism.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button button-quiet">{% translate "Valider le néologisme" %}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <section class="unit-section" aria-labelledby="justification-title">
+    <h2 id="justification-title">{% translate "Justification" %}</h2>
+    <p>{{ neologism.justification|linebreaksbr }}</p>
+  </section>
+
+  <section class="unit-section" id="preuves" aria-labelledby="evidences-title">
+    <h2 id="evidences-title">{% translate "Preuves" %}</h2>
+    <ul class="evidences">
+      {% for evidence in evidences %}{% include "justifications/evidence_item.html" %}{% empty %}
+      <li class="muted">{% translate "Aucune preuve." %}</li>
+      {% endfor %}
+    </ul>
+    {% if can_edit %}<p class="actions"><a href="{% url 'phraseology:neologism_evidence_add' neologism.pk %}">{% translate "Ajouter des preuves" %}</a></p>{% endif %}
+  </section>
+
+  {% moderation_links neologism %}
+  {% discussion neologism %}
+</article>
+{% endblock %}

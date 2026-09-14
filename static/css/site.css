@@ -1366,3 +1366,13 @@ article > h2 {
 .evidence.is-rejected {
   opacity: 0.6;
 }
+
+.neologism-badge {
+  color: var(--accent);
+  border-color: var(--accent);
+  font-style: italic;
+}
+
+.form-links .inline-form {
+  display: inline;
+}

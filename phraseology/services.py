@@ -9,12 +9,13 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.roles import is_reviewer
 from corpus.search import corpus_version, default_layer
+from justifications.services import attach_evidences
 from moderation.registry import can_view
 from moderation.services import post_comment, save_with_revision
 
 from .frequency import count_by_author, schema_matches
-from .models import Attestation, Sense, Unit, UnitFrequency, UnitRelation
-from .permissions import can_edit_unit, can_withdraw_attestation
+from .models import Attestation, Neologism, Sense, Unit, UnitFrequency, UnitRelation
+from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 
 
 def _check_edit(user, unit):
@@ -339,3 +340,79 @@ def resolve_contest(unit, reviewer, status, reason):
     post_comment(unit, reviewer, reason)
     unit.status = status
     return save_with_revision(unit, reviewer, comment=gettext("Contestation levée"))
+
+
+# Neologisms
+
+
+def _check_neologism(user, neologism):
+    if not can_edit_neologism(user, neologism):
+        raise PermissionDenied
+
+
+@transaction.atomic
+def create_neologism(neologism, author, equivalent, evidences):
+    """A neologism is public at once, with its justification and a first equivalent (T5)."""
+    neologism.created_by = author
+    neologism.status = Neologism.Status.PROPOSED
+    save_with_revision(neologism, author)
+    equivalent.neologism = neologism
+    save_with_revision(equivalent, author)
+    attach_evidences(evidences, author, neologism=neologism)
+    return neologism
+
+
+@transaction.atomic
+def update_neologism(neologism, user):
+    _check_neologism(user, neologism)
+    return save_with_revision(neologism, user)
+
+
+@transaction.atomic
+def save_neologism_equivalent(equivalent, user):
+    _check_neologism(user, equivalent.neologism)
+    return save_with_revision(equivalent, user)
+
+
+@transaction.atomic
+def withdraw_neologism_equivalent(equivalent, user):
+    neologism = equivalent.neologism
+    _check_neologism(user, neologism)
+    if equivalent.is_withdrawn:
+        return None
+    if not neologism.equivalents.active().exclude(pk=equivalent.pk).exists():
+        raise ValidationError(
+            gettext("Un néologisme garde au moins un équivalent."), code="last_equivalent"
+        )
+    equivalent.is_withdrawn = True
+    return save_with_revision(equivalent, user, comment=gettext("Retrait"))
+
+
+@transaction.atomic
+def add_neologism_evidences(neologism, evidences, user):
+    _check_neologism(user, neologism)
+    return attach_evidences(evidences, user, neologism=neologism)
+
+
+@transaction.atomic
+def withdraw_neologism_evidence(evidence, user):
+    if evidence.neologism is None:
+        raise ValueError("The evidence does not support a neologism.")
+    _check_neologism(user, evidence.neologism)
+    if evidence.is_withdrawn:
+        return None
+    evidence.is_withdrawn = True
+    return save_with_revision(evidence, user, comment=gettext("Preuve retirée"))
+
+
+@transaction.atomic
+def validate_neologism(neologism, reviewer):
+    if not is_reviewer(reviewer):
+        raise PermissionDenied
+    neologism = Neologism.objects.select_for_update().get(pk=neologism.pk)
+    if neologism.status == Neologism.Status.VALIDATED:
+        return None
+    neologism.status = Neologism.Status.VALIDATED
+    neologism.validated_by = reviewer
+    neologism.validated_at = timezone.now()
+    return save_with_revision(neologism, reviewer, comment=gettext("Validation"))

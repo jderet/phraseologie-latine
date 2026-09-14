@@ -29,4 +29,27 @@ urlpatterns = [
     ),
     path("attestations/<int:pk>/examen/", views.attestation_review, name="attestation_review"),
     path("attestations/<int:pk>/exemple/", views.attestation_example, name="attestation_example"),
+    path("neologismes/", views.neologism_list, name="neologism_list"),
+    path("neologismes/nouveau/", views.neologism_create, name="neologism_create"),
+    path("neologismes/<int:pk>/", views.neologism_detail, name="neologism"),
+    path("neologismes/<int:pk>/modifier/", views.neologism_edit, name="neologism_edit"),
+    path("neologismes/<int:pk>/valider/", views.neologism_validate, name="neologism_validate"),
+    path(
+        "neologismes/<int:pk>/equivalents/",
+        views.neologism_equivalent_add,
+        name="neologism_equivalent_add",
+    ),
+    path(
+        "neologismes/equivalents/<int:pk>/retirer/",
+        views.neologism_equivalent_withdraw,
+        name="neologism_equivalent_withdraw",
+    ),
+    path(
+        "neologismes/<int:pk>/preuves/", views.neologism_evidence_add, name="neologism_evidence_add"
+    ),
+    path(
+        "neologismes/preuves/<int:pk>/retirer/",
+        views.neologism_evidence_withdraw,
+        name="neologism_evidence_withdraw",
+    ),
 ]
