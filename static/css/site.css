@@ -1423,3 +1423,152 @@ article > h2 {
 .spotted-unit .evidence {
   padding-top: 6px;
 }
+
+/* Reading */
+
+.reading-link {
+  margin: 16px 0 0;
+}
+
+.reading-header {
+  display: grid;
+  gap: 12px;
+}
+
+.reading-header .eyebrow,
+.reading-header .note,
+.reading-header .pager {
+  margin: 0;
+}
+
+.reading-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 32px;
+  font-size: 0.92rem;
+}
+
+.reading-choice {
+  margin: 0;
+}
+
+.reading-goto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reading-goto input {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.reading-goto .button-quiet {
+  font: inherit;
+  border: 0;
+  padding: 3px 4px;
+  cursor: pointer;
+}
+
+.reading-contents {
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+
+.reading-contents summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reading-contents ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 10px 0 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.reading-contents [aria-current="page"] {
+  font-weight: 600;
+}
+
+.reading-rows {
+  display: grid;
+  margin-top: 32px;
+}
+
+.reading-row {
+  display: grid;
+  grid-template-columns: minmax(0, 42rem);
+  gap: 8px 48px;
+  padding: 6px 0;
+}
+
+.with-translation .reading-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding: 12px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.reading-latin {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  line-height: 1.75;
+}
+
+.reading-translation {
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+
+.reading-heading {
+  margin: 24px 0 8px;
+  font-size: 1.3rem;
+}
+
+.reading-row:first-child .reading-heading:first-child {
+  margin-top: 0;
+}
+
+.reading-passage {
+  scroll-margin-top: 24px;
+}
+
+.reading-passage:target {
+  background: var(--highlight);
+  border-radius: 3px;
+}
+
+.reading-verse .reading-passage {
+  display: block;
+}
+
+.reading-verse .ref {
+  display: inline-block;
+  min-width: 2.5rem;
+}
+
+.ref.is-quiet {
+  visibility: hidden;
+}
+
+@media (max-width: 800px) {
+  .with-translation .reading-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reading-translation {
+    padding-left: 12px;
+    border-left: 2px solid var(--rule);
+  }
+}

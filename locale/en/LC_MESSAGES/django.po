@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 16:48+0200\n"
+"POT-Creation-Date: 2026-09-14 17:12+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -277,7 +277,7 @@ msgstr "Search as"
 msgid "forme"
 msgstr "form"
 
-#: corpus/forms.py:27 corpus/forms.py:177 corpus/models.py:354
+#: corpus/forms.py:27 corpus/forms.py:177 corpus/models.py:364
 #: phraseology/models.py:765
 msgid "lemme"
 msgstr "lemma"
@@ -326,16 +326,16 @@ msgstr "Authors"
 msgid "Œuvres"
 msgstr "Works"
 
-#: corpus/forms.py:67 phraseology/forms.py:318 templates/corpus/work.html:22
+#: corpus/forms.py:67 phraseology/forms.py:318 templates/corpus/work.html:23
 #: templates/phraseology/unit_survey.html:62
 msgid "Forme"
 msgstr "Form"
 
-#: corpus/forms.py:73 templates/corpus/work.html:17
+#: corpus/forms.py:73 templates/corpus/work.html:18
 msgid "Genre"
 msgstr "Genre"
 
-#: corpus/forms.py:79 templates/corpus/work.html:27
+#: corpus/forms.py:79 templates/corpus/work.html:28
 #: templates/phraseology/unit_detail.html:32
 msgid "Registre"
 msgstr "Register"
@@ -730,16 +730,16 @@ msgstr "edition"
 msgid "éditions"
 msgstr "editions"
 
-#: corpus/models.py:161 corpus/models.py:279
+#: corpus/models.py:161 corpus/models.py:289
 msgid "ordre"
 msgstr "order"
 
-#: corpus/models.py:162 corpus/models.py:280
+#: corpus/models.py:162 corpus/models.py:290
 #: templates/translations/project_compare.html:22
 msgid "référence"
 msgstr "reference"
 
-#: corpus/models.py:164 corpus/models.py:281
+#: corpus/models.py:164 corpus/models.py:291
 msgid "texte"
 msgstr "text"
 
@@ -776,7 +776,7 @@ msgstr "punctuation and space after"
 msgid "mot étranger"
 msgstr "foreign word"
 
-#: corpus/models.py:213 corpus/models.py:350
+#: corpus/models.py:213 corpus/models.py:360
 msgid "mot"
 msgstr "word"
 
@@ -813,123 +813,224 @@ msgstr "parallel translation"
 msgid "traductions en regard"
 msgstr "parallel translations"
 
-#: corpus/models.py:277
+#: corpus/models.py:287
 msgid "traduction"
 msgstr "translation"
 
-#: corpus/models.py:284
+#: corpus/models.py:294
 msgid "partie d’une traduction"
 msgstr "part of a translation"
 
-#: corpus/models.py:285
+#: corpus/models.py:295
 msgid "parties des traductions"
 msgstr "parts of translations"
 
-#: corpus/models.py:301
+#: corpus/models.py:311
 msgid "outil"
 msgstr "tool"
 
-#: corpus/models.py:302
+#: corpus/models.py:312
 msgid "version de l’outil"
 msgstr "tool version"
 
-#: corpus/models.py:303
+#: corpus/models.py:313
 msgid "détails"
 msgstr "details"
 
-#: corpus/models.py:304 justifications/models.py:123 phraseology/models.py:87
+#: corpus/models.py:314 justifications/models.py:123 phraseology/models.py:87
 msgid "créée le"
 msgstr "created on"
 
-#: corpus/models.py:306
+#: corpus/models.py:316
 msgid "éditions analysées"
 msgstr "analyzed editions"
 
-#: corpus/models.py:309
+#: corpus/models.py:319
 msgid "couche par défaut"
 msgstr "default layer"
 
-#: corpus/models.py:311
+#: corpus/models.py:321
 msgid "Couche utilisée par la recherche par lemme."
 msgstr "Layer used by lemma search."
 
-#: corpus/models.py:315 phraseology/models.py:645 phraseology/models.py:723
+#: corpus/models.py:325 phraseology/models.py:645 phraseology/models.py:723
 msgid "couche d’analyse"
 msgstr "analysis layer"
 
-#: corpus/models.py:316
+#: corpus/models.py:326
 msgid "couches d’analyse"
 msgstr "analysis layers"
 
-#: corpus/models.py:342
+#: corpus/models.py:352
 msgid "import vérifié"
 msgstr "verified import"
 
-#: corpus/models.py:343
+#: corpus/models.py:353
 msgid "automatique"
 msgstr "automatic"
 
-#: corpus/models.py:344
+#: corpus/models.py:354
 msgid "correction humaine"
 msgstr "human correction"
 
-#: corpus/models.py:347
+#: corpus/models.py:357
 msgid "couche"
 msgstr "layer"
 
-#: corpus/models.py:352
+#: corpus/models.py:362
 msgid "partie du mot"
 msgstr "part of the word"
 
-#: corpus/models.py:353
+#: corpus/models.py:363
 msgid "texte analysé"
 msgstr "analyzed text"
 
-#: corpus/models.py:355
+#: corpus/models.py:365
 msgid "lemme normalisé"
 msgstr "normalized lemma"
 
-#: corpus/models.py:356
+#: corpus/models.py:366
 msgid "catégorie"
 msgstr "part of speech"
 
-#: corpus/models.py:357
+#: corpus/models.py:367
 msgid "traits morphologiques"
 msgstr "morphological features"
 
-#: corpus/models.py:365
+#: corpus/models.py:375
 msgid "tête syntaxique"
 msgstr "syntactic head"
 
-#: corpus/models.py:367
+#: corpus/models.py:377
 msgid "partie de la tête"
 msgstr "part of the head"
 
-#: corpus/models.py:368
+#: corpus/models.py:378
 msgid "relation syntaxique"
 msgstr "syntactic relation"
 
-#: corpus/models.py:369 translations/models.py:159
+#: corpus/models.py:379 translations/models.py:159
 msgid "phrase"
 msgstr "sentence"
 
-#: corpus/models.py:371 phraseology/models.py:358
+#: corpus/models.py:381 phraseology/models.py:358
 msgid "origine"
 msgstr "origin"
 
-#: corpus/models.py:375
+#: corpus/models.py:385
 msgid "analyse d’un mot"
 msgstr "word analysis"
 
-#: corpus/models.py:376
+#: corpus/models.py:386
 msgid "analyses des mots"
 msgstr "word analyses"
+
+#: corpus/reading.py:20
+#, python-format
+msgid "action %(value)s"
+msgstr "actio %(value)s"
+
+#: corpus/reading.py:20
+#, python-format
+msgid "actions %(first)s à %(last)s"
+msgstr "actiones %(first)s to %(last)s"
+
+#: corpus/reading.py:21
+#, python-format
+msgid "livre %(value)s"
+msgstr "book %(value)s"
+
+#: corpus/reading.py:21
+#, python-format
+msgid "livres %(first)s à %(last)s"
+msgstr "books %(first)s to %(last)s"
+
+#: corpus/reading.py:22
+#, python-format
+msgid "chapitre %(value)s"
+msgstr "chapter %(value)s"
+
+#: corpus/reading.py:22
+#, python-format
+msgid "chapitres %(first)s à %(last)s"
+msgstr "chapters %(first)s to %(last)s"
+
+#: corpus/reading.py:23
+#, python-format
+msgid "fragment %(value)s"
+msgstr "fragment %(value)s"
+
+#: corpus/reading.py:23
+#, python-format
+msgid "fragments %(first)s à %(last)s"
+msgstr "fragments %(first)s to %(last)s"
+
+#: corpus/reading.py:24
+#, python-format
+msgid "lettre %(value)s"
+msgstr "letter %(value)s"
+
+#: corpus/reading.py:24
+#, python-format
+msgid "lettres %(first)s à %(last)s"
+msgstr "letters %(first)s to %(last)s"
+
+#: corpus/reading.py:25
+#, python-format
+msgid "vers %(value)s"
+msgstr "line %(value)s"
+
+#: corpus/reading.py:25
+#, python-format
+msgid "vers %(first)s à %(last)s"
+msgstr "lines %(first)s to %(last)s"
+
+#: corpus/reading.py:26
+#, python-format
+msgid "poème %(value)s"
+msgstr "poem %(value)s"
+
+#: corpus/reading.py:26
+#, python-format
+msgid "poèmes %(first)s à %(last)s"
+msgstr "poems %(first)s to %(last)s"
+
+#: corpus/reading.py:27
+#, python-format
+msgid "section %(value)s"
+msgstr "section %(value)s"
+
+#: corpus/reading.py:27
+#, python-format
+msgid "sections %(first)s à %(last)s"
+msgstr "sections %(first)s to %(last)s"
+
+#: corpus/reading.py:28
+#, python-format
+msgid "discours %(value)s"
+msgstr "speech %(value)s"
+
+#: corpus/reading.py:28
+#, python-format
+msgid "discours %(first)s à %(last)s"
+msgstr "speeches %(first)s to %(last)s"
+
+#: corpus/reading.py:29
+#, python-format
+msgid "sujet %(value)s"
+msgstr "topic %(value)s"
+
+#: corpus/reading.py:29
+#, python-format
+msgid "sujets %(first)s à %(last)s"
+msgstr "topics %(first)s to %(last)s"
 
 #: corpus/templatetags/corpus_tags.py:17
 msgid "Poésie : ne fait pas norme pour la prose"
 msgstr "Poetry: no norm for prose"
 
-#: corpus/templatetags/corpus_tags.py:18 templates/corpus/passage.html:10
+#: corpus/templatetags/corpus_tags.py:18 templates/corpus/passage.html:11
+#: templates/corpus/reading.html:13
 msgid "poésie"
 msgstr "poetry"
 
@@ -1873,7 +1974,9 @@ msgstr "%(unit)s: not found in the corpus, entry not created."
 msgid ""
 "%(unit)s (%(status)s) : attestations validées %(validated)d, proposées "
 "%(proposed)d, repérées automatiquement %(automatic)d."
-msgstr "%(unit)s (%(status)s): attestations validated %(validated)d, proposed %(proposed)d, found automatically %(automatic)d."
+msgstr ""
+"%(unit)s (%(status)s): attestations validated %(validated)d, proposed "
+"%(proposed)d, found automatically %(automatic)d."
 
 #: phraseology/management/commands/create_examples.py:63
 #, python-format
@@ -1892,7 +1995,9 @@ msgstr "relations between units"
 msgid ""
 "D’autres contenus renvoient aux fiches d’exemple (%(links)s) : retirez ces "
 "liens avant de les effacer."
-msgstr "Other contents point to the example entries (%(links)s): remove these links before deleting them."
+msgstr ""
+"Other contents point to the example entries (%(links)s): remove these links "
+"before deleting them."
 
 #: phraseology/management/commands/delete_examples.py:31
 #, python-format
@@ -1900,7 +2005,10 @@ msgid ""
 "Effacé : fiches d’exemple %(units)d, attestations %(attestations)d, autres "
 "éléments %(parts)d, comptes d’exemple %(accounts)d ; candidats remis à "
 "examiner %(candidates)d."
-msgstr "Deleted: example entries %(units)d, attestations %(attestations)d, other items %(parts)d, example accounts %(accounts)d; candidates put back for review %(candidates)d."
+msgstr ""
+"Deleted: example entries %(units)d, attestations %(attestations)d, other "
+"items %(parts)d, example accounts %(accounts)d; candidates put back for "
+"review %(candidates)d."
 
 #: phraseology/management/commands/extract_candidates.py:46
 #, python-format
@@ -3254,7 +3362,8 @@ msgstr "Main navigation"
 msgid "Recherche"
 msgstr "Search"
 
-#: templates/base.html:18 templates/justifications/challenge_list.html:8
+#: templates/base.html:18 templates/corpus/reading.html:71
+#: templates/justifications/challenge_list.html:8
 #: templates/translations/source_list.html:8 translations/apps.py:7
 msgid "Traduction"
 msgstr "Translation"
@@ -3920,16 +4029,21 @@ msgstr "outside the core"
 msgid "Aucun texte importé pour l’instant."
 msgstr "No text imported yet."
 
-#: templates/corpus/passage.html:10 templates/corpus/work.html:23
+#: templates/corpus/passage.html:10
+msgid "Lire dans l’œuvre"
+msgstr "Read in the work"
+
+#: templates/corpus/passage.html:11 templates/corpus/reading.html:13
+#: templates/corpus/work.html:24
 msgid "Poésie : ne fait pas norme pour la prose."
 msgstr "Poetry: no norm for prose."
 
-#: templates/corpus/passage.html:16
+#: templates/corpus/passage.html:17
 #, python-format
 msgid "Traduction de %(name)s"
 msgstr "Translation by %(name)s"
 
-#: templates/corpus/passage.html:19
+#: templates/corpus/passage.html:20
 #, python-format
 msgid ""
 "La traduction n’est découpée que plus largement : voici tout le passage "
@@ -3938,27 +4052,61 @@ msgstr ""
 "The translation is only divided more broadly: here is the whole of passage "
 "%(reference)s."
 
-#: templates/corpus/passage.html:23
+#: templates/corpus/passage.html:24 templates/corpus/reading.html:72
 #, python-format
 msgid "Traduction du domaine public ; numérisation %(source)s, %(license)s."
 msgstr "Public-domain translation; digitization %(source)s, %(license)s."
 
-#: templates/corpus/passage.html:29
+#: templates/corpus/passage.html:30
 msgid "Passages voisins"
 msgstr "Neighboring passages"
 
-#: templates/corpus/passage.html:36
+#: templates/corpus/passage.html:37
 msgid "Identifiant"
 msgstr "Identifier"
 
-#: templates/corpus/passage.html:40
+#: templates/corpus/passage.html:41 templates/corpus/reading.html:66
 msgid "Source"
 msgstr "Source"
 
-#: templates/corpus/passage.html:41 templates/corpus/work.html:49
-#: translations/models.py:277 translations/models.py:313
+#: templates/corpus/passage.html:42 templates/corpus/reading.html:67
+#: templates/corpus/work.html:50 translations/models.py:277
+#: translations/models.py:313
 msgid "version"
 msgstr "version"
+
+#: templates/corpus/reading.html:18
+msgid "Traduction en regard :"
+msgstr "Translation alongside:"
+
+#: templates/corpus/reading.html:18
+msgid "Afficher la traduction :"
+msgstr "Show the translation:"
+
+#: templates/corpus/reading.html:20
+msgid "Masquer la traduction"
+msgstr "Hide the translation"
+
+#: templates/corpus/reading.html:25
+msgid "Aller au passage"
+msgstr "Go to passage"
+
+#: templates/corpus/reading.html:27
+msgid "Aller"
+msgstr "Go"
+
+#: templates/corpus/reading.html:30
+#, python-format
+msgid "Aucun passage « %(reference)s » dans cette édition."
+msgstr "No passage “%(reference)s” in this edition."
+
+#: templates/corpus/reading.html:36
+msgid "Sommaire"
+msgstr "Contents"
+
+#: templates/corpus/reading_pager.html:2
+msgid "Pages de lecture"
+msgstr "Reading pages"
 
 #: templates/corpus/search.html:8
 msgid "Recherche dans le corpus"
@@ -4025,7 +4173,7 @@ msgstr "All occurrences in the search page"
 msgid "Pages de résultats"
 msgstr "Result pages"
 
-#: templates/corpus/search_results.html:33 templates/corpus/work.html:65
+#: templates/corpus/search_results.html:33 templates/corpus/work.html:66
 #: templates/phraseology/negative_search_list.html:39
 #: templates/phraseology/occurrences.html:33
 #: templates/phraseology/schema_search.html:71
@@ -4034,7 +4182,7 @@ msgstr "Result pages"
 msgid "Page précédente"
 msgstr "Previous page"
 
-#: templates/corpus/search_results.html:34 templates/corpus/work.html:66
+#: templates/corpus/search_results.html:34 templates/corpus/work.html:67
 #: templates/phraseology/negative_search_list.html:40
 #: templates/phraseology/occurrences.html:34
 #: templates/phraseology/schema_search.html:72
@@ -4044,7 +4192,7 @@ msgstr "Previous page"
 msgid "Page %(number)s sur %(total)s"
 msgstr "Page %(number)s of %(total)s"
 
-#: templates/corpus/search_results.html:35 templates/corpus/work.html:67
+#: templates/corpus/search_results.html:35 templates/corpus/work.html:68
 #: templates/phraseology/negative_search_list.html:41
 #: templates/phraseology/occurrences.html:35
 #: templates/phraseology/schema_search.html:73
@@ -4093,40 +4241,44 @@ msgid_plural "Corpus interrogé : %(label)s, %(counter)s éditions."
 msgstr[0] "Searched corpus: %(label)s, %(counter)s edition."
 msgstr[1] "Searched corpus: %(label)s, %(counter)s editions."
 
-#: templates/corpus/work.html:12
+#: templates/corpus/work.html:10
+msgid "Lire l’œuvre"
+msgstr "Read the work"
+
+#: templates/corpus/work.html:13
 msgid "Citation"
 msgstr "Citation"
 
-#: templates/corpus/work.html:33
+#: templates/corpus/work.html:34
 #: templates/phraseology/negative_search_list.html:19
 msgid "Date"
 msgstr "Date"
 
-#: templates/corpus/work.html:38
+#: templates/corpus/work.html:39
 msgid "Noyau"
 msgstr "Core"
 
-#: templates/corpus/work.html:39
+#: templates/corpus/work.html:40
 msgid "oui : attestations vérifiées par des personnes"
 msgstr "yes: attestations checked by people"
 
-#: templates/corpus/work.html:39
+#: templates/corpus/work.html:40
 msgid "non : attestations repérées automatiquement"
 msgstr "no: attestations found automatically"
 
-#: templates/corpus/work.html:43
+#: templates/corpus/work.html:44
 msgid "État du texte"
 msgstr "State of the text"
 
-#: templates/corpus/work.html:44
+#: templates/corpus/work.html:45
 msgid "fragmentaire ou lacunaire"
 msgstr "fragmentary or with gaps"
 
-#: templates/corpus/work.html:48
+#: templates/corpus/work.html:49
 msgid "Édition"
 msgstr "Edition"
 
-#: templates/corpus/work.html:64
+#: templates/corpus/work.html:65
 #: templates/phraseology/negative_search_list.html:38
 #: templates/translations/pager.html:2
 msgid "Pages"

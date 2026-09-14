@@ -7,6 +7,7 @@
 <section>
   <p class="eyebrow"><a href="{% url 'corpus:index' %}">{% translate "Corpus" %}</a> · {{ work.author.name }}</p>
   <h1><i>{{ work.title }}</i></h1>
+  <p class="reading-link"><a class="button" href="{% url 'corpus:reading' work.cts_id %}">{% translate "Lire l’œuvre" %}</a></p>
   <dl class="facts">
     <div>
       <dt>{% translate "Citation" %}</dt>

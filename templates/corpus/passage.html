@@ -7,6 +7,7 @@
 <article>
   <p class="eyebrow"><a href="{{ work.get_absolute_url }}">{{ work.author.name }}, {{ work.title }}</a></p>
   <h1>{{ passage.citation }}</h1>
+  <p class="reading-link"><a href="{% url 'corpus:reading' work.cts_id %}?aller={{ passage.reference|urlencode }}">{% translate "Lire dans l’œuvre" %}</a></p>
   {% if work.form == "verse" %}<p class="note"><span class="badge poetry-mark">{% translate "poésie" %}</span> {% translate "Poésie : ne fait pas norme pour la prose." %}</p>{% endif %}
   {% if passage.heading %}<p class="passage-heading">{{ passage.heading }}</p>{% endif %}
   <div class="passage-text" lang="la">{% if tokens %}{% render_tokens tokens highlighted %}{% else %}{{ passage.text }}{% endif %}</div>

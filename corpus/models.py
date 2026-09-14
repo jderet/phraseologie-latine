@@ -263,10 +263,20 @@ class ReferenceTranslation(models.Model):
 
     def part_for(self, reference):
         """The part that translates a Latin reference: the one with the longest common start."""
-        levels = reference.split(".")
-        candidates = [".".join(levels[:size]) for size in range(len(levels), 0, -1)]
-        parts = {part.reference: part for part in self.parts.filter(reference__in=candidates)}
-        return next((parts[candidate] for candidate in candidates if candidate in parts), None)
+        return self.parts_for([reference])[reference]
+
+    def parts_for(self, references):
+        """The part translating each of the Latin references, found in one query."""
+        candidates = {}
+        for reference in references:
+            levels = reference.split(".")
+            candidates[reference] = [".".join(levels[:size]) for size in range(len(levels), 0, -1)]
+        wanted = {candidate for found in candidates.values() for candidate in found}
+        parts = {part.reference: part for part in self.parts.filter(reference__in=wanted)}
+        return {
+            reference: next((parts[candidate] for candidate in found if candidate in parts), None)
+            for reference, found in candidates.items()
+        }
 
 
 class TranslationPart(models.Model):

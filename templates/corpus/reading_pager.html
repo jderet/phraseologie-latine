@@ -1,0 +1,6 @@
+{% load i18n %}{% if previous or following %}
+<nav class="pager" aria-label="{% translate 'Pages de lecture' %}">
+  {% if previous %}<a rel="prev" href="{{ previous.url }}">← {{ previous.label }}</a>{% endif %}
+  {% if following %}<a rel="next" href="{{ following.url }}">{{ following.label }} →</a>{% endif %}
+</nav>
+{% endif %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{% if label %}{{ label }} · {% endif %}{{ work.title }} · {{ block.super }}{% endblock %}
+
+{% block body_attributes %}{% if translation %} class="page-wide"{% endif %}{% endblock %}
+
+{% block content %}
+<article class="reading{% if translation %} with-translation{% endif %}{% if work.form == 'verse' %} reading-verse{% endif %}">
+  <header class="reading-header">
+    <p class="eyebrow"><a href="{{ work_url }}">{{ work.author.name }}, {{ work.title }}</a></p>
+    <h1>{% if label %}{{ label }}{% else %}<i>{{ work.title }}</i>{% endif %}</h1>
+    {% if work.form == "verse" %}<p class="note"><span class="badge poetry-mark">{% translate "poésie" %}</span> {% translate "Poésie : ne fait pas norme pour la prose." %}</p>{% endif %}
+
+    <div class="reading-toolbar">
+      {% if translation_links %}
+      <p class="reading-choice">
+        {% if translation %}{% translate "Traduction en regard :" %}{% else %}{% translate "Afficher la traduction :" %}{% endif %}
+        {% for link in translation_links %}{% if link.current %}<strong>{{ link.translation.translator }}</strong>{% else %}<a href="{{ link.url }}">{{ link.translation.translator }}</a>{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}
+        {% if translation %}· <a href="{{ hide_url }}">{% translate "Masquer la traduction" %}</a>{% endif %}
+      </p>
+      {% endif %}
+      <form class="reading-goto" method="get" action="{% url 'corpus:reading' work.cts_id %}">
+        {% if choice %}<input type="hidden" name="traduction" value="{{ choice }}">{% endif %}
+        <label for="reading-goto">{% translate "Aller au passage" %}</label>
+        <input id="reading-goto" name="aller" value="{{ goto }}" size="8">
+        <button type="submit" class="button-quiet">{% translate "Aller" %}</button>
+      </form>
+    </div>
+    {% if goto_missing %}<p class="note" role="status">{% blocktranslate trimmed with reference=goto %}
+      Aucun passage « {{ reference }} » dans cette édition.
+    {% endblocktranslate %}</p>{% endif %}
+
+    {% if contents %}
+    <details class="reading-contents">
+      <summary>{% translate "Sommaire" %}</summary>
+      <ol>
+        {% for entry in contents %}<li><a href="{{ entry.url }}"{% if entry.current %} aria-current="page"{% endif %}>{{ entry.label }}</a></li>{% endfor %}
+      </ol>
+    </details>
+    {% endif %}
+    {% include "corpus/reading_pager.html" %}
+  </header>
+
+  <div class="reading-rows">
+    {% for row in rows %}
+    <div class="reading-row">
+      <div class="reading-latin" lang="la">
+        {% for item in row.items %}
+        {% for heading in item.headings %}<h2 class="reading-heading">{{ heading }}</h2>{% endfor %}
+        {% if item.passage.heading %}<p class="passage-heading">{{ item.passage.heading }}</p>{% endif %}
+        <span class="reading-passage" id="p-{{ item.passage.reference }}"><a class="ref{% if item.quiet %} is-quiet{% endif %}" href="{{ work_url }}{{ item.passage.reference|urlencode }}/">{{ item.number }}</a>{% if item.tokens %}{% render_tokens item.tokens %}{% else %}{{ item.passage.text }} {% endif %}</span>
+        {% endfor %}
+      </div>
+      {% if translation %}
+      <div class="reading-translation" lang="{{ translation.language }}">{% if row.part %}{{ row.part.text|linebreaksbr }}{% endif %}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% include "corpus/reading_pager.html" %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Source" %}</dt>
+      <dd>{{ edition.source }}, {% translate "version" %} {{ edition.source_version|slice:":7" }} · {{ edition.license }}</dd>
+    </div>
+    {% if translation %}
+    <div>
+      <dt>{% translate "Traduction" %}</dt>
+      <dd>{{ translation.translator }}{% if translation.published %} ({{ translation.published }}){% endif %} · {% blocktranslate trimmed with source=translation.source license=translation.license %}
+        Traduction du domaine public ; numérisation {{ source }}, {{ license }}.
+      {% endblocktranslate %}</dd>
+    </div>
+    {% endif %}
+  </dl>
+</article>
+{% endblock %}
