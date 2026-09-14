@@ -39,6 +39,8 @@ python manage.py compute_collocations      # profils de collocations (sur le Mac
 python manage.py import_translations       # traductions du domaine public en regard (sur le Mac)
 python manage.py export_data               # export complet des données publiques (archive zip)
 python manage.py purge_pending_signups     # effacer les inscriptions jamais activées (chaque jour)
+deploy/backup.sh                           # sauvegarder la base (chaque jour sur le serveur)
+deploy/verify-backup.sh                    # sauvegarder, restaurer dans une base temporaire, comparer
 ```
 
 ## Architecture
@@ -61,6 +63,7 @@ python manage.py purge_pending_signups     # effacer les inscriptions jamais act
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.
 - Les traitements lourds du corpus sont des commandes `manage.py` lancées sur le Mac : `import_perseus` lit le catalogue `corpus/data/` et les fichiers TEI ; `analyze_corpus` crée une couche d'analyse LatinCy, raccrochée aux mots par leur position dans le texte (un seul processus : le modèle ne se transmet pas entre processus).
 - Contenus contribués : hériter de `moderation.models.ModeratedContent`, s'inscrire avec `moderation.registry.register` et enregistrer chaque modification par `moderation.services.save_with_revision`. `register` déclare aussi le propriétaire, la règle de visibilité (brouillons), ce qui compte dans la limite des nouveaux comptes, les champs qu'un retour arrière ne rétablit pas, et qui peut discuter ou voter.
+- `deploy/` : scripts d'exploitation (sauvegarde, restauration, vérification) ; procédures et tâches quotidiennes dans [docs/exploitation.md](docs/exploitation.md).
 - L'éditeur de traduction est le seul composant JavaScript (`static/js/editor.js`) ; sans lui, les pages fonctionnent par formulaires. Le PDF est enregistré par le navigateur depuis la page imprimable.
 
 ## Conventions

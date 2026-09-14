@@ -78,7 +78,7 @@ Tout se fait sur le Mac : rien n'est mis en ligne, aucun service payant.
 - [x] Mentions légales, politique de confidentialité et conditions d'utilisation, à compléter par le porteur
 - [x] Interface entièrement traduite en anglais, vérifiée à chaque modification
 - [ ] Configuration de production : image Docker, serveur d'application, HTTPS, pages d'erreur, journaux
-- [ ] Sauvegardes quotidiennes et restauration testée en local
+- [x] Sauvegardes quotidiennes et restauration testée en local
 - [ ] Revue de sécurité complète, sans problème ouvert
 
 Terminé quand le site tourne sur le Mac dans sa configuration de production, qu'une sauvegarde y a été restaurée et que la revue de sécurité ne laisse aucun problème ouvert.
