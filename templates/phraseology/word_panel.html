@@ -37,6 +37,7 @@
     {% endblocktranslate %}{% endif %}</p>
     {% if card.attestation.realization or card.attestation.sense %}<p class="muted">{% if card.attestation.realization %}<span lang="la">{{ card.attestation.realization.form }}</span>{% endif %}{% if card.attestation.realization and card.attestation.sense %} · {% endif %}{% if card.attestation.sense %}{{ card.attestation.sense.definition|truncatewords:12 }}{% endif %}</p>{% endif %}
     {% if card.attestation.note %}<p class="evidence-note">{{ card.attestation.note }}</p>{% endif %}
+    <p><a class="small-link" href="{{ card.attestation.get_absolute_url }}#doutes">{% translate "Signaler comme douteuse" %}</a> · <a class="small-link" href="{{ card.attestation.get_absolute_url }}#contestation">{% if card.attestation.is_contested %}{% translate "contestée : discussion" %}{% else %}{% translate "Contester l’attestation" %}{% endif %}</a></p>
     {% if card.can_review or card.can_edit %}
     <div class="actions">
       {% if card.can_review %}

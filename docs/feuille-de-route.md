@@ -95,7 +95,7 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 - [x] Soulignements dans la page d'un passage, les résultats de recherche, les versions publiées et la comparaison
 - [x] Mode « annoter » : mots choisis au clic, fiches suggérées, recherche, fiche pré-remplie ; réalisation, sens, note, exemple proposé
 - [x] Occurrences du schéma des fiches pas encore attestées, confirmées en un clic
-- [ ] Relecture dans le texte, attestation douteuse, contestation d'une attestation
+- [x] Relecture dans le texte, attestation douteuse, contestation d'une attestation
 - [ ] Repérages sans fiche et leur file
 - [ ] Passage entièrement relu, file des passages à relire, progression par œuvre
 - [ ] Page de l'annotateur, file du relecteur, chiffres publics

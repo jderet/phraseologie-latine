@@ -22,6 +22,7 @@ from moderation.services import post_comment, save_with_revision
 from .frequency import count_by_author, occurrence_words, schema_matches
 from .models import (
     Attestation,
+    AttestationDoubt,
     Candidate,
     Neologism,
     Sense,
@@ -453,6 +454,106 @@ def set_example(attestation, user, is_example):
     if is_example:
         attestation.example_proposed = False
     revision = save_with_revision(attestation, user)
+    _check_still_complete(attestation.unit)
+    return revision
+
+
+# Doubts and contests about an attestation
+
+
+@transaction.atomic
+def doubt_attestation(attestation, user, reason):
+    """Signal an attestation thought wrong, with the reason; a reviewer decides."""
+    if not (user.is_authenticated and user.is_active and can_view(user, attestation)):
+        raise PermissionDenied
+    if attestation.is_withdrawn or attestation.status == Attestation.Status.REJECTED:
+        raise ValidationError(gettext("Cette attestation est déjà écartée."), code="not_doubtable")
+    open_doubts = attestation.doubts.filter(status=AttestationDoubt.Status.OPEN)
+    if open_doubts.filter(created_by=user).exists():
+        raise ValidationError(
+            gettext("Vous avez déjà signalé cette attestation comme douteuse."),
+            code="already_doubted",
+        )
+    doubt = AttestationDoubt(attestation=attestation, reason=reason, created_by=user)
+    save_with_revision(doubt, user)
+    return doubt
+
+
+@transaction.atomic
+def decide_doubts(attestation, reviewer, reject):
+    """A reviewer settles the open doubts about an attestation: kept, or rejected with them."""
+    if not is_reviewer(reviewer):
+        raise PermissionDenied
+    doubts = list(
+        attestation.doubts.select_for_update().filter(status=AttestationDoubt.Status.OPEN)
+    )
+    if not doubts:
+        raise ValidationError(gettext("Aucun doute ouvert sur cette attestation."), code="no_doubt")
+    if reject:
+        review_attestation(attestation, reviewer, Attestation.Status.REJECTED)
+    status = AttestationDoubt.Status.REJECTED if reject else AttestationDoubt.Status.KEPT
+    now = timezone.now()
+    for doubt in doubts:
+        doubt.status, doubt.decided_by, doubt.decided_at = status, reviewer, now
+        save_with_revision(doubt, reviewer, comment=gettext("Doute tranché"))
+    return doubts
+
+
+@transaction.atomic
+def contest_attestation(attestation, user, argument):
+    """Contest an attestation: the argument opens its discussion, with indicative votes (Q48)."""
+    attestation = (
+        Attestation.objects.select_for_update(of=("self",))
+        .select_related("unit")
+        .get(pk=attestation.pk)
+    )
+    if not (user.is_authenticated and user.is_active and can_view(user, attestation)):
+        raise PermissionDenied
+    if (
+        attestation.is_withdrawn
+        or attestation.is_hidden
+        or attestation.is_contested
+        or attestation.status == Attestation.Status.REJECTED
+    ):
+        raise ValidationError(
+            gettext("Cette attestation ne peut pas être contestée."), code="not_contestable"
+        )
+    attestation.is_contested = True
+    save_with_revision(attestation, user, comment=gettext("Contestation"))
+    post_comment(attestation, user, argument)
+    return attestation
+
+
+CONTEST_DECISIONS = ("keep", "validate", "reject")
+
+
+@transaction.atomic
+def resolve_attestation_contest(attestation, reviewer, decision, reason):
+    """A reviewer settles a contest, giving the reason: the attestation kept, validated or rejected.
+
+    The arguments stay in the discussion (Q53).
+    """
+    if decision not in CONTEST_DECISIONS:
+        raise ValueError("A contest is settled by keep, validate or reject.")
+    if not is_reviewer(reviewer):
+        raise PermissionDenied
+    attestation = (
+        Attestation.objects.select_for_update(of=("self",))
+        .select_related("unit", "passage__edition__work")
+        .get(pk=attestation.pk)
+    )
+    if not attestation.is_contested:
+        raise ValidationError(
+            gettext("Cette attestation n’est pas contestée."), code="not_contested"
+        )
+    post_comment(attestation, reviewer, reason)
+    if decision != "keep":
+        status = (
+            Attestation.Status.VALIDATED if decision == "validate" else Attestation.Status.REJECTED
+        )
+        _review(attestation, reviewer, status)
+    attestation.is_contested = False
+    revision = save_with_revision(attestation, reviewer, comment=gettext("Contestation levée"))
     _check_still_complete(attestation.unit)
     return revision
 

@@ -605,8 +605,10 @@ def _delete_records(model, pks):
     Report.objects.filter(**about).delete()
 
 
-# Parts first: an attestation points to a sense and a realization, an equivalent to a sense.
+# Parts first: a doubt points to an attestation, an attestation to a sense and a realization,
+# an equivalent to a sense.
 PARTS = (
+    (Attestation.doubts.rel.related_model, "attestation__unit_id__in"),
     (Attestation, "unit_id__in"),
     (Equivalent, "sense__unit_id__in"),
     (Realization, "unit_id__in"),

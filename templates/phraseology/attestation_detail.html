@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags moderation_tags %}
+
+{% block title %}{{ attestation }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{{ attestation.unit.get_absolute_url }}" lang="la">{{ attestation.unit.reference_form }}</a></p>
+  <h1>{% blocktranslate with citation=quote.citation %}Attestation, {{ citation }}{% endblocktranslate %}</h1>
+  <p class="badges">
+    <span class="badge">{{ attestation.status_label|capfirst }}</span>
+    {% if attestation.is_example %}<span class="badge">{% translate "exemple choisi" %}</span>{% endif %}
+    {% if attestation.example_proposed %}<span class="badge">{% translate "proposée comme exemple" %}</span>{% endif %}
+    {% if attestation.is_contested %}<span class="badge review-badge">{% translate "contestée" %}</span>{% endif %}
+    {% if open_doubts %}<span class="badge review-badge">{% blocktranslate count counter=open_doubts %}{{ counter }} doute ouvert{% plural %}{{ counter }} doutes ouverts{% endblocktranslate %}</span>{% endif %}
+  </p>
+  <p><a class="hit-ref" href="{{ quote.url }}">{{ quote.citation }}</a> {% poetry_mark quote %} <span class="kwic" lang="la">… {% render_tokens quote.words quote.highlighted %} …</span> <a class="small-link" href="{{ reading_url }}">{% translate "lire dans l’œuvre" %}</a></p>
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Ajoutée par" %}</dt>
+      <dd>{{ attestation.created_by.public_name }}, {{ attestation.created_at|date:"j F Y" }} · {{ attestation.get_origin_display }}</dd>
+    </div>
+    {% if attestation.reviewed_by %}
+    <div>
+      <dt>{% translate "Examinée par" %}</dt>
+      <dd>{{ attestation.reviewed_by.public_name }}, {{ attestation.reviewed_at|date:"j F Y" }}</dd>
+    </div>
+    {% endif %}
+    {% if attestation.realization %}<div><dt>{% translate "Réalisation" %}</dt><dd lang="la">{{ attestation.realization.form }}</dd></div>{% endif %}
+    {% if attestation.sense %}<div><dt>{% translate "Sens" %}</dt><dd>{{ attestation.sense.definition }}</dd></div>{% endif %}
+    {% if attestation.note %}<div><dt>{% translate "Note" %}</dt><dd>{{ attestation.note }}</dd></div>{% endif %}
+  </dl>
+
+  {% if is_reviewer %}
+  <form method="post" action="{% url 'phraseology:attestation_review' attestation.pk %}" class="actions">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}">
+    {% if can_validate %}<button type="submit" name="decision" value="valider" class="button">{% translate "valider" %}</button>{% endif %}
+    {% if attestation.status != "rejected" %}<button type="submit" name="decision" value="rejeter" class="button button-quiet">{% translate "rejeter" %}</button>{% endif %}
+  </form>
+  {% endif %}
+
+  <section class="unit-section" id="doutes" aria-labelledby="doubts-title">
+    <h2 id="doubts-title">{% translate "Doutes" %}</h2>
+    <ul class="item-list">
+      {% for doubt in doubts %}
+      <li id="doute-{{ doubt.pk }}">
+        <span>{{ doubt.reason|linebreaksbr }}</span>
+        <span class="muted">{{ doubt.created_by.public_name }}, {{ doubt.created_at|date:"j F Y" }} · {{ doubt.get_status_display }}{% if doubt.decided_by %} ({{ doubt.decided_by.public_name }}){% endif %}</span>
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Personne n’a signalé cette attestation comme douteuse." %}</li>
+      {% endfor %}
+    </ul>
+    {% if is_reviewer and open_doubts %}
+    <form method="post" action="{% url 'phraseology:attestation_doubts_decide' attestation.pk %}" class="actions">
+      {% csrf_token %}
+      <button type="submit" name="decision" value="maintenir" class="button">{% translate "Maintenir l’attestation" %}</button>
+      <button type="submit" name="decision" value="rejeter" class="button button-danger">{% translate "Rejeter l’attestation" %}</button>
+    </form>
+    {% endif %}
+    {% if doubt_form %}
+    <form method="post" action="{% url 'phraseology:attestation_doubt' attestation.pk %}" class="form">
+      {% csrf_token %}
+      {{ doubt_form }}
+      <button type="submit" class="button button-quiet">{% translate "Signaler comme douteuse" %}</button>
+    </form>
+    {% endif %}
+  </section>
+
+  <section class="unit-section" id="contestation" aria-labelledby="contest-title">
+    <h2 id="contest-title">{% translate "Contestation" %}</h2>
+    {% if attestation.is_contested %}
+    <p class="notice">{% translate "Cette attestation est contestée : les arguments sont dans la discussion, et un relecteur tranchera." %}</p>
+    {% translate "L’attestation est juste" as for_label %}{% translate "L’attestation est fausse" as against_label %}
+    {% votes attestation for_label against_label %}
+    {% if resolve_form %}
+    <form method="post" action="{% url 'phraseology:attestation_contest_resolve' attestation.pk %}" class="form">
+      {% csrf_token %}
+      {{ resolve_form }}
+      <button type="submit" class="button">{% translate "Lever la contestation" %}</button>
+    </form>
+    {% endif %}
+    {% elif contest_form %}
+    <form method="post" action="{% url 'phraseology:attestation_contest' attestation.pk %}" class="form">
+      {% csrf_token %}
+      {{ contest_form }}
+      <button type="submit" class="button button-quiet">{% translate "Contester l’attestation" %}</button>
+    </form>
+    {% else %}
+    <p class="muted">{% translate "Aucune contestation en cours." %}</p>
+    {% endif %}
+  </section>
+
+  {% moderation_links attestation %}
+  {% discussion attestation %}
+</article>
+{% endblock %}

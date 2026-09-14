@@ -33,7 +33,9 @@ from .collocations import profile, profile_computed
 from .forms import (
     AnnotationForm,
     AttestationPlaceForm,
+    AttestationResolveForm,
     ContestForm,
+    DoubtForm,
     EquivalentForm,
     NegativeSearchForm,
     NeologismCreateForm,
@@ -51,6 +53,7 @@ from .forms import (
 from .frequency import count_by_author, load_tokens, occurrence_words, schema_matches, slot_fillers
 from .models import (
     Attestation,
+    AttestationDoubt,
     Candidate,
     Collocation,
     Equivalent,
@@ -72,10 +75,13 @@ from .schema import SLOT, format_schema, parse_schema, schema_lemmas
 from .services import (
     add_attestations,
     add_neologism_evidences,
+    contest_attestation,
     contest_unit,
     create_neologism,
     create_unit,
     create_unit_from_candidate,
+    decide_doubts,
+    doubt_attestation,
     missing_fields,
     propose_unit,
     record_negative_search,
@@ -83,6 +89,7 @@ from .services import (
     refresh_frequency,
     reject_candidate,
     reopen_candidate,
+    resolve_attestation_contest,
     resolve_contest,
     retain_candidate,
     review_attestation,
@@ -737,6 +744,132 @@ def attestation_example(request, pk):
     except ValidationError as error:
         messages.error(request, error.messages[0])
     return redirect(_return_url(request, "next", attestation.get_absolute_url()))
+
+
+def attestation_detail(request, pk):
+    """An attestation: its words, who added and reviewed it, the doubts and the contest about it."""
+    user = request.user
+    attestation = get_object_or_404(
+        Attestation.objects.active().select_related(
+            "created_by", "reviewed_by", "sense", "realization", "passage__edition__work"
+        ),
+        pk=pk,
+    )
+    attestation.unit = _unit(user, attestation.unit_id)
+    if not can_view(user, attestation):
+        raise Http404
+    tokens = attestation.tokens.select_related("passage__edition__work__author")
+    doubts = list(
+        attestation.doubts.filter(is_hidden=False).select_related("created_by", "decided_by")
+    )
+    reviewer = is_reviewer(user)
+    active = user.is_authenticated and user.is_active
+    open_to_debate = attestation.status != Attestation.Status.REJECTED and not attestation.is_hidden
+    work = attestation.passage.edition.work
+    reading = reverse("corpus:reading", args=[work.cts_id])
+    around = urlencode({"aller": attestation.passage.reference, "fiche": attestation.unit_id})
+    return render(
+        request,
+        "phraseology/attestation_detail.html",
+        {
+            "attestation": attestation,
+            "quote": quotation(list(tokens.order_by("position"))),
+            "reading_url": f"{reading}?{around}",
+            "doubts": doubts,
+            "open_doubts": sum(
+                1 for doubt in doubts if doubt.status == AttestationDoubt.Status.OPEN
+            ),
+            "is_reviewer": reviewer,
+            # Outside the core, an attestation found automatically is never validated (T2).
+            "can_validate": attestation.status != Attestation.Status.VALIDATED
+            and (attestation.level != Attestation.Level.AUTOMATIC or work.is_core),
+            "doubt_form": DoubtForm() if active and open_to_debate else None,
+            "contest_form": (
+                ContestForm()
+                if active and open_to_debate and not attestation.is_contested
+                else None
+            ),
+            "resolve_form": AttestationResolveForm()
+            if reviewer and attestation.is_contested
+            else None,
+        },
+    )
+
+
+@login_required
+@require_POST
+def attestation_doubt(request, pk):
+    attestation = _visible_attestation(request.user, pk)
+    form = DoubtForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Indiquez le motif du doute."))
+    else:
+        try:
+            doubt_attestation(attestation, request.user, form.cleaned_data["reason"])
+        except ContributionLimitReached as error:
+            messages.error(request, str(error))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+        else:
+            messages.success(request, _("Le doute est enregistré ; un relecteur tranchera."))
+    return redirect(f"{attestation.get_absolute_url()}#doutes")
+
+
+@login_required
+@require_POST
+def attestation_doubts_decide(request, pk):
+    attestation = _visible_attestation(request.user, pk)
+    decision = request.POST.get("decision", "")
+    if decision not in ("maintenir", "rejeter"):
+        return HttpResponseBadRequest()
+    try:
+        decide_doubts(attestation, request.user, reject=decision == "rejeter")
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("Les doutes sont tranchés."))
+    return redirect(f"{attestation.get_absolute_url()}#doutes")
+
+
+@login_required
+@require_POST
+def attestation_contest(request, pk):
+    attestation = _visible_attestation(request.user, pk)
+    form = ContestForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Indiquez votre argument."))
+    else:
+        try:
+            contest_attestation(attestation, request.user, form.cleaned_data["argument"])
+        except ContributionLimitReached as error:
+            messages.error(request, str(error))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+        else:
+            messages.success(
+                request, _("L’attestation est contestée ; votre argument ouvre la discussion.")
+            )
+    return redirect(f"{attestation.get_absolute_url()}#contestation")
+
+
+@login_required
+@require_POST
+def attestation_contest_resolve(request, pk):
+    attestation = _visible_attestation(request.user, pk)
+    if not is_reviewer(request.user):
+        raise PermissionDenied
+    form = AttestationResolveForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Choisissez une décision et motivez-la."))
+    else:
+        data = form.cleaned_data
+        try:
+            resolve_attestation_contest(attestation, request.user, data["decision"], data["reason"])
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+        else:
+            messages.success(request, _("La contestation est levée."))
+    return redirect(f"{attestation.get_absolute_url()}#contestation")
 
 
 def reading_word(request, pk):

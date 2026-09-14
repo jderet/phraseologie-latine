@@ -372,6 +372,7 @@ class Attestation(ModeratedContent):
         default=False,
         help_text=_("Proposée en annotant le texte ; un relecteur décide d’en faire un exemple."),
     )
+    is_contested = models.BooleanField(_("contestée"), default=False, editable=False)
     note = models.CharField(_("note"), max_length=300, blank=True)
     is_withdrawn = models.BooleanField(_("retirée"), default=False)
     created_by = models.ForeignKey(
@@ -412,7 +413,7 @@ class Attestation(ModeratedContent):
         }
 
     def get_absolute_url(self):
-        return f"{self.unit.get_absolute_url()}#attestation-{self.pk}"
+        return reverse("phraseology:attestation", args=[self.pk])
 
     @property
     def status_label(self):
@@ -823,7 +824,71 @@ register(
     text_fields=("note",),
     visible_to=part_visible_to,
     counts_toward_limit=False,
-    not_reverted=("status", "reviewed_by", "reviewed_at", "level", "origin"),
+    not_reverted=("status", "reviewed_by", "reviewed_at", "level", "origin", "is_contested"),
+    # A contested attestation is discussed like a unit, with indicative votes (Q48, Q53).
+    discussion=lambda user, attestation: attestation.is_contested,
+    votes=lambda user, attestation: attestation.is_contested,
+)
+
+
+class AttestationDoubt(ModeratedContent):
+    """A reader thinks an attestation wrong and says why; a reviewer decides."""
+
+    class Status(models.TextChoices):
+        OPEN = "open", _("ouvert")
+        KEPT = "kept", _("attestation maintenue")
+        REJECTED = "rejected", _("attestation rejetée")
+
+    attestation = models.ForeignKey(
+        Attestation, on_delete=models.PROTECT, related_name="doubts", verbose_name=_("attestation")
+    )
+    reason = models.TextField(_("motif"), max_length=1000)
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.OPEN, editable=False
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="attestation_doubts",
+        verbose_name=_("signalé par"),
+    )
+    created_at = models.DateTimeField(_("signalé le"), default=timezone.now, editable=False)
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("tranché par"),
+    )
+    decided_at = models.DateTimeField(_("tranché le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("doute sur une attestation")
+        verbose_name_plural = _("doutes sur des attestations")
+        ordering = ["attestation", "created_at", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["attestation", "created_by"],
+                condition=Q(status="open"),
+                name="phraseology_one_open_doubt_per_author",
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("Doute sur %(attestation)s") % {"attestation": self.attestation}
+
+    def get_absolute_url(self):
+        return f"{self.attestation.get_absolute_url()}#doute-{self.pk}"
+
+
+register(
+    AttestationDoubt,
+    owner_field="created_by",
+    text_fields=("reason",),
+    visible_to=lambda user, doubt: can_view(user, doubt.attestation),
+    not_reverted=("status", "decided_by", "decided_at"),
 )
 register(
     Neologism,

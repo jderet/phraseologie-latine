@@ -167,9 +167,11 @@
         <span class="muted">{% if attestation.is_example %}{% translate "exemple choisi" %} · {% endif %}{{ attestation.status_label|capfirst }}{% if attestation.realization %} · <span lang="la">{{ attestation.realization.form }}</span>{% endif %}</span>
         {% if attestation.note %}<span class="evidence-note">{{ attestation.note }}</span>{% endif %}
         <span class="part-actions">
+          <a class="small-link" href="{{ attestation.get_absolute_url }}">{% if attestation.is_contested %}{% translate "contestée : discussion" %}{% else %}{% translate "doutes et discussion" %}{% endif %}</a>
           {% if is_reviewer %}
           <form method="post" action="{% url 'phraseology:attestation_review' attestation.pk %}" class="inline-form">
             {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}#attestation-{{ attestation.pk }}">
             {% if attestation.status != "validated" %}<button type="submit" name="decision" value="valider" class="link-button small-link">{% translate "valider" %}</button>{% endif %}
             {% if attestation.status != "rejected" %}<button type="submit" name="decision" value="rejeter" class="link-button small-link">{% translate "rejeter" %}</button>{% endif %}
           </form>

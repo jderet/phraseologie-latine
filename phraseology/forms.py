@@ -312,6 +312,30 @@ class AnnotationForm(AttestationPlaceForm):
         return note
 
 
+class DoubtForm(forms.Form):
+    reason = forms.CharField(
+        label=_("Motif"),
+        max_length=1000,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("Pourquoi ces mots n’attestent pas l’unité, à votre avis."),
+    )
+
+
+class AttestationResolveForm(forms.Form):
+    decision = forms.ChoiceField(
+        label=_("Décision"),
+        choices=[
+            ("keep", _("Maintenir l’attestation telle quelle")),
+            ("validate", _("Valider l’attestation")),
+            ("reject", _("Rejeter l’attestation")),
+        ],
+        widget=forms.RadioSelect,
+    )
+    reason = forms.CharField(
+        label=_("Motivation"), max_length=3000, widget=forms.Textarea(attrs={"rows": 3})
+    )
+
+
 class NegativeSearchForm(forms.ModelForm):
     """What a person adds to a search that found nothing; the query comes from the search."""
 
