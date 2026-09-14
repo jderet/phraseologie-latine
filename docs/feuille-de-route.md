@@ -68,7 +68,7 @@ Terminé quand une centaine de fiches sont validées.
 - [x] Profils statistiques de collocations
 - [x] Traductions du domaine public en regard
 - [x] Élargissement au reste de la latinité classique
-- [ ] Exports TEI et TMX, API publique, export complet
+- [x] Exports TEI et TMX, API publique, export complet
 
 ## Ouverture publique
 

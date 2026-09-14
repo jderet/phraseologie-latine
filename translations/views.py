@@ -1,3 +1,4 @@
+import datetime as dt
 from collections import defaultdict
 
 from django.contrib import messages
@@ -8,6 +9,7 @@ from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -443,15 +445,53 @@ def version_edit(request, pk):
     )
 
 
+def _download(content, version, extension, content_type):
+    response = HttpResponse(content, content_type=content_type)
+    filename = export_filename(version, extension)
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
 def version_export_text(request, pk):
     """The source text and the Latin of a version, sentence by sentence, as a text file."""
     version = _version(request.user, pk)
-    response = HttpResponse(
-        bilingual_text(version, _rows(request.user, version)),
-        content_type="text/plain; charset=utf-8",
-    )
-    response["Content-Disposition"] = f'attachment; filename="{export_filename(version, "txt")}"'
-    return response
+    content = bilingual_text(version, _rows(request.user, version))
+    return _download(content, version, "txt", "text/plain; charset=utf-8")
+
+
+def _export_context(request, version):
+    """What the TEI and TMX exports show: the rows and, for TEI, the visible evidence."""
+    rows = _rows(request.user, version)
+    for row in rows:
+        for justification in row["justifications"]:
+            justification.evidence_list = visible_evidences(
+                request.user, justification.evidences.all(), justification=justification
+            )
+    now = timezone.now()
+    return {
+        "version": version,
+        "project": version.project,
+        "source": version.project.source_text,
+        "rows": rows,
+        "exported_at": now,
+        "creation_date": now.astimezone(dt.UTC).strftime("%Y%m%dT%H%M%SZ"),
+        "version_url": request.build_absolute_uri(version.get_absolute_url()),
+        "site_name": _("Phraséologie latine"),
+    }
+
+
+def version_export_tei(request, pk):
+    """The version as a TEI document: source and Latin aligned, justifications as notes."""
+    version = _version(request.user, pk)
+    content = render_to_string("translations/version.tei.xml", _export_context(request, version))
+    return _download(content, version, "tei.xml", "application/tei+xml; charset=utf-8")
+
+
+def version_export_tmx(request, pk):
+    """The version as a translation memory (TMX 1.4): one unit per translated sentence."""
+    version = _version(request.user, pk)
+    content = render_to_string("translations/version.tmx", _export_context(request, version))
+    return _download(content, version, "tmx", "application/x-tmx+xml; charset=utf-8")
 
 
 def version_export_print(request, pk):

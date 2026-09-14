@@ -37,6 +37,7 @@ python manage.py extract_candidates        # candidats de la phraséologie (sur 
 python manage.py refresh_units             # fréquences et formes des fiches, après une nouvelle couche d'analyse
 python manage.py compute_collocations      # profils de collocations (sur le Mac, après une analyse)
 python manage.py import_translations       # traductions du domaine public en regard (sur le Mac)
+python manage.py export_data               # export complet des données publiques (archive zip)
 ```
 
 ## Architecture
@@ -53,6 +54,7 @@ python manage.py import_translations       # traductions du domaine public en re
 | `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements, discussions, avis indicatifs |
 | `translations` | textes sources, projets, versions, segments | textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable |
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
+| `api` | API publique en lecture, export complet, page des données ouvertes | API JSON (fiches, néologismes, versions publiées, recherches infructueuses), export zip |
 | `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications |
 
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.

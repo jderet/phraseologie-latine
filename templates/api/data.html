@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Données ouvertes" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <h1>{% translate "Données ouvertes" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Les contributions publiques du site sont sous licence CC BY-SA 4.0 : fiches phraséologiques,
+    néologismes, versions de traduction publiées avec leurs justifications, recherches
+    infructueuses. Elles se lisent par une API et se téléchargent en entier. Les brouillons, les
+    contenus masqués et les adresses e-mail n’en font jamais partie.
+  {% endblocktranslate %}</p>
+
+  <section class="unit-section" aria-labelledby="export-title">
+    <h2 id="export-title">{% translate "Export complet" %}</h2>
+    {% if export %}
+    <p><a class="button" href="{% url 'api:export' %}">{% translate "Télécharger l’archive" %}</a>
+      <span class="muted">{% blocktranslate trimmed with name=export.path.name date=export.created_at|date:"j F Y" size=export.size|filesizeformat %}
+        {{ name }}, du {{ date }}, {{ size }}
+      {% endblocktranslate %}</span></p>
+    <p class="note">{% translate "Une archive zip de fichiers JSON, avec une notice de licence (LISEZMOI.txt)." %}</p>
+    {% else %}
+    <p class="notice">{% translate "Aucun export n’a encore été produit." %}</p>
+    {% endif %}
+  </section>
+
+  <section class="unit-section" aria-labelledby="api-title">
+    <h2 id="api-title">{% translate "API" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      Une API en lecture seule, au format JSON, sans clé : les listes sont paginées par 100
+      (paramètre page).
+    {% endblocktranslate %}</p>
+    <ul class="part-list">
+      <li><a href="{% url 'api:index' %}"><code>{{ api_url }}</code></a> {% translate "point d’entrée" %}</li>
+      <li><a href="{% url 'api:units' %}"><code>fiches/</code></a>, <code>fiches/&lt;id&gt;/</code> {% translate "fiches phraséologiques, avec sens, équivalents, réalisations et attestations (identifiants de mots et URN CTS)" %}</li>
+      <li><a href="{% url 'api:neologisms' %}"><code>neologismes/</code></a>, <code>neologismes/&lt;id&gt;/</code> {% translate "néologismes, avec justification et preuves" %}</li>
+      <li><a href="{% url 'api:versions' %}"><code>versions/</code></a>, <code>versions/&lt;id&gt;/</code> {% translate "versions publiées, phrase par phrase, avec leurs justifications" %}</li>
+      <li><a href="{% url 'api:negative_searches' %}"><code>recherches-infructueuses/</code></a> {% translate "recherches qui n’ont rien trouvé, avec la version du corpus" %}</li>
+    </ul>
+    <p class="note">{% translate "Une attestation de niveau « automatic » a été repérée automatiquement : elle n’est pas vérifiée par des personnes. Les citations du corpus viennent de Perseus canonical-latinLit (CC BY-SA 4.0)." %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="license-title">
+    <h2 id="license-title">{% translate "Réutilisation" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      Toute réutilisation crédite « contributeurs de Phraséologie latine » et partage les
+      données sous la même licence (CC BY-SA 4.0). Chaque élément donne le nom public de son
+      auteur. Le code du site est sous licence AGPL-3.0.
+    {% endblocktranslate %}</p>
+  </section>
+</section>
+{% endblock %}

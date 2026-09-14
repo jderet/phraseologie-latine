@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 12:33+0200\n"
+"POT-Creation-Date: 2026-09-14 12:41+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -173,6 +173,11 @@ msgstr "Your details have been saved."
 msgid "Votre compte est supprimé. Vos contributions restent, sans votre nom."
 msgstr ""
 "Your account has been deleted. Your contributions remain, without your name."
+
+#: api/management/commands/export_data.py:22
+#, python-format
+msgid "Export écrit : %(path)s"
+msgstr "Export written: %(path)s"
 
 #: corpus/apps.py:7 corpus/forms.py:49 phraseology/forms.py:312
 #: templates/base.html:14 templates/corpus/index.html:4
@@ -954,7 +959,9 @@ msgstr "%(where)s: invalid exclusion pattern"
 msgid ""
 "%(where)s : %(translator)s n’est pas dans le domaine public (mort depuis "
 "plus de %(years)d ans, ou parution connue depuis %(old)d ans)"
-msgstr "%(where)s: %(translator)s is not in the public domain (dead for more than %(years)d years, or published at least %(old)d years ago)"
+msgstr ""
+"%(where)s: %(translator)s is not in the public domain (dead for more than "
+"%(years)d years, or published at least %(old)d years ago)"
 
 #: corpus/translations.py:159
 #, python-format
@@ -1346,13 +1353,13 @@ msgid "Enregistrer la justification"
 msgstr "Save the justification"
 
 #: justifications/views.py:281 phraseology/views.py:417
-#: phraseology/views.py:557 phraseology/views.py:1031 translations/views.py:70
-#: translations/views.py:237 translations/views.py:429
+#: phraseology/views.py:557 phraseology/views.py:1031 translations/views.py:72
+#: translations/views.py:239 translations/views.py:431
 msgid "Aucune modification."
 msgstr "No change."
 
 #: justifications/views.py:283 phraseology/views.py:419
-#: phraseology/views.py:559 phraseology/views.py:1033 translations/views.py:72
+#: phraseology/views.py:559 phraseology/views.py:1033 translations/views.py:74
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
@@ -2908,7 +2915,7 @@ msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
 #: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:6
-#: templates/base.html:12
+#: templates/base.html:12 translations/views.py:479
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -3057,6 +3064,91 @@ msgstr ""
 "Nothing received? Check your spam folder, or sign up again with the same "
 "address: a new link will be sent to you."
 
+#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:63
+msgid "Données ouvertes"
+msgstr "Open data"
+
+#: templates/api/data.html:9
+msgid ""
+"Les contributions publiques du site sont sous licence CC BY-SA 4.0 : fiches "
+"phraséologiques, néologismes, versions de traduction publiées avec leurs "
+"justifications, recherches infructueuses. Elles se lisent par une API et se "
+"téléchargent en entier. Les brouillons, les contenus masqués et les adresses "
+"e-mail n’en font jamais partie."
+msgstr "The public contributions of the site are under the CC BY-SA 4.0 licence: phraseological entries, neologisms, published translation versions with their justifications, unsuccessful searches. They can be read through an API and downloaded in full. Drafts, hidden content and email addresses are never part of them."
+
+#: templates/api/data.html:17
+msgid "Export complet"
+msgstr "Full export"
+
+#: templates/api/data.html:19
+msgid "Télécharger l’archive"
+msgstr "Download the archive"
+
+#: templates/api/data.html:20
+#, python-format
+msgid "%(name)s, du %(date)s, %(size)s"
+msgstr "%(name)s, of %(date)s, %(size)s"
+
+#: templates/api/data.html:23
+msgid ""
+"Une archive zip de fichiers JSON, avec une notice de licence (LISEZMOI.txt)."
+msgstr "A zip archive of JSON files, with a licence notice (LISEZMOI.txt)."
+
+#: templates/api/data.html:25
+msgid "Aucun export n’a encore été produit."
+msgstr "No export has been produced yet."
+
+#: templates/api/data.html:30
+msgid "API"
+msgstr "API"
+
+#: templates/api/data.html:31
+msgid ""
+"Une API en lecture seule, au format JSON, sans clé : les listes sont "
+"paginées par 100 (paramètre page)."
+msgstr "A read-only API in JSON, without a key: lists are paginated by 100 (page parameter)."
+
+#: templates/api/data.html:36
+msgid "point d’entrée"
+msgstr "entry point"
+
+#: templates/api/data.html:37
+msgid ""
+"fiches phraséologiques, avec sens, équivalents, réalisations et attestations "
+"(identifiants de mots et URN CTS)"
+msgstr "phraseological entries, with senses, equivalents, realizations and attestations (word identifiers and CTS URNs)"
+
+#: templates/api/data.html:38
+msgid "néologismes, avec justification et preuves"
+msgstr "neologisms, with justification and evidence"
+
+#: templates/api/data.html:39
+msgid "versions publiées, phrase par phrase, avec leurs justifications"
+msgstr "published versions, sentence by sentence, with their justifications"
+
+#: templates/api/data.html:40
+msgid "recherches qui n’ont rien trouvé, avec la version du corpus"
+msgstr "searches that found nothing, with the version of the corpus"
+
+#: templates/api/data.html:42
+msgid ""
+"Une attestation de niveau « automatic » a été repérée automatiquement : elle "
+"n’est pas vérifiée par des personnes. Les citations du corpus viennent de "
+"Perseus canonical-latinLit (CC BY-SA 4.0)."
+msgstr "An attestation of level “automatic” was found automatically: it has not been checked by people. Corpus quotations come from Perseus canonical-latinLit (CC BY-SA 4.0)."
+
+#: templates/api/data.html:46
+msgid "Réutilisation"
+msgstr "Reuse"
+
+#: templates/api/data.html:47
+msgid ""
+"Toute réutilisation crédite « contributeurs de Phraséologie latine » et "
+"partage les données sous la même licence (CC BY-SA 4.0). Chaque élément "
+"donne le nom public de son auteur. Le code du site est sous licence AGPL-3.0."
+msgstr "Any reuse credits “Phraséologie latine contributors” and shares the data under the same licence (CC BY-SA 4.0). Each item gives the public name of its author. The code of the site is under the AGPL-3.0 licence."
+
 #: templates/base.html:13
 msgid "Navigation principale"
 msgstr "Main navigation"
@@ -3201,7 +3293,9 @@ msgstr "Translation by %(name)s"
 msgid ""
 "La traduction n’est découpée que plus largement : voici tout le passage "
 "%(reference)s."
-msgstr "The translation is only divided more broadly: here is the whole of passage %(reference)s."
+msgstr ""
+"The translation is only divided more broadly: here is the whole of passage "
+"%(reference)s."
 
 #: templates/corpus/passage.html:23
 #, python-format
@@ -5058,6 +5152,10 @@ msgstr "bilingual text"
 msgid "version imprimable avec notes (PDF)"
 msgstr "printable version with notes (PDF)"
 
+#: templates/translations/version_detail.html:46
+msgid "mémoire de traduction (TMX)"
+msgstr "translation memory (TMX)"
+
 #: templates/translations/version_detail.html:49
 msgid "Texte et traduction"
 msgstr "Text and translation"
@@ -5584,42 +5682,42 @@ msgstr "The reference version must be a published version of this project."
 msgid "Choix de la version de référence"
 msgstr "Choice of the reference version"
 
-#: translations/views.py:124
+#: translations/views.py:126
 msgid "Le texte est ajouté."
 msgstr "The text has been added."
 
-#: translations/views.py:174
+#: translations/views.py:176
 msgid "Le projet est créé."
 msgstr "The project has been created."
 
-#: translations/views.py:233
+#: translations/views.py:235
 msgid "Choisissez une version publiée de ce projet."
 msgstr "Choose a published version of this project."
 
-#: translations/views.py:239
+#: translations/views.py:241
 msgid "Le projet n’a plus de version de référence."
 msgstr "The project no longer has a reference version."
 
-#: translations/views.py:241
+#: translations/views.py:243
 msgid "La version de référence est choisie."
 msgstr "The reference version has been chosen."
 
-#: translations/views.py:422
+#: translations/views.py:424
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:431
+#: translations/views.py:433
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:525
+#: translations/views.py:565
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:533
+#: translations/views.py:573
 msgid "La version est publiée."
 msgstr "The version has been published."
 

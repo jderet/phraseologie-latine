@@ -1,0 +1,55 @@
+{% load i18n %}<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:lang="la">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>{{ project.title }}</title>
+        <author>{{ version.author.public_name }}</author>
+      </titleStmt>
+      <editionStmt>
+        <edition>{{ version.get_style_display }}{% if version.style_note %} ({{ version.style_note }}){% endif %}</edition>
+      </editionStmt>
+      <publicationStmt>
+        <publisher>{{ site_name }}</publisher>
+        <idno type="URI">{{ version_url }}</idno>
+        <date when="{{ exported_at|date:'Y-m-d' }}"/>
+        <availability status="{% if version.is_draft %}restricted{% else %}free{% endif %}">
+          <licence target="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</licence>
+        </availability>
+      </publicationStmt>
+      <sourceDesc>
+        <bibl>
+          <title>{{ source.title }}</title>{% if source.author %}
+          <author>{{ source.author }}</author>{% endif %}{% if source.source_url %}
+          <ref target="{{ source.source_url }}">{{ source.source_url }}</ref>{% endif %}
+          <note type="license">{{ source.get_license_display }}</note>
+        </bibl>
+      </sourceDesc>
+    </fileDesc>
+    <profileDesc>
+      <langUsage>
+        <language ident="{{ source.language }}">{{ source.get_language_display }}</language>
+        <language ident="la">latin</language>
+      </langUsage>
+    </profileDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="source" xml:lang="{{ source.language }}">
+{% for row in rows %}        <ab n="{{ row.segment.order }}" xml:id="source-{{ row.segment.order }}">{{ row.segment.text }}</ab>
+{% endfor %}      </div>
+      <div type="translation" xml:lang="la">
+{% for row in rows %}{% if row.saved and not row.hidden %}        <ab n="{{ row.segment.order }}" xml:id="la-{{ row.segment.order }}" corresp="#source-{{ row.segment.order }}">{{ row.saved }}</ab>
+{% endif %}{% endfor %}      </div>
+      <div type="notes">
+{% for row in rows %}{% if not row.hidden %}{% for justification in row.justifications %}        <note type="justification" target="#la-{{ row.segment.order }}" n="{{ justification.strength }}">
+          <quote xml:lang="la">{{ justification.latin_excerpt }}</quote>
+          <label>{{ justification.get_strength_display }}</label>{% if justification.comment %}
+          <p>{{ justification.comment }}</p>{% endif %}{% for evidence in justification.evidence_list %}
+          {% if evidence.quotation %}<ref type="corpus" target="{{ evidence.quotation.token.passage.urn }}">{{ evidence.quotation.citation }}</ref>{% else %}<ref type="{{ evidence.kind }}">{{ evidence.work.abbreviation }} {{ evidence.locator }}</ref>{% endif %}{% endfor %}{% if justification.corpus_version %}
+          <note type="corpus-version">{{ justification.corpus_version }}</note>{% endif %}
+        </note>
+{% endfor %}{% endif %}{% endfor %}      </div>
+    </body>
+  </text>
+</TEI>

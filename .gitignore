@@ -8,6 +8,7 @@ __pycache__/
 db.sqlite3
 /media/
 /staticfiles/
+/exports/
 
 # Corpus Perseus : dépôt Git séparé (CC BY-SA 4.0), cloné à la racine
 /canonical-latinLit/

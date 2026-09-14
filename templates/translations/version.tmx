@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tmx version="1.4">
+  <header creationtool="phraseologie-latine" creationtoolversion="1.0" datatype="plaintext" segtype="sentence" adminlang="fr" srclang="{{ source.language }}" o-tmf="phraseologie-latine" creationdate="{{ creation_date }}">
+    <prop type="x-title">{{ project.title }}</prop>
+    <prop type="x-author">{{ version.author.public_name }}</prop>
+    <prop type="x-style">{{ version.get_style_display }}</prop>
+    <prop type="x-license">CC BY-SA 4.0</prop>
+    <prop type="x-source-license">{{ source.get_license_display }}</prop>
+  </header>
+  <body>
+{% for row in rows %}{% if row.saved and not row.hidden %}    <tu tuid="{{ row.segment.order }}">
+      <tuv xml:lang="{{ source.language }}"><seg>{{ row.segment.text }}</seg></tuv>
+      <tuv xml:lang="la"><seg>{{ row.saved }}</seg></tuv>
+    </tu>
+{% endif %}{% endfor %}  </body>
+</tmx>

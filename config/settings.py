@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "translations",
     "justifications",
     "phraseology",
+    "api",
 ]
 
 MIDDLEWARE = [
@@ -132,6 +133,9 @@ DEFAULT_FROM_EMAIL = env("DJANGO_DEFAULT_FROM_EMAIL", default="webmaster@localho
 # Corpus
 
 PERSEUS_LATIN_DIR = Path(env("PERSEUS_LATIN_DIR", default=str(BASE_DIR / "canonical-latinLit")))
+
+# Full exports of the public data (manage.py export_data), offered for download.
+EXPORT_DIR = Path(env("EXPORT_DIR", default=str(BASE_DIR / "exports")))
 
 
 # Security for every non-debug run (production and CI).

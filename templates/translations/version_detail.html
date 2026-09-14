@@ -43,7 +43,7 @@
     {% if version.is_draft %}<a href="{% url 'translations:version_publish' version.pk %}">{% translate "Publier" %}</a>{% endif %}
   </p>
   {% endif %}
-  <p class="export-links">{% translate "Exporter :" %} <a href="{% url 'translations:version_export_text' version.pk %}">{% translate "texte bilingue" %}</a> · <a href="{% url 'translations:version_export_print' version.pk %}">{% translate "version imprimable avec notes (PDF)" %}</a></p>
+  <p class="export-links">{% translate "Exporter :" %} <a href="{% url 'translations:version_export_text' version.pk %}">{% translate "texte bilingue" %}</a> · <a href="{% url 'translations:version_export_print' version.pk %}">{% translate "version imprimable avec notes (PDF)" %}</a> · <a href="{% url 'translations:version_export_tei' version.pk %}">TEI</a> · <a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "mémoire de traduction (TMX)" %}</a></p>
   {% moderation_links version %}
 
   <h2>{% translate "Texte et traduction" %}</h2>

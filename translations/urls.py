@@ -35,6 +35,14 @@ urlpatterns = [
         name="version_export_text",
     ),
     path(
+        "versions/<int:pk>/export/version.tei.xml",
+        views.version_export_tei,
+        name="version_export_tei",
+    ),
+    path(
+        "versions/<int:pk>/export/version.tmx", views.version_export_tmx, name="version_export_tmx"
+    ),
+    path(
         "versions/<int:pk>/export/imprimer/",
         views.version_export_print,
         name="version_export_print",

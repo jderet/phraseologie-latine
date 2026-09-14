@@ -118,7 +118,7 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 
 ### 4.9 Données ouvertes
 
-- API publique et export complet téléchargeable (Q65).
+- API publique et export complet téléchargeable (Q65). L'API est en lecture seule, au format JSON et sans clé ; l'export complet est une archive de fichiers JSON produite par une commande et téléchargeable sur la page « Données ouvertes ». Ni l'une ni l'autre ne contient de brouillon, de contenu masqué ou d'adresse e-mail. Les versions de traduction s'exportent aussi en TEI et en TMX (choix du 14 septembre 2026).
 - Dépôt périodique des données sur Zenodo, avec la liste des contributeurs qui acceptent d'y figurer (T13, T17). Modalités à préciser.
 
 ## 5. Règles juridiques
