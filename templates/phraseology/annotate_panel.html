@@ -1,5 +1,5 @@
 {% load i18n corpus_tags %}<div class="annotate-panel">
-  <p class="eyebrow">{% translate "Annoter" %}</p>
+  <p class="eyebrow">{% translate "Annoter" %} · <a href="{% url 'core:guide' %}" target="_blank" rel="noopener">{% translate "Guide d’annotation" %}</a></p>
   {% if errors %}
   <ul class="errorlist">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
   {% else %}

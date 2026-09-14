@@ -1910,3 +1910,13 @@ article > h2 {
   padding-top: 8px;
   border-top: 3px solid var(--mark);
 }
+
+.u.s-suggested,
+.swatch.s-suggested {
+  border-bottom-style: dotted;
+  border-bottom-color: color-mix(in srgb, var(--mark) 45%, transparent);
+}
+
+.reading-latin .u.s-suggested {
+  cursor: help;
+}

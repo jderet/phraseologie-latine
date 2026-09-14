@@ -181,6 +181,16 @@
     showChoice();
   }
 
+  // An occurrence of a known schema, suggested in pointillé: its key names the unit and the words.
+  function showSuggestion(mark, word) {
+    const [, unit, ...words] = mark.dataset.o.split("_");
+    const url = new URL(labels.suggestionUrl, window.location.origin);
+    url.searchParams.set("fiche", unit);
+    url.searchParams.set("mots", words.join(","));
+    url.searchParams.set("retour", backTo(word));
+    load(url);
+  }
+
   function attach() {
     const words = inTextOrder();
     if (!words.length) {
@@ -200,7 +210,12 @@
       return;
     }
     if (annotating) {
-      toggle(word);
+      const suggestion = event.target.closest('[data-o^="s_"]');
+      if (suggestion) {
+        showSuggestion(suggestion, word);
+      } else {
+        toggle(word);
+      }
     } else {
       showWord(word);
     }

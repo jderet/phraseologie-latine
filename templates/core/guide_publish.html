@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Publier le guide d’annotation" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{% url 'core:guide' %}">{% translate "Guide d’annotation" %}</a></p>
+  <h1>{% translate "Publier une nouvelle version" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Le texte part de la dernière version publiée. Publier crée une nouvelle version datée ; les
+    précédentes restent consultables.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="button">{% translate "Publier cette version" %}</button>
+  </form>
+</section>
+{% endblock %}

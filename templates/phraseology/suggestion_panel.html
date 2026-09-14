@@ -1,0 +1,18 @@
+{% load i18n corpus_tags %}<div class="annotate-panel">
+  <p class="eyebrow">{% translate "Occurrence repérée automatiquement" %}</p>
+  {% if errors %}
+  <ul class="errorlist">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+  {% else %}
+  <h2 class="word-panel-title" lang="la">{{ unit.reference_form }}</h2>
+  <p><a class="hit-ref" href="{{ quote.url }}">{{ quote.citation }}</a> <span class="kwic" lang="la">… {% render_tokens quote.words quote.highlighted %} …</span></p>
+  <p class="note">{% if core %}{% translate "D’après l’analyse automatique, le schéma de la fiche se retrouve ici. Si c’est bien l’unité, confirmez : l’attestation sera proposée, et un relecteur la validera." %}{% else %}{% translate "D’après l’analyse automatique, le schéma de la fiche se retrouve ici. Hors du noyau, l’occurrence confirmée est enregistrée comme repérée automatiquement : elle n’est jamais validée." %}{% endif %}</p>
+  <form method="post" action="{% url 'phraseology:suggestion_confirm' %}" class="actions">
+    {% csrf_token %}
+    <input type="hidden" name="unit" value="{{ unit.pk }}">
+    <input type="hidden" name="words" value="{{ words }}">
+    <input type="hidden" name="next" value="{{ back }}">
+    <button type="submit" class="button">{% translate "Confirmer l’attestation" %}</button>
+    <a href="{{ unit.get_absolute_url }}">{% translate "Voir la fiche" %}</a>
+  </form>
+  {% endif %}
+</div>

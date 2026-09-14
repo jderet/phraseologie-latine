@@ -11,6 +11,7 @@ from django.utils.http import urlencode
 from phraseology.models import Kind, UsageMark
 from phraseology.reading import (
     STATUS_LABELS,
+    assign_tracks,
     focused_unit,
     legend_kinds,
     page_attestations,
@@ -21,6 +22,7 @@ from phraseology.reading import (
     word_marks,
     word_occurrences,
 )
+from phraseology.suggestions import page_suggestions
 
 from .forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm, bound_search_form, search_query
 from .models import URN_PREFIX, Author, Edition, ReferenceTranslation, Token, Work
@@ -201,11 +203,18 @@ def reading(request, work_id, part=None):
     tokens = _page_words(passages)
     parts = translation.parts_for([item.reference for item in passages]) if translation else {}
     filters = reading_filters(request)
+    token_ids = {word.pk for words in tokens.values() for word in words}
     occurrences = page_occurrences(
         page_attestations(user, passages, filters, focus),
-        {word.pk for words in tokens.values() for word in words},
+        token_ids,
         {passage.pk: passage.reference for passage in passages},
     )
+    marked = occurrences
+    if annotating:
+        # Occurrences of known schemas not yet attested, to confirm, drawn under the others.
+        suggestions = page_suggestions(user, passages, token_ids, default_layer())
+        marked = [*occurrences, *suggestions]
+        assign_tracks(marked)
     page_url = _reading_url(work_id, page)
 
     def link(**changes):
@@ -246,7 +255,7 @@ def reading(request, work_id, part=None):
             "rows": reading_rows(
                 page, plan.scheme, passages, tokens, parts, verse=work.form == Work.Form.VERSE
             ),
-            "marks": word_marks(occurrences),
+            "marks": word_marks(marked),
             "page_units": page_units,
             "legend_kinds": legend_kinds(occurrences),
             "filters": filters,

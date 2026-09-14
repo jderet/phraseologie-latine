@@ -101,6 +101,7 @@ from .services import (
     withdraw_part,
 )
 from .spotting import spot_units
+from .suggestions import confirm_suggestion
 from .survey import attestation_shapes
 
 UNITS_PER_PAGE = 50
@@ -863,6 +864,66 @@ def annotate_attach(request):
             messages.success(
                 request,
                 _("L’attestation est ajoutée à la fiche « %(unit)s » ; un relecteur l’examinera.")
+                % {"unit": unit.reference_form},
+            )
+        else:
+            messages.info(request, _("Ces mots attestent déjà cette fiche."))
+    return redirect(back)
+
+
+@login_required
+def suggestion_panel(request):
+    """An occurrence of the schema of a unit, found in the text, to confirm as an attestation."""
+    fragment = request.GET.get("fragment") == "1"
+    template = (
+        "phraseology/suggestion_panel.html" if fragment else "phraseology/suggestion_page.html"
+    )
+    value = request.GET.get("fiche", "")
+    unit = _editable_unit(request.user, int(value) if value.isdigit() else 0)
+    try:
+        evidence = corpus_evidence(request.GET.get("mots", ""))
+    except ValidationError as error:
+        back = _return_url(request, "retour", unit.get_absolute_url())
+        context = {"errors": error.messages, "back": back, "fragment": fragment}
+        return render(request, template, context)
+    tokens = evidence.tokens
+    first = tokens[0]
+    reading = reverse("corpus:reading", args=[first.passage.edition.work.cts_id])
+    back = _return_url(
+        request, "retour", f"{reading}?{urlencode({'aller': first.passage.reference})}"
+    )
+    return render(
+        request,
+        template,
+        {
+            "unit": unit,
+            "quote": quotation(tokens),
+            "words": ",".join(str(token.pk) for token in tokens),
+            "core": first.passage.edition.work.is_core,
+            "back": back,
+            "fragment": fragment,
+        },
+    )
+
+
+@login_required
+@require_POST
+def suggestion_confirm(request):
+    """Confirm a suggested occurrence: proposed in the core, found automatically outside it."""
+    value = request.POST.get("unit", "")
+    unit = _editable_unit(request.user, int(value) if value.isdigit() else 0)
+    back = _return_url(request, "next", unit.get_absolute_url())
+    try:
+        created = confirm_suggestion(unit, request.POST.get("words", ""), request.user)
+    except ContributionLimitReached as error:
+        messages.error(request, str(error))
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        if created:
+            messages.success(
+                request,
+                _("L’occurrence est enregistrée comme attestation de la fiche « %(unit)s ».")
                 % {"unit": unit.reference_form},
             )
         else:

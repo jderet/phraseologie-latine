@@ -94,7 +94,7 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 - [x] Panneau latéral de la fiche ; analyse d'un mot au clic
 - [x] Soulignements dans la page d'un passage, les résultats de recherche, les versions publiées et la comparaison
 - [x] Mode « annoter » : mots choisis au clic, fiches suggérées, recherche, fiche pré-remplie ; réalisation, sens, note, exemple proposé
-- [ ] Occurrences du schéma des fiches pas encore attestées, confirmées en un clic
+- [x] Occurrences du schéma des fiches pas encore attestées, confirmées en un clic
 - [ ] Relecture dans le texte, attestation douteuse, contestation d'une attestation
 - [ ] Repérages sans fiche et leur file
 - [ ] Passage entièrement relu, file des passages à relire, progression par œuvre
@@ -102,7 +102,7 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 - [ ] Corrections d'analyse proposées puis validées, prises en compte par la lecture, la recherche et les relevés
 - [ ] Notes de lecture publiques, masquables
 - [ ] Carnet personnel : surlignages, notes privées, listes de passages, page « mon carnet »
-- [ ] Guide d'annotation en pages datées, lié depuis l'outil d'annotation
+- [x] Guide d'annotation en pages datées, lié depuis l'outil d'annotation
 - [ ] Annotations dans l'API et l'export complet ; exports TEI et CoNLL-U d'un passage ou d'une œuvre
 
 Terminé quand un livre du noyau (par exemple Cic. *Off.* 1) est entièrement relu, avec ses attestations visibles dans le texte.

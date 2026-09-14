@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Guide d’annotation" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium guide">
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "Guide d’annotation" %}</h1>
+  {% if version %}
+  <p class="lede">{% blocktranslate trimmed with number=version.number date=version.published_at|date:"j F Y" name=version.published_by.public_name %}
+    Version {{ number }}, publiée le {{ date }} par {{ name }}.
+  {% endblocktranslate %}{% if version.summary %} {{ version.summary }}{% endif %}</p>
+  {% if latest and version != latest %}
+  <p class="notice">{% blocktranslate trimmed with url=latest.get_absolute_url number=latest.number %}
+    Une version plus récente existe : <a href="{{ url }}">version {{ number }}</a>.
+  {% endblocktranslate %}</p>
+  {% endif %}
+  <div class="guide-text">{{ html }}</div>
+  {% else %}
+  <p class="notice notice-info">{% translate "Le guide d’annotation n’est pas encore publié : il est rédigé avec le comité consultatif. En attendant, voici la typologie provisoire des unités." %}</p>
+  <h2 id="types">{% translate "Types d’unités (typologie provisoire)" %}</h2>
+  <ul class="part-list">
+    {% for value, label in kinds %}<li class="k-{{ value }}"><span class="swatch"></span> {{ label|capfirst }}</li>{% endfor %}
+  </ul>
+  <h2 id="statuts">{% translate "Statuts des attestations" %}</h2>
+  <ul class="part-list">
+    <li><span class="swatch s-validated"></span> {% translate "validée : vérifiée par un relecteur" %}</li>
+    <li><span class="swatch s-proposed"></span> {% translate "proposée : relevée par une personne, en attente de relecture" %}</li>
+    <li><span class="swatch s-automatic"></span> {% translate "repérée automatiquement : trouvée par l’analyse, jamais présentée comme validée" %}</li>
+  </ul>
+  {% endif %}
+
+  {% if can_publish %}
+  <p class="actions"><a class="button" href="{% url 'core:guide_publish' %}">{% translate "Publier une nouvelle version" %}</a></p>
+  {% endif %}
+
+  {% if versions|length > 1 %}
+  <section class="guide-versions" aria-labelledby="versions-title">
+    <h2 id="versions-title">{% translate "Toutes les versions" %}</h2>
+    <ul class="part-list">
+      {% for item in versions %}<li><a href="{{ item.get_absolute_url }}"{% if item == version %} aria-current="page"{% endif %}>{% blocktranslate with number=item.number %}Version {{ number }}{% endblocktranslate %}</a> <span class="muted">{{ item.published_at|date:"j F Y" }}{% if item.summary %} · {{ item.summary }}{% endif %}</span></li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</article>
+{% endblock %}
