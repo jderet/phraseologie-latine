@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
+from accounts.limits import is_limited
 from accounts.roles import is_reviewer
 from corpus.search import corpus_version, default_layer
 from justifications.services import attach_evidences
@@ -14,7 +15,15 @@ from moderation.registry import can_view
 from moderation.services import post_comment, save_with_revision
 
 from .frequency import count_by_author, schema_matches
-from .models import Attestation, Neologism, Sense, Unit, UnitFrequency, UnitRelation
+from .models import (
+    Attestation,
+    Candidate,
+    Neologism,
+    Sense,
+    Unit,
+    UnitFrequency,
+    UnitRelation,
+)
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 
 
@@ -111,7 +120,7 @@ def _check_still_complete(unit):
 
 
 @transaction.atomic
-def create_unit(unit, author, definition, attestations):
+def create_unit(unit, author, definition, attestations, origin=Attestation.Origin.MANUAL):
     """A unit is created with three fields: reference form, a sense, an attestation (T3).
 
     ``attestations`` are corpus evidence inputs (``justifications.services.corpus_evidence``).
@@ -129,7 +138,7 @@ def create_unit(unit, author, definition, attestations):
     save_with_revision(unit, author)
     sense = Sense(unit=unit, definition=definition)
     save_with_revision(sense, author)
-    add_attestations(unit, attestations, author, sense=sense)
+    add_attestations(unit, attestations, author, sense=sense, origin=origin)
     return unit
 
 
@@ -416,3 +425,58 @@ def validate_neologism(neologism, reviewer):
     neologism.validated_by = reviewer
     neologism.validated_at = timezone.now()
     return save_with_revision(neologism, reviewer, comment=gettext("Validation"))
+
+
+# Candidates
+
+
+def _decide(candidate, user, status, unit=None):
+    candidate = Candidate.objects.select_for_update().get(pk=candidate.pk)
+    if candidate.status != Candidate.Status.PENDING:
+        raise ValidationError(gettext("Ce candidat a déjà été examiné."), code="decided")
+    candidate.status = status
+    candidate.unit = unit
+    candidate.decided_by = user
+    candidate.decided_at = timezone.now()
+    candidate.save()
+    return candidate
+
+
+@transaction.atomic
+def retain_candidate(candidate, user, unit):
+    """Record that a candidate became a unit, or belongs to a unit with the same schema."""
+    if not user.is_active or not can_view(user, unit):
+        raise PermissionDenied
+    return _decide(candidate, user, Candidate.Status.RETAINED, unit)
+
+
+@transaction.atomic
+def create_unit_from_candidate(candidate, user, unit, definition, attestations):
+    """Make a unit of a candidate: it receives the schema of the candidate and its frequency."""
+    unit.schema = candidate.schema
+    create_unit(unit, user, definition, attestations, origin=Attestation.Origin.CANDIDATE)
+    refresh_frequency(unit)
+    retain_candidate(candidate, user, unit)
+    return unit
+
+
+@transaction.atomic
+def reject_candidate(candidate, user):
+    """Confirmed accounts and reviewers reject a candidate that makes no unit."""
+    if not user.is_authenticated or not user.is_active or is_limited(user):
+        raise PermissionDenied
+    return _decide(candidate, user, Candidate.Status.REJECTED)
+
+
+@transaction.atomic
+def reopen_candidate(candidate, reviewer):
+    """A reviewer puts a decided candidate back in the queue; a unit made from it stays."""
+    if not is_reviewer(reviewer):
+        raise PermissionDenied
+    candidate = Candidate.objects.select_for_update().get(pk=candidate.pk)
+    candidate.status = Candidate.Status.PENDING
+    candidate.unit = None
+    candidate.decided_by = None
+    candidate.decided_at = None
+    candidate.save()
+    return candidate

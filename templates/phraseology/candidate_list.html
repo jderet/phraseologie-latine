@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Candidats" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "Candidats" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Paires de mots liés syntaxiquement, repérées automatiquement dans le noyau du corpus et
+    classées par force d’association. Retenez un candidat en créant sa fiche, ou rejetez-le.
+  {% endblocktranslate %}</p>
+  {% if latest %}
+  <p class="note">{% blocktranslate trimmed with label=latest.corpus_version date=latest.extracted_at|date:"j F Y" %}
+    Extraction du {{ date }}, corpus version {{ label }}. Le score est un rapport de
+    vraisemblance : plus il est élevé, moins la rencontre des deux mots doit au hasard.
+  {% endblocktranslate %}</p>
+  {% endif %}
+
+  <nav class="tabs" aria-label="{% translate 'Statut des candidats' %}">
+    {% for value, label, count in tabs %}<a href="?statut={{ value }}"{% if value == status %} aria-current="page"{% endif %}>{{ label|capfirst }} <span class="muted">{{ count }}</span></a>{% endfor %}
+  </nav>
+
+  <form method="get" class="filter-form">
+    <input type="hidden" name="statut" value="{{ status }}">
+    <div class="field">
+      <label for="q">{% translate "Lemme" %}</label>
+      <input type="search" id="q" name="q" value="{{ query }}" lang="la">
+    </div>
+    <div class="field">
+      <label for="relation">{% translate "Relation" %}</label>
+      <select id="relation" name="relation">
+        <option value="">{% translate "toutes les relations" %}</option>
+        {% for value, label in relations %}<option value="{{ value }}"{% if value == relation %} selected{% endif %}>{{ label|capfirst }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="button button-quiet">{% translate "Filtrer" %}</button>
+  </form>
+
+  <div class="table-scroll">
+    <table class="changes">
+      <thead>
+        <tr>
+          <th scope="col">{% translate "Paire" %}</th>
+          <th scope="col">{% translate "Relation" %}</th>
+          <th scope="col">{% translate "Fréquence" %}</th>
+          <th scope="col">{% translate "Score" %}</th>
+          <th scope="col">{% translate "Décision" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for candidate in candidates %}
+        <tr>
+          <td><a href="{{ candidate.get_absolute_url }}" lang="la">{{ candidate.label }}</a></td>
+          <td>{{ candidate.relation_label }}</td>
+          <td>{{ candidate.frequency }}</td>
+          <td>{{ candidate.score|floatformat:0 }}</td>
+          <td>
+            {% if candidate.unit_visible %}<a href="{{ candidate.unit.get_absolute_url }}" lang="la">{{ candidate.unit.reference_form }}</a>
+            {% elif can_reject and candidate.status == "pending" %}
+            <form method="post" action="{% url 'phraseology:candidate_reject' candidate.pk %}" class="inline-form">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="link-button small-link">{% translate "Rejeter" %}</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">{% translate "Aucun candidat." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "translations/pager.html" %}
+</section>
+{% endblock %}

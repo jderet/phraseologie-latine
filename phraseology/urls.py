@@ -52,4 +52,9 @@ urlpatterns = [
         views.neologism_evidence_withdraw,
         name="neologism_evidence_withdraw",
     ),
+    path("candidats/", views.candidate_list, name="candidate_list"),
+    path("candidats/<int:pk>/", views.candidate_detail, name="candidate"),
+    path("candidats/<int:pk>/rejeter/", views.candidate_reject, name="candidate_reject"),
+    path("candidats/<int:pk>/rouvrir/", views.candidate_reopen, name="candidate_reopen"),
+    path("candidats/<int:pk>/rattacher/", views.candidate_attach, name="candidate_attach"),
 ]

@@ -16,21 +16,22 @@ class AnalysedCorpusTestCase(PhraseologyTestCase):
         super().setUpTestData()
         cls.layer = make_layer()
         consilium, cepit = cls.words[:2]
-        analyze(cls.layer, cepit, "capio")
-        analyze(cls.layer, consilium, "consilium", "obj", cepit)
+        verb, noun = {"upos": "VERB"}, {"upos": "NOUN"}
+        analyze(cls.layer, cepit, "capio", **verb)
+        analyze(cls.layer, consilium, "consilium", "obj", cepit, **noun)
         consilia, capiunt = cls.more_words[:2]
-        analyze(cls.layer, capiunt, "capio")
-        analyze(cls.layer, consilia, "consilium", "obj", capiunt)
+        analyze(cls.layer, capiunt, "capio", **verb)
+        analyze(cls.layer, consilia, "consilium", "obj", capiunt, **noun)
         _passage, (bonum, consilium_bonum, cepit_bonum) = make_passage(
             ("Bonum", "consilium", "cepit."), reference="1.3"
         )
-        analyze(cls.layer, cepit_bonum, "capio")
-        analyze(cls.layer, consilium_bonum, "consilium", "obj:dir", cepit_bonum)
-        analyze(cls.layer, bonum, "bonus", "amod", consilium_bonum)
+        analyze(cls.layer, cepit_bonum, "capio", **verb)
+        analyze(cls.layer, consilium_bonum, "consilium", "obj:dir", cepit_bonum, **noun)
+        analyze(cls.layer, bonum, "bonus", "amod", consilium_bonum, upos="ADJ")
         cls.good_words = (bonum, consilium_bonum, cepit_bonum)
         _passage, (consilium_passive, capitur) = make_outside_passage(("Consilium", "capitur."))
-        analyze(cls.layer, capitur, "capio")
-        analyze(cls.layer, consilium_passive, "consilium", "nsubj:pass", capitur)
+        analyze(cls.layer, capitur, "capio", **verb)
+        analyze(cls.layer, consilium_passive, "consilium", "nsubj:pass", capitur, **noun)
         cls.seneca = Author.objects.get(cts_id="phi1017")
 
 

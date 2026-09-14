@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-from corpus.models import Passage, Token, Work
+from corpus.models import AnalysisLayer, Passage, Token, Work
 from justifications.models import BibliographicWork
 from moderation.models import ModeratedContent
 from moderation.registry import can_view, register
@@ -540,6 +540,94 @@ class NeologismEquivalent(ModeratedContent):
 
     def get_absolute_url(self):
         return f"{self.neologism.get_absolute_url()}#equivalents"
+
+
+class Candidate(models.Model):
+    """Two lemmas linked by a syntactic relation, found by the machine as a possible unit (Q16).
+
+    A candidate is no contribution: the extraction creates and updates it; people retain it,
+    by making a unit of it, or reject it, and the decision records who took it.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", _("à examiner")
+        RETAINED = "retained", _("retenu")
+        REJECTED = "rejected", _("rejeté")
+
+    RELATION_LABELS = {
+        "obj": _("objet"),
+        "obl": _("complément du verbe"),
+        "amod": _("adjectif épithète"),
+        "advmod": _("adverbe"),
+        "nmod": _("complément du nom"),
+        "nsubj": _("sujet"),
+    }
+    # The relation written in the schema of a unit made from the candidate.
+    SCHEMA_RELATIONS = {"obj": "obj|nsubj:pass"}
+
+    head = models.CharField(_("lemme qui régit"), max_length=200)
+    relation = models.CharField(_("relation"), max_length=30)
+    dependent = models.CharField(_("lemme dépendant"), max_length=200)
+    frequency = models.PositiveIntegerField(_("fréquence"))
+    score = models.FloatField(_("score d’association"))
+    layer = models.ForeignKey(
+        AnalysisLayer,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name=_("couche d’analyse"),
+    )
+    corpus_version = models.CharField(_("version du corpus"), max_length=200)
+    extracted_at = models.DateTimeField(_("extrait le"))
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.PENDING
+    )
+    unit = models.ForeignKey(
+        Unit,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="candidates",
+        verbose_name=_("unité"),
+    )
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("décidé par"),
+    )
+    decided_at = models.DateTimeField(_("décidé le"), null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("candidat")
+        verbose_name_plural = _("candidats")
+        ordering = ["-score", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["head", "relation", "dependent"], name="phraseology_one_candidate_per_pair"
+            ),
+        ]
+        indexes = [models.Index(fields=["status", "-score"], name="phraseology_candidate_queue")]
+
+    def __str__(self):
+        return self.label
+
+    def get_absolute_url(self):
+        return reverse("phraseology:candidate", args=[self.pk])
+
+    @property
+    def label(self):
+        return f"{self.head} —{self.relation}→ {self.dependent}"
+
+    @property
+    def relation_label(self):
+        return self.RELATION_LABELS.get(self.relation, self.relation)
+
+    @property
+    def schema(self):
+        relation = self.SCHEMA_RELATIONS.get(self.relation, self.relation)
+        return f"{self.head} -{relation}-> {self.dependent}"
 
 
 def unit_visible_to(user, unit):

@@ -53,7 +53,7 @@ Terminé quand les testeurs ont traduit, comparé et justifié un texte dans plu
 - [x] Fiches : schéma, réalisations, sens, équivalents, relations, marques d'usage
 - [x] Création à trois champs, validation à tous les champs, fréquence calculée
 - [x] Lexique de néologismes justifiés
-- [ ] Candidats extraits automatiquement (paires syntaxiques, score d'association) et file de validation
+- [x] Candidats extraits automatiquement (paires syntaxiques, score d'association) et file de validation
 - [ ] Surlignage des unités connues pendant la saisie, avec leurs attestations
 - [ ] Liens entre justifications et fiches, dans les deux sens
 

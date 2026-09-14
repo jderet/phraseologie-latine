@@ -1,15 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Prefetch, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy, ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
-from accounts.limits import ContributionLimitReached
+from accounts.limits import ContributionLimitReached, is_limited
 from accounts.roles import is_reviewer
 from corpus.models import Author, Token
 from corpus.search import corpus_version, default_layer, quotation
@@ -39,6 +42,7 @@ from .forms import (
 from .frequency import load_tokens, occurrence_tokens, schema_matches
 from .models import (
     Attestation,
+    Candidate,
     Equivalent,
     Kind,
     Neologism,
@@ -51,16 +55,21 @@ from .models import (
     UnitRelation,
 )
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
+from .schema import parse_schema
 from .services import (
     add_attestations,
     add_neologism_evidences,
     contest_unit,
     create_neologism,
     create_unit,
+    create_unit_from_candidate,
     missing_fields,
     propose_unit,
     refresh_frequency,
+    reject_candidate,
+    reopen_candidate,
     resolve_contest,
+    retain_candidate,
     review_attestation,
     save_neologism_equivalent,
     save_part,
@@ -512,11 +521,22 @@ def part_withdraw(request, kind, pk):
 
 
 def _occurrences(request, unit):
-    """Occurrences of the schema found automatically, offered as attestations."""
-    layer = default_layer()
-    if not unit.schema or layer is None:
+    """Occurrences of the schema of a unit, offered as attestations."""
+    if not unit.schema:
         return None
-    edges = unit.edges
+    attested = unit.attestations.active().exclude(status=Attestation.Status.REJECTED)
+    known = {
+        frozenset(token.pk for token in attestation.tokens.all())
+        for attestation in attested.prefetch_related("tokens")
+    }
+    return _schema_occurrences(request, unit.edges, known)
+
+
+def _schema_occurrences(request, edges, known=frozenset()):
+    """Occurrences of a schema found automatically in the corpus, a page at a time."""
+    layer = default_layer()
+    if not edges or layer is None:
+        return None
     core_only = request.GET.get("occurrences") != "tout"
     matches = (
         schema_matches(edges, layer, core_only)
@@ -529,11 +549,6 @@ def _occurrences(request, unit):
         )
     )
     page = Paginator(matches, OCCURRENCES_PER_PAGE).get_page(request.GET.get("page_occurrences"))
-    attested = unit.attestations.active().exclude(status=Attestation.Status.REJECTED)
-    known = {
-        frozenset(token.pk for token in attestation.tokens.all())
-        for attestation in attested.prefetch_related("tokens")
-    }
     hits = []
     for match in page.object_list:
         tokens = load_tokens([token.pk for token in occurrence_tokens(match, edges, layer)])
@@ -848,3 +863,153 @@ def neologism_validate(request, pk):
     if validate_neologism(neologism, request.user) is not None:
         messages.success(request, _("Le néologisme est validé."))
     return redirect(neologism)
+
+
+# Candidates
+
+CANDIDATES_PER_PAGE = 50
+
+
+def _can_reject(user):
+    return user.is_authenticated and user.is_active and not is_limited(user)
+
+
+def candidate_list(request):
+    status = request.GET.get("statut", "")
+    if status not in Candidate.Status.values:
+        status = Candidate.Status.PENDING
+    candidates = Candidate.objects.filter(status=status).select_related("unit")
+    query = normalize(" ".join(request.GET.get("q", "").split()))[:100]
+    if query:
+        candidates = candidates.filter(Q(head__startswith=query) | Q(dependent__startswith=query))
+    relation = request.GET.get("relation", "")
+    if relation in Candidate.RELATION_LABELS:
+        candidates = candidates.filter(relation=relation)
+    page = Paginator(candidates, CANDIDATES_PER_PAGE).get_page(request.GET.get("page"))
+    shown = list(page.object_list)
+    for candidate in shown:
+        candidate.unit_visible = candidate.unit is not None and can_view(
+            request.user, candidate.unit
+        )
+    counts = dict(Candidate.objects.order_by().values_list("status").annotate(count=Count("pk")))
+    return render(
+        request,
+        "phraseology/candidate_list.html",
+        {
+            "page": page,
+            "candidates": shown,
+            "status": status,
+            "query": query,
+            "relation": relation,
+            "relations": list(Candidate.RELATION_LABELS.items()),
+            "tabs": [
+                (value, label, counts.get(value, 0)) for value, label in Candidate.Status.choices
+            ],
+            "latest": Candidate.objects.order_by("-extracted_at").first(),
+            "can_reject": _can_reject(request.user),
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def candidate_detail(request, pk):
+    candidate = get_object_or_404(Candidate.objects.select_related("unit", "decided_by"), pk=pk)
+    user = request.user
+    if request.method == "POST" and not user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
+    pending = candidate.status == Candidate.Status.PENDING
+    form = None
+    if pending and user.is_authenticated and user.is_active:
+        form = UnitCreateForm(request.POST or None, user=user)
+    evidences, errors = _chosen_attestations(request)
+    if request.method == "POST":
+        if form is None:
+            raise PermissionDenied
+        valid = form.is_valid()
+        for message in errors:
+            form.add_error(None, message)
+        if valid and not errors:
+            definition = form.cleaned_data["definition"]
+            try:
+                unit = create_unit_from_candidate(
+                    candidate, user, form.save(commit=False), definition, evidences
+                )
+            except ContributionLimitReached as error:
+                messages.error(request, str(error))
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                messages.success(
+                    request,
+                    _("La fiche est créée : c’est un brouillon visible de vous seul."),
+                )
+                return redirect(unit)
+    occurrences = _schema_occurrences(request, parse_schema(candidate.schema))
+    shown = {hit.word_ids for hit in occurrences["hits"]} if occurrences else set()
+    chosen = [quotation(evidence.tokens) for evidence in evidences]
+    existing = [
+        unit
+        for unit in Unit.objects.filter(schema=candidate.schema, is_hidden=False)
+        if can_view(user, unit)
+    ]
+    return render(
+        request,
+        "phraseology/candidate_detail.html",
+        {
+            "candidate": candidate,
+            "unit_visible": candidate.unit is not None and can_view(user, candidate.unit),
+            "form": form,
+            "occurrences": occurrences,
+            "chosen": [quote for quote in chosen if quote.word_ids not in shown],
+            "chosen_ids": {quote.word_ids for quote in chosen},
+            "existing": existing,
+            "can_reject": pending and _can_reject(user),
+            "can_reopen": not pending and is_reviewer(user),
+        },
+    )
+
+
+@login_required
+@require_POST
+def candidate_reject(request, pk):
+    candidate = get_object_or_404(Candidate, pk=pk)
+    try:
+        reject_candidate(candidate, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("Le candidat est rejeté."))
+    next_url = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        next_url = reverse("phraseology:candidate_list")
+    return redirect(next_url)
+
+
+@login_required
+@require_POST
+def candidate_reopen(request, pk):
+    candidate = get_object_or_404(Candidate, pk=pk)
+    reopen_candidate(candidate, request.user)
+    messages.success(request, _("Le candidat est remis à examiner."))
+    return redirect(candidate)
+
+
+@login_required
+@require_POST
+def candidate_attach(request, pk):
+    candidate = get_object_or_404(Candidate, pk=pk)
+    unit_pk = request.POST.get("unit", "")
+    unit = get_object_or_404(
+        Unit, pk=int(unit_pk) if unit_pk.isdigit() else 0, schema=candidate.schema
+    )
+    if not can_view(request.user, unit):
+        raise Http404
+    try:
+        retain_candidate(candidate, request.user, unit)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+        return redirect(candidate)
+    messages.success(request, _("Le candidat est retenu pour cette fiche."))
+    return redirect(unit)

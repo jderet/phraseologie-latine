@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ candidate.label }} · {% translate "Candidats" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:candidate_list' %}">{% translate "Candidats" %}</a></p>
+  <h1 lang="la">{{ candidate.label }}</h1>
+  <p class="badges"><span class="badge">{{ candidate.get_status_display }}</span></p>
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Relation" %}</dt>
+      <dd>{{ candidate.relation_label|capfirst }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Fréquence" %}</dt>
+      <dd>{% blocktranslate trimmed count counter=candidate.frequency %}
+        {{ counter }} paire repérée automatiquement
+      {% plural %}
+        {{ counter }} paires repérées automatiquement
+      {% endblocktranslate %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Score d’association" %}</dt>
+      <dd>{{ candidate.score|floatformat:1 }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Extraction" %}</dt>
+      <dd>{% blocktranslate with label=candidate.corpus_version date=candidate.extracted_at|date:"j F Y" %}corpus version {{ label }}, extraction du {{ date }}{% endblocktranslate %}</dd>
+    </div>
+    {% if candidate.decided_by %}
+    <div>
+      <dt>{% translate "Décision" %}</dt>
+      <dd>{{ candidate.get_status_display|capfirst }} · {{ candidate.decided_by.public_name }}, {{ candidate.decided_at|date:"j F Y" }}{% if unit_visible %} · <a href="{{ candidate.unit.get_absolute_url }}" lang="la">{{ candidate.unit.reference_form }}</a>{% endif %}</dd>
+    </div>
+    {% endif %}
+  </dl>
+
+  {% if can_reject or can_reopen %}
+  <div class="form-links">
+    {% if can_reject %}
+    <form method="post" action="{% url 'phraseology:candidate_reject' candidate.pk %}" class="inline-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ candidate.get_absolute_url }}">
+      <button type="submit" class="button button-quiet">{% translate "Rejeter le candidat" %}</button>
+    </form>
+    {% endif %}
+    {% if can_reopen %}
+    <form method="post" action="{% url 'phraseology:candidate_reopen' candidate.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button button-quiet">{% translate "Remettre à examiner" %}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if existing %}
+  <section class="unit-section" aria-labelledby="existing-title">
+    <h2 id="existing-title">{% translate "Fiches qui ont déjà ce schéma" %}</h2>
+    <ul class="part-list">
+      {% for unit in existing %}
+      <li><a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a> <span class="muted">{{ unit.get_status_display }}</span>
+        {% if form %}
+        <form method="post" action="{% url 'phraseology:candidate_attach' candidate.pk %}" class="inline-form part-actions">
+          {% csrf_token %}
+          <input type="hidden" name="unit" value="{{ unit.pk }}">
+          <button type="submit" class="link-button small-link">{% translate "retenir le candidat pour cette fiche" %}</button>
+        </form>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if occurrences %}{% include "phraseology/occurrences.html" with field_name="attestation" checkable=form %}{% endif %}
+
+  {% if form %}
+  <section class="unit-section" aria-labelledby="create-title">
+    <h2 id="create-title">{% translate "Retenir le candidat : créer sa fiche" %}</h2>
+    <p class="note">{% blocktranslate trimmed %}
+      Cochez au moins une occurrence qui atteste l’unité, puis donnez sa forme de référence et
+      son sens. La fiche reçoit le schéma du candidat ; elle reste un brouillon visible de vous
+      seul.
+    {% endblocktranslate %}</p>
+    <form method="post" id="unit-form" class="form">
+      {% csrf_token %}
+      {% include "phraseology/chosen_attestations.html" %}
+      {{ form }}
+      <button type="submit" class="button">{% translate "Créer la fiche" %}</button>
+    </form>
+  </section>
+  {% elif candidate.status == "pending" and not user.is_authenticated %}
+  <p class="note"><a href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}">{% translate "Connectez-vous pour retenir ou rejeter ce candidat." %}</a></p>
+  {% endif %}
+</article>
+{% endblock %}

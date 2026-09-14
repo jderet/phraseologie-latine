@@ -1376,3 +1376,17 @@ article > h2 {
 .form-links .inline-form {
   display: inline;
 }
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin: 18px 0 6px;
+  font-family: var(--sans);
+}
+
+.tabs a[aria-current="page"] {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
