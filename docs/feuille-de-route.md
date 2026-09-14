@@ -96,7 +96,7 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 - [x] Mode « annoter » : mots choisis au clic, fiches suggérées, recherche, fiche pré-remplie ; réalisation, sens, note, exemple proposé
 - [x] Occurrences du schéma des fiches pas encore attestées, confirmées en un clic
 - [x] Relecture dans le texte, attestation douteuse, contestation d'une attestation
-- [ ] Repérages sans fiche et leur file
+- [x] Repérages sans fiche et leur file
 - [ ] Passage entièrement relu, file des passages à relire, progression par œuvre
 - [ ] Page de l'annotateur, file du relecteur, chiffres publics
 - [x] Corrections d'analyse proposées puis validées, prises en compte par la lecture, la recherche et les relevés

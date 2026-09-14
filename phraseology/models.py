@@ -890,6 +890,71 @@ register(
     visible_to=lambda user, doubt: can_view(user, doubt.attestation),
     not_reverted=("status", "decided_by", "decided_at"),
 )
+
+
+class Sighting(ModeratedContent):
+    """Words where a reader sees phraseology, marked before an entry is chosen for them."""
+
+    class Status(models.TextChoices):
+        OPEN = "open", _("à rattacher")
+        ATTACHED = "attached", _("rattaché à une fiche")
+        DISMISSED = "dismissed", _("classé sans suite")
+
+    passage = models.ForeignKey(
+        Passage, on_delete=models.PROTECT, related_name="+", verbose_name=_("passage")
+    )
+    # Stable word identifiers (rule 1).
+    tokens = models.ManyToManyField(Token, related_name="+", verbose_name=_("mots"))
+    note = models.CharField(_("note"), max_length=300, blank=True)
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.OPEN, editable=False
+    )
+    attestation = models.ForeignKey(
+        Attestation,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="sightings",
+        verbose_name=_("attestation obtenue"),
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="sightings",
+        verbose_name=_("repéré par"),
+    )
+    created_at = models.DateTimeField(_("repéré le"), default=timezone.now, editable=False)
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("traité par"),
+    )
+    decided_at = models.DateTimeField(_("traité le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("repérage")
+        verbose_name_plural = _("repérages")
+        ordering = ["-created_at", "-pk"]
+        indexes = [models.Index(fields=["status", "created_at"], name="phraseology_sighting_queue")]
+
+    def __str__(self):
+        return gettext("Repérage, %(citation)s") % {"citation": self.passage.citation}
+
+    def get_absolute_url(self):
+        return f"{reverse('phraseology:sightings')}?statut={self.status}#reperage-{self.pk}"
+
+
+register(
+    Sighting,
+    owner_field="created_by",
+    text_fields=("note",),
+    not_reverted=("status", "attestation", "decided_by", "decided_at"),
+)
 register(
     Neologism,
     owner_field="created_by",

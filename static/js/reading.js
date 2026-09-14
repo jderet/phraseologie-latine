@@ -148,6 +148,7 @@
       actions.className = "reading-selection-actions";
       actions.append(
         button(labels.labelAttach, attach, "button"),
+        button(labels.labelSighting, sight, "button button-quiet"),
         button(labels.labelClear, clearChoice, "link-button"),
       );
       bar.append(words, actions);
@@ -191,6 +192,28 @@
     load(url);
   }
 
+  // A sighting of a reader, dashed: its key names the sighting and its words.
+  function showSighting(mark, word) {
+    const [, sighting, ...words] = mark.dataset.o.split("_");
+    const url = new URL(labels.annotateUrl, window.location.origin);
+    url.searchParams.set("mots", words.join(","));
+    url.searchParams.set("reperage", sighting);
+    url.searchParams.set("retour", backTo(word));
+    load(url);
+  }
+
+  // Words where there is phraseology, recorded without choosing an entry.
+  function sight() {
+    const words = inTextOrder();
+    if (!words.length) {
+      return;
+    }
+    const url = new URL(labels.sightingUrl, window.location.origin);
+    url.searchParams.set("mots", words.map((word) => word.dataset.t).join(","));
+    url.searchParams.set("retour", backTo(words[0]));
+    load(url);
+  }
+
   function attach() {
     const words = inTextOrder();
     if (!words.length) {
@@ -211,8 +234,11 @@
     }
     if (annotating) {
       const suggestion = event.target.closest('[data-o^="s_"]');
+      const sighting = event.target.closest('[data-o^="r_"]');
       if (suggestion) {
         showSuggestion(suggestion, word);
+      } else if (sighting) {
+        showSighting(sighting, word);
       } else {
         toggle(word);
       }

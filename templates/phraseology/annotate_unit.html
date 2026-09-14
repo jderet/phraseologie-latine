@@ -1,6 +1,7 @@
 {% load i18n %}<form method="post" action="{% url 'phraseology:annotate_attach' %}" class="annotate-unit k-{{ unit.kind|default:'none' }}">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ back }}">
+  {% if sighting %}<input type="hidden" name="sighting" value="{{ sighting.pk }}">{% endif %}
   {{ form.unit }}{{ form.words }}
   <p class="annotate-unit-title"><span class="swatch"></span> <a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a> <span class="badge status-{{ unit.status }}">{{ unit.get_status_display }}</span></p>
   <details>

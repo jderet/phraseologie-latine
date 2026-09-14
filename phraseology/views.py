@@ -46,6 +46,7 @@ from .forms import (
     ResolveContestForm,
     SchemaSearchForm,
     SenseForm,
+    SightingForm,
     UnitCreateForm,
     UnitForm,
     UnitReferenceForm,
@@ -63,6 +64,7 @@ from .models import (
     NeologismEquivalent,
     Realization,
     Sense,
+    Sighting,
     Unit,
     UnitFrequency,
     UnitReference,
@@ -106,6 +108,14 @@ from .services import (
     withdraw_neologism_equivalent,
     withdraw_neologism_evidence,
     withdraw_part,
+)
+from .sightings import (
+    attestation_for,
+    close_sighting,
+    create_sighting,
+    dismiss_sighting,
+    open_sighting,
+    sighting_words,
 )
 from .spotting import spot_units
 from .suggestions import confirm_suggestion
@@ -267,6 +277,11 @@ def unit_create(request):
             else:
                 if unit.schema:
                     refresh_frequency(unit)
+                # An entry made from a sighting closes the sighting, if its words are ticked.
+                sighting = open_sighting(request.POST.get("reperage"))
+                if sighting is not None:
+                    words = sighting_words(sighting)
+                    close_sighting(sighting, attestation_for(unit, words), request.user)
                 messages.success(
                     request, _("La fiche est créée : c’est un brouillon visible de vous seul.")
                 )
@@ -942,10 +957,15 @@ def annotate_selection(request):
     query = request.GET.get("q", "")
     suggested = suggested_units(user, tokens)
     found = [unit for unit in search_units(user, query) if unit not in suggested]
+    # Words sighted by a reader, to attach to an entry.
+    sighting = open_sighting(request.GET.get("reperage"))
+    if sighting is not None and sighting_words(sighting) != words:
+        sighting = None
     prefilled = {
         "forme": " ".join(token.form for token in tokens),
         "mots": words,
         "schema": guess_schema(tokens),
+        "reperage": sighting.pk if sighting else "",
     }
     create_query = urlencode({name: value for name, value in prefilled.items() if value})
     return render(
@@ -957,6 +977,7 @@ def annotate_selection(request):
             "back": back,
             "query": query,
             "fragment": fragment,
+            "sighting": sighting,
             "suggested": _annotation_forms(user, suggested, words),
             "found": _annotation_forms(user, found, words),
             "create_url": f"{reverse('phraseology:unit_create')}?{create_query}",
@@ -967,7 +988,10 @@ def annotate_selection(request):
 @login_required
 @require_POST
 def annotate_attach(request):
-    """Attach words chosen in the text to a unit: the attestation is proposed."""
+    """Attach words chosen in the text to a unit: the attestation is proposed.
+
+    Words of a sighting close the sighting, even when they already attested the unit.
+    """
     value = request.POST.get("unit", "")
     unit = _editable_unit(request.user, int(value) if value.isdigit() else 0)
     back = _return_url(request, "next", unit.get_absolute_url())
@@ -1001,7 +1025,116 @@ def annotate_attach(request):
             )
         else:
             messages.info(request, _("Ces mots attestent déjà cette fiche."))
+        sighting = open_sighting(request.POST.get("sighting"))
+        if sighting is not None and sighting_words(sighting) == data["words"]:
+            close_sighting(sighting, attestation_for(unit, data["words"]), request.user)
     return redirect(back)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def sighting_create(request):
+    """Words where a reader sees phraseology, recorded without choosing an entry."""
+    fragment = request.GET.get("fragment") == "1"
+    template = "phraseology/sighting_panel.html" if fragment else "phraseology/sighting_page.html"
+    words = request.POST.get("words") or request.GET.get("mots", "")
+    try:
+        evidence = corpus_evidence(words)
+    except ValidationError as error:
+        back = _return_url(request, "retour", reverse("phraseology:sightings"))
+        return render(request, template, {"errors": error.messages, "back": back})
+    first = evidence.tokens[0]
+    reading = reverse("corpus:reading", args=[first.passage.edition.work.cts_id])
+    default = f"{reading}?{urlencode({'aller': first.passage.reference})}"
+    back = _return_url(request, "next", _return_url(request, "retour", default))
+    form = SightingForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            create_sighting(words, request.user, form.cleaned_data["note"])
+        except ContributionLimitReached as error:
+            messages.error(request, str(error))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+        else:
+            messages.success(
+                request, _("Le repérage est enregistré ; chacun peut le rattacher à une fiche.")
+            )
+        return redirect(back)
+    return render(
+        request,
+        template,
+        {
+            "quote": quotation(evidence.tokens),
+            "words": ",".join(str(token.pk) for token in evidence.tokens),
+            "back": back,
+            "form": form,
+        },
+    )
+
+
+SIGHTINGS_PER_PAGE = 50
+
+
+def sighting_list(request):
+    """The sightings to attach to an entry, and those already attached or dismissed."""
+    status = request.GET.get("statut", "")
+    if status not in Sighting.Status.values:
+        status = Sighting.Status.OPEN
+    sightings = Sighting.objects.filter(status=status, is_hidden=False).select_related(
+        "passage__edition__work", "created_by", "decided_by", "attestation"
+    )
+    page = Paginator(sightings, SIGHTINGS_PER_PAGE).get_page(request.GET.get("page"))
+    tokens = Token.objects.select_related("passage__edition__work__author")
+    items = []
+    for sighting in page.object_list:
+        words = list(tokens.filter(pk__in=sighting.tokens.values("pk")).order_by("position"))
+        ids = ",".join(str(word.pk) for word in words)
+        work = sighting.passage.edition.work
+        reading = reverse("corpus:reading", args=[work.cts_id])
+        around = urlencode({"aller": sighting.passage.reference, "annoter": "1"})
+        attach = urlencode(
+            {"mots": ids, "reperage": sighting.pk, "retour": request.get_full_path()}
+        )
+        items.append(
+            {
+                "sighting": sighting,
+                "quote": quotation(words),
+                "reading_url": f"{reading}?{around}",
+                "attach_url": f"{reverse('phraseology:annotate_selection')}?{attach}",
+            }
+        )
+    counts = dict(
+        Sighting.objects.filter(is_hidden=False)
+        .order_by()
+        .values_list("status")
+        .annotate(count=Count("pk"))
+    )
+    return render(
+        request,
+        "phraseology/sighting_list.html",
+        {
+            "page": page,
+            "sightings": items,
+            "status": status,
+            "tabs": [
+                (value, label, counts.get(value, 0)) for value, label in Sighting.Status.choices
+            ],
+            "is_reviewer": is_reviewer(request.user),
+        },
+    )
+
+
+@login_required
+@require_POST
+def sighting_dismiss(request, pk):
+    sighting = get_object_or_404(Sighting, pk=pk, is_hidden=False)
+    try:
+        dismiss_sighting(sighting, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("Le repérage est classé sans suite."))
+    return redirect(f"{reverse('phraseology:sightings')}#reperage-{sighting.pk}")
 
 
 @login_required

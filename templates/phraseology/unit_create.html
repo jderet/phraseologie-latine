@@ -17,6 +17,7 @@
 
   <form method="post" id="unit-form" class="form">
     {% csrf_token %}
+    {% if keep.reperage %}<input type="hidden" name="reperage" value="{{ keep.reperage }}">{% endif %}
     {% include "phraseology/chosen_attestations.html" %}
     {{ form }}
     <button type="submit" class="button">{% translate "Créer la fiche" %}</button>

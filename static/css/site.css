@@ -1920,3 +1920,9 @@ article > h2 {
 .reading-latin .u.s-suggested {
   cursor: help;
 }
+
+.u.s-sighting,
+.swatch.s-sighting {
+  border-bottom-style: dashed;
+  border-bottom-color: var(--ink-2);
+}

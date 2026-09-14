@@ -4,6 +4,9 @@
   <ul class="errorlist">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
   {% else %}
   <h2 class="word-panel-title">{% translate "Mots choisis" %}</h2>
+  {% if sighting %}<p class="notice notice-info">{% blocktranslate trimmed with name=sighting.created_by.public_name %}
+    Repérage de {{ name }} : rattachez ces mots à une fiche, existante ou nouvelle.
+  {% endblocktranslate %}{% if sighting.note %} « {{ sighting.note }} »{% endif %}</p>{% endif %}
   <p><a class="hit-ref" href="{{ quote.url }}">{{ quote.citation }}</a> <span class="kwic" lang="la">… {% render_tokens quote.words quote.highlighted %} …</span></p>
 
   <section class="annotate-section" aria-labelledby="annotate-suggested">

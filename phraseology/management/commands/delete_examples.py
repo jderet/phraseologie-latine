@@ -15,6 +15,7 @@ class Command(BaseCommand):
             labels = {
                 "justifications": gettext("justifications"),
                 "evidences": gettext("preuves"),
+                "sightings": gettext("repérages"),
                 "relations": gettext("relations entre unités"),
             }
             links = ", ".join(f"{labels[name]} : {count}" for name, count in error.links.items())

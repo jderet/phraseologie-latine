@@ -583,6 +583,9 @@ def links_from_other_contents(unit_ids):
     links = {
         "justifications": Justification.objects.filter(units__in=unit_ids).distinct().count(),
         "evidences": Evidence.objects.filter(attestation__in=attestations).count(),
+        "sightings": Attestation.sightings.rel.related_model.objects.filter(
+            attestation__in=attestations
+        ).count(),
         "relations": UnitRelation.objects.filter(target_id__in=unit_ids)
         .exclude(unit_id__in=unit_ids)
         .count(),

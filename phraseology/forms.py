@@ -336,6 +336,15 @@ class AttestationResolveForm(forms.Form):
     )
 
 
+class SightingForm(forms.Form):
+    note = forms.CharField(
+        label=_("Note"),
+        max_length=300,
+        required=False,
+        help_text=_("Facultatif : ce que vous y voyez, par exemple « formule de politesse ? »."),
+    )
+
+
 class NegativeSearchForm(forms.ModelForm):
     """What a person adds to a search that found nothing; the query comes from the search."""
 

@@ -29,6 +29,7 @@ from phraseology.reading import (
     word_marks,
     word_occurrences,
 )
+from phraseology.sightings import page_sightings
 from phraseology.suggestions import page_suggestions
 
 from .corrections import correction_changes, current_analysis, propose_correction, review_correction
@@ -235,9 +236,10 @@ def reading(request, work_id, part=None):
     )
     marked = occurrences
     if annotating:
-        # Occurrences of known schemas not yet attested, to confirm, drawn under the others.
+        # Occurrences of known schemas not yet attested, to confirm, and the sightings of
+        # readers, to attach to an entry, drawn with the attestations.
         suggestions = page_suggestions(user, passages, token_ids, default_layer())
-        marked = [*occurrences, *suggestions]
+        marked = [*occurrences, *suggestions, *page_sightings(passages, token_ids)]
         assign_tracks(marked)
     page_url = _reading_url(work_id, page)
 

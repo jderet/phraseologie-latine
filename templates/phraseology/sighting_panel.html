@@ -1,0 +1,17 @@
+{% load i18n corpus_tags %}<div class="annotate-panel">
+  <p class="eyebrow">{% translate "Repérage sans fiche" %} · <a href="{% url 'core:guide' %}" target="_blank" rel="noopener">{% translate "Guide d’annotation" %}</a></p>
+  {% if errors %}
+  <ul class="errorlist">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+  {% else %}
+  <h2 class="word-panel-title">{% translate "Mots choisis" %}</h2>
+  <p><a class="hit-ref" href="{{ quote.url }}">{{ quote.citation }}</a> <span class="kwic" lang="la">… {% render_tokens quote.words quote.highlighted %} …</span></p>
+  <p class="note">{% translate "Signalez ici de la phraséologie sans choisir de fiche : le repérage entre dans une file, où chacun peut le rattacher à une fiche, existante ou nouvelle." %}</p>
+  <form method="post" action="{% url 'phraseology:sighting_create' %}" class="form">
+    {% csrf_token %}
+    <input type="hidden" name="words" value="{{ words }}">
+    <input type="hidden" name="next" value="{{ back }}">
+    {{ form }}
+    <button type="submit" class="button">{% translate "Enregistrer le repérage" %}</button>
+  </form>
+  {% endif %}
+</div>

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n corpus_tags %}
+
+{% block title %}{% translate "Repérages à rattacher" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "Repérages" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Des lecteurs ont vu de la phraséologie dans ces passages sans choisir de fiche. Rattachez un
+    repérage à une fiche, existante ou nouvelle : l’attestation obtenue est proposée, et un
+    relecteur la valide.
+  {% endblocktranslate %}</p>
+  <nav class="tabs" aria-label="{% translate 'Statut' %}">
+    {% for value, tab_label, count in tabs %}<a href="?statut={{ value }}"{% if value == status %} aria-current="page"{% endif %}>{{ tab_label|capfirst }} <span class="muted">{{ count }}</span></a>{% endfor %}
+  </nav>
+  <ul class="evidences">
+    {% for item in sightings %}
+    <li class="evidence" id="reperage-{{ item.sighting.pk }}">
+      <a class="hit-ref" href="{{ item.quote.url }}">{{ item.quote.citation }}</a> {% poetry_mark item.quote %}
+      <span class="kwic" lang="la">… {% render_tokens item.quote.words item.quote.highlighted %} …</span>
+      {% if item.sighting.note %}<span class="evidence-note">{{ item.sighting.note }}</span>{% endif %}
+      <span class="muted">{{ item.sighting.created_by.public_name }}, {{ item.sighting.created_at|date:"j F Y" }}{% if item.sighting.decided_by %} · {{ item.sighting.get_status_display }} ({{ item.sighting.decided_by.public_name }}){% endif %}</span>
+      <span class="part-actions">
+        {% if item.sighting.status == "open" %}
+        {% if user.is_authenticated %}<a class="small-link" href="{{ item.attach_url }}">{% translate "rattacher à une fiche" %}</a>{% endif %}
+        <a class="small-link" href="{{ item.reading_url }}">{% translate "voir dans le texte" %}</a>
+        {% if is_reviewer %}
+        <form method="post" action="{% url 'phraseology:sighting_dismiss' item.sighting.pk %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="link-button small-link">{% translate "classer sans suite" %}</button>
+        </form>
+        {% endif %}
+        {% elif item.sighting.attestation %}
+        <a class="small-link" href="{{ item.sighting.attestation.get_absolute_url }}">{% translate "voir l’attestation" %}</a>
+        {% endif %}
+      </span>
+    </li>
+    {% empty %}
+    <li class="muted">{% translate "Aucun repérage." %}</li>
+    {% endfor %}
+  </ul>
+  {% if page.has_other_pages %}
+  <nav class="pager" aria-label="{% translate 'Pages' %}">
+    {% if page.has_previous %}<a rel="prev" href="?statut={{ status }}&amp;page={{ page.previous_page_number }}">{% translate "Page précédente" %}</a>{% endif %}
+    {% if page.has_next %}<a rel="next" href="?statut={{ status }}&amp;page={{ page.next_page_number }}">{% translate "Page suivante" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}
