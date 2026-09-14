@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Politique de confidentialité" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+{% translate "à compléter" as missing %}{% url 'core:legal_notice' as legal_notice_url %}{% url 'accounts:account' as account_url %}{% url 'accounts:delete' as delete_url %}
+<section class="page-medium legal">
+  <h1>{% translate "Politique de confidentialité" %}</h1>
+  <p class="note">{% translate "Dernière mise à jour : 14 septembre 2026" %}</p>
+  {% if incomplete %}
+  <p class="notice">{% translate "Cette page n’est pas encore complète : le site n’est pas ouvert au public." %}</p>
+  {% endif %}
+
+  <section class="unit-section" aria-labelledby="controller-title">
+    <h2 id="controller-title">{% translate "Responsable du traitement" %}</h2>
+    <p>{% blocktranslate trimmed with name=legal.publisher_name|default:missing email=legal.contact_email|default:missing %}
+      Les données personnelles du site sont traitées par son éditeur, {{ name }}, joignable à
+      l’adresse {{ email }}. Ses coordonnées figurent dans les
+      <a href="{{ legal_notice_url }}">mentions légales</a>.
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="data-title">
+    <h2 id="data-title">{% translate "Données enregistrées" %}</h2>
+    <ul class="part-list">
+      <li>{% blocktranslate trimmed %}
+        À l’inscription : votre adresse e-mail, qui sert à activer le compte, à vous connecter et
+        à réinitialiser le mot de passe ; votre nom affiché ; votre déclaration de majorité et sa
+        date ; la langue d’interface choisie.
+      {% endblocktranslate %}</li>
+      <li>{% translate "Si vous le donnez : votre identifiant ORCID, affiché sur votre page publique." %}</li>
+      <li>{% blocktranslate trimmed %}
+        Pendant l’usage du site : la date d’inscription et celle de la dernière connexion, vos
+        rôles, vos contributions et leurs révisions, vos discussions, avis et signalements, chacun
+        avec sa date.
+      {% endblocktranslate %}</li>
+    </ul>
+    <p>{% blocktranslate trimmed %}
+      Votre nom affiché, votre ORCID, le mois de votre inscription et vos contributions publiées
+      sont publics, y compris dans l’API et les exports de données ouvertes. Votre adresse e-mail
+      n’est jamais publiée. Vos brouillons ne sont visibles que de vous. Le site est réservé aux
+      personnes majeures.
+    {% endblocktranslate %}</p>
+    <p>{% blocktranslate trimmed %}
+      Le site n’enregistre pas les adresses IP des visiteurs, n’utilise aucun outil de mesure
+      d’audience ni de publicité, et ses pages n’appellent aucun service tiers (polices, scripts,
+      statistiques).
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="purpose-title">
+    <h2 id="purpose-title">{% translate "Pourquoi" %}</h2>
+    <ul class="part-list">
+      <li>{% blocktranslate trimmed %}
+        Gérer votre compte et vous permettre de contribuer, en application des conditions
+        d’utilisation (article 6, paragraphe 1, point b, du RGPD).
+      {% endblocktranslate %}</li>
+      <li>{% blocktranslate trimmed %}
+        Attribuer chaque contribution à son auteur, comme l’exige la licence CC BY-SA, conserver
+        l’historique des modifications et modérer le site : intérêt légitime de l’éditeur à
+        garantir la fiabilité des contenus (article 6, paragraphe 1, point f, du RGPD).
+      {% endblocktranslate %}</li>
+      <li>{% blocktranslate trimmed %}
+        Vous envoyer les e-mails nécessaires au compte (activation, mot de passe oublié). Le site
+        n’envoie ni lettre d’information ni publicité.
+      {% endblocktranslate %}</li>
+    </ul>
+  </section>
+
+  <section class="unit-section" aria-labelledby="recipients-title">
+    <h2 id="recipients-title">{% translate "Qui y a accès" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      L’éditeur, qui administre le site ; les relecteurs et les administrateurs, pour la
+      modération, qui voient notamment les signalements ; l’hébergeur et le service d’envoi des
+      e-mails, qui traitent les données pour le compte de l’éditeur. Les données sont hébergées
+      dans l’Union européenne. Elles ne sont ni vendues ni cédées.
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="retention-title">
+    <h2 id="retention-title">{% translate "Durées de conservation" %}</h2>
+    <ul class="part-list">
+      <li>{% translate "Compte : tant que vous ne le supprimez pas." %}</li>
+      <li>{% blocktranslate trimmed count days=retention_days %}
+        Inscription jamais activée : effacée au bout de {{ days }} jour.
+      {% plural %}
+        Inscription jamais activée : effacée au bout de {{ days }} jours.
+      {% endblocktranslate %}</li>
+      <li>{% blocktranslate trimmed %}
+        Suppression du compte : votre nom, votre adresse e-mail et votre ORCID sont effacés
+        aussitôt. Vos contributions restent en ligne, attribuées à un contributeur anonyme, car la
+        licence CC BY-SA ne peut pas être retirée.
+      {% endblocktranslate %}</li>
+      <li>{% blocktranslate trimmed %}
+        Sauvegardes : conservées 30 jours au plus ; une donnée effacée du site en disparaît dans ce
+        délai.
+      {% endblocktranslate %}</li>
+    </ul>
+  </section>
+
+  <section class="unit-section" aria-labelledby="cookies-title">
+    <h2 id="cookies-title">{% translate "Cookies" %}</h2>
+    <p>{% translate "Le site dépose seulement des cookies nécessaires à son fonctionnement, qui ne demandent pas de consentement :" %}</p>
+    <ul class="part-list">
+      <li><code>sessionid</code> : {% translate "garder votre connexion, deux semaines au plus ;" %}</li>
+      <li><code>csrftoken</code> : {% translate "protéger les formulaires contre les envois frauduleux ;" %}</li>
+      <li><code>django_language</code> : {% translate "retenir la langue choisie." %}</li>
+    </ul>
+  </section>
+
+  <section class="unit-section" aria-labelledby="rights-title">
+    <h2 id="rights-title">{% translate "Vos droits" %}</h2>
+    <p>{% blocktranslate trimmed with email=legal.contact_email|default:missing %}
+      Vous pouvez accéder à vos données, les rectifier, en demander l’effacement ou la
+      portabilité, vous opposer à leur traitement ou en demander la limitation. Votre nom affiché,
+      votre ORCID et votre langue se modifient sur la page <a href="{{ account_url }}">Mon
+      compte</a>, qui permet aussi de <a href="{{ delete_url }}">supprimer le compte</a>. Pour
+      toute autre demande, par exemple l’effacement de données personnelles figurant dans une
+      contribution, écrivez à {{ email }}.
+    {% endblocktranslate %}</p>
+    <p>{% blocktranslate trimmed %}
+      Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à
+      la CNIL (<a href="https://www.cnil.fr/">www.cnil.fr</a>).
+    {% endblocktranslate %}</p>
+  </section>
+</section>
+{% endblock %}

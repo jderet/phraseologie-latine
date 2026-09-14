@@ -62,6 +62,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.site",
             ],
         },
     },
@@ -94,6 +95,9 @@ LOGOUT_REDIRECT_URL = "core:home"
 
 # Contributions per day of a new account, until its first validated contribution.
 NEW_ACCOUNT_DAILY_LIMIT = env.int("NEW_ACCOUNT_DAILY_LIMIT", default=10)
+
+# Days after which a registration whose activation link was never used is deleted.
+PENDING_SIGNUP_RETENTION_DAYS = env.int("PENDING_SIGNUP_RETENTION_DAYS", default=7)
 
 
 # Internationalization: interface strings are written in French and translated in locale/.
@@ -129,6 +133,23 @@ MAILERS = {
     },
 }
 DEFAULT_FROM_EMAIL = env("DJANGO_DEFAULT_FROM_EMAIL", default="webmaster@localhost")
+
+
+# Legal pages: identity of the publisher and of the host, required before public opening
+# (manage.py check --deploy warns while one is missing). The address is optional for a
+# publisher acting in a non-professional capacity.
+
+LEGAL = {
+    "publisher_name": env("LEGAL_PUBLISHER_NAME", default=""),
+    "publisher_address": env("LEGAL_PUBLISHER_ADDRESS", default=""),
+    "contact_email": env("LEGAL_CONTACT_EMAIL", default=""),
+    "host_name": env("LEGAL_HOST_NAME", default=""),
+    "host_address": env("LEGAL_HOST_ADDRESS", default=""),
+    "host_phone": env("LEGAL_HOST_PHONE", default=""),
+}
+
+# Public repository of the code, linked from every page (AGPL-3.0, section 13).
+SOURCE_CODE_URL = env("SOURCE_CODE_URL", default="https://github.com/jderet/phraseologie-latine")
 
 
 # Corpus

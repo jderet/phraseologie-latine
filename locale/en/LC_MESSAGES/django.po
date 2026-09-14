@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 12:41+0200\n"
+"POT-Creation-Date: 2026-09-14 13:50+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -84,6 +84,11 @@ msgid ""
 "Les liens ne sont pas autorisés tant que le compte n’a pas de contribution "
 "validée."
 msgstr "Links are not allowed until the account has a validated contribution."
+
+#: accounts/management/commands/purge_pending_signups.py:14
+#, python-format
+msgid "Inscriptions jamais activées effacées : %(count)s"
+msgstr "Never-activated registrations deleted: %(count)s"
 
 #: accounts/models.py:19
 msgid "Un identifiant ORCID s’écrit sous la forme 0000-0002-1825-0097."
@@ -180,7 +185,7 @@ msgid "Export écrit : %(path)s"
 msgstr "Export written: %(path)s"
 
 #: corpus/apps.py:7 corpus/forms.py:49 phraseology/forms.py:312
-#: templates/base.html:14 templates/corpus/index.html:4
+#: templates/base.html:15 templates/corpus/index.html:4
 #: templates/corpus/index.html:8 templates/corpus/work.html:8
 #: templates/translations/version_edit.html:73
 msgid "Corpus"
@@ -1668,7 +1673,7 @@ msgstr "Your opinion has been withdrawn."
 msgid "Votre avis est enregistré."
 msgstr "Your opinion has been recorded."
 
-#: phraseology/apps.py:7 templates/base.html:16
+#: phraseology/apps.py:7 templates/base.html:17
 #: templates/phraseology/candidate_list.html:8
 #: templates/phraseology/neologism_list.html:8
 #: templates/phraseology/unit_create.html:8
@@ -2794,7 +2799,7 @@ msgid "Indiquez l’expression cherchée."
 msgstr "Give the expression searched for."
 
 #: templates/accounts/account.html:4 templates/accounts/account.html:8
-#: templates/base.html:26
+#: templates/base.html:27
 msgid "Mon compte"
 msgstr "My account"
 
@@ -2914,8 +2919,8 @@ msgid "Activez votre compte"
 msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
-#: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:6
-#: templates/base.html:12 translations/views.py:479
+#: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:7
+#: templates/base.html:13 translations/views.py:479
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -2942,7 +2947,7 @@ msgid "Nouveau mot de passe"
 msgstr "New password"
 
 #: templates/accounts/login.html:4 templates/accounts/login.html:8
-#: templates/base.html:32
+#: templates/base.html:33
 msgid "Connexion"
 msgstr "Log in"
 
@@ -3045,6 +3050,11 @@ msgstr ""
 "delete your account, they stay online, without your name."
 
 #: templates/accounts/signup.html:23
+#, python-format
+msgid "En créant un compte, vous acceptez les <a href=\"%(terms_url)s\">conditions d’utilisation</a>. La <a href=\"%(privacy_url)s\">politique de confidentialité</a> décrit l’usage de vos données."
+msgstr "By creating an account, you accept the <a href=\"%(terms_url)s\">terms of use</a>. The <a href=\"%(privacy_url)s\">privacy policy</a> describes how your data is used."
+
+#: templates/accounts/signup.html:28
 msgid "Vous avez déjà un compte ? Se connecter"
 msgstr "Already have an account? Log in"
 
@@ -3064,7 +3074,7 @@ msgstr ""
 "Nothing received? Check your spam folder, or sign up again with the same "
 "address: a new link will be sent to you."
 
-#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:63
+#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:64
 msgid "Données ouvertes"
 msgstr "Open data"
 
@@ -3075,7 +3085,12 @@ msgid ""
 "justifications, recherches infructueuses. Elles se lisent par une API et se "
 "téléchargent en entier. Les brouillons, les contenus masqués et les adresses "
 "e-mail n’en font jamais partie."
-msgstr "The public contributions of the site are under the CC BY-SA 4.0 licence: phraseological entries, neologisms, published translation versions with their justifications, unsuccessful searches. They can be read through an API and downloaded in full. Drafts, hidden content and email addresses are never part of them."
+msgstr ""
+"The public contributions of the site are under the CC BY-SA 4.0 licence: "
+"phraseological entries, neologisms, published translation versions with "
+"their justifications, unsuccessful searches. They can be read through an API "
+"and downloaded in full. Drafts, hidden content and email addresses are never "
+"part of them."
 
 #: templates/api/data.html:17
 msgid "Export complet"
@@ -3107,7 +3122,9 @@ msgstr "API"
 msgid ""
 "Une API en lecture seule, au format JSON, sans clé : les listes sont "
 "paginées par 100 (paramètre page)."
-msgstr "A read-only API in JSON, without a key: lists are paginated by 100 (page parameter)."
+msgstr ""
+"A read-only API in JSON, without a key: lists are paginated by 100 (page "
+"parameter)."
 
 #: templates/api/data.html:36
 msgid "point d’entrée"
@@ -3117,7 +3134,9 @@ msgstr "entry point"
 msgid ""
 "fiches phraséologiques, avec sens, équivalents, réalisations et attestations "
 "(identifiants de mots et URN CTS)"
-msgstr "phraseological entries, with senses, equivalents, realizations and attestations (word identifiers and CTS URNs)"
+msgstr ""
+"phraseological entries, with senses, equivalents, realizations and "
+"attestations (word identifiers and CTS URNs)"
 
 #: templates/api/data.html:38
 msgid "néologismes, avec justification et preuves"
@@ -3136,7 +3155,10 @@ msgid ""
 "Une attestation de niveau « automatic » a été repérée automatiquement : elle "
 "n’est pas vérifiée par des personnes. Les citations du corpus viennent de "
 "Perseus canonical-latinLit (CC BY-SA 4.0)."
-msgstr "An attestation of level “automatic” was found automatically: it has not been checked by people. Corpus quotations come from Perseus canonical-latinLit (CC BY-SA 4.0)."
+msgstr ""
+"An attestation of level “automatic” was found automatically: it has not been "
+"checked by people. Corpus quotations come from Perseus canonical-latinLit "
+"(CC BY-SA 4.0)."
 
 #: templates/api/data.html:46
 msgid "Réutilisation"
@@ -3147,13 +3169,16 @@ msgid ""
 "Toute réutilisation crédite « contributeurs de Phraséologie latine » et "
 "partage les données sous la même licence (CC BY-SA 4.0). Chaque élément "
 "donne le nom public de son auteur. Le code du site est sous licence AGPL-3.0."
-msgstr "Any reuse credits “Phraséologie latine contributors” and shares the data under the same licence (CC BY-SA 4.0). Each item gives the public name of its author. The code of the site is under the AGPL-3.0 licence."
+msgstr ""
+"Any reuse credits “Phraséologie latine contributors” and shares the data "
+"under the same licence (CC BY-SA 4.0). Each item gives the public name of "
+"its author. The code of the site is under the AGPL-3.0 licence."
 
-#: templates/base.html:13
+#: templates/base.html:14
 msgid "Navigation principale"
 msgstr "Main navigation"
 
-#: templates/base.html:15 templates/corpus/search.html:4
+#: templates/base.html:16 templates/corpus/search.html:4
 #: templates/phraseology/collocation_profile.html:8
 #: templates/phraseology/negative_search_detail.html:19
 #: templates/phraseology/negative_search_list.html:17
@@ -3161,38 +3186,56 @@ msgstr "Main navigation"
 msgid "Recherche"
 msgstr "Search"
 
-#: templates/base.html:17 templates/justifications/challenge_list.html:8
+#: templates/base.html:18 templates/justifications/challenge_list.html:8
 #: templates/translations/source_list.html:8 translations/apps.py:7
 msgid "Traduction"
 msgstr "Translation"
 
-#: templates/base.html:21
+#: templates/base.html:22 templates/core/terms.html:27
 msgid "Compte"
 msgstr "Account"
 
-#: templates/base.html:24 templates/moderation/report_queue.html:4
+#: templates/base.html:25 templates/moderation/report_queue.html:4
 msgid "Signalements"
 msgstr "Reports"
 
-#: templates/base.html:29
+#: templates/base.html:30
 msgid "Déconnexion"
 msgstr "Log out"
 
-#: templates/base.html:33
+#: templates/base.html:34
 msgid "Inscription"
 msgstr "Sign up"
 
-#: templates/base.html:39 templates/translations/source_detail.html:22
+#: templates/base.html:40 templates/translations/source_detail.html:22
 msgid "Langue"
 msgstr "Language"
 
-#: templates/base.html:46
+#: templates/base.html:47
 msgid "Changer"
 msgstr "Change"
 
-#: templates/base.html:63
+#: templates/base.html:64
 msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
 msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
+
+#: templates/base.html:64
+msgid "Code source"
+msgstr "Source code"
+
+#: templates/base.html:65 templates/core/legal_notice.html:4
+#: templates/core/legal_notice.html:9
+msgid "Mentions légales"
+msgstr "Legal notice"
+
+#: templates/base.html:65
+msgid "Confidentialité"
+msgstr "Privacy"
+
+#: templates/base.html:65 templates/core/terms.html:4
+#: templates/core/terms.html:9
+msgid "Conditions d’utilisation"
+msgstr "Terms of use"
 
 #: templates/core/home.html:6
 msgid "En construction"
@@ -3260,6 +3303,303 @@ msgid ""
 "Jeune."
 msgstr ""
 "Starting corpus: Cicero, Caesar, Sallust, Livy, Seneca, Pliny the Younger."
+
+#: templates/core/legal_notice.html:7 templates/core/privacy.html:7
+#: templates/core/terms.html:7
+msgid "à compléter"
+msgstr "to be completed"
+
+#: templates/core/legal_notice.html:10 templates/core/privacy.html:10
+#: templates/core/terms.html:10
+msgid "Dernière mise à jour : 14 septembre 2026"
+msgstr "Last updated: 14 September 2026"
+
+#: templates/core/legal_notice.html:12 templates/core/privacy.html:12
+#: templates/core/terms.html:12
+msgid "Cette page n’est pas encore complète : le site n’est pas ouvert au public."
+msgstr "This page is not complete yet: the site is not open to the public."
+
+#: templates/core/legal_notice.html:16
+msgid "Éditeur"
+msgstr "Publisher"
+
+#: templates/core/legal_notice.html:17
+msgid "Le site est édité à titre non professionnel par une personne physique."
+msgstr "The site is published in a non-professional capacity by a private individual."
+
+#: templates/core/legal_notice.html:20
+msgid "Éditeur et direction de la publication"
+msgstr "Publisher and director of publication"
+
+#: templates/core/legal_notice.html:25 templates/core/legal_notice.html:51
+msgid "Adresse"
+msgstr "Address"
+
+#: templates/core/legal_notice.html:30
+msgid "Contact"
+msgstr "Contact"
+
+#: templates/core/legal_notice.html:35
+msgid "Comme la loi pour la confiance dans l’économie numérique le permet à un éditeur non professionnel, l’éditeur a communiqué ses coordonnées complètes à l’hébergeur, sans les publier."
+msgstr "As the French law on confidence in the digital economy allows a non-professional publisher to do, the publisher has given their full contact details to the host without publishing them."
+
+#: templates/core/legal_notice.html:44
+msgid "Hébergeur"
+msgstr "Host"
+
+#: templates/core/legal_notice.html:47
+msgid "Nom"
+msgstr "Name"
+
+#: templates/core/legal_notice.html:55
+msgid "Téléphone"
+msgstr "Telephone"
+
+#: templates/core/legal_notice.html:62
+msgid "Licences et sources"
+msgstr "Licenses and sources"
+
+#: templates/core/legal_notice.html:64
+#, python-format
+msgid "Les contributions (versions de traduction, fiches, justifications, discussions) sont sous licence <a href=\"https://creativecommons.org/licenses/by-sa/4.0/deed.fr\">CC BY-SA 4.0</a> et se téléchargent sur la page <a href=\"%(data_url)s\">Données ouvertes</a>."
+msgstr "Contributions (translation versions, entries, justifications, discussions) are licensed under <a href=\"https://creativecommons.org/licenses/by-sa/4.0/deed.en\">CC BY-SA 4.0</a> and can be downloaded from the <a href=\"%(data_url)s\">Open data</a> page."
+
+#: templates/core/legal_notice.html:69
+#, python-format
+msgid "Le code du site est sous licence AGPL-3.0 ; il est public sur <a href=\"%(source_code_url)s\">%(source_code_url)s</a>."
+msgstr "The code of the site is licensed under AGPL-3.0; it is public at <a href=\"%(source_code_url)s\">%(source_code_url)s</a>."
+
+#: templates/core/legal_notice.html:73
+msgid "Les textes latins viennent de Perseus canonical-latinLit, sous licence CC BY-SA 4.0 ; l’analyse linguistique automatique est produite avec LatinCy. Les traductions en regard sont du domaine public."
+msgstr "The Latin texts come from Perseus canonical-latinLit, licensed under CC BY-SA 4.0; the automatic linguistic analysis is produced with LatinCy. The parallel translations are in the public domain."
+
+#: templates/core/legal_notice.html:82 templates/moderation/report.html:4
+#: templates/moderation/report.html:8
+msgid "Signaler un contenu"
+msgstr "Report content"
+
+#: templates/core/legal_notice.html:83
+msgid "Pour signaler un contenu illicite, écrivez à l’adresse de contact ci-dessus en indiquant l’adresse de la page et la raison du signalement ; si vous avez un compte, vous pouvez aussi utiliser le lien « Signaler » du contenu. Un contenu manifestement illicite est retiré promptement."
+msgstr "To report unlawful content, write to the contact address above, giving the address of the page and the reason for the report; if you have an account, you can also use the “Report” link of the content. Manifestly unlawful content is removed promptly."
+
+#: templates/core/legal_notice.html:92
+msgid "Données personnelles"
+msgstr "Personal data"
+
+#: templates/core/legal_notice.html:93
+#, python-format
+msgid "L’usage des données personnelles est décrit dans la <a href=\"%(privacy_url)s\">politique de confidentialité</a>, les règles du site dans les <a href=\"%(terms_url)s\">conditions d’utilisation</a>."
+msgstr "The use of personal data is described in the <a href=\"%(privacy_url)s\">privacy policy</a>, the rules of the site in the <a href=\"%(terms_url)s\">terms of use</a>."
+
+#: templates/core/privacy.html:4 templates/core/privacy.html:9
+msgid "Politique de confidentialité"
+msgstr "Privacy policy"
+
+#: templates/core/privacy.html:16
+msgid "Responsable du traitement"
+msgstr "Data controller"
+
+#: templates/core/privacy.html:17
+#, python-format
+msgid "Les données personnelles du site sont traitées par son éditeur, %(name)s, joignable à l’adresse %(email)s. Ses coordonnées figurent dans les <a href=\"%(legal_notice_url)s\">mentions légales</a>."
+msgstr "Personal data on the site is processed by its publisher, %(name)s, who can be reached at %(email)s. Their details are given in the <a href=\"%(legal_notice_url)s\">legal notice</a>."
+
+#: templates/core/privacy.html:25
+msgid "Données enregistrées"
+msgstr "Data recorded"
+
+#: templates/core/privacy.html:27
+msgid "À l’inscription : votre adresse e-mail, qui sert à activer le compte, à vous connecter et à réinitialiser le mot de passe ; votre nom affiché ; votre déclaration de majorité et sa date ; la langue d’interface choisie."
+msgstr "On registration: your email address, used to activate the account, to log in and to reset the password; your display name; your declaration that you are an adult, and its date; the chosen interface language."
+
+#: templates/core/privacy.html:32
+msgid "Si vous le donnez : votre identifiant ORCID, affiché sur votre page publique."
+msgstr "If you provide it: your ORCID iD, shown on your public page."
+
+#: templates/core/privacy.html:33
+msgid "Pendant l’usage du site : la date d’inscription et celle de la dernière connexion, vos rôles, vos contributions et leurs révisions, vos discussions, avis et signalements, chacun avec sa date."
+msgstr "While you use the site: the dates of registration and of the last login, your roles, your contributions and their revisions, your discussions, opinions and reports, each with its date."
+
+#: templates/core/privacy.html:39
+msgid "Votre nom affiché, votre ORCID, le mois de votre inscription et vos contributions publiées sont publics, y compris dans l’API et les exports de données ouvertes. Votre adresse e-mail n’est jamais publiée. Vos brouillons ne sont visibles que de vous. Le site est réservé aux personnes majeures."
+msgstr "Your display name, your ORCID iD, the month of your registration and your published contributions are public, including in the API and the open data exports. Your email address is never published. Your drafts are visible only to you. The site is reserved for adults."
+
+#: templates/core/privacy.html:45
+msgid "Le site n’enregistre pas les adresses IP des visiteurs, n’utilise aucun outil de mesure d’audience ni de publicité, et ses pages n’appellent aucun service tiers (polices, scripts, statistiques)."
+msgstr "The site does not record the IP addresses of visitors, uses no audience measurement and no advertising, and its pages call no third-party service (fonts, scripts, statistics)."
+
+#: templates/core/privacy.html:53
+msgid "Pourquoi"
+msgstr "Why"
+
+#: templates/core/privacy.html:55
+msgid "Gérer votre compte et vous permettre de contribuer, en application des conditions d’utilisation (article 6, paragraphe 1, point b, du RGPD)."
+msgstr "To manage your account and let you contribute, under the terms of use (Article 6(1)(b) of the GDPR)."
+
+#: templates/core/privacy.html:59
+msgid "Attribuer chaque contribution à son auteur, comme l’exige la licence CC BY-SA, conserver l’historique des modifications et modérer le site : intérêt légitime de l’éditeur à garantir la fiabilité des contenus (article 6, paragraphe 1, point f, du RGPD)."
+msgstr "To attribute each contribution to its author, as the CC BY-SA license requires, keep the history of changes and moderate the site: the legitimate interest of the publisher in ensuring the reliability of the content (Article 6(1)(f) of the GDPR)."
+
+#: templates/core/privacy.html:64
+msgid "Vous envoyer les e-mails nécessaires au compte (activation, mot de passe oublié). Le site n’envoie ni lettre d’information ni publicité."
+msgstr "To send you the emails the account needs (activation, forgotten password). The site sends no newsletter and no advertising."
+
+#: templates/core/privacy.html:72
+msgid "Qui y a accès"
+msgstr "Who has access"
+
+#: templates/core/privacy.html:73
+msgid "L’éditeur, qui administre le site ; les relecteurs et les administrateurs, pour la modération, qui voient notamment les signalements ; l’hébergeur et le service d’envoi des e-mails, qui traitent les données pour le compte de l’éditeur. Les données sont hébergées dans l’Union européenne. Elles ne sont ni vendues ni cédées."
+msgstr "The publisher, who administers the site; reviewers and administrators, for moderation, who see the reports in particular; the host and the email sending service, which process the data on behalf of the publisher. The data is hosted in the European Union. It is neither sold nor transferred."
+
+#: templates/core/privacy.html:82
+msgid "Durées de conservation"
+msgstr "Retention periods"
+
+#: templates/core/privacy.html:84
+msgid "Compte : tant que vous ne le supprimez pas."
+msgstr "Account: until you delete it."
+
+#: templates/core/privacy.html:85
+#, python-format
+msgid "Inscription jamais activée : effacée au bout de %(days)s jour."
+msgid_plural "Inscription jamais activée : effacée au bout de %(days)s jours."
+msgstr[0] "Registration never activated: deleted after %(days)s day."
+msgstr[1] "Registration never activated: deleted after %(days)s days."
+
+#: templates/core/privacy.html:90
+msgid "Suppression du compte : votre nom, votre adresse e-mail et votre ORCID sont effacés aussitôt. Vos contributions restent en ligne, attribuées à un contributeur anonyme, car la licence CC BY-SA ne peut pas être retirée."
+msgstr "Account deletion: your name, your email address and your ORCID iD are erased at once. Your contributions stay online, attributed to an anonymous contributor, because the CC BY-SA license cannot be withdrawn."
+
+#: templates/core/privacy.html:95
+msgid "Sauvegardes : conservées 30 jours au plus ; une donnée effacée du site en disparaît dans ce délai."
+msgstr "Backups: kept for 30 days at most; data erased from the site disappears from them within that period."
+
+#: templates/core/privacy.html:103
+msgid "Cookies"
+msgstr "Cookies"
+
+#: templates/core/privacy.html:104
+msgid "Le site dépose seulement des cookies nécessaires à son fonctionnement, qui ne demandent pas de consentement :"
+msgstr "The site only sets the cookies it needs to work, which do not require consent:"
+
+#: templates/core/privacy.html:106
+msgid "garder votre connexion, deux semaines au plus ;"
+msgstr "keeping you logged in, for two weeks at most;"
+
+#: templates/core/privacy.html:107
+msgid "protéger les formulaires contre les envois frauduleux ;"
+msgstr "protecting forms against forged submissions;"
+
+#: templates/core/privacy.html:108
+msgid "retenir la langue choisie."
+msgstr "remembering the chosen language."
+
+#: templates/core/privacy.html:113
+msgid "Vos droits"
+msgstr "Your rights"
+
+#: templates/core/privacy.html:114
+#, python-format
+msgid "Vous pouvez accéder à vos données, les rectifier, en demander l’effacement ou la portabilité, vous opposer à leur traitement ou en demander la limitation. Votre nom affiché, votre ORCID et votre langue se modifient sur la page <a href=\"%(account_url)s\">Mon compte</a>, qui permet aussi de <a href=\"%(delete_url)s\">supprimer le compte</a>. Pour toute autre demande, par exemple l’effacement de données personnelles figurant dans une contribution, écrivez à %(email)s."
+msgstr "You can access your data, rectify it, request its erasure or portability, object to its processing or request its restriction. Your display name, your ORCID iD and your language can be changed on the <a href=\"%(account_url)s\">My account</a> page, which also lets you <a href=\"%(delete_url)s\">delete the account</a>. For any other request, for example the erasure of personal data contained in a contribution, write to %(email)s."
+
+#: templates/core/privacy.html:122
+msgid "Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (<a href=\"https://www.cnil.fr/\">www.cnil.fr</a>)."
+msgstr "If you believe that your rights are not respected, you can lodge a complaint with the CNIL, the French data protection authority (<a href=\"https://www.cnil.fr/en/\">www.cnil.fr</a>)."
+
+#: templates/core/terms.html:16
+msgid "Objet"
+msgstr "Purpose"
+
+#: templates/core/terms.html:17
+#, python-format
+msgid "Phraséologie latine est une plateforme collaborative pour traduire vers le latin, relever la phraséologie des auteurs et justifier les choix de traduction par le corpus. Ces conditions s’appliquent à toute personne qui consulte le site ou y contribue. L’éditeur est présenté dans les <a href=\"%(legal_notice_url)s\">mentions légales</a>, l’usage des données personnelles dans la <a href=\"%(privacy_url)s\">politique de confidentialité</a>."
+msgstr "Latin Phraseology is a collaborative platform for translating into Latin, recording the phraseology of authors and justifying translation choices with the corpus. These terms apply to anyone who consults or contributes to the site. The publisher is presented in the <a href=\"%(legal_notice_url)s\">legal notice</a>, the use of personal data in the <a href=\"%(privacy_url)s\">privacy policy</a>."
+
+#: templates/core/terms.html:28
+#, python-format
+msgid "La consultation est libre. Contribuer demande un compte, réservé aux personnes majeures et créé avec une adresse e-mail valide. Vous répondez de l’usage de votre compte et gardez votre mot de passe secret. Vous pouvez supprimer votre compte à tout moment depuis la page <a href=\"%(account_url)s\">Mon compte</a>."
+msgstr "Reading the site is open to all. Contributing requires an account, reserved for adults and created with a valid email address. You are responsible for the use of your account and keep your password secret. You can delete your account at any time from the <a href=\"%(account_url)s\">My account</a> page."
+
+#: templates/core/terms.html:37
+msgid "Vos contributions"
+msgstr "Your contributions"
+
+#: templates/core/terms.html:38
+msgid "En publiant une contribution (version de traduction, fiche, justification, discussion ou tout autre contenu visible des autres), vous la placez sous licence Creative Commons Attribution – Partage dans les mêmes conditions 4.0 (CC BY-SA 4.0). Elle est créditée sous votre nom affiché. Cette licence ne peut pas être retirée : si vous supprimez votre compte, vos contributions restent en ligne, attribuées à un contributeur anonyme. Vos brouillons restent privés tant que vous ne les publiez pas."
+msgstr "By publishing a contribution (translation version, entry, justification, discussion or any other content visible to others), you place it under the Creative Commons Attribution-ShareAlike 4.0 license (CC BY-SA 4.0). It is credited to your display name. This license cannot be withdrawn: if you delete your account, your contributions stay online, attributed to an anonymous contributor. Your drafts stay private until you publish them."
+
+#: templates/core/terms.html:46
+msgid "Vous garantissez avoir le droit de publier ce que vous ajoutez. Un texte source doit être du domaine public ou sous licence libre compatible, déclarée à l’ajout. Les ressources sous droits (dictionnaires, bases de données, traductions publiées) se citent par simple référence : n’en recopiez pas le contenu."
+msgstr "You guarantee that you have the right to publish what you add. A source text must be in the public domain or under a compatible free license, declared when it is added. Copyrighted resources (dictionaries, databases, published translations) are cited by reference only: do not copy their content."
+
+#: templates/core/terms.html:55
+msgid "Règles de conduite"
+msgstr "Rules of conduct"
+
+#: templates/core/terms.html:56
+msgid "Sur le site, il est interdit :"
+msgstr "On the site, it is forbidden:"
+
+#: templates/core/terms.html:58
+msgid "de publier un contenu illicite, notamment injurieux, diffamatoire, haineux ou contrefaisant ;"
+msgstr "to publish unlawful content, in particular insulting, defamatory, hateful or infringing content;"
+
+#: templates/core/terms.html:59
+msgid "de publier des données personnelles d’autrui ;"
+msgstr "to publish personal data of other people;"
+
+#: templates/core/terms.html:60
+msgid "de se faire passer pour quelqu’un d’autre ;"
+msgstr "to impersonate someone else;"
+
+#: templates/core/terms.html:61
+msgid "de nuire au fonctionnement du site, par exemple par des envois automatisés en masse, l’aspiration des pages ou des tentatives d’intrusion."
+msgstr "to disrupt the site, for example through mass automated submissions, scraping of pages or intrusion attempts."
+
+#: templates/core/terms.html:63
+msgid "Les discussions et les contestations restent courtoises et portent sur le latin et ses sources."
+msgstr "Discussions and challenges stay courteous and deal with Latin and its sources."
+
+#: templates/core/terms.html:67
+msgid "Modération et signalements"
+msgstr "Moderation and reports"
+
+#: templates/core/terms.html:68
+msgid "Chaque modification crée une révision, ce qui permet de revenir à une version antérieure. Un nouveau compte ne peut faire qu’un nombre limité de contributions par jour, jusqu’à sa première contribution validée. Les relecteurs et les administrateurs peuvent masquer un contenu ou rétablir une version antérieure ; les administrateurs peuvent suspendre un compte qui ne respecte pas ces conditions."
+msgstr "Every change creates a revision, which makes it possible to return to an earlier version. A new account can make only a limited number of contributions per day, until its first validated contribution. Reviewers and administrators can hide content or restore an earlier version; administrators can suspend an account that does not comply with these terms."
+
+#: templates/core/terms.html:75
+#, python-format
+msgid "Pour signaler un contenu, utilisez le lien « Signaler » qui l’accompagne (un compte est nécessaire) ou écrivez à %(email)s. Un contenu manifestement illicite est retiré promptement."
+msgstr "To report content, use the “Report” link next to it (an account is required) or write to %(email)s. Manifestly unlawful content is removed promptly."
+
+#: templates/core/terms.html:83
+msgid "Fiabilité des contenus"
+msgstr "Reliability of content"
+
+#: templates/core/terms.html:84
+msgid "Les contenus sont rédigés par les contributeurs et relus par la communauté : ils peuvent contenir des erreurs. Une attestation automatique, repérée par un programme, n’a pas été vérifiée par une personne et est présentée comme telle. Le site est fourni tel quel, sans garantie de disponibilité, et peut être interrompu, notamment pour maintenance."
+msgstr "Content is written by contributors and reviewed by the community: it may contain errors. An automatic attestation, found by a program, has not been checked by a person and is presented as such. The site is provided as is, with no guarantee of availability, and may be interrupted, in particular for maintenance."
+
+#: templates/core/terms.html:93
+msgid "Réutilisation des données"
+msgstr "Reuse of data"
+
+#: templates/core/terms.html:94
+#, python-format
+msgid "Les contributions publiques se réutilisent selon la licence CC BY-SA 4.0, notamment grâce à l’API et à l’export complet de la page <a href=\"%(data_url)s\">Données ouvertes</a> : utilisez-les plutôt que d’aspirer les pages. L’éditeur refuse l’utilisation des pages du site pour entraîner des modèles d’intelligence artificielle et exprime cette réserve de façon lisible par les robots (robots.txt, protocole TDMRep)."
+msgstr "Public contributions can be reused under the CC BY-SA 4.0 license, in particular through the API and the full export on the <a href=\"%(data_url)s\">Open data</a> page: use them rather than scraping the pages. The publisher refuses the use of the pages of the site to train artificial intelligence models and expresses this reservation in a machine-readable way (robots.txt, TDMRep protocol)."
+
+#: templates/core/terms.html:104
+msgid "Modification et droit applicable"
+msgstr "Changes and applicable law"
+
+#: templates/core/terms.html:105
+#, python-format
+msgid "Ces conditions peuvent évoluer : leur date de mise à jour figure en haut de la page, et une modification importante est annoncée sur le site avant de s’appliquer. Elles sont régies par le droit français. Pour toute question, écrivez à %(email)s."
+msgstr "These terms may change: the date of their last update is shown at the top of the page, and a significant change is announced on the site before it applies. They are governed by French law. For any question, write to %(email)s."
 
 #: templates/corpus/index.html:9
 msgid ""
@@ -3782,10 +4122,6 @@ msgstr "No recorded change."
 #: templates/moderation/links.html:1
 msgid "Signaler"
 msgstr "Report"
-
-#: templates/moderation/report.html:4 templates/moderation/report.html:8
-msgid "Signaler un contenu"
-msgstr "Report content"
 
 #: templates/moderation/report.html:9
 #, python-format

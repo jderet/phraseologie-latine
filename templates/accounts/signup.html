@@ -19,6 +19,11 @@
     Vos contributions sont publiées sous licence CC BY-SA 4.0. Si vous supprimez votre compte, elles
     restent en ligne, sans votre nom.
   {% endblocktranslate %}</p>
+  {% url 'core:terms' as terms_url %}{% url 'core:privacy' as privacy_url %}
+  <p class="note">{% blocktranslate trimmed %}
+    En créant un compte, vous acceptez les <a href="{{ terms_url }}">conditions d’utilisation</a>.
+    La <a href="{{ privacy_url }}">politique de confidentialité</a> décrit l’usage de vos données.
+  {% endblocktranslate %}</p>
   <p class="form-links">
     <a href="{% url 'accounts:login' %}">{% translate "Vous avez déjà un compte ? Se connecter" %}</a>
   </p>

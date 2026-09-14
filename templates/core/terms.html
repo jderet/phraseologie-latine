@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Conditions d’utilisation" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+{% translate "à compléter" as missing %}{% url 'core:legal_notice' as legal_notice_url %}{% url 'core:privacy' as privacy_url %}{% url 'accounts:account' as account_url %}{% url 'api:data' as data_url %}
+<section class="page-medium legal">
+  <h1>{% translate "Conditions d’utilisation" %}</h1>
+  <p class="note">{% translate "Dernière mise à jour : 14 septembre 2026" %}</p>
+  {% if incomplete %}
+  <p class="notice">{% translate "Cette page n’est pas encore complète : le site n’est pas ouvert au public." %}</p>
+  {% endif %}
+
+  <section class="unit-section" aria-labelledby="purpose-title">
+    <h2 id="purpose-title">{% translate "Objet" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      Phraséologie latine est une plateforme collaborative pour traduire vers le latin, relever la
+      phraséologie des auteurs et justifier les choix de traduction par le corpus. Ces conditions
+      s’appliquent à toute personne qui consulte le site ou y contribue. L’éditeur est présenté
+      dans les <a href="{{ legal_notice_url }}">mentions légales</a>, l’usage des données
+      personnelles dans la <a href="{{ privacy_url }}">politique de confidentialité</a>.
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="account-title">
+    <h2 id="account-title">{% translate "Compte" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      La consultation est libre. Contribuer demande un compte, réservé aux personnes majeures et
+      créé avec une adresse e-mail valide. Vous répondez de l’usage de votre compte et gardez votre
+      mot de passe secret. Vous pouvez supprimer votre compte à tout moment depuis la page
+      <a href="{{ account_url }}">Mon compte</a>.
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="contributions-title">
+    <h2 id="contributions-title">{% translate "Vos contributions" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      En publiant une contribution (version de traduction, fiche, justification, discussion ou
+      tout autre contenu visible des autres), vous la placez sous licence Creative Commons
+      Attribution – Partage dans les mêmes conditions 4.0 (CC BY-SA 4.0). Elle est créditée sous
+      votre nom affiché. Cette licence ne peut pas être retirée : si vous supprimez votre compte,
+      vos contributions restent en ligne, attribuées à un contributeur anonyme. Vos brouillons
+      restent privés tant que vous ne les publiez pas.
+    {% endblocktranslate %}</p>
+    <p>{% blocktranslate trimmed %}
+      Vous garantissez avoir le droit de publier ce que vous ajoutez. Un texte source doit être du
+      domaine public ou sous licence libre compatible, déclarée à l’ajout. Les ressources sous
+      droits (dictionnaires, bases de données, traductions publiées) se citent par simple
+      référence : n’en recopiez pas le contenu.
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="conduct-title">
+    <h2 id="conduct-title">{% translate "Règles de conduite" %}</h2>
+    <p>{% translate "Sur le site, il est interdit :" %}</p>
+    <ul class="part-list">
+      <li>{% translate "de publier un contenu illicite, notamment injurieux, diffamatoire, haineux ou contrefaisant ;" %}</li>
+      <li>{% translate "de publier des données personnelles d’autrui ;" %}</li>
+      <li>{% translate "de se faire passer pour quelqu’un d’autre ;" %}</li>
+      <li>{% translate "de nuire au fonctionnement du site, par exemple par des envois automatisés en masse, l’aspiration des pages ou des tentatives d’intrusion." %}</li>
+    </ul>
+    <p>{% translate "Les discussions et les contestations restent courtoises et portent sur le latin et ses sources." %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="moderation-title">
+    <h2 id="moderation-title">{% translate "Modération et signalements" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      Chaque modification crée une révision, ce qui permet de revenir à une version antérieure. Un
+      nouveau compte ne peut faire qu’un nombre limité de contributions par jour, jusqu’à sa
+      première contribution validée. Les relecteurs et les administrateurs peuvent masquer un
+      contenu ou rétablir une version antérieure ; les administrateurs peuvent suspendre un compte
+      qui ne respecte pas ces conditions.
+    {% endblocktranslate %}</p>
+    <p>{% blocktranslate trimmed with email=legal.contact_email|default:missing %}
+      Pour signaler un contenu, utilisez le lien « Signaler » qui l’accompagne (un compte est
+      nécessaire) ou écrivez à {{ email }}. Un contenu manifestement illicite est retiré
+      promptement.
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="reliability-title">
+    <h2 id="reliability-title">{% translate "Fiabilité des contenus" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      Les contenus sont rédigés par les contributeurs et relus par la communauté : ils peuvent
+      contenir des erreurs. Une attestation automatique, repérée par un programme, n’a pas été
+      vérifiée par une personne et est présentée comme telle. Le site est fourni tel quel, sans
+      garantie de disponibilité, et peut être interrompu, notamment pour maintenance.
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="reuse-title">
+    <h2 id="reuse-title">{% translate "Réutilisation des données" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      Les contributions publiques se réutilisent selon la licence CC BY-SA 4.0, notamment grâce à
+      l’API et à l’export complet de la page <a href="{{ data_url }}">Données ouvertes</a> :
+      utilisez-les plutôt que d’aspirer les pages. L’éditeur refuse l’utilisation des pages du site
+      pour entraîner des modèles d’intelligence artificielle et exprime cette réserve de façon
+      lisible par les robots (robots.txt, protocole TDMRep).
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="changes-title">
+    <h2 id="changes-title">{% translate "Modification et droit applicable" %}</h2>
+    <p>{% blocktranslate trimmed with email=legal.contact_email|default:missing %}
+      Ces conditions peuvent évoluer : leur date de mise à jour figure en haut de la page, et une
+      modification importante est annoncée sur le site avant de s’appliquer. Elles sont régies par
+      le droit français. Pour toute question, écrivez à {{ email }}.
+    {% endblocktranslate %}</p>
+  </section>
+</section>
+{% endblock %}

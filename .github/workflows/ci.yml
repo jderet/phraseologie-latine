@@ -30,6 +30,12 @@ jobs:
       DJANGO_SECRET_KEY: ci-only-key-never-used-in-production-5f8a2c7e9b1d4036a8e7c2b9
       DJANGO_ALLOWED_HOSTS: localhost
       DATABASE_URL: postgres://phraseologie:phraseologie@localhost:5432/phraseologie
+      # Placeholder identity, so that check --deploy finds the legal pages complete.
+      LEGAL_PUBLISHER_NAME: Intégration continue
+      LEGAL_CONTACT_EMAIL: ci@example.org
+      LEGAL_HOST_NAME: GitHub Actions
+      LEGAL_HOST_ADDRESS: example
+      LEGAL_HOST_PHONE: "0"
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6

@@ -1,6 +1,9 @@
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
+
+from . import legal
 
 # User agents of robots that collect pages to train models (search robots are not listed).
 TRAINING_AGENTS = [
@@ -22,6 +25,28 @@ TRAINING_AGENTS = [
 
 def home(request):
     return render(request, "core/home.html")
+
+
+def _legal_page(request, template, **context):
+    context.update(legal=settings.LEGAL, incomplete=bool(legal.missing_fields()))
+    return render(request, template, context)
+
+
+@require_GET
+def legal_notice(request):
+    return _legal_page(request, "core/legal_notice.html")
+
+
+@require_GET
+def privacy(request):
+    return _legal_page(
+        request, "core/privacy.html", retention_days=settings.PENDING_SIGNUP_RETENTION_DAYS
+    )
+
+
+@require_GET
+def terms(request):
+    return _legal_page(request, "core/terms.html")
 
 
 @require_GET

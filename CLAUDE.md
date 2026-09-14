@@ -38,6 +38,7 @@ python manage.py refresh_units             # fréquences et formes des fiches, a
 python manage.py compute_collocations      # profils de collocations (sur le Mac, après une analyse)
 python manage.py import_translations       # traductions du domaine public en regard (sur le Mac)
 python manage.py export_data               # export complet des données publiques (archive zip)
+python manage.py purge_pending_signups     # effacer les inscriptions jamais activées (chaque jour)
 ```
 
 ## Architecture

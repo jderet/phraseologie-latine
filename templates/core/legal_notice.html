@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Mentions légales" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+{% translate "à compléter" as missing %}{% url 'core:privacy' as privacy_url %}{% url 'core:terms' as terms_url %}{% url 'api:data' as data_url %}
+<section class="page-medium legal">
+  <h1>{% translate "Mentions légales" %}</h1>
+  <p class="note">{% translate "Dernière mise à jour : 14 septembre 2026" %}</p>
+  {% if incomplete %}
+  <p class="notice">{% translate "Cette page n’est pas encore complète : le site n’est pas ouvert au public." %}</p>
+  {% endif %}
+
+  <section class="unit-section" aria-labelledby="publisher-title">
+    <h2 id="publisher-title">{% translate "Éditeur" %}</h2>
+    <p>{% translate "Le site est édité à titre non professionnel par une personne physique." %}</p>
+    <dl class="facts">
+      <div>
+        <dt>{% translate "Éditeur et direction de la publication" %}</dt>
+        <dd>{{ legal.publisher_name|default:missing }}</dd>
+      </div>
+      {% if legal.publisher_address %}
+      <div>
+        <dt>{% translate "Adresse" %}</dt>
+        <dd>{{ legal.publisher_address }}</dd>
+      </div>
+      {% endif %}
+      <div>
+        <dt>{% translate "Contact" %}</dt>
+        <dd>{% if legal.contact_email %}<a href="mailto:{{ legal.contact_email }}">{{ legal.contact_email }}</a>{% else %}{{ missing }}{% endif %}</dd>
+      </div>
+    </dl>
+    {% if not legal.publisher_address %}
+    <p class="note">{% blocktranslate trimmed %}
+      Comme la loi pour la confiance dans l’économie numérique le permet à un éditeur non
+      professionnel, l’éditeur a communiqué ses coordonnées complètes à l’hébergeur, sans les
+      publier.
+    {% endblocktranslate %}</p>
+    {% endif %}
+  </section>
+
+  <section class="unit-section" aria-labelledby="host-title">
+    <h2 id="host-title">{% translate "Hébergeur" %}</h2>
+    <dl class="facts">
+      <div>
+        <dt>{% translate "Nom" %}</dt>
+        <dd>{{ legal.host_name|default:missing }}</dd>
+      </div>
+      <div>
+        <dt>{% translate "Adresse" %}</dt>
+        <dd>{{ legal.host_address|default:missing }}</dd>
+      </div>
+      <div>
+        <dt>{% translate "Téléphone" %}</dt>
+        <dd>{{ legal.host_phone|default:missing }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="unit-section" aria-labelledby="licenses-title">
+    <h2 id="licenses-title">{% translate "Licences et sources" %}</h2>
+    <ul class="part-list">
+      <li>{% blocktranslate trimmed %}
+        Les contributions (versions de traduction, fiches, justifications, discussions) sont sous
+        licence <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr">CC BY-SA 4.0</a>
+        et se téléchargent sur la page <a href="{{ data_url }}">Données ouvertes</a>.
+      {% endblocktranslate %}</li>
+      <li>{% blocktranslate trimmed %}
+        Le code du site est sous licence AGPL-3.0 ; il est public sur
+        <a href="{{ source_code_url }}">{{ source_code_url }}</a>.
+      {% endblocktranslate %}</li>
+      <li>{% blocktranslate trimmed %}
+        Les textes latins viennent de Perseus canonical-latinLit, sous licence CC BY-SA 4.0 ;
+        l’analyse linguistique automatique est produite avec LatinCy. Les traductions en regard
+        sont du domaine public.
+      {% endblocktranslate %}</li>
+    </ul>
+  </section>
+
+  <section class="unit-section" aria-labelledby="report-title">
+    <h2 id="report-title">{% translate "Signaler un contenu" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      Pour signaler un contenu illicite, écrivez à l’adresse de contact ci-dessus en indiquant
+      l’adresse de la page et la raison du signalement ; si vous avez un compte, vous pouvez aussi
+      utiliser le lien « Signaler » du contenu. Un contenu manifestement illicite est retiré
+      promptement.
+    {% endblocktranslate %}</p>
+  </section>
+
+  <section class="unit-section" aria-labelledby="personal-title">
+    <h2 id="personal-title">{% translate "Données personnelles" %}</h2>
+    <p>{% blocktranslate trimmed %}
+      L’usage des données personnelles est décrit dans la
+      <a href="{{ privacy_url }}">politique de confidentialité</a>, les règles du site dans les
+      <a href="{{ terms_url }}">conditions d’utilisation</a>.
+    {% endblocktranslate %}</p>
+  </section>
+</section>
+{% endblock %}

@@ -1,5 +1,8 @@
 """Account operations shared by views, the admin and management commands."""
 
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.mail import send_mail
 from django.db import transaction
@@ -9,6 +12,7 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from .models import User
 from .roles import CONTRIBUTOR
 from .tokens import activation_token_generator
 
@@ -49,3 +53,19 @@ def anonymize_user(user):
     user.save()
     user.groups.clear()
     user.user_permissions.clear()
+
+
+@transaction.atomic
+def purge_pending_signups():
+    """Delete registrations whose activation link was never used, after the retention period.
+
+    Such accounts never logged in, so they have no contribution to keep. Returns the number
+    of deleted accounts.
+    """
+    cutoff = timezone.now() - timedelta(days=settings.PENDING_SIGNUP_RETENTION_DAYS)
+    pending = User.objects.filter(
+        is_active=False, last_login=None, anonymized_at=None, date_joined__lt=cutoff
+    )
+    count = pending.count()
+    pending.delete()
+    return count
