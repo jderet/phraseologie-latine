@@ -86,7 +86,7 @@
     {% endfor %}
     <p class="note">{% blocktranslate trimmed with layer=analysis.layer.label %}
       Analyse automatique ({{ layer }}) : lemme, morphologie et fonction peuvent être erronés.
-    {% endblocktranslate %}</p>
+    {% endblocktranslate %}{% if user.is_authenticated %} <a href="{% url 'corpus:correction_create' token.pk %}?retour={{ back|urlencode }}">{% translate "Proposer une correction" %}</a>{% endif %}</p>
   </section>
   {% endif %}
 </div>

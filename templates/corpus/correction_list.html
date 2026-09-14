@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{% translate "Corrections d’analyse" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{% url 'corpus:index' %}">{% translate "Corpus" %}</a></p>
+  <h1>{% translate "Corrections d’analyse" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Les lecteurs proposent de corriger le lemme, la morphologie ou la fonction d’un mot mal
+    analysé ; un relecteur valide chaque correction, qui s’applique alors à tout le site.
+  {% endblocktranslate %}</p>
+  <nav class="tabs" aria-label="{% translate 'Statut' %}">
+    {% for value, tab_label in statuses %}<a href="?statut={{ value }}"{% if value == status %} aria-current="page"{% endif %}>{{ tab_label|capfirst }}</a>{% endfor %}
+  </nav>
+  <ul class="item-list">
+    {% for item in corrections %}
+    <li id="correction-{{ item.correction.pk }}">
+      <span><a class="item-title" href="{{ item.url }}" lang="la">{{ item.correction.token.form }}</a> <span class="muted">{{ item.correction.token.passage.citation }}</span></span>
+      <span>{% for field_label, value in item.changes %}{{ field_label|capfirst }} : <code>{{ value }}</code>{% if not forloop.last %} · {% endif %}{% endfor %}</span>
+      <span class="muted">{{ item.correction.reason }} — {{ item.correction.created_by.public_name }}, {{ item.correction.created_at|date:"j F Y" }}{% if item.correction.reviewed_by %} · {{ item.correction.get_status_display }} ({{ item.correction.reviewed_by.public_name }}){% endif %}</span>
+      {% if is_reviewer and item.correction.status == "proposed" %}
+      <form method="post" action="{% url 'corpus:correction_review' item.correction.pk %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit" name="decision" value="valider" class="link-button small-link">{% translate "valider" %}</button>
+        <button type="submit" name="decision" value="rejeter" class="link-button small-link">{% translate "rejeter" %}</button>
+      </form>
+      {% endif %}
+    </li>
+    {% empty %}
+    <li class="muted">{% translate "Aucune correction." %}</li>
+    {% endfor %}
+  </ul>
+  {% if page.has_other_pages %}
+  <nav class="pager" aria-label="{% translate 'Pages' %}">
+    {% if page.has_previous %}<a rel="prev" href="?statut={{ status }}&amp;page={{ page.previous_page_number }}">{% translate "Page précédente" %}</a>{% endif %}
+    {% if page.has_next %}<a rel="next" href="?statut={{ status }}&amp;page={{ page.next_page_number }}">{% translate "Page suivante" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

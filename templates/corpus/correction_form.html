@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Corriger l’analyse" %} · {{ token.form }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ back }}">{{ token.passage.citation }}</a></p>
+  <h1>{% blocktranslate with word=token.form %}Corriger l’analyse de « {{ word }} »{% endblocktranslate %}</h1>
+  {% if analysis %}
+  <dl class="facts">
+    <div><dt>{% translate "Lemme" %}</dt><dd lang="la">{{ analysis.lemma|default:"—" }}</dd></div>
+    <div><dt>{% translate "Catégorie" %}</dt><dd><code>{{ analysis.upos|default:"—" }}</code></dd></div>
+    <div><dt>{% translate "Morphologie" %}</dt><dd><code>{{ analysis.feats|default:"—" }}</code></dd></div>
+    <div><dt>{% translate "Fonction" %}</dt><dd><code>{{ analysis.deprel|default:"—" }}</code>{% if analysis.head %} · {% translate "dépend de" %} <span lang="la">{{ analysis.head.form }}</span>{% endif %}</dd></div>
+    <div><dt>{% translate "Origine" %}</dt><dd>{{ analysis.get_origin_display|capfirst }} ({{ analysis.layer.label }})</dd></div>
+  </dl>
+  {% endif %}
+  <p class="lede">{% blocktranslate trimmed %}
+    Remplissez seulement ce qui doit changer, et dites pourquoi. Un relecteur valide la
+    correction ; elle s’applique alors à la lecture, à la recherche et aux relevés, et survit à
+    une nouvelle analyse automatique.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ back }}">
+    {{ form }}
+    <button type="submit" class="button">{% translate "Proposer la correction" %}</button>
+  </form>
+</section>
+{% endblock %}

@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, ngettext
 from django.utils.translation import gettext_lazy as _
 
-from .models import Author, Period, Work
+from .models import AnalysisCorrection, Author, Period, Token, Work
 from .search import default_layer, parse_term, search_tokens
 from .text import normalize
 
@@ -14,6 +14,37 @@ SCOPE_ALL = "all"
 MODE_FORM = "form"
 MODE_LEMMA = "lemma"
 TERM_NUMBERS = (1, 2, 3)
+
+
+class CorrectionForm(forms.ModelForm):
+    """What a reader changes in the analysis of a word; an empty field stays as it is."""
+
+    head = forms.ModelChoiceField(
+        label=_("Dépend du mot"),
+        queryset=Token.objects.none(),
+        required=False,
+        help_text=_("Un mot du même passage ; laissez vide pour ne rien changer."),
+    )
+
+    class Meta:
+        model = AnalysisCorrection
+        fields = ("lemma", "upos", "feats", "deprel", "head", "reason")
+        help_texts = {
+            "upos": _("Étiquette Universal Dependencies : NOUN, VERB, ADJ, ADV…"),
+            "feats": _("Traits Universal Dependencies : Case=Acc|Number=Sing…"),
+            "deprel": _("Relation Universal Dependencies : obj, nsubj, obl, amod…"),
+        }
+        widgets = {
+            "lemma": forms.TextInput(attrs={"lang": "la"}),
+            "reason": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, token, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["head"].queryset = token.passage.tokens.exclude(pk=token.pk).order_by(
+            "position"
+        )
+        self.fields["head"].label_from_instance = lambda word: word.form
 
 
 class WorkChoiceField(forms.ModelMultipleChoiceField):

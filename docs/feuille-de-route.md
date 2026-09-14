@@ -99,7 +99,7 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 - [ ] Repérages sans fiche et leur file
 - [ ] Passage entièrement relu, file des passages à relire, progression par œuvre
 - [ ] Page de l'annotateur, file du relecteur, chiffres publics
-- [ ] Corrections d'analyse proposées puis validées, prises en compte par la lecture, la recherche et les relevés
+- [x] Corrections d'analyse proposées puis validées, prises en compte par la lecture, la recherche et les relevés
 - [ ] Notes de lecture publiques, masquables
 - [ ] Carnet personnel : surlignages, notes privées, listes de passages, page « mon carnet »
 - [x] Guide d'annotation en pages datées, lié depuis l'outil d'annotation

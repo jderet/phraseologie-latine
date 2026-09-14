@@ -1,9 +1,13 @@
+from django.conf import settings
 from django.db import models, transaction
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import get_language
+from django.utils.translation import get_language, gettext
 from django.utils.translation import gettext_lazy as _
+
+from moderation.models import ModeratedContent
+from moderation.registry import register
 
 URN_PREFIX = "urn:cts:latinLit:"
 
@@ -340,9 +344,13 @@ class AnalysisLayer(models.Model):
 
     @transaction.atomic
     def make_default(self):
+        """Use this layer by default; the validated corrections of the analysis apply to it."""
+        from .corrections import apply_corrections
+
         AnalysisLayer.objects.filter(is_default=True).exclude(pk=self.pk).update(is_default=False)
         self.is_default = True
         self.save(update_fields=["is_default"])
+        apply_corrections(self)
 
 
 class TokenAnalysis(models.Model):
@@ -398,3 +406,74 @@ class TokenAnalysis(models.Model):
 
     def __str__(self):
         return f"{self.text} : {self.lemma}"
+
+
+class AnalysisCorrection(ModeratedContent):
+    """A correction of the analysis of a word, proposed by a reader, validated by a reviewer (Q28).
+
+    It points to the word, never to a layer (rule 1): once validated, it applies over the
+    automatic analysis of any layer, present or future. An empty field changes nothing.
+    """
+
+    class Status(models.TextChoices):
+        PROPOSED = "proposed", _("proposée")
+        VALIDATED = "validated", _("validée")
+        REJECTED = "rejected", _("rejetée")
+
+    token = models.ForeignKey(
+        Token, on_delete=models.PROTECT, related_name="corrections", verbose_name=_("mot")
+    )
+    part = models.PositiveSmallIntegerField(_("partie du mot"), default=0)
+    lemma = models.CharField(_("lemme"), max_length=200, blank=True)
+    upos = models.CharField(_("catégorie"), max_length=10, blank=True)
+    feats = models.CharField(_("traits morphologiques"), max_length=300, blank=True)
+    head = models.ForeignKey(
+        Token,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("tête syntaxique"),
+    )
+    deprel = models.CharField(_("relation syntaxique"), max_length=30, blank=True)
+    reason = models.TextField(_("motif"), max_length=1000)
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.PROPOSED, editable=False
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="analysis_corrections",
+        verbose_name=_("proposée par"),
+    )
+    created_at = models.DateTimeField(_("proposée le"), default=timezone.now, editable=False)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("examinée par"),
+    )
+    reviewed_at = models.DateTimeField(_("examinée le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("correction d’analyse")
+        verbose_name_plural = _("corrections d’analyse")
+        ordering = ["-created_at", "-pk"]
+        indexes = [models.Index(fields=["status", "created_at"], name="corpus_correction_status")]
+
+    def __str__(self):
+        return gettext("Correction de « %(word)s »") % {"word": self.token.form}
+
+    def get_absolute_url(self):
+        return f"{reverse('corpus:corrections')}?statut={self.status}#correction-{self.pk}"
+
+
+register(
+    AnalysisCorrection,
+    owner_field="created_by",
+    text_fields=("reason",),
+    not_reverted=("status", "reviewed_by", "reviewed_at"),
+)

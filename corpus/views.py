@@ -1,13 +1,20 @@
 import re
 from itertools import groupby
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Q
-from django.http import Http404
+from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils.http import urlencode
+from django.utils.http import url_has_allowed_host_and_scheme, urlencode
+from django.utils.translation import gettext as _
+from django.views.decorators.http import require_http_methods, require_POST
 
+from accounts.limits import ContributionLimitReached
+from accounts.roles import is_reviewer
 from phraseology.models import Kind, UsageMark
 from phraseology.reading import (
     STATUS_LABELS,
@@ -24,8 +31,25 @@ from phraseology.reading import (
 )
 from phraseology.suggestions import page_suggestions
 
-from .forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm, bound_search_form, search_query
-from .models import URN_PREFIX, Author, Edition, ReferenceTranslation, Token, Work
+from .corrections import correction_changes, current_analysis, propose_correction, review_correction
+from .forms import (
+    MODE_FORM,
+    SCOPE_CORE,
+    TERM_NUMBERS,
+    CorrectionForm,
+    SearchForm,
+    bound_search_form,
+    search_query,
+)
+from .models import (
+    URN_PREFIX,
+    AnalysisCorrection,
+    Author,
+    Edition,
+    ReferenceTranslation,
+    Token,
+    Work,
+)
 from .reading import capitalized, division_label, reading_plan, reading_rows
 from .search import author_distribution, build_hits, corpus_version, default_layer
 from .timeouts import TimeLimit
@@ -338,3 +362,95 @@ def search_fragment(request):
     """Search results without the page around them, for the panel of the translation editor."""
     context = search_context(request, PANEL_RESULTS)
     return render(request, "corpus/search_results.html", {**context, "panel": True})
+
+
+# Corrections of the analysis
+
+CORRECTIONS_PER_PAGE = 50
+CORRECTION_DECISIONS = {
+    "valider": AnalysisCorrection.Status.VALIDATED,
+    "rejeter": AnalysisCorrection.Status.REJECTED,
+}
+
+
+def _word_url(token):
+    return f"{token.passage.get_absolute_url()}?mots={token.pk}#mot-{token.pk}"
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def correction_create(request, pk):
+    """A reader proposes to correct the analysis of a word."""
+    token = get_object_or_404(Token.objects.select_related("passage__edition__work__author"), pk=pk)
+    asked = request.GET.get("partie", "0")
+    part = int(asked) if asked.isdigit() else 0
+    back = request.POST.get("next") or request.GET.get("retour") or ""
+    if not url_has_allowed_host_and_scheme(
+        back, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        back = _word_url(token)
+    correction = AnalysisCorrection(token=token, part=part)
+    form = CorrectionForm(request.POST or None, instance=correction, token=token)
+    if request.method == "POST" and form.is_valid():
+        try:
+            propose_correction(form.save(commit=False), request.user)
+        except ContributionLimitReached as error:
+            messages.error(request, str(error))
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, _("La correction est proposée ; un relecteur l’examinera."))
+            return redirect(back)
+    return render(
+        request,
+        "corpus/correction_form.html",
+        {"token": token, "analysis": current_analysis(token, part), "form": form, "back": back},
+    )
+
+
+def correction_list(request):
+    """The corrections of the analysis, by status; reviewers validate or reject them."""
+    status = request.GET.get("statut", "")
+    if status not in AnalysisCorrection.Status.values:
+        status = AnalysisCorrection.Status.PROPOSED
+    corrections = AnalysisCorrection.objects.filter(status=status, is_hidden=False).select_related(
+        "token__passage__edition__work__author", "head", "created_by", "reviewed_by"
+    )
+    page = Paginator(corrections, CORRECTIONS_PER_PAGE).get_page(request.GET.get("page"))
+    return render(
+        request,
+        "corpus/correction_list.html",
+        {
+            "page": page,
+            "corrections": [
+                {
+                    "correction": correction,
+                    "url": _word_url(correction.token),
+                    "changes": correction_changes(correction),
+                }
+                for correction in page.object_list
+            ],
+            "status": status,
+            "statuses": AnalysisCorrection.Status.choices,
+            "is_reviewer": is_reviewer(request.user),
+        },
+    )
+
+
+@login_required
+@require_POST
+def correction_review(request, pk):
+    correction = get_object_or_404(AnalysisCorrection, pk=pk)
+    status = CORRECTION_DECISIONS.get(request.POST.get("decision", ""))
+    if status is None:
+        return HttpResponseBadRequest()
+    try:
+        review_correction(correction, request.user, status)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        if status == AnalysisCorrection.Status.VALIDATED:
+            messages.success(request, _("La correction est validée : elle s’applique à l’analyse."))
+        else:
+            messages.success(request, _("La correction est rejetée."))
+    return redirect(f"{reverse('corpus:corrections')}?statut={AnalysisCorrection.Status.PROPOSED}")
