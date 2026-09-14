@@ -297,6 +297,14 @@ def _frequency_rows(frequency):
     return [(authors[pk], total, core) for pk, total, core in frequency.by_author if pk in authors]
 
 
+def _translations_of(user, unit):
+    """Justifications of translation choices that cite the unit, as the user may see them."""
+    justifications = unit.justifications.select_related(
+        "translated_segment__version__project", "translated_segment__version__author"
+    ).order_by("-created_at", "-pk")
+    return [justification for justification in justifications if can_view(user, justification)]
+
+
 def unit_detail(request, pk):
     user = request.user
     unit = _unit(user, pk)
@@ -323,6 +331,7 @@ def unit_detail(request, pk):
             "realizations": _visible_parts(user, unit, unit.realizations.active()),
             "attestations": _attestations_of(user, unit),
             "relations": _relations_of(user, unit),
+            "translations": _translations_of(user, unit),
             "references": _visible_parts(
                 user, unit, unit.references.active().select_related("work")
             ),

@@ -6,6 +6,7 @@ word. A unit without schema is recognized by the words of its reference form. Wo
 found near each other: their syntactic relation is not checked, so a spot is a suggestion.
 """
 
+import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass, field
 from itertools import product
@@ -67,6 +68,9 @@ class Spot:
     unit: Unit
     positions: list
     words: list
+    # The words of the sentence from the first word of the unit to its last, and their start.
+    excerpt: str = ""
+    start: int = 0
     sense: object = None
     attestations: list = field(default_factory=list)
 
@@ -91,10 +95,8 @@ def closest_positions(choices):
     return best
 
 
-def _describe(spot):
-    """The first sense of the unit and a few attestations, examples and validated ones first."""
-    unit = spot.unit
-    spot.sense = unit.senses.active().filter(is_hidden=False).first()
+def unit_attestations(unit, limit=ATTESTATIONS_SHOWN):
+    """Attestations of a unit with their quotation, examples and validated ones first."""
     tokens = Token.objects.select_related("passage__edition__work__author")
     attestations = (
         unit.attestations.active()
@@ -109,15 +111,29 @@ def _describe(spot):
             item.status != Attestation.Status.VALIDATED,
             item.pk,
         ),
-    )[:ATTESTATIONS_SHOWN]
+    )[:limit]
     for attestation in chosen:
         attestation.quotation = quotation(list(attestation.tokens.all()))
-    spot.attestations = chosen
+    return chosen
 
 
-def spot_units(text, user):
-    """The words of a sentence, and the known units found in it, validated units first."""
-    tokens = tokenize(text or "")
+def _offsets(tokens):
+    """(start, end) of each word in the text the tokens were cut from."""
+    offsets, position = [], 0
+    for token in tokens:
+        start = position + len(token.before)
+        offsets.append((start, start + len(token.form)))
+        position = start + len(token.form) + len(token.after)
+    return offsets
+
+
+def spot_units(text, user, describe=True):
+    """The words of a sentence, and the known units found in it, validated units first.
+
+    With ``describe``, each spot also has the first sense and a few attestations of its unit.
+    """
+    text = unicodedata.normalize("NFC", text or "")
+    tokens = tokenize(text)
     words = [normalize(token.form) for token in tokens]
     if not words:
         return tokens, []
@@ -141,17 +157,22 @@ def spot_units(text, user):
         if best is not None and best[0] <= SPAN_PER_WORD * (len(choices) - 1):
             matches[unit_id] = best[1]
     units = Unit.objects.in_bulk(list(matches))
-    spots = sorted(
-        (
-            Spot(units[pk], positions, [tokens[index].form for index in positions])
-            for pk, positions in matches.items()
-        ),
+    offsets = _offsets(tokens)
+    spots = []
+    for pk, positions in matches.items():
+        start, end = offsets[positions[0]][0], offsets[positions[-1]][1]
+        words_found = [tokens[index].form for index in positions]
+        spots.append(Spot(units[pk], positions, words_found, text[start:end], start))
+    spots.sort(
         key=lambda spot: (
             STATUS_ORDER.get(spot.unit.status, len(STATUS_ORDER)),
             spot.positions[0],
             spot.unit.reference_form,
-        ),
-    )[:MAX_SPOTS]
-    for spot in spots:
-        _describe(spot)
+        )
+    )
+    spots = spots[:MAX_SPOTS]
+    if describe:
+        for spot in spots:
+            spot.sense = spot.unit.senses.active().filter(is_hidden=False).first()
+            spot.attestations = unit_attestations(spot.unit)
     return tokens, spots

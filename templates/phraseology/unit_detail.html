@@ -226,6 +226,20 @@
     {% endif %}
   </section>
 
+  <section class="unit-section" id="traductions" aria-labelledby="translations-title">
+    <h2 id="translations-title">{% translate "Traductions qui l’emploient" %}</h2>
+    <ul class="item-list">
+      {% for justification in translations %}
+      <li>
+        <a class="item-title" href="{{ justification.get_absolute_url }}" lang="la">« {{ justification.latin_excerpt }} »</a>
+        <span class="muted">{{ justification.translated_segment.version }} · <span class="strength">{{ justification.strength }}/5</span> {{ justification.get_strength_display }}</span>
+      </li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune justification de traduction ne cite encore cette fiche." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
   {% moderation_links unit %}
   {% if not unit.is_draft %}{% discussion unit %}{% endif %}
 </article>

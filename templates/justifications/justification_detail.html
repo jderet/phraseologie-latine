@@ -43,6 +43,15 @@
   <p>{{ justification.comment|linebreaksbr }}</p>
   {% endif %}
 
+  {% if units %}
+  <h2>{% translate "Fiches phraséologiques" %}</h2>
+  <ul class="item-list">
+    {% for unit in units %}
+    <li><a class="item-title" href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a> <span class="muted">{{ unit.get_status_display }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
   <h2>{% translate "Preuves" %}</h2>
   <ul class="evidences">
     {% for evidence in evidences %}{% include "justifications/evidence_item.html" %}{% empty %}

@@ -14,6 +14,8 @@ from accounts.roles import is_reviewer
 from corpus.search import quotation
 from corpus.views import search_context
 from moderation.registry import can_view
+from phraseology.models import Attestation, Unit
+from phraseology.spotting import spot_units, unit_attestations, visible_units
 from translations.models import TranslatedSegment, TranslationVersion
 from translations.permissions import can_challenge, can_translate
 
@@ -22,6 +24,7 @@ from .forms import ChallengeCloseForm, ChallengeForm, JustificationForm, Referen
 from .models import Challenge, Evidence, Justification
 from .services import (
     add_evidences,
+    attestation_evidence,
     close_challenge,
     corpus_evidence,
     create_challenge,
@@ -33,6 +36,7 @@ from .services import (
 
 SEARCH_RESULTS = 20
 CHALLENGES_PER_PAGE = 50
+UNIT_ATTESTATIONS_SHOWN = 10
 FORM_TEMPLATE = "justifications/justification_form.html"
 
 
@@ -57,6 +61,38 @@ def _attestations(request):
 def _references(request):
     data = request.POST if request.method == "POST" else None
     return ReferenceFormSet(data, prefix="references", form_kwargs={"user": request.user})
+
+
+def _asked_unit(request):
+    """The phraseological unit the justification was opened from, if the user may see it."""
+    value = request.GET.get("unite", "")
+    unit = Unit.objects.filter(pk=int(value)).first() if value.isdigit() else None
+    return unit if unit is not None and can_view(request.user, unit) else None
+
+
+def _unit_choices(user, translated, justification=None, asked=None):
+    """Units a justification may cite: known in its sentence, already cited, or asked for."""
+    _tokens, spots = spot_units(translated.text, user, describe=False)
+    ids = {spot.unit.pk for spot in spots}
+    if justification is not None:
+        ids.update(justification.units.values_list("pk", flat=True))
+    if asked is not None:
+        ids.add(asked.pk)
+    return visible_units(user).filter(pk__in=ids).order_by("reference_form")
+
+
+def _unit_evidences(request):
+    """Attestations of units ticked as evidence, among those the user may see."""
+    if request.method != "POST":
+        return []
+    ids = [int(value) for value in request.POST.getlist("attestation_unite") if value.isdigit()]
+    attestations = (
+        Attestation.objects.active()
+        .filter(pk__in=ids)
+        .exclude(status=Attestation.Status.REJECTED)
+        .select_related("unit")
+    )
+    return [attestation for attestation in attestations if can_view(request.user, attestation)]
 
 
 def _reference_evidences(references):
@@ -137,14 +173,20 @@ def justification_create(request, version_pk, segment_pk):
         return redirect("translations:version_edit", version.pk)
     translated.version, translated.segment = version, source_segment
 
+    asked = _asked_unit(request)
     form = JustificationForm(
         request.POST or None,
         translated=translated,
         user=request.user,
-        initial={"latin_excerpt": request.GET.get("extrait", "")},
+        unit_choices=_unit_choices(request.user, translated, asked=asked),
+        initial={
+            "latin_excerpt": request.GET.get("extrait", ""),
+            "units": [asked] if asked else [],
+        },
     )
     references = _references(request)
     evidences, errors = _attestations(request)
+    unit_evidences = _unit_evidences(request)
     if request.method == "POST":
         valid = form.is_valid() & references.is_valid()
         for message in errors:
@@ -152,9 +194,16 @@ def justification_create(request, version_pk, segment_pk):
         if valid and not errors:
             justification = form.save(commit=False)
             justification.translated_segment = translated
-            all_evidences = evidences + _reference_evidences(references)
+            all_evidences = (
+                evidences
+                + [attestation_evidence(attestation) for attestation in unit_evidences]
+                + _reference_evidences(references)
+            )
+            units = form.cleaned_data.get("units", [])
             try:
-                create_justification(justification, request.user, all_evidences, _hint(request))
+                create_justification(
+                    justification, request.user, all_evidences, _hint(request), units=units
+                )
             except ContributionLimitReached as error:
                 messages.error(request, str(error))
             except ValidationError as error:
@@ -162,7 +211,7 @@ def justification_create(request, version_pk, segment_pk):
             else:
                 messages.success(request, _("La justification est enregistrée."))
                 return redirect(justification)
-    keep = {key: request.GET[key] for key in ("extrait", "debut") if request.GET.get(key)}
+    keep = {key: request.GET[key] for key in ("extrait", "debut", "unite") if request.GET.get(key)}
     context = _search_page_context(
         request,
         translated,
@@ -170,6 +219,9 @@ def justification_create(request, version_pk, segment_pk):
         form=form,
         references=references,
         keep=keep,
+        asked_unit=asked,
+        unit_attestations=unit_attestations(asked, UNIT_ATTESTATIONS_SHOWN) if asked else [],
+        chosen_unit_attestations={attestation.pk for attestation in unit_evidences},
         heading=_("Justifier un choix de traduction"),
         submit_label=_("Enregistrer la justification"),
         show_rules=True,
@@ -198,6 +250,7 @@ def justification_detail(request, pk):
             can_edit=request.user.pk == justification.author_id,
             challenges=challenges,
             can_challenge=can_challenge(request.user, translated.version),
+            units=[unit for unit in justification.units.all() if can_view(request.user, unit)],
         ),
     )
 
@@ -209,11 +262,18 @@ def justification_edit(request, pk):
     translated = justification.translated_segment
     hint = justification.latin_start
     form = JustificationForm(
-        request.POST or None, instance=justification, translated=translated, user=request.user
+        request.POST or None,
+        instance=justification,
+        translated=translated,
+        user=request.user,
+        unit_choices=_unit_choices(request.user, translated, justification=justification),
     )
     if request.method == "POST" and form.is_valid():
+        units = form.cleaned_data.get("units")
         try:
-            revision = update_justification(form.save(commit=False), request.user, hint)
+            revision = update_justification(
+                form.save(commit=False), request.user, hint, units=units
+            )
         except ValidationError as error:
             form.add_error(None, error)
         else:

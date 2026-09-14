@@ -55,7 +55,7 @@ Terminé quand les testeurs ont traduit, comparé et justifié un texte dans plu
 - [x] Lexique de néologismes justifiés
 - [x] Candidats extraits automatiquement (paires syntaxiques, score d'association) et file de validation
 - [x] Surlignage des unités connues pendant la saisie, avec leurs attestations
-- [ ] Liens entre justifications et fiches, dans les deux sens
+- [x] Liens entre justifications et fiches, dans les deux sens
 
 Terminé quand une centaine de fiches sont validées.
 

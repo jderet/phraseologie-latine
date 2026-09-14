@@ -35,6 +35,16 @@
       </ul>
     </fieldset>
     {% endif %}
+    {% if unit_attestations %}
+    <fieldset>
+      <legend>{% blocktranslate with unit=asked_unit.reference_form %}Attestations de la fiche « {{ unit }} »{% endblocktranslate %}</legend>
+      <ul class="attestation-choices">
+        {% for attestation in unit_attestations %}
+        <li><label><input type="checkbox" name="attestation_unite" value="{{ attestation.pk }}"{% if attestation.pk in chosen_unit_attestations %} checked{% endif %}> <span class="hit-ref">{{ attestation.quotation.citation }}</span> <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span> <span class="muted">{{ attestation.status_label }}</span></label></li>
+        {% endfor %}
+      </ul>
+    </fieldset>
+    {% endif %}
     {% if form %}{{ form }}{% endif %}
     {% if references %}
     <fieldset class="references">

@@ -39,6 +39,24 @@ class JustificationForm(LatinExcerptForm):
             "comment": forms.Textarea(attrs={"rows": 4}),
         }
 
+    def __init__(self, *args, unit_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if unit_choices is None or not unit_choices.exists():
+            return
+        field = forms.ModelMultipleChoiceField(
+            label=_("Fiches phraséologiques citées"),
+            queryset=unit_choices,
+            widget=forms.CheckboxSelectMultiple,
+            required=False,
+            help_text=_("Les unités connues repérées dans la phrase latine."),
+        )
+        field.label_from_instance = lambda unit: (
+            f"{unit.reference_form} ({unit.get_status_display()})"
+        )
+        self.fields["units"] = field
+        if self.instance.pk and "units" not in self.initial:
+            self.initial["units"] = list(self.instance.units.all())
+
     def clean_source_excerpt(self):
         excerpt = normalize_sentence(self.cleaned_data["source_excerpt"])
         if excerpt and excerpt not in self.translated.segment.text:

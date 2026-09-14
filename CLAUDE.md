@@ -51,7 +51,7 @@ python manage.py refresh_units             # fréquences et formes des fiches, a
 | `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements, discussions, avis indicatifs |
 | `translations` | textes sources, projets, versions, segments | textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable |
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
-| `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur |
+| `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications |
 
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.
 - Les traitements lourds du corpus sont des commandes `manage.py` lancées sur le Mac : `import_perseus` lit le catalogue `corpus/data/` et les fichiers TEI ; `analyze_corpus` crée une couche d'analyse LatinCy, raccrochée aux mots par leur position dans le texte (un seul processus : le modèle ne se transmet pas entre processus).

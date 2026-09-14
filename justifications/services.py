@@ -28,6 +28,8 @@ class EvidenceInput:
     work: object = None
     locator: str = ""
     note: str = ""
+    # The attestation of a phraseological unit the evidence is taken from, if any.
+    attestation: object = None
 
 
 def corpus_evidence(value):
@@ -49,6 +51,16 @@ def corpus_evidence(value):
 
 def reference_evidence(work, locator, note=""):
     return EvidenceInput(work.kind, work=work, locator=locator, note=note)
+
+
+def attestation_evidence(attestation):
+    """Corpus evidence taken from an attestation of a phraseological unit, which stays linked."""
+    tokens = attestation.tokens.select_related("passage__edition__work__author")
+    return EvidenceInput(
+        Evidence.Kind.CORPUS,
+        sorted(tokens, key=lambda token: token.position),
+        attestation=attestation,
+    )
 
 
 def find_excerpt(text, excerpt, hint=None):
@@ -102,6 +114,7 @@ def _save_evidence(evidence, author, **parent):
         work=evidence.work,
         locator=evidence.locator,
         note=evidence.note,
+        attestation=evidence.attestation,
     )
     save_with_revision(obj, author, m2m={"tokens": evidence.tokens})
     return obj
@@ -112,26 +125,41 @@ def attach_evidences(evidences, author, **parent):
     return [_save_evidence(evidence, author, **parent) for evidence in evidences]
 
 
+def _check_units(author, units):
+    """A justification cites only phraseological units its author can see (rule 8)."""
+    if any(not can_view(author, unit) for unit in units):
+        raise ValidationError(
+            gettext("Cette fiche phraséologique n’est pas accessible."), code="unit_not_visible"
+        )
+
+
 @transaction.atomic
-def create_justification(justification, author, evidences, hint=None):
-    """Justify words of a translated sentence; only the author of the version may (Q44)."""
+def create_justification(justification, author, evidences, hint=None, units=()):
+    """Justify words of a translated sentence; only the author of the version may (Q44).
+
+    ``units`` are the phraseological units the justification cites (Q49).
+    """
     translated = justification.translated_segment
     if not can_translate(author, translated.version):
         raise PermissionDenied
     justification.author = author
     justification.latin_start = find_excerpt(translated.text, justification.latin_excerpt, hint)
     check_strength(justification.strength, justification.comment, evidences)
+    _check_units(author, units)
     if justification.strength == Strength.NOT_FOUND:
         justification.corpus_version = corpus_version().label
-    save_with_revision(justification, author)
+    save_with_revision(justification, author, m2m={"units": list(units)})
     for evidence in evidences:
         _save_evidence(evidence, author, justification=justification)
     return justification
 
 
 @transaction.atomic
-def update_justification(justification, author, hint=None):
-    """Save a changed justification; choosing the words again takes it out of review."""
+def update_justification(justification, author, hint=None, units=None):
+    """Save a changed justification; choosing the words again takes it out of review.
+
+    ``units`` replaces the cited phraseological units; None keeps them.
+    """
     if author.pk != justification.author_id:
         raise PermissionDenied
     previous = Justification.objects.select_for_update().get(pk=justification.pk)
@@ -142,7 +170,11 @@ def update_justification(justification, author, hint=None):
         justification.corpus_version = ""
     elif previous.strength != Strength.NOT_FOUND:
         justification.corpus_version = corpus_version().label
-    return save_with_revision(justification, author)
+    m2m = None
+    if units is not None:
+        _check_units(author, units)
+        m2m = {"units": list(units)}
+    return save_with_revision(justification, author, m2m=m2m)
 
 
 @transaction.atomic

@@ -114,6 +114,12 @@ class Justification(ModeratedContent):
         blank=True,
         help_text=_("Enregistrée quand le passage est introuvable dans le corpus (règle 7)."),
     )
+    units = models.ManyToManyField(
+        "phraseology.Unit",
+        blank=True,
+        related_name="justifications",
+        verbose_name=_("fiches phraséologiques citées"),
+    )
     created_at = models.DateTimeField(_("créée le"), default=timezone.now, editable=False)
 
     class Meta:
@@ -222,6 +228,14 @@ class Evidence(ModeratedContent):
         help_text=_("Paragraphe, page ou entrée : « § 426 », « s. v. consilium »."),
     )
     note = models.CharField(_("note"), max_length=300, blank=True)
+    attestation = models.ForeignKey(
+        "phraseology.Attestation",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="evidences",
+        verbose_name=_("attestation d’une fiche"),
+    )
     is_withdrawn = models.BooleanField(_("retirée"), default=False)
     created_at = models.DateTimeField(_("ajoutée le"), default=timezone.now, editable=False)
 

@@ -12,6 +12,7 @@
       {% endfor %}
     </ul>
     {% endif %}
+    {% if can_translate %}<a class="small-link" href="{% url 'justifications:create' version.pk segment.pk %}?unite={{ spot.unit.pk }}&amp;extrait={{ spot.excerpt|urlencode }}&amp;debut={{ spot.start }}">{% translate "Justifier avec cette fiche" %}</a>{% endif %}
   </li>
   {% endfor %}
 </ul>
