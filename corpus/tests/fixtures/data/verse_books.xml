@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <encodingDesc>
+      <refsDecl n="CTS">
+        <cRefPattern n="line" matchPattern="(\w+).(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div/tei:div[@n='$1']//tei:l[@n='$2'])"/>
+        <cRefPattern n="poem" matchPattern="(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div/tei:div[@n='$1'])"/>
+      </refsDecl>
+    </encodingDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="edition" n="urn:cts:latinLit:phi1276.phi001.perseus-lat2">
+        <div type="textpart" subtype="book" n="1">
+          <div type="textpart" subtype="poem" n="1">
+            <head>Satura I</head>
+            <l n="1">Semper ego auditor tantum?</l>
+            <l n="2">numquamne reponam</l>
+            <l>vexatus totiens</l>
+          </div>
+        </div>
+        <div type="textpart" subtype="book" n="2">
+          <div type="textpart" subtype="poem" n="2">
+            <lg>
+              <l n="1">Ultra Sauromatas &dagger; fugere hinc libet</l>
+              <l n="2">et glacialem Oceanum</l>
+            </lg>
+          </div>
+        </div>
+      </div>
+    </body>
+  </text>
+</TEI>

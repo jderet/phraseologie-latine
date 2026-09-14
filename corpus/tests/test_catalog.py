@@ -16,8 +16,14 @@ CORE_AUTHORS = {"phi0474", "phi0448", "phi0631", "phi0914", "phi1017", "phi1318"
 class ProjectCatalogTests(SimpleTestCase):
     def test_catalog_of_the_project_is_valid(self):
         catalog = load_catalog(DATA_DIR)
-        self.assertEqual(len(catalog.works), 90)
+        self.assertEqual(len(catalog.works), 213)
         self.assertEqual({work.author for work in catalog.works if work.is_core}, CORE_AUTHORS)
+
+    def test_enlargement_stops_before_late_latin(self):
+        catalog = load_catalog(DATA_DIR)
+        periods = {catalog.authors[work.author].period for work in catalog.works}
+        self.assertEqual(periods, {"archaic", "classical", "imperial"})
+        self.assertTrue(all((work.date_to or 0) <= 200 for work in catalog.works))
 
     def test_seneca_tragedies_are_outside_the_core(self):
         tragedies = [w for w in load_catalog(DATA_DIR).works if w.genre == "tragedy"]

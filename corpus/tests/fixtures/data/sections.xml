@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <encodingDesc>
+      <refsDecl n="CTS">
+        <cRefPattern n="section" matchPattern="(\w+).(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div[@n='$1']//tei:seg[@n='$2'])"/>
+        <cRefPattern n="chapter" matchPattern="(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div/tei:div[@n='$1'])"/>
+      </refsDecl>
+    </encodingDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="edition" n="urn:cts:latinLit:phi0588.abo024.perseus-lat2">
+        <div type="textpart" subtype="chapter" n="1">
+          <head>M. Porcius Cato</head>
+          <p><seg type="section" n="1">M. Cato, ortus municipio Tusculo,</seg>
+            <seg type="section" n="2">primum stipendium meruit <note>annorum decem septemque</note> in Sicilia.</seg></p>
+        </div>
+        <div type="textpart" subtype="chapter">
+          <p><seg type="section" n="1">Consulatum gessit cum L. Valerio Flacco.</seg></p>
+        </div>
+      </div>
+    </body>
+  </text>
+</TEI>

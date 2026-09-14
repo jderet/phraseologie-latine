@@ -4,6 +4,7 @@ The files come from a local clone of the Perseus repository, a trusted source; t
 parsed with the standard library, whose expat parser does not load external entities.
 """
 
+import html.entities
 import re
 import unicodedata
 import xml.etree.ElementTree as ET
@@ -14,6 +15,7 @@ from .text import TextToken, tokenize
 
 TEI = "{http://www.tei-c.org/ns/1.0}"
 XML_LANG = "{http://www.w3.org/XML/1998/namespace}lang"
+URN_PREFIX = "urn:cts:latinLit:"
 
 # Elements whose content is not the author's text.
 SKIPPED_ELEMENTS = {
@@ -36,6 +38,11 @@ CHOICE_PREFERENCE = ("corr", "orig", "abbr")
 # Divisions written by the editor, not by the author.
 SKIPPED_DIVISIONS = {"index", "sigla"}
 GREEK_LANGUAGES = {"grc", "greek", "gr", "el"}
+# Older files number their divisions (div1, div2…) instead of marking them as textparts.
+NUMBERED_DIVISION = re.compile(r"div[1-7]")
+# Some files use HTML entities (&dagger;) without declaring them.
+ENTITY_PATTERN = re.compile(rb"&([A-Za-z][A-Za-z0-9]*);")
+XML_ENTITIES = {b"amp", b"lt", b"gt", b"quot", b"apos"}
 
 
 class PerseusError(ValueError):
@@ -69,14 +76,31 @@ def _join(*parts):
     return " · ".join(part for part in parts if part)
 
 
+def _passage(text, foreign_spans, reference, heading):
+    tokens = []
+    offset = 0
+    for token in tokenize(text):
+        start = offset + len(token.before)
+        end = start + len(token.form)
+        offset = end + len(token.after)
+        if not token.is_foreign and any(s < end and start < e for s, e in foreign_spans):
+            token = replace(token, is_foreign=True)
+        tokens.append(token)
+    return ParsedPassage(reference, text, tokens, heading)
+
+
 class TextBuilder:
-    """Collects the text of TEI elements with single spaces, remembering foreign spans."""
+    """Collects the text of TEI elements with single spaces, remembering foreign spans.
+
+    It also notes where numbered milestones stand, so that the text can be cut there.
+    """
 
     def __init__(self):
         self._parts = []
         self._length = 0
         self._space_pending = False
         self._foreign_spans = []
+        self.milestones = []
 
     def add_text(self, value, foreign=False):
         if not value:
@@ -102,6 +126,8 @@ class TextBuilder:
         name = _name(element)
         if name in SKIPPED_ELEMENTS:
             return
+        if name == "milestone" and element.get("n"):
+            self.milestones.append((self._length, element.get("unit") or "", element.get("n")))
         if name == "choice":
             readings = {_name(child): child for child in element}
             chosen = next((readings[n] for n in CHOICE_PREFERENCE if n in readings), None)
@@ -110,7 +136,8 @@ class TextBuilder:
             if chosen is not None:
                 self.add_element(chosen, foreign)
             return
-        if name == "foreign" and (element.get(XML_LANG) or "").lower() in GREEK_LANGUAGES:
+        language = (element.get(XML_LANG) or element.get("lang") or "").lower()
+        if name == "foreign" and language in GREEK_LANGUAGES:
             foreign = True
         self.add_text(element.text, foreign)
         for child in element:
@@ -120,17 +147,28 @@ class TextBuilder:
             self.add_space()
 
     def passage(self, reference, heading=""):
+        return _passage("".join(self._parts), self._foreign_spans, reference, heading)
+
+    def milestone_passages(self, references, heading=""):
+        """Passages cut at the milestones of the first unit met; text before joins the first."""
+        unit = self.milestones[0][1]
+        cuts = [(offset, number) for offset, kind, number in self.milestones if kind == unit]
         text = "".join(self._parts)
-        tokens = []
-        offset = 0
-        for token in tokenize(text):
-            start = offset + len(token.before)
-            end = start + len(token.form)
-            offset = end + len(token.after)
-            if not token.is_foreign and any(s < end and start < e for s, e in self._foreign_spans):
-                token = replace(token, is_foreign=True)
-            tokens.append(token)
-        return ParsedPassage(reference, text, tokens, heading)
+        passages = []
+        for index, (offset, number) in enumerate(cuts):
+            start = 0 if index == 0 else offset
+            end = cuts[index + 1][0] if index + 1 < len(cuts) else len(text)
+            piece = text[start:end]
+            lead = len(piece) - len(piece.lstrip())
+            piece = piece.strip()
+            shift = start + lead
+            spans = [(s - shift, e - shift) for s, e in self._foreign_spans]
+            passages.append(
+                _passage(
+                    piece, spans, ".".join([*references, number]), heading if not index else ""
+                )
+            )
+        return unit, passages
 
     def _append(self, value):
         self._parts.append(value)
@@ -138,49 +176,98 @@ class TextBuilder:
 
 
 def _headings(element):
-    heads = (" ".join("".join(head.itertext()).split()) for head in element.findall(f"{TEI}head"))
+    heads = (
+        " ".join("".join(head.itertext()).split()) for head in element if _name(head) == "head"
+    )
     return _join(*heads)
 
 
+def _is_textpart(element):
+    name = _name(element)
+    if name == "div":
+        return element.get("type") == "textpart"
+    return bool(NUMBERED_DIVISION.fullmatch(name))
+
+
+def _subtype(division):
+    return division.get("subtype" if _name(division) == "div" else "type") or ""
+
+
 def _textparts(element):
-    return [child for child in element if _name(child) == "div" and child.get("type") == "textpart"]
+    return [child for child in element if _is_textpart(child)]
 
 
 def _is_editorial(division):
-    labels = {(division.get("subtype") or "").lower(), (division.get("n") or "").lower()}
+    labels = {_subtype(division).lower(), (division.get("n") or "").lower()}
     return bool(labels & SKIPPED_DIVISIONS)
 
 
-def _textpart_passages(edition, wrappers):
+def _numbered_segments(element):
+    """Numbered <seg> elements of a division, outside notes and other skipped elements."""
+    segments = []
+    for child in element:
+        if _name(child) in SKIPPED_ELEMENTS:
+            continue
+        if _name(child) == "seg" and child.get("n"):
+            segments.append(child)
+        else:
+            segments.extend(_numbered_segments(child))
+    return segments
+
+
+def _textpart_passages(edition, wrappers, sections=False, milestones=False):
     """Passages of a prose edition: its deepest textpart divisions.
 
-    ``wrappers`` is the number of upper division levels that the CTS citation skips.
+    ``wrappers`` is the number of upper division levels that the CTS citation skips. With
+    ``sections``, a division whose text is in numbered <seg> elements gives one passage per
+    segment; with ``milestones``, a division is cut at its numbered milestones.
     """
     passages = []
     scheme = []
+
+    def leaf(element, references, subtypes, heading):
+        segments = _numbered_segments(element) if sections else []
+        if segments:
+            scheme[:] = scheme or [*subtypes, "section"]
+            for index, segment in enumerate(segments):
+                builder = TextBuilder()
+                builder.add_element(segment)
+                reference = ".".join([*references, segment.get("n")])
+                passages.append(builder.passage(reference, heading if not index else ""))
+            return
+        builder = TextBuilder()
+        builder.add_element(element)
+        if milestones and builder.milestones:
+            unit, cut = builder.milestone_passages(references, heading)
+            scheme[:] = scheme or [*subtypes, unit]
+            passages.extend(cut)
+            return
+        scheme[:] = scheme or subtypes
+        passages.append(builder.passage(".".join(references), heading))
 
     def walk(element, depth, references, subtypes, heading):
         heading = _join(heading, _headings(element))
         divisions = _textparts(element)
         if not divisions:
             if depth:
-                if not scheme:
-                    scheme.extend(subtypes)
-                builder = TextBuilder()
-                builder.add_element(element)
-                passages.append(builder.passage(".".join(references), heading))
+                leaf(element, references, subtypes, heading)
             return
         first = True
+        previous = None
         for division in divisions:
             if _is_editorial(division):
                 continue
             number = division.get("n")
+            # A division left unnumbered between numbered ones follows the previous number.
+            if not number and depth >= wrappers and previous and previous.isdigit():
+                number = str(int(previous) + 1)
+            previous = number
             cited = depth >= wrappers and bool(number)
             walk(
                 division,
                 depth + 1,
                 [*references, number] if cited else references,
-                [*subtypes, division.get("subtype") or ""] if cited else subtypes,
+                [*subtypes, _subtype(division)] if cited else subtypes,
                 heading if first else "",
             )
             first = False
@@ -189,41 +276,99 @@ def _textpart_passages(edition, wrappers):
     return passages, scheme
 
 
-def _line_passages(edition):
-    """Passages of a verse edition: numbered lines; an unnumbered line joins the previous one."""
-    ignored = {
-        inner
-        for element in edition.iter()
-        if _name(element) in SKIPPED_ELEMENTS
-        for inner in element.iter()
-    }
+def _cited_depths(replacement):
+    """Depths of the divisions (the edition being 0) that a line citation names."""
+    steps = [step for step in re.split(r"/+", replacement.split("tei:body", 1)[-1]) if step]
+    depths = []
+    for depth, step in enumerate(steps):
+        if not step.startswith("tei:div"):
+            break
+        if "[@n=" in step:
+            depths.append(depth)
+    return depths
+
+
+def _line_passages(edition, depths=()):
+    """Passages of a verse edition: numbered lines; an unnumbered line joins the previous one.
+
+    ``depths`` are the division levels whose numbers come before the line number, as in
+    book.line; line numbers start again in each of them.
+    """
     groups = []
-    for line in edition.iter(f"{TEI}l"):
-        if line in ignored:
-            continue
-        number = line.get("n")
-        if number or not groups:
-            groups.append((number or "0", [line]))
-        else:
-            groups[-1][1].append(line)
+    subtypes = []
+
+    def walk(element, path):
+        for child in element:
+            name = _name(child)
+            if name in SKIPPED_ELEMENTS:
+                continue
+            if name == "l":
+                cited = [path[depth] for depth in depths if depth < len(path)]
+                prefix = [number for number, _subtype in cited if number]
+                number = child.get("n")
+                if number or not groups or groups[-1][0] != prefix:
+                    subtypes[:] = subtypes or [subtype for _number, subtype in cited]
+                    groups.append((prefix, number or "0", [child]))
+                else:
+                    groups[-1][2].append(child)
+            elif _name(child) == "div" and child.get("type") == "textpart":
+                walk(child, [*path, (child.get("n") or "", child.get("subtype") or "")])
+            else:
+                walk(child, path)
+
+    walk(edition, [("", "")])
     passages = []
-    for reference, lines in groups:
+    for prefix, number, lines in groups:
         builder = TextBuilder()
         for line in lines:
             builder.add_element(line)
-        passages.append(builder.passage(reference))
-    return passages
+        passages.append(builder.passage(".".join([*prefix, number])))
+    return passages, [*subtypes, "line"]
+
+
+def _character_references(data):
+    """Undeclared HTML entities written as character references, which XML always knows."""
+
+    def replace_entity(match):
+        name = match.group(1)
+        character = html.entities.html5.get(name.decode("ascii") + ";")
+        if name in XML_ENTITIES or character is None:
+            return match.group(0)
+        return "".join(f"&#{ord(char)};" for char in character).encode("ascii")
+
+    return ENTITY_PATTERN.sub(replace_entity, data)
+
+
+def _parse(path):
+    data = _character_references(Path(path).read_bytes())
+    try:
+        return ET.fromstring(data)  # noqa: S314 - trusted local files, see module docstring
+    except ET.ParseError as error:
+        raise PerseusError(f"{Path(path).name}: {error}") from error
 
 
 def read_edition(path, exclude=""):
     """Read a Perseus edition; passages whose reference fully matches ``exclude`` are left out."""
-    try:
-        root = ET.parse(path).getroot()  # noqa: S314 - trusted local files, see module docstring
-    except ET.ParseError as error:
-        raise PerseusError(f"{Path(path).name}: {error}") from error
+    root = _parse(path)
     edition = root.find(f"{TEI}text/{TEI}body/{TEI}div[@type='edition']")
-    if edition is None:
-        raise PerseusError(f'{Path(path).name}: no <div type="edition">')
+    if edition is not None:
+        urn = edition.get("n", "")
+        passages, scheme = _cited_passages(root, edition)
+    else:
+        # An older file: numbered divisions in the body, chapters sometimes marked by milestones.
+        body = next((element for element in root.iter() if _name(element) == "body"), None)
+        if body is None or not _textparts(body):
+            raise PerseusError(f'{Path(path).name}: no <div type="edition">')
+        urn = URN_PREFIX + Path(path).stem
+        passages, scheme = _textpart_passages(body, 0, milestones=True)
+    if exclude:
+        excluded = re.compile(exclude)
+        passages = [p for p in passages if not excluded.fullmatch(p.reference)]
+    return ParsedEdition(urn, scheme, passages)
+
+
+def _cited_passages(root, edition):
+    """Passages of an edition cut as its CTS citation patterns describe."""
     patterns = sorted(
         (
             (pattern.get("replacementPattern") or "").count("$"),
@@ -232,21 +377,22 @@ def read_edition(path, exclude=""):
         )
         for pattern in root.iter(f"{TEI}cRefPattern")
     )
-    if any("tei:l[" in replacement for _count, _name_, replacement in patterns):
-        passages, scheme = _line_passages(edition), ["line"]
+    names = [name for _count, name, _replacement in patterns]
+    lines = [replacement for _count, _name_, replacement in patterns if "tei:l[" in replacement]
+    if lines:
+        depths = _cited_depths(lines[-1])
+        passages, subtypes = _line_passages(edition, depths)
+        if names and all(names) and len(names) == len(depths) + 1:
+            return passages, [name.lower() for name in names]
+        return passages, subtypes
+    shortest = patterns[0][2] if patterns else ""
+    if "[@n=" in shortest:
+        wrappers = max(shortest.split("[@n=")[0].count("tei:div") - 2, 0)
     else:
-        shortest = patterns[0][2] if patterns else ""
-        if "[@n=" in shortest:
-            wrappers = max(shortest.split("[@n=")[0].count("tei:div") - 2, 0)
-        else:
-            wrappers = 0
-        passages, subtypes = _textpart_passages(edition, wrappers)
-        names = [name for _count, name, _replacement in patterns]
-        scheme = names if names and all(names) else subtypes
-    if exclude:
-        excluded = re.compile(exclude)
-        passages = [p for p in passages if not excluded.fullmatch(p.reference)]
-    return ParsedEdition(edition.get("n", ""), scheme, passages)
+        wrappers = 0
+    sections = any("tei:seg[" in replacement for _count, _name_, replacement in patterns)
+    passages, subtypes = _textpart_passages(edition, wrappers, sections=sections)
+    return passages, names if names and all(names) else subtypes
 
 
 def git_revision(repository):

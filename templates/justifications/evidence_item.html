@@ -1,6 +1,6 @@
 {% load i18n corpus_tags %}<li class="evidence">
   {% if evidence.quotation %}
-  <a class="hit-ref" href="{{ evidence.quotation.url }}">{{ evidence.quotation.citation }}</a>
+  <a class="hit-ref" href="{{ evidence.quotation.url }}">{{ evidence.quotation.citation }}</a> {% poetry_mark evidence.quotation %}
   <span class="kwic" lang="la">… {% render_tokens evidence.quotation.words evidence.quotation.highlighted %} …</span>
   {% if evidence.attestation_id %}<span class="muted">{% translate "attestation reprise d’une fiche phraséologique" %}</span>{% endif %}
   {% elif evidence.work %}

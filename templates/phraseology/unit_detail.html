@@ -162,7 +162,7 @@
     <ul class="evidences">
       {% for attestation in attestations %}
       <li class="evidence{% if attestation.status == 'rejected' %} is-rejected{% endif %}" id="attestation-{{ attestation.pk }}">
-        <a class="hit-ref" href="{{ attestation.quotation.url }}">{{ attestation.quotation.citation }}</a>
+        <a class="hit-ref" href="{{ attestation.quotation.url }}">{{ attestation.quotation.citation }}</a> {% poetry_mark attestation.quotation %}
         <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span>
         <span class="muted">{% if attestation.is_example %}{% translate "exemple choisi" %} · {% endif %}{{ attestation.status_label|capfirst }}{% if attestation.realization %} · <span lang="la">{{ attestation.realization.form }}</span>{% endif %}</span>
         {% if attestation.note %}<span class="evidence-note">{{ attestation.note }}</span>{% endif %}

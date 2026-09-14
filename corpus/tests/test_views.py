@@ -38,6 +38,22 @@ class CorpusPagesTests(PerseusSourceMixin, TestCase):
         response = self.client.get(f"{url}?mots={word.pk},abc,")
         self.assertContains(response, f'<mark id="mot-{word.pk}">Athenis</mark>', html=True)
 
+    def test_poetry_is_marked_as_no_norm_for_prose(self):
+        response = self.client.get(reverse("corpus:work", args=["phi1017.phi004"]))
+        self.assertContains(response, "Poésie : ne fait pas norme pour la prose.")
+        response = self.client.get(reverse("corpus:passage", args=["phi1017.phi004", "2"]))
+        self.assertContains(response, "poetry-mark")
+        response = self.client.get(reverse("corpus:passage", args=["phi0474.phi055", "1.1"]))
+        self.assertNotContains(response, "poetry-mark")
+
+    def test_search_hits_in_verse_are_marked(self):
+        response = self.client.get(reverse("corpus:search"), {"term1": "custos", "scope": "all"})
+        self.assertContains(response, "Sen. Med. 2")
+        self.assertContains(response, "poetry-mark")
+        response = self.client.get(reverse("corpus:search"), {"term1": "Athenis"})
+        self.assertContains(response, "Cic. Off. 1, 1")
+        self.assertNotContains(response, "poetry-mark")
+
     def test_unknown_work_or_reference(self):
         response = self.client.get(reverse("corpus:work", args=["phi0474.phi999"]))
         self.assertEqual(response.status_code, 404)

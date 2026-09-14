@@ -8,7 +8,7 @@
     {% if spot.attestations %}
     <ul class="evidences">
       {% for attestation in spot.attestations %}
-      <li class="evidence"><a class="hit-ref" href="{{ attestation.quotation.url }}" target="_blank" rel="noopener">{{ attestation.quotation.citation }}</a> <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span> <span class="muted">{{ attestation.status_label }}</span></li>
+      <li class="evidence"><a class="hit-ref" href="{{ attestation.quotation.url }}" target="_blank" rel="noopener">{{ attestation.quotation.citation }}</a> {% poetry_mark attestation.quotation %} <span class="kwic" lang="la">… {% render_tokens attestation.quotation.words attestation.quotation.highlighted %} …</span> <span class="muted">{{ attestation.status_label }}</span></li>
       {% endfor %}
     </ul>
     {% endif %}

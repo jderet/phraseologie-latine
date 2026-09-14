@@ -16,7 +16,7 @@
   <ol class="hits" start="{{ page.start_index }}">
     {% for hit in hits %}
     <li>
-      <a class="hit-ref" href="{{ hit.url }}"{% if panel %} target="_blank" rel="noopener"{% endif %}>{{ hit.citation }}</a>
+      <a class="hit-ref" href="{{ hit.url }}"{% if panel %} target="_blank" rel="noopener"{% endif %}>{{ hit.citation }}</a> {% poetry_mark hit %}
       <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
     </li>
     {% endfor %}

@@ -10,11 +10,11 @@
     {% for hit in occurrences.hits %}
     <li>
       {% if hit.attested %}
-      <span class="muted">{% translate "déjà attestée" %}</span> <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
+      <span class="muted">{% translate "déjà attestée" %}</span> <span class="hit-ref">{{ hit.citation }}</span> {% poetry_mark hit %} <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
       {% elif checkable %}
-      <label><input type="checkbox" name="{{ field_name }}" value="{{ hit.word_ids }}" form="unit-form"{% if hit.word_ids in chosen_ids %} checked{% endif %}> <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span></label>
+      <label><input type="checkbox" name="{{ field_name }}" value="{{ hit.word_ids }}" form="unit-form"{% if hit.word_ids in chosen_ids %} checked{% endif %}> <span class="hit-ref">{{ hit.citation }}</span> {% poetry_mark hit %} <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span></label>
       {% else %}
-      <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
+      <span class="hit-ref">{{ hit.citation }}</span> {% poetry_mark hit %} <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span>
       {% endif %}
       <a class="small-link" href="{{ hit.url }}" target="_blank" rel="noopener">{% translate "contexte" %}</a>
     </li>

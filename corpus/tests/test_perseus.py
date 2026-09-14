@@ -73,10 +73,50 @@ class OtherStructuresTests(SimpleTestCase):
         self.assertEqual(edition.passages[1].text, "Lucina, custos quaeque domituram freta")
         self.assertNotIn("Medea", " ".join(p.text for p in edition.passages))
 
+    def test_verse_cited_by_division_and_line(self):
+        edition = read_edition(DATA / "verse_books.xml")
+        self.assertEqual(edition.citation_scheme, ["poem", "line"])
+        self.assertEqual([p.reference for p in edition.passages], ["1.1", "1.2", "2.1", "2.2"])
+        self.assertEqual(edition.passages[1].text, "numquamne reponam vexatus totiens")
+        self.assertNotIn("Satura", " ".join(p.text for p in edition.passages))
+
+    def test_undeclared_html_entities_are_read(self):
+        edition = read_edition(DATA / "verse_books.xml")
+        self.assertEqual(edition.passages[2].text, "Ultra Sauromatas † fugere hinc libet")
+
+    def test_sections_in_numbered_segments(self):
+        edition = read_edition(DATA / "sections.xml")
+        self.assertEqual(edition.citation_scheme, ["chapter", "section"])
+        self.assertEqual([p.reference for p in edition.passages], ["1.1", "1.2", "2.1"])
+        self.assertEqual(edition.passages[0].heading, "M. Porcius Cato")
+        self.assertEqual(edition.passages[1].text, "primum stipendium meruit in Sicilia.")
+
+    def test_older_file_with_numbered_divisions_and_milestones(self):
+        edition = read_edition(DATA / "phi1351.phi005.perseus-lat1.xml")
+        self.assertEqual(edition.urn, "urn:cts:latinLit:phi1351.phi005.perseus-lat1")
+        self.assertEqual(edition.citation_scheme, ["book", "chapter"])
+        self.assertEqual([p.reference for p in edition.passages], ["1.1", "1.2", "2"])
+        first, second = edition.passages[:2]
+        self.assertEqual(first.heading, "Annales · LIBER I")
+        self.assertTrue(first.text.startswith("Urbem Romam"))
+        self.assertTrue(first.text.endswith("dictaturae ad tempus sumebantur;"))
+        self.assertEqual(second.text, "sed † veteris populi Romani δόξα memorata sunt.")
+        self.assertEqual([t.form for t in second.tokens if t.is_foreign], ["δόξα"])
+        for passage in edition.passages:
+            rebuilt = "".join(t.before + t.form + t.after for t in passage.tokens)
+            self.assertEqual(rebuilt, passage.text)
+
     def test_invalid_xml(self):
         with tempfile.TemporaryDirectory() as name:
             path = Path(name) / "broken.xml"
-            path.write_text("<TEI><text>&iacute;</text></TEI>")
+            path.write_text("<TEI><text>&iacute;</TEI>")
+            with self.assertRaises(PerseusError):
+                read_edition(path)
+
+    def test_file_without_edition(self):
+        with tempfile.TemporaryDirectory() as name:
+            path = Path(name) / "empty.xml"
+            path.write_text("<TEI><text><body><p>Nihil</p></body></text></TEI>")
             with self.assertRaises(PerseusError):
                 read_edition(path)
 

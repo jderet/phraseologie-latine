@@ -20,7 +20,7 @@
     {% endif %}
     <div>
       <dt>{% translate "Forme" %}</dt>
-      <dd>{{ work.get_form_display|capfirst }}</dd>
+      <dd>{{ work.get_form_display|capfirst }}{% if work.form == "verse" %} <span class="muted">· {% translate "Poésie : ne fait pas norme pour la prose." %}</span>{% endif %}</dd>
     </div>
     {% if work.register %}
     <div>

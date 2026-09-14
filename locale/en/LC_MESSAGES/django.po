@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 08:22+0200\n"
+"POT-Creation-Date: 2026-09-14 09:06+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -253,11 +253,11 @@ msgstr "invalid exclusion expression: %(pattern)s"
 msgid "Chercher comme"
 msgstr "Search as"
 
-#: corpus/forms.py:24 corpus/models.py:76
+#: corpus/forms.py:24 corpus/models.py:88
 msgid "forme"
 msgstr "form"
 
-#: corpus/forms.py:24 corpus/models.py:274 phraseology/models.py:643
+#: corpus/forms.py:24 corpus/models.py:286 phraseology/models.py:643
 msgid "lemme"
 msgstr "lemma"
 
@@ -287,7 +287,7 @@ msgstr "Maximum distance (in words)"
 msgid "Les mots dans cet ordre"
 msgstr "Words in this order"
 
-#: corpus/forms.py:47 corpus/models.py:80
+#: corpus/forms.py:47 corpus/models.py:92
 msgid "noyau"
 msgstr "core"
 
@@ -464,7 +464,7 @@ msgstr "English name"
 msgid "nom latin"
 msgstr "Latin name"
 
-#: corpus/models.py:30 corpus/models.py:73 justifications/models.py:40
+#: corpus/models.py:30 corpus/models.py:85 justifications/models.py:40
 msgid "abréviation"
 msgstr "abbreviation"
 
@@ -480,7 +480,7 @@ msgstr "year of death"
 msgid "époque"
 msgstr "period"
 
-#: corpus/models.py:36 corpus/models.py:69 justifications/models.py:86
+#: corpus/models.py:36 corpus/models.py:81 justifications/models.py:86
 #: justifications/models.py:309 moderation/models.py:53
 #: moderation/models.py:127 moderation/models.py:175 moderation/models.py:217
 #: translations/models.py:259
@@ -512,280 +512,336 @@ msgid "histoire"
 msgstr "history"
 
 #: corpus/models.py:55
+msgid "biographie"
+msgstr "biography"
+
+#: corpus/models.py:56
+msgid "traité technique"
+msgstr "technical treatise"
+
+#: corpus/models.py:57
+msgid "miscellanées"
+msgstr "miscellany"
+
+#: corpus/models.py:58
+msgid "roman"
+msgstr "novel"
+
+#: corpus/models.py:59
 msgid "tragédie"
 msgstr "tragedy"
 
-#: corpus/models.py:56
-msgid "satire ménippée"
-msgstr "Menippean satire"
+#: corpus/models.py:60
+msgid "comédie"
+msgstr "comedy"
 
-#: corpus/models.py:59
+#: corpus/models.py:61
+msgid "épopée"
+msgstr "epic"
+
+#: corpus/models.py:62
+msgid "poésie didactique"
+msgstr "didactic poetry"
+
+#: corpus/models.py:63
+msgid "bucolique"
+msgstr "pastoral"
+
+#: corpus/models.py:64
+msgid "poésie lyrique"
+msgstr "lyric poetry"
+
+#: corpus/models.py:65
+msgid "élégie"
+msgstr "elegy"
+
+#: corpus/models.py:66
+msgid "épigramme"
+msgstr "epigram"
+
+#: corpus/models.py:67
+msgid "fable"
+msgstr "fable"
+
+#: corpus/models.py:68
+msgid "satire"
+msgstr "satire"
+
+#: corpus/models.py:71
 msgid "soutenu"
 msgstr "elevated"
 
-#: corpus/models.py:60
+#: corpus/models.py:72
 msgid "courant"
 msgstr "standard"
 
-#: corpus/models.py:61
+#: corpus/models.py:73
 msgid "familier"
 msgstr "familiar"
 
-#: corpus/models.py:64
+#: corpus/models.py:76
 msgid "prose"
 msgstr "prose"
 
-#: corpus/models.py:65
+#: corpus/models.py:77
 msgid "vers"
 msgstr "verse"
 
-#: corpus/models.py:66
+#: corpus/models.py:78
 msgid "prosimètre"
 msgstr "prosimetrum"
 
-#: corpus/models.py:71 corpus/models.py:113
+#: corpus/models.py:83 corpus/models.py:125
 msgid "URN CTS"
 msgstr "CTS URN"
 
-#: corpus/models.py:72 corpus/models.py:151 justifications/models.py:41
+#: corpus/models.py:84 corpus/models.py:163 justifications/models.py:41
 #: translations/models.py:55 translations/models.py:201
 msgid "titre"
 msgstr "title"
 
-#: corpus/models.py:74
+#: corpus/models.py:86
 msgid "genre"
 msgstr "genre"
 
-#: corpus/models.py:75 phraseology/models.py:75 phraseology/models.py:173
+#: corpus/models.py:87 phraseology/models.py:75 phraseology/models.py:173
 msgid "registre"
 msgstr "register"
 
-#: corpus/models.py:77
+#: corpus/models.py:89
 msgid "date de début"
 msgstr "start date"
 
-#: corpus/models.py:78
+#: corpus/models.py:90
 msgid "date de fin"
 msgstr "end date"
 
-#: corpus/models.py:82
+#: corpus/models.py:94
 msgid "Les attestations du noyau sont vérifiées par des personnes."
 msgstr "Attestations in the core are checked by people."
 
-#: corpus/models.py:84
+#: corpus/models.py:96
 msgid "fragmentaire"
 msgstr "fragmentary"
 
-#: corpus/models.py:87 corpus/models.py:111
+#: corpus/models.py:99 corpus/models.py:123
 msgid "œuvre"
 msgstr "work"
 
-#: corpus/models.py:88
+#: corpus/models.py:100
 msgid "œuvres"
 msgstr "works"
 
-#: corpus/models.py:114
+#: corpus/models.py:126
 msgid "source"
 msgstr "source"
 
-#: corpus/models.py:115
+#: corpus/models.py:127
 msgid "fichier"
 msgstr "file"
 
-#: corpus/models.py:117
+#: corpus/models.py:129
 msgid "version de la source"
 msgstr "source version"
 
-#: corpus/models.py:117
+#: corpus/models.py:129
 msgid "Commit Git du dépôt importé."
 msgstr "Git commit of the imported repository."
 
-#: corpus/models.py:119 translations/models.py:80
+#: corpus/models.py:131 translations/models.py:80
 msgid "licence"
 msgstr "license"
 
-#: corpus/models.py:120
+#: corpus/models.py:132
 msgid "schéma de citation"
 msgstr "citation scheme"
 
-#: corpus/models.py:121
+#: corpus/models.py:133
 msgid "importée le"
 msgstr "imported on"
 
-#: corpus/models.py:122
+#: corpus/models.py:134
 msgid "édition en usage"
 msgstr "current edition"
 
-#: corpus/models.py:123
+#: corpus/models.py:135
 msgid "nombre de passages"
 msgstr "number of passages"
 
-#: corpus/models.py:124
+#: corpus/models.py:136
 msgid "nombre de mots"
 msgstr "number of words"
 
-#: corpus/models.py:127 corpus/models.py:147 corpus/models.py:188
+#: corpus/models.py:139 corpus/models.py:159 corpus/models.py:200
 msgid "édition"
 msgstr "edition"
 
-#: corpus/models.py:128
+#: corpus/models.py:140
 msgid "éditions"
 msgstr "editions"
 
-#: corpus/models.py:149
+#: corpus/models.py:161
 msgid "ordre"
 msgstr "order"
 
-#: corpus/models.py:150 templates/translations/project_compare.html:22
+#: corpus/models.py:162 templates/translations/project_compare.html:22
 msgid "référence"
 msgstr "reference"
 
-#: corpus/models.py:152
+#: corpus/models.py:164
 msgid "texte"
 msgstr "text"
 
-#: corpus/models.py:155 corpus/models.py:191 justifications/models.py:210
+#: corpus/models.py:167 corpus/models.py:203 justifications/models.py:210
 #: phraseology/models.py:346
 msgid "passage"
 msgstr "passage"
 
-#: corpus/models.py:156
+#: corpus/models.py:168
 msgid "passages"
 msgstr "passages"
 
-#: corpus/models.py:193
+#: corpus/models.py:205
 msgid "position dans l’édition"
 msgstr "position in the edition"
 
-#: corpus/models.py:194
+#: corpus/models.py:206
 msgid "forme imprimée"
 msgstr "printed form"
 
-#: corpus/models.py:195 phraseology/models.py:644
+#: corpus/models.py:207 phraseology/models.py:644
 msgid "forme normalisée"
 msgstr "normalized form"
 
-#: corpus/models.py:196
+#: corpus/models.py:208
 msgid "ponctuation avant"
 msgstr "punctuation before"
 
-#: corpus/models.py:197
+#: corpus/models.py:209
 msgid "ponctuation et espace après"
 msgstr "punctuation and space after"
 
-#: corpus/models.py:198
+#: corpus/models.py:210
 msgid "mot étranger"
 msgstr "foreign word"
 
-#: corpus/models.py:201 corpus/models.py:270
+#: corpus/models.py:213 corpus/models.py:282
 msgid "mot"
 msgstr "word"
 
-#: corpus/models.py:202
+#: corpus/models.py:214
 msgid "mots"
 msgstr "words"
 
-#: corpus/models.py:221
+#: corpus/models.py:233
 msgid "outil"
 msgstr "tool"
 
-#: corpus/models.py:222
+#: corpus/models.py:234
 msgid "version de l’outil"
 msgstr "tool version"
 
-#: corpus/models.py:223
+#: corpus/models.py:235
 msgid "détails"
 msgstr "details"
 
-#: corpus/models.py:224 justifications/models.py:123 phraseology/models.py:87
+#: corpus/models.py:236 justifications/models.py:123 phraseology/models.py:87
 msgid "créée le"
 msgstr "created on"
 
-#: corpus/models.py:226
+#: corpus/models.py:238
 msgid "éditions analysées"
 msgstr "analyzed editions"
 
-#: corpus/models.py:229
+#: corpus/models.py:241
 msgid "couche par défaut"
 msgstr "default layer"
 
-#: corpus/models.py:231
+#: corpus/models.py:243
 msgid "Couche utilisée par la recherche par lemme."
 msgstr "Layer used by lemma search."
 
-#: corpus/models.py:235 phraseology/models.py:577
+#: corpus/models.py:247 phraseology/models.py:577
 msgid "couche d’analyse"
 msgstr "analysis layer"
 
-#: corpus/models.py:236
+#: corpus/models.py:248
 msgid "couches d’analyse"
 msgstr "analysis layers"
 
-#: corpus/models.py:262
+#: corpus/models.py:274
 msgid "import vérifié"
 msgstr "verified import"
 
-#: corpus/models.py:263
+#: corpus/models.py:275
 msgid "automatique"
 msgstr "automatic"
 
-#: corpus/models.py:264
+#: corpus/models.py:276
 msgid "correction humaine"
 msgstr "human correction"
 
-#: corpus/models.py:267
+#: corpus/models.py:279
 msgid "couche"
 msgstr "layer"
 
-#: corpus/models.py:272
+#: corpus/models.py:284
 msgid "partie du mot"
 msgstr "part of the word"
 
-#: corpus/models.py:273
+#: corpus/models.py:285
 msgid "texte analysé"
 msgstr "analyzed text"
 
-#: corpus/models.py:275
+#: corpus/models.py:287
 msgid "lemme normalisé"
 msgstr "normalized lemma"
 
-#: corpus/models.py:276
+#: corpus/models.py:288
 msgid "catégorie"
 msgstr "part of speech"
 
-#: corpus/models.py:277
+#: corpus/models.py:289
 msgid "traits morphologiques"
 msgstr "morphological features"
 
-#: corpus/models.py:285
+#: corpus/models.py:297
 msgid "tête syntaxique"
 msgstr "syntactic head"
 
-#: corpus/models.py:287
+#: corpus/models.py:299
 msgid "partie de la tête"
 msgstr "part of the head"
 
-#: corpus/models.py:288
+#: corpus/models.py:300
 msgid "relation syntaxique"
 msgstr "syntactic relation"
 
-#: corpus/models.py:289 translations/models.py:159
+#: corpus/models.py:301 translations/models.py:159
 msgid "phrase"
 msgstr "sentence"
 
-#: corpus/models.py:291 phraseology/models.py:358
+#: corpus/models.py:303 phraseology/models.py:358
 msgid "origine"
 msgstr "origin"
 
-#: corpus/models.py:295
+#: corpus/models.py:307
 msgid "analyse d’un mot"
 msgstr "word analysis"
 
-#: corpus/models.py:296
+#: corpus/models.py:308
 msgid "analyses des mots"
 msgstr "word analyses"
 
-#: corpus/templatetags/corpus_tags.py:14
+#: corpus/templatetags/corpus_tags.py:17
+msgid "Poésie : ne fait pas norme pour la prose"
+msgstr "Poetry: no norm for prose"
+
+#: corpus/templatetags/corpus_tags.py:18 templates/corpus/passage.html:10
+msgid "poésie"
+msgstr "poetry"
+
+#: corpus/templatetags/corpus_tags.py:28
 #, python-format
 msgid "%(year)d av. J.-C."
 msgstr "%(year)d BC"
@@ -2752,19 +2808,23 @@ msgstr "outside the core"
 msgid "Aucun texte importé pour l’instant."
 msgstr "No text imported yet."
 
-#: templates/corpus/passage.html:13
+#: templates/corpus/passage.html:10 templates/corpus/work.html:23
+msgid "Poésie : ne fait pas norme pour la prose."
+msgstr "Poetry: no norm for prose."
+
+#: templates/corpus/passage.html:14
 msgid "Passages voisins"
 msgstr "Neighboring passages"
 
-#: templates/corpus/passage.html:20
+#: templates/corpus/passage.html:21
 msgid "Identifiant"
 msgstr "Identifier"
 
-#: templates/corpus/passage.html:24
+#: templates/corpus/passage.html:25
 msgid "Source"
 msgstr "Source"
 
-#: templates/corpus/passage.html:25 templates/corpus/work.html:49
+#: templates/corpus/passage.html:26 templates/corpus/work.html:49
 #: translations/models.py:277 translations/models.py:313
 msgid "version"
 msgstr "version"
@@ -4694,6 +4754,9 @@ msgstr "This version is already published."
 #: translations/views.py:533
 msgid "La version est publiée."
 msgstr "The version has been published."
+
+#~ msgid "satire ménippée"
+#~ msgstr "Menippean satire"
 
 #~ msgid "Retirer cette attestation"
 #~ msgstr "Withdraw this attestation"

@@ -47,7 +47,7 @@ La commande s'arrête avec un message qui indique le fichier, la ligne et le pro
 | Colonne | Valeurs |
 |---|---|
 | `period` | `archaic` (latin archaïque), `classical` (classique), `imperial` (impérial), `late` (tardif), `medieval` (médiéval), `neo` (néo-latin) |
-| `genre` | `oratory` (éloquence), `rhetoric` (rhétorique), `philosophy` (philosophie), `letters` (lettres), `history` (histoire), `tragedy` (tragédie), `satire` (satire ménippée) |
+| `genre` | prose : `oratory` (éloquence), `rhetoric` (rhétorique), `philosophy` (philosophie), `letters` (lettres), `history` (histoire), `biography` (biographie), `technical` (traité technique), `miscellany` (miscellanées), `novel` (roman) ; poésie : `tragedy` (tragédie), `comedy` (comédie), `epic` (épopée), `didactic` (poésie didactique), `bucolic` (bucolique), `lyric` (poésie lyrique), `elegy` (élégie), `epigram` (épigramme), `fable` (fable) ; `satire` (satire, en vers ou ménippée) |
 | `register` | `elevated` (soutenu), `standard` (courant), `familiar` (familier) |
 | `form` | `prose`, `verse` (vers), `prosimetrum` (prosimètre) |
 
@@ -58,3 +58,14 @@ La commande s'arrête avec un message qui indique le fichier, la ligne et le pro
 - **Sénèque** : prose dans le noyau ; les dix tragédies, *Octavia* comprise, importées hors noyau.
 - **Absents de Perseus** : Cicéron *De legibus*, Sénèque *Naturales quaestiones*, Pline *Panégyrique*. Le Pseudo-César et Sénèque le Père ne font pas partie du noyau.
 - **Genre, registre et dates** : première proposition, à relire avec le comité.
+
+## Choix faits pour l'élargissement (14 septembre 2026, à relire)
+
+Le reste de la latinité classique, du latin archaïque à la fin du IIe siècle, hors noyau : 34 auteurs et 123 œuvres. Le latin tardif et chrétien (Tertullien, Minucius Felix, *Histoire Auguste*, Ammien, Augustin…) viendra après l'ouverture.
+
+- **Éditions** : Celse, l'édition de Marx (`lat6`) ; Pétrone, `lat2` (le fichier `lat1` n'est pas découpé en CTS). Les vers sont cités par livre ou poème puis vers (*Aen.* 1, 1), selon le motif de citation du fichier ; les sections marquées `<seg>` (Népos) et les chapitres marqués par des jalons (Tacite, *Annales*) donnent chacun un passage.
+- **Parties écartées** : distributions, résumés et didascalies des comédies de Térence (`cast|subject_\d+|production`), qui ne sont pas de Térence ; adresse non numérotée du *Commentariolum petitionis* (`^$`) ; *Punica* 11, 453-458, en double dans le fichier.
+- **Pseudo-César** : les trois *Bella* sous un seul auteur (`phi0428`), comme les dialogues de Sénèque.
+- **Laissés de côté pour l'instant** : Caton, *De agri cultura* (deux chapitres 1 dans le fichier Perseus) ; *Appendix Vergiliana* (fichiers sans divisions lisibles, textes apocryphes) ; Auguste (absent de Perseus).
+- **Salluste, *Historiae*** : le fichier est désormais lu section par section. L'édition déjà importée reste telle quelle (une édition importée est figée) ; le changement vaudra à la prochaine version de Perseus.
+- **Dates des auteurs** : approximatives quand elles sont incertaines (Phèdre, Juvénal, Suétone) ; vides quand elles sont inconnues.

@@ -82,7 +82,7 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 ### 4.4 Corpus
 
 - **Noyau** (Q19) : Cicéron, César, Salluste, Tite-Live, Sénèque, Pline le Jeune.
-- **Élargissement**, avec marque d'époque (Q20) : latin archaïque, reste de la latinité impériale, latin tardif et chrétien, latin médiéval, néo-latin. Les attestations y sont repérées automatiquement (T2).
+- **Élargissement**, avec marque d'époque (Q20) : latin archaïque, reste de la latinité impériale, latin tardif et chrétien, latin médiéval, néo-latin. Les attestations y sont repérées automatiquement (T2). Premier élargissement, avant l'ouverture : du latin archaïque à la fin du IIe siècle (Plaute à Apulée et Aulu-Gelle) ; le latin tardif et chrétien vient après l'ouverture (choix du 14 septembre 2026).
 - Poésie incluse, signalée comme non normative pour la prose (Q21).
 - Éditions libres (Q22). Source principale : Perseus *canonical-latinLit* (TEI, CC BY-SA 4.0), déjà cloné dans le dossier du projet.
 - Variantes et passages corrompus ignorés au départ (Q23).

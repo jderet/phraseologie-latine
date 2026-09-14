@@ -22,7 +22,7 @@
   <ul class="attestation-choices">
     {% for hit in search.hits %}
     <li>
-      <label><input type="checkbox" name="attestation" value="{{ hit.word_ids }}" form="{{ form_id|default:'justification-form' }}"{% if hit.word_ids in chosen_ids %} checked{% endif %}> <span class="hit-ref">{{ hit.citation }}</span> <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span></label>
+      <label><input type="checkbox" name="attestation" value="{{ hit.word_ids }}" form="{{ form_id|default:'justification-form' }}"{% if hit.word_ids in chosen_ids %} checked{% endif %}> <span class="hit-ref">{{ hit.citation }}</span> {% poetry_mark hit %} <span class="kwic" lang="la">… {% render_tokens hit.words hit.highlighted %} …</span></label>
       <a class="small-link" href="{{ hit.url }}" target="_blank" rel="noopener">{% translate "contexte" %}</a>
     </li>
     {% endfor %}
