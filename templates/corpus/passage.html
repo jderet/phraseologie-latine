@@ -10,7 +10,12 @@
   <p class="reading-link"><a href="{% url 'corpus:reading' work.cts_id %}?aller={{ passage.reference|urlencode }}">{% translate "Lire dans l’œuvre" %}</a></p>
   {% if work.form == "verse" %}<p class="note"><span class="badge poetry-mark">{% translate "poésie" %}</span> {% translate "Poésie : ne fait pas norme pour la prose." %}</p>{% endif %}
   {% if passage.heading %}<p class="passage-heading">{{ passage.heading }}</p>{% endif %}
-  <div class="passage-text" lang="la">{% if tokens %}{% render_tokens tokens highlighted %}{% else %}{{ passage.text }}{% endif %}</div>
+  <div class="passage-text" lang="la">{% if tokens %}{% render_words tokens marks highlighted False %}{% else %}{{ passage.text }}{% endif %}</div>
+  {% if page_units %}
+  <p class="passage-units">{% translate "Phraséologie de ce passage :" %}
+    {% for entry in page_units %}<a class="k-{{ entry.unit.kind|default:'none' }}" href="{{ entry.unit.get_absolute_url }}" lang="la"><span class="swatch"></span> {{ entry.unit.reference_form }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+  </p>
+  {% endif %}
 
   {% for translation, part in translations %}
   <section class="reference-translation" aria-labelledby="translation-{{ translation.pk }}">

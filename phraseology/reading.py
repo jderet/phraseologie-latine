@@ -2,7 +2,9 @@
 
 Each occurrence is underlined word by word, in the colour of the type of its unit and with the
 line of its status, so that an automatic attestation is never shown as validated (rule 4).
-Occurrences that share words are drawn on different tracks, one line under the other.
+Occurrences that share words are drawn on different tracks, one line under the other. In a
+Latin sentence being translated, known units are only spotted, as suggestions, and the words
+a justification cites an entry for are marked apart.
 """
 
 from collections import defaultdict
@@ -12,9 +14,10 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from corpus.models import Work
+from moderation.registry import can_view
 
 from .models import Attestation, Kind, UsageMark
-from .spotting import visible_units
+from .spotting import spot_units, visible_units, word_offsets
 
 VALIDATED, PROPOSED, AUTOMATIC = "validated", "proposed", "automatic"
 STATUS_LABELS = {
@@ -23,6 +26,8 @@ STATUS_LABELS = {
     AUTOMATIC: _("repérées automatiquement"),
 }
 DEFAULT_STATUSES = (VALIDATED, PROPOSED)
+# How a unit is marked in a translated sentence: spotted there, or cited by a justification.
+SPOTTED, JUSTIFIED = "spotted", "justified"
 # Lines drawn under a word at most; further occurrences share the last one.
 MAX_TRACKS = 4
 SESSION_KEY = "reading_filters"
@@ -108,17 +113,12 @@ def focused_unit(user, value):
     return visible_units(user).filter(pk=int(value)).first() if value.isdigit() else None
 
 
-def page_attestations(user, passages, filters=None, unit=None):
-    """Attestations beginning in these passages that the user may see, as filtered."""
+def visible_attestations(user, filters=None, unit=None):
+    """Attestations the user may see, as filtered."""
     filters = filters or ReadingFilters()
     attestations = (
         Attestation.objects.active()
-        .filter(
-            status_condition(filters.statuses),
-            passage__in=passages,
-            is_hidden=False,
-            unit__in=visible_units(user),
-        )
+        .filter(status_condition(filters.statuses), is_hidden=False, unit__in=visible_units(user))
         .select_related("unit")
     )
     if filters.kinds:
@@ -135,6 +135,11 @@ def page_attestations(user, passages, filters=None, unit=None):
     return attestations
 
 
+def page_attestations(user, passages, filters=None, unit=None):
+    """Attestations beginning in these passages that the user may see, as filtered."""
+    return visible_attestations(user, filters, unit).filter(passage__in=passages)
+
+
 @dataclass
 class Occurrence:
     """An attestation drawn on a page: its words there, in textual order, and its track."""
@@ -145,6 +150,7 @@ class Occurrence:
     start: int
     end: int
     track: int = 0
+    edition: int = 0
 
     @property
     def key(self):
@@ -163,35 +169,37 @@ class Occurrence:
         return f"u k-{self.unit.kind or 'none'} s-{self.status} t{self.track}"
 
 
-def assign_tracks(occurrences):
-    """Give each occurrence the first track free over its span, from the start of the text."""
+def assign_tracks(marks):
+    """Give each mark the first track free over its span, from the start of the text."""
     ends = []
-    ordered = sorted(occurrences, key=lambda item: (item.start, -item.end, item.attestation.pk))
-    for occurrence in ordered:
-        track = next((index for index, end in enumerate(ends) if end < occurrence.start), None)
+    for mark in sorted(marks, key=lambda item: (item.start, -item.end)):
+        track = next((index for index, end in enumerate(ends) if end < mark.start), None)
         if track is None:
             track = len(ends)
-            ends.append(occurrence.end)
+            ends.append(mark.end)
         else:
-            ends[track] = occurrence.end
-        occurrence.track = min(track, MAX_TRACKS - 1)
+            ends[track] = mark.end
+        mark.track = min(track, MAX_TRACKS - 1)
 
 
-def page_occurrences(attestations, token_ids, references):
-    """The occurrences drawn on a page: the words of each attestation among ``token_ids``.
+def page_occurrences(attestations, token_ids, references=None):
+    """The occurrences drawn among some words: the words of each attestation found there.
 
-    ``references`` maps the passages of the page to their reference.
+    ``references`` maps passages to their reference. Tracks are counted edition by edition,
+    since positions are.
     """
+    references = references or {}
     attestations = {attestation.pk: attestation for attestation in attestations}
     rows = (
         Attestation.tokens.through.objects.filter(attestation_id__in=list(attestations))
         .order_by("token__position")
-        .values_list("attestation_id", "token_id", "token__position")
+        .values_list("attestation_id", "token_id", "token__position", "token__edition_id")
     )
-    found = defaultdict(list)
-    for attestation_id, token_id, position in rows:
+    found, editions = defaultdict(list), {}
+    for attestation_id, token_id, position, edition_id in rows:
         if token_id in token_ids:
             found[attestation_id].append((position, token_id))
+            editions[attestation_id] = edition_id
     occurrences = [
         Occurrence(
             attestations[pk],
@@ -199,11 +207,28 @@ def page_occurrences(attestations, token_ids, references):
             [token_id for _position, token_id in words],
             words[0][0],
             words[-1][0],
+            edition=editions[pk],
         )
         for pk, words in found.items()
     ]
-    assign_tracks(occurrences)
-    return sorted(occurrences, key=lambda item: (item.start, item.track))
+    by_edition = defaultdict(list)
+    for occurrence in occurrences:
+        by_edition[occurrence.edition].append(occurrence)
+    for group in by_edition.values():
+        assign_tracks(group)
+    return sorted(occurrences, key=lambda item: (item.edition, item.start, item.track))
+
+
+def word_occurrences(user, token_ids, filters=None):
+    """The occurrences among some words of the corpus, such as the quotations of a search."""
+    token_ids = set(token_ids)
+    if not token_ids:
+        return []
+    covering = Attestation.tokens.through.objects.filter(token_id__in=token_ids)
+    attestations = visible_attestations(user, filters).filter(
+        pk__in=covering.values("attestation_id")
+    )
+    return page_occurrences(attestations, token_ids)
 
 
 def word_marks(occurrences):
@@ -254,3 +279,63 @@ def unit_neighbours(unit, edition, page, filters):
         .first(),
         "total": attestations.count(),
     }
+
+
+@dataclass
+class TextMark:
+    """A unit marked in a Latin sentence being translated, over some of its words."""
+
+    key: str
+    unit: object
+    status: str
+    positions: list
+    track: int = 0
+
+    @property
+    def start(self):
+        return self.positions[0]
+
+    @property
+    def end(self):
+        return self.positions[-1]
+
+    @property
+    def css(self):
+        return f"u k-{self.unit.kind or 'none'} s-{self.status} t{self.track}"
+
+    @property
+    def title(self):
+        return self.unit.reference_form
+
+
+def sentence_marks(user, text, justifications=()):
+    """A Latin sentence being translated: its words, their marks by position, the units spotted.
+
+    Known units are spotted as suggestions (Q47); the words of a justification that still
+    matches the sentence are marked with the entries it cites, as the user may see them.
+    """
+    words, spots = spot_units(text, user, describe=False)
+    marks = [
+        TextMark(f"s{spot.unit.pk}", spot.unit, SPOTTED, list(spot.positions)) for spot in spots
+    ]
+    offsets = word_offsets(words)
+    for justification in justifications:
+        location = justification.locate()
+        if location is None:
+            continue
+        start, end = location
+        positions = [
+            index for index, (first, last) in enumerate(offsets) if first < end and last > start
+        ]
+        if not positions:
+            continue
+        for unit in justification.units.all():
+            if can_view(user, unit):
+                key = f"j{justification.pk}-{unit.pk}"
+                marks.append(TextMark(key, unit, JUSTIFIED, positions))
+    assign_tracks(marks)
+    by_position = defaultdict(list)
+    for mark in marks:
+        for position in mark.positions:
+            by_position[position].append(mark)
+    return words, by_position, [spot.unit for spot in spots]

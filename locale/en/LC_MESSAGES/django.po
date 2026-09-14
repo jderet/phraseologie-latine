@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-14 17:33+0200\n"
+"POT-Creation-Date: 2026-09-14 17:40+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -2717,19 +2717,19 @@ msgstr "vocative"
 msgid "attribut ou infinitif complément"
 msgstr "open clausal complement"
 
-#: phraseology/reading.py:21 phraseology/views.py:759
+#: phraseology/reading.py:24 phraseology/views.py:759
 msgid "validées"
 msgstr "validated"
 
-#: phraseology/reading.py:22
+#: phraseology/reading.py:25
 msgid "proposées"
 msgstr "proposed"
 
-#: phraseology/reading.py:23 phraseology/views.py:834
+#: phraseology/reading.py:26 phraseology/views.py:834
 msgid "repérées automatiquement"
 msgstr "found automatically"
 
-#: phraseology/reading.py:232
+#: phraseology/reading.py:257
 msgid "sans type"
 msgstr "no type"
 
@@ -3595,7 +3595,7 @@ msgstr ""
 
 #: templates/core/home.html:31
 #: templates/justifications/challenge_detail.html:15
-#: templates/translations/version_detail.html:65
+#: templates/translations/version_detail.html:68
 msgid "Justifier"
 msgstr "Justify"
 
@@ -4173,12 +4173,16 @@ msgstr "Read in the work"
 msgid "Poésie : ne fait pas norme pour la prose."
 msgstr "Poetry: no norm for prose."
 
-#: templates/corpus/passage.html:17
+#: templates/corpus/passage.html:15
+msgid "Phraséologie de ce passage :"
+msgstr "Phraseology of this passage:"
+
+#: templates/corpus/passage.html:22
 #, python-format
 msgid "Traduction de %(name)s"
 msgstr "Translation by %(name)s"
 
-#: templates/corpus/passage.html:20
+#: templates/corpus/passage.html:25
 #, python-format
 msgid ""
 "La traduction n’est découpée que plus largement : voici tout le passage "
@@ -4187,24 +4191,24 @@ msgstr ""
 "The translation is only divided more broadly: here is the whole of passage "
 "%(reference)s."
 
-#: templates/corpus/passage.html:24 templates/corpus/reading.html:139
+#: templates/corpus/passage.html:29 templates/corpus/reading.html:139
 #, python-format
 msgid "Traduction du domaine public ; numérisation %(source)s, %(license)s."
 msgstr "Public-domain translation; digitization %(source)s, %(license)s."
 
-#: templates/corpus/passage.html:30
+#: templates/corpus/passage.html:35
 msgid "Passages voisins"
 msgstr "Neighboring passages"
 
-#: templates/corpus/passage.html:37
+#: templates/corpus/passage.html:42
 msgid "Identifiant"
 msgstr "Identifier"
 
-#: templates/corpus/passage.html:41 templates/corpus/reading.html:133
+#: templates/corpus/passage.html:46 templates/corpus/reading.html:133
 msgid "Source"
 msgstr "Source"
 
-#: templates/corpus/passage.html:42 templates/corpus/reading.html:134
+#: templates/corpus/passage.html:47 templates/corpus/reading.html:134
 #: templates/corpus/work.html:50 translations/models.py:277
 #: translations/models.py:313
 msgid "version"
@@ -5879,8 +5883,12 @@ msgid ""
 msgid_plural ""
 "%(counter)s occurrences du schéma repérées automatiquement, dont %(core)s "
 "dans le noyau (corpus version %(label)s)."
-msgstr[0] "%(counter)s occurrence of the schema found automatically, %(core)s of them in the core (corpus version %(label)s)."
-msgstr[1] "%(counter)s occurrences of the schema found automatically, %(core)s of them in the core (corpus version %(label)s)."
+msgstr[0] ""
+"%(counter)s occurrence of the schema found automatically, %(core)s of them "
+"in the core (corpus version %(label)s)."
+msgstr[1] ""
+"%(counter)s occurrences of the schema found automatically, %(core)s of them "
+"in the core (corpus version %(label)s)."
 
 #: templates/phraseology/word_panel.html:25
 msgid "Autres exemples"
@@ -5950,7 +5958,8 @@ msgstr "This word is not analysed."
 msgid ""
 "Analyse automatique (%(layer)s) : lemme, morphologie et fonction peuvent "
 "être erronés."
-msgstr "Automatic analysis (%(layer)s): lemma, morphology and function may be wrong."
+msgstr ""
+"Automatic analysis (%(layer)s): lemma, morphology and function may be wrong."
 
 #: templates/translations/project_compare.html:4
 #: templates/translations/project_compare.html:9
@@ -5984,14 +5993,14 @@ msgstr "your draft"
 msgid "Afficher"
 msgstr "Show"
 
-#: templates/translations/project_compare.html:37
-#: templates/translations/version_detail.html:56
+#: templates/translations/project_compare.html:38
+#: templates/translations/version_detail.html:58
 #: templates/translations/version_print.html:32
 msgid "Phrase masquée à la suite d’un signalement."
 msgstr "Sentence hidden following a report."
 
-#: templates/translations/project_compare.html:37
-#: templates/translations/version_detail.html:56
+#: templates/translations/project_compare.html:38
+#: templates/translations/version_detail.html:58
 #: templates/translations/version_print.html:32
 msgid "non traduite"
 msgstr "not translated"
@@ -6280,17 +6289,28 @@ msgstr "translation memory (TMX)"
 msgid "Texte et traduction"
 msgstr "Text and translation"
 
-#: templates/translations/version_detail.html:63
+#: templates/translations/version_detail.html:51
+msgid ""
+"Dans le latin, un trait pointillé signale une unité connue repérée dans la "
+"phrase, à titre de suggestion ; un double trait, un passage justifié par une "
+"fiche."
+msgstr "In the Latin, a dotted line marks a known unit spotted in the sentence, as a suggestion; a double line, a passage justified by an entry."
+
+#: templates/translations/version_detail.html:59
+msgid "Unités repérées :"
+msgstr "Units spotted:"
+
+#: templates/translations/version_detail.html:66
 #: templates/translations/version_edit.html:63
 #, python-format
 msgid "Contesté : « %(excerpt)s »"
 msgstr "Challenged: “%(excerpt)s”"
 
-#: templates/translations/version_detail.html:63
+#: templates/translations/version_detail.html:66
 msgid "une justification est attendue"
 msgstr "a justification is expected"
 
-#: templates/translations/version_detail.html:66
+#: templates/translations/version_detail.html:69
 msgid "Contester"
 msgstr "Challenge"
 

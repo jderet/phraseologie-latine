@@ -47,13 +47,16 @@
   {% moderation_links version %}
 
   <h2>{% translate "Texte et traduction" %}</h2>
+  {% load phraseology_tags %}
+  <p class="note">{% translate "Dans le latin, un trait pointillé signale une unité connue repérée dans la phrase, à titre de suggestion ; un double trait, un passage justifié par une fiche." %}</p>
   <ol class="bitext">
     {% for row in rows %}
     <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
       <span class="bitext-number">{{ row.segment.order }}</span>
       <p class="bitext-source" lang="{{ source.language }}">{{ row.segment.text }}</p>
       <div class="bitext-latin">
-        <p lang="la">{% if row.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif row.saved %}{{ row.saved }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
+        <p lang="la">{% if row.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif row.saved %}{% latin_sentence row.saved row.justifications as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
+        {% if row.saved and not row.hidden and sentence.units %}<p class="row-units">{% translate "Unités repérées :" %} {% for unit in sentence.units %}<a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
         {% if row.justifications %}
         <ul class="row-justifications">
           {% for justification in row.justifications %}{% include "justifications/justification_item.html" %}{% endfor %}

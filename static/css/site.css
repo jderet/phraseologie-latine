@@ -1812,3 +1812,35 @@ article > h2 {
     border-left: 0;
   }
 }
+
+/* Units spotted or justified in a translated sentence */
+
+.u.s-spotted {
+  border-bottom-style: dotted;
+}
+
+.u.s-justified {
+  border-bottom-width: 3px;
+  border-bottom-style: double;
+}
+
+.passage-units,
+.row-units {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 10px 0 0;
+  font-size: 0.88rem;
+  color: var(--ink-2);
+}
+
+.passage-units a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.passage-units {
+  margin-bottom: 28px;
+}

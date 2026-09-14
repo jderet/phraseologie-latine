@@ -117,7 +117,7 @@ def unit_attestations(unit, limit=ATTESTATIONS_SHOWN):
     return chosen
 
 
-def _offsets(tokens):
+def word_offsets(tokens):
     """(start, end) of each word in the text the tokens were cut from."""
     offsets, position = [], 0
     for token in tokens:
@@ -157,7 +157,7 @@ def spot_units(text, user, describe=True):
         if best is not None and best[0] <= SPAN_PER_WORD * (len(choices) - 1):
             matches[unit_id] = best[1]
     units = Unit.objects.in_bulk(list(matches))
-    offsets = _offsets(tokens)
+    offsets = word_offsets(tokens)
     spots = []
     for pk, positions in matches.items():
         start, end = offsets[positions[0]][0], offsets[positions[-1]][1]

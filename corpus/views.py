@@ -19,6 +19,7 @@ from phraseology.reading import (
     unit_neighbours,
     units_on_page,
     word_marks,
+    word_occurrences,
 )
 
 from .forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm, bound_search_form, search_query
@@ -76,6 +77,12 @@ def passage_detail(request, work_id, reference):
         for translation in translations
         if (part := translation.part_for(passage.reference)) is not None
     ]
+    tokens = list(passage.tokens.order_by("position"))
+    occurrences = page_occurrences(
+        page_attestations(request.user, [passage], reading_filters(request)),
+        {token.pk for token in tokens},
+        {passage.pk: passage.reference},
+    )
     return render(
         request,
         "corpus/passage.html",
@@ -83,8 +90,10 @@ def passage_detail(request, work_id, reference):
             "work": edition.work,
             "edition": edition,
             "passage": passage,
-            "tokens": list(passage.tokens.order_by("position")),
+            "tokens": tokens,
             "highlighted": _word_ids(request.GET.get("mots", "")),
+            "marks": word_marks(occurrences),
+            "page_units": units_on_page(occurrences),
             "translations": beside,
             "previous": neighbours.filter(order__lt=passage.order).order_by("-order").first(),
             "following": neighbours.filter(order__gt=passage.order).order_by("order").first(),
@@ -214,6 +223,7 @@ def reading(request, work_id, part=None):
         )
         if other is not None
     }
+    keep = [(name, value) for name, value in (("traduction", choice), ("fiche", focus_id)) if value]
     return render(
         request,
         "corpus/reading.html",
@@ -238,11 +248,7 @@ def reading(request, work_id, part=None):
             "focus": focus,
             "neighbours": neighbours,
             "unfocus_url": f"{page_url}{_query(traduction=choice)}",
-            "keep": [
-                (name, value)
-                for name, value in (("traduction", choice), ("fiche", focus_id))
-                if value
-            ],
+            "keep": keep,
             "translation": translation,
             "translation_links": [
                 {
@@ -295,6 +301,10 @@ def search_context(request, per_page):
                 ),
             )
         context["too_broad"] = limit.exceeded
+        if context.get("hits"):
+            words = {word.pk for hit in context["hits"] for word in hit.words}
+            occurrences = word_occurrences(request.user, words, reading_filters(request))
+            context["marks"] = word_marks(occurrences)
     return context
 
 

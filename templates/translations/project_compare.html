@@ -25,6 +25,7 @@
     <button type="submit" class="button button-quiet">{% translate "Afficher" %}</button>
   </form>
 
+  {% load phraseology_tags %}
   <ol class="comparison">
     {% for row in rows %}
     <li class="comparison-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
@@ -34,7 +35,7 @@
         {% for cell in row.cells %}
         <li{% if cell.version.pk == reference_id %} class="is-reference"{% endif %}>
           <a class="rendering-label" href="{{ cell.version.get_absolute_url }}#phrase-{{ row.segment.order }}">{{ cell.version.author.public_name }} · {{ cell.version.get_style_display }}</a>
-          <span class="rendering-text" lang="la">{% if cell.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif cell.text %}{{ cell.text }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</span>
+          <span class="rendering-text" lang="la">{% if cell.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif cell.text %}{% latin_sentence cell.text as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</span>
         </li>
         {% endfor %}
       </ul>

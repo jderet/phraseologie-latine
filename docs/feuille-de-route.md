@@ -92,7 +92,7 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 - [x] Unités soulignées dans le texte : couleur par type, légende, mots d'une occurrence qui s'allument ensemble, traits empilés
 - [x] Filtres : statuts (validées et proposées par défaut), type, marque d'usage, registre, une seule fiche avec occurrence suivante et précédente
 - [x] Panneau latéral de la fiche ; analyse d'un mot au clic
-- [ ] Soulignements dans la page d'un passage, les résultats de recherche, les versions publiées et la comparaison
+- [x] Soulignements dans la page d'un passage, les résultats de recherche, les versions publiées et la comparaison
 - [ ] Mode « annoter » : mots choisis au clic, fiches suggérées, recherche, fiche pré-remplie ; réalisation, sens, note, exemple proposé
 - [ ] Occurrences du schéma des fiches pas encore attestées, confirmées en un clic
 - [ ] Relecture dans le texte, attestation douteuse, contestation d'une attestation
