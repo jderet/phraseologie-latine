@@ -7,7 +7,7 @@
 <section class="page-narrow">
   <p class="eyebrow"><a href="{{ source.get_absolute_url }}">{{ source.title }}</a></p>
   <h1>{% translate "Modifier les informations du texte" %}</h1>
-  <p class="lede">{% translate "Le découpage en phrases ne change pas." %}</p>
+  <p class="lede">{% translate "Pour ajouter, modifier, fusionner ou scinder des phrases :" %} <a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Phrases du texte" %}</a></p>
   <form method="post" class="form">
     {% csrf_token %}
     {{ form }}

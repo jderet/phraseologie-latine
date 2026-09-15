@@ -160,14 +160,24 @@ def describe_operation(operation, count):
 
 
 @transaction.atomic
-def change_source_text(source, operation, user):
+def change_source_text(source, operation, user, expected_state=None):
     """Add, edit, merge or split sentences of a source text; see ``sources.apply_operation``.
 
-    Only whoever added the text, or a reviewer, may. Return the ``SourceChange``.
+    Only whoever added the text, or a reviewer, may. ``expected_state`` is the state of the
+    text the change was written against: sentence numbers mean nothing once it has changed.
+    Return the ``SourceChange``.
     """
     source = SourceText.objects.select_for_update().get(pk=source.pk)
     if not can_change_source(user, source):
         raise PermissionDenied
+    if expected_state is not None and expected_state != source.state:
+        raise ValidationError(
+            gettext(
+                "Le texte a changé pendant que vous le modifiiez : vérifiez la phrase, puis "
+                "recommencez."
+            ),
+            code="stale",
+        )
     return apply_source_operation(source, operation, author=user)
 
 

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Phrases du texte" %} · {{ source.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{{ source.get_absolute_url }}">{{ source.title }}</a></p>
+  <h1>{% translate "Phrases du texte" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Ajouter, modifier, fusionner ou scinder des phrases change le texte de tous les projets qui
+    le traduisent. Les anciennes phrases restent dans les étapes qui les ont figées ; le latin
+    déjà écrit suit ses phrases, et chaque version intègre le changement à sa prochaine étape.
+  {% endblocktranslate %}</p>
+  {% if can_change %}
+  <p class="form-links"><a href="{% url 'translations:source_sentence_insert' source.pk %}?apres=0">{% translate "Ajouter des phrases au début" %}</a></p>
+  {% endif %}
+
+  <ol class="step-changes">
+    {% for sentence in segments %}
+    <li class="step-change" id="phrase-{{ sentence.order }}">
+      <span class="bitext-number">{{ sentence.order }}</span>
+      <div>
+        <p lang="{{ source.language }}">{{ sentence.text }}</p>
+        {% if sentence.starts_paragraph and not forloop.first %}<p class="muted">{% translate "début de paragraphe" %}</p>{% endif %}
+        {% if can_change %}
+        <p class="form-links">
+          <a class="small-link" href="{% url 'translations:source_sentence_edit' source.pk sentence.order %}">{% translate "Modifier" %}</a>
+          <a class="small-link" href="{% url 'translations:source_sentence_split' source.pk sentence.order %}">{% translate "Scinder" %}</a>
+          {% if not forloop.last %}<a class="small-link" href="{% url 'translations:source_sentence_merge' source.pk sentence.order %}">{% translate "Fusionner avec la suivante" %}</a>{% endif %}
+          <a class="small-link" href="{% url 'translations:source_sentence_insert' source.pk %}?apres={{ sentence.order }}">{% translate "Ajouter des phrases après" %}</a>
+        </p>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+
+  {% if changes %}
+  <h2>{% translate "Changements du texte" %}</h2>
+  <ul class="item-list">
+    {% for change in changes %}
+    <li>
+      <span class="item-title">{% blocktranslate with number=change.number kind=change.get_kind_display %}Changement {{ number }} : {{ kind }}{% endblocktranslate %}</span>
+      <span class="muted">{{ change.author.public_name }}{% if change.adopted_by %}, {% blocktranslate with name=change.adopted_by.public_name %}adopté par {{ name }}{% endblocktranslate %}{% endif %} · {{ change.created_at|date:"j F Y, H:i" }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</article>
+{% endblock %}

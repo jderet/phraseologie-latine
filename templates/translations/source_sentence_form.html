@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ heading }} · {{ source.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ source.get_absolute_url }}">{{ source.title }}</a> · <a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Phrases du texte" %}</a></p>
+  <h1>{{ heading }}</h1>
+  <p class="lede">{{ intro }}</p>
+  {% if shown %}
+  <ol class="step-changes">
+    {% for sentence in shown %}
+    <li class="step-change">
+      <span class="bitext-number">{{ sentence.order }}</span>
+      <div><p lang="{{ source.language }}">{{ sentence.text }}</p></div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% if segmented %}<input type="hidden" name="segmented" value="1">{% endif %}
+    {{ form }}
+    <button type="submit" class="button">{{ submit }}</button>
+  </form>
+  <p class="form-links"><a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Annuler" %}</a></p>
+</section>
+{% endblock %}

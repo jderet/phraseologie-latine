@@ -36,6 +36,7 @@
         <li{% if cell.version.pk == reference_id %} class="is-reference"{% endif %}>
           <a class="rendering-label" href="{{ cell.version.get_absolute_url }}#phrase-{{ row.number }}">{{ cell.version.author.public_name }} · {{ cell.version.get_style_display }}</a>
           <span class="rendering-text" lang="la">{% if cell.text %}{% latin_sentence cell.text as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</span>
+          {% if cell.older %}<span class="muted">{% translate "d’après un texte source antérieur" %}</span>{% endif %}
         </li>
         {% endfor %}
       </ul>

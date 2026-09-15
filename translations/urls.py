@@ -9,6 +9,27 @@ urlpatterns = [
     path("textes/ajouter/", views.source_create, name="source_create"),
     path("textes/<int:pk>/", views.source_detail, name="source"),
     path("textes/<int:pk>/modifier/", views.source_edit, name="source_edit"),
+    path("textes/<int:pk>/phrases/", views.source_sentences, name="source_sentences"),
+    path(
+        "textes/<int:pk>/phrases/ajouter/",
+        views.source_sentence_insert,
+        name="source_sentence_insert",
+    ),
+    path(
+        "textes/<int:pk>/phrases/<int:number>/modifier/",
+        views.source_sentence_edit,
+        name="source_sentence_edit",
+    ),
+    path(
+        "textes/<int:pk>/phrases/<int:number>/scinder/",
+        views.source_sentence_split,
+        name="source_sentence_split",
+    ),
+    path(
+        "textes/<int:pk>/phrases/<int:number>/fusionner/",
+        views.source_sentence_merge,
+        name="source_sentence_merge",
+    ),
     path("textes/<int:source_pk>/nouveau-projet/", views.project_create, name="project_create"),
     path("projets/", views.project_list, name="project_list"),
     path("projets/<int:pk>/", views.project_detail, name="project"),

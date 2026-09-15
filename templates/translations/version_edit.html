@@ -11,6 +11,7 @@
   <h1>{% translate "Traduire" %}</h1>
   <p class="lede">{% if version.is_draft %}{% translate "Brouillon visible de vous seul." %}{% else %}{% translate "Version publiée : le public voit la dernière étape. Vos modifications restent privées jusqu’à la prochaine étape." %}{% endif %}</p>
   <p class="note">{% blocktranslate asvar progress with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{{ progress|capfirst }}</p>
+  {% include "translations/source_changed_notice.html" %}
 
   <div class="editor-layout">
     <form method="post" class="editor-form" id="editor"
@@ -32,6 +33,7 @@
           <div class="bitext-latin">
             <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false" data-segment="{{ row.segment.pk }}" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
             <p class="save-status" aria-live="polite">{% for error in row.errors %}{{ error }} {% endfor %}</p>
+            {% include "translations/source_changed.html" %}
           </div>
         </li>
         {% endfor %}

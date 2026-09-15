@@ -10,6 +10,7 @@ from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -29,6 +30,10 @@ from .forms import (
     ProposalForm,
     PublishForm,
     ReferenceForm,
+    SentenceEditForm,
+    SentenceInsertForm,
+    SentenceSplitForm,
+    SourceStateForm,
     SourceTextEditForm,
     SourceTextForm,
     StepForm,
@@ -43,9 +48,17 @@ from .models import (
     TranslationVersion,
     is_version_author,
 )
-from .permissions import can_challenge, can_copy, can_edit, can_propose, can_translate
+from .permissions import (
+    can_challenge,
+    can_change_source,
+    can_copy,
+    can_edit,
+    can_propose,
+    can_translate,
+)
 from .segmentation import from_lines, segment, to_lines
 from .services import (
+    change_source_text,
     copy_version,
     create_project,
     create_proposal,
@@ -125,6 +138,7 @@ def source_detail(request, pk):
             "segments": source.segments.current(),
             "projects": source.projects.filter(is_hidden=False).select_related("created_by"),
             "can_edit": can_edit(request.user, source),
+            "can_change": can_change_source(request.user, source),
         },
     )
 
@@ -175,6 +189,202 @@ def source_edit(request, pk):
             _saved_message(request, revision)
             return redirect(source)
     return render(request, "translations/source_edit.html", {"form": form, "source": source})
+
+
+# Sentences of a source text
+
+
+def source_sentences(request, pk):
+    """The sentences of a text and its changes, with the actions to change it for whoever may."""
+    source = _visible(request.user, SourceText.objects.all(), pk)
+    return render(
+        request,
+        "translations/source_sentences.html",
+        {
+            "source": source,
+            "segments": source.segments.current(),
+            "changes": source.changes.select_related("author", "adopted_by").order_by("-number"),
+            "can_change": can_change_source(request.user, source),
+        },
+    )
+
+
+def _changeable_source(user, pk):
+    source = _visible(user, SourceText.objects.all(), pk)
+    if not can_change_source(user, source):
+        raise PermissionDenied
+    return source
+
+
+def _numbered(source, number):
+    """The sentence of the current text with this number."""
+    return get_object_or_404(source.segments.current(), order=number)
+
+
+def _change_sentences(request, source, form, operation, anchor):
+    """Apply a change from a valid form; return the redirection, or None with form errors."""
+    try:
+        _change, saved = _contribute(
+            request, change_source_text, source, operation, request.user, form.cleaned_data["state"]
+        )
+    except ValidationError as error:
+        if error.code == "stale":
+            # The form is shown again against the current text.
+            form.data = form.data.copy()
+            form.data["state"] = SourceText.objects.values_list("state", flat=True).get(
+                pk=source.pk
+            )
+        form.add_error(None, error)
+        return None
+    if not saved:
+        return None
+    messages.success(
+        request,
+        _("Le texte est modifié. Chaque version l’intégrera à sa prochaine étape."),
+    )
+    return redirect(f"{reverse('translations:source_sentences', args=[source.pk])}#phrase-{anchor}")
+
+
+def _sentence_form(request, source, form, **context):
+    return render(
+        request,
+        "translations/source_sentence_form.html",
+        {"source": source, "form": form, **context},
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def source_sentence_edit(request, pk, number):
+    source = _changeable_source(request.user, pk)
+    sentence = _numbered(source, number)
+    initial = {
+        "text": sentence.text,
+        "starts_paragraph": sentence.starts_paragraph,
+        "state": source.state,
+    }
+    form = SentenceEditForm(request.POST or None, user=request.user, initial=initial)
+    if request.method == "POST" and form.is_valid():
+        operation = {
+            "kind": "edit",
+            "index": number - 1,
+            "text": form.cleaned_data["text"],
+            "starts_paragraph": form.cleaned_data["starts_paragraph"],
+        }
+        if response := _change_sentences(request, source, form, operation, number):
+            return response
+    return _sentence_form(
+        request,
+        source,
+        form,
+        heading=_("Modifier la phrase %(number)d") % {"number": number},
+        intro=_(
+            "La phrase est remplacée ; l’ancienne reste dans les étapes qui l’ont figée. Le latin "
+            "déjà écrit reste attaché à la phrase."
+        ),
+        shown=[sentence],
+        submit=_("Enregistrer la phrase"),
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def source_sentence_split(request, pk, number):
+    source = _changeable_source(request.user, pk)
+    sentence = _numbered(source, number)
+    initial = {"parts": sentence.text, "state": source.state}
+    form = SentenceSplitForm(request.POST or None, user=request.user, initial=initial)
+    if request.method == "POST" and form.is_valid():
+        operation = {"kind": "split", "index": number - 1, "parts": form.cleaned_data["parts"]}
+        if response := _change_sentences(request, source, form, operation, number):
+            return response
+    return _sentence_form(
+        request,
+        source,
+        form,
+        heading=_("Scinder la phrase %(number)d") % {"number": number},
+        intro=_(
+            "Allez à la ligne là où la phrase doit être coupée. Les mots ne changent pas ; le "
+            "latin déjà écrit reste sur la première partie."
+        ),
+        shown=[sentence],
+        submit=_("Scinder la phrase"),
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def source_sentence_merge(request, pk, number):
+    source = _changeable_source(request.user, pk)
+    shown = [_numbered(source, number), _numbered(source, number + 1)]
+    form = SourceStateForm(request.POST or None, user=request.user, initial={"state": source.state})
+    if request.method == "POST" and form.is_valid():
+        operation = {"kind": "merge", "index": number - 1}
+        if response := _change_sentences(request, source, form, operation, number):
+            return response
+    return _sentence_form(
+        request,
+        source,
+        form,
+        heading=_("Fusionner les phrases %(number)d et %(next)d")
+        % {"number": number, "next": number + 1},
+        intro=_(
+            "Les deux phrases n’en font plus qu’une. Dans chaque version, leurs latins sont mis "
+            "bout à bout."
+        ),
+        shown=shown,
+        submit=_("Fusionner"),
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def source_sentence_insert(request, pk):
+    """Adding sentences takes two steps, as adding a text: the split is checked, then saved.
+
+    ``apres`` is the number of the sentence they follow; 0 adds them at the start.
+    """
+    source = _changeable_source(request.user, pk)
+    count = source.segments.current().count()
+    after = request.GET.get("apres", "")
+    after = int(after) if after.isdigit() else count
+    if after > count:
+        raise Http404
+    if after == 0:
+        heading = _("Ajouter des phrases au début")
+    elif after == count:
+        heading = _("Ajouter des phrases à la fin")
+    else:
+        heading = _("Ajouter des phrases après la phrase %(number)d") % {"number": after}
+    context = {
+        "heading": heading,
+        "shown": [_numbered(source, after)] if after else [],
+        "intro": _(
+            "Collez le texte : il sera découpé en phrases, que vous vérifierez avant d’enregistrer."
+        ),
+        "submit": _("Découper en phrases"),
+    }
+    if request.method != "POST":
+        form = SentenceInsertForm(user=request.user, initial={"state": source.state})
+        return _sentence_form(request, source, form, **context)
+    data = request.POST.copy()
+    context |= {
+        "segmented": True,
+        "intro": _(
+            "Vérifiez le découpage : une phrase par ligne, une ligne vide entre deux paragraphes."
+        ),
+        "submit": _("Ajouter les phrases"),
+    }
+    if data.get("segmented") != "1":
+        data["text"] = to_lines(segment(data.get("text", ""), source.language))
+        form = SentenceInsertForm(data, user=request.user)
+        return _sentence_form(request, source, form, **context)
+    form = SentenceInsertForm(data, user=request.user)
+    if form.is_valid():
+        operation = {"kind": "insert", "before": after, "sentences": form.sentences}
+        if response := _change_sentences(request, source, form, operation, after + 1):
+            return response
+    return _sentence_form(request, source, form, **context)
 
 
 # Projects
@@ -228,6 +438,7 @@ def project_detail(request, pk):
             "published": [version for version in versions if version.is_published],
             "drafts": [version for version in versions if version.is_draft],
             "can_edit": can_edit(request.user, project),
+            "can_change_source": can_change_source(request.user, project.source_text),
             "reference_id": project.reference_version_id,
             "is_creator": request.user.pk == project.created_by_id,
         },
@@ -293,18 +504,27 @@ def project_compare(request, pk):
     asked = {int(value) for value in request.GET.getlist("v") if value.isdigit()}
     shown = [version for version in versions if version.pk in asked] or versions
     history = SourceHistory(project.source_text)
-    sentences = {}
+    sentences, states = {}, {}
     for version in shown:
         step, found = shown_sentences(request.user, version)
         if step is not None:
             found = history.project(carried(found), step.source_state)
+            states[version.pk] = step.source_state
         sentences[version.pk] = found
     rows = []
     for number, source_segment in enumerate(history.segments_at(), start=1):
         cells = []
         for version in shown:
             sentence = sentences[version.pk].get(source_segment.pk)
-            cells.append({"version": version, "text": sentence.text if sentence else ""})
+            state = states.get(version.pk)
+            cells.append(
+                {
+                    "version": version,
+                    "text": sentence.text if sentence else "",
+                    # The step shown was made before this sentence entered the source text.
+                    "older": state is not None and source_segment.added_in > state,
+                }
+            )
         rows.append({"segment": source_segment, "number": number, "cells": cells})
     return render(
         request,
@@ -393,10 +613,13 @@ def _rows(user, version, step=None):
     justifications = _justifications_by_segment(user, version, texts, history, state, step)
     challenges = _challenges_by_segment(user, version, history, state)
     translated_ids = dict(version.segments.values_list("segment_id", "pk"))
+    # In their working text, the author sees the sentences the source text changed since.
+    since = _source_changed_since(user, version) if step is None else None
     rows = []
     for number, source_segment in enumerate(history.segments_at(state), start=1):
         sentence = sentences.get(source_segment.pk)
         text = sentence.text if sentence else ""
+        changed = since is not None and source_segment.added_in > since.source_state
         rows.append(
             {
                 "segment": source_segment,
@@ -409,9 +632,23 @@ def _rows(user, version, step=None):
                 "justifications": justifications.get(source_segment.pk, []),
                 "challenges": challenges.get(source_segment.pk, []),
                 "origin": _origin(user, version, sentence) if step and sentence else None,
+                "source_changed": changed,
+                "previous_sources": (
+                    history.origins(source_segment, since.source_state) if changed else []
+                ),
             }
         )
     return step, rows
+
+
+def _source_changed_since(user, version):
+    """The latest step of the user's own version, if the source text has changed since."""
+    if not is_version_author(user, version):
+        return None
+    latest = latest_step(version)
+    if latest is None or latest.source_state >= version.project.source_text.state:
+        return None
+    return latest
 
 
 def _origin(user, version, sentence):
@@ -450,6 +687,7 @@ def version_detail(request, pk):
             "rows": rows,
             "latest_step": latest_step(version) if is_author else step,
             "pending_count": len(pending_changes(version)) if is_author else 0,
+            "source_step": _source_changed_since(user, version),
             "waiting_count": waiting_justifications(version).count() if is_author else 0,
             "is_author": is_author,
             "can_translate": can_translate(user, version),
@@ -521,6 +759,7 @@ def version_edit(request, pk):
         "translations/version_edit.html",
         {
             "search_form": SearchForm(initial=PANEL_SEARCH_DEFAULTS),
+            "source_step": _source_changed_since(request.user, version),
             "version": version,
             "project": version.project,
             "source": version.project.source_text,

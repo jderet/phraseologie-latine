@@ -37,9 +37,10 @@
       <dd><a href="{{ source.added_by.get_absolute_url }}">{{ source.added_by.public_name }}</a>, {{ source.created_at|date:"j F Y" }}</dd>
     </div>
   </dl>
-  {% if can_edit %}
-  <p class="form-links"><a href="{% url 'translations:source_edit' source.pk %}">{% translate "Modifier les informations" %}</a></p>
-  {% endif %}
+  <p class="form-links">
+    {% if can_edit %}<a href="{% url 'translations:source_edit' source.pk %}">{% translate "Modifier les informations" %}</a>{% endif %}
+    <a href="{% url 'translations:source_sentences' source.pk %}">{% if can_change %}{% translate "Ajouter, modifier, fusionner ou scinder des phrases" %}{% else %}{% translate "Phrases et changements du texte" %}{% endif %}</a>
+  </p>
   {% moderation_links source %}
 
   <h2>{% translate "Projets de traduction" %}</h2>

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-15 09:29+0200\n"
+"POT-Creation-Date: 2026-09-15 09:42+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -250,7 +250,7 @@ msgstr "The new version of the guide is published."
 #: corpus/apps.py:7 corpus/forms.py:80 phraseology/forms.py:382
 #: templates/base.html:15 templates/corpus/correction_list.html:8
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
-#: templates/corpus/work.html:8 templates/translations/version_edit.html:74
+#: templates/corpus/work.html:8 templates/translations/version_edit.html:76
 msgid "Corpus"
 msgstr "Corpus"
 
@@ -1639,13 +1639,13 @@ msgid "Enregistrer la justification"
 msgstr "Save the justification"
 
 #: justifications/views.py:289 phraseology/views.py:466
-#: phraseology/views.py:606 phraseology/views.py:1666 translations/views.py:100
-#: translations/views.py:270 translations/views.py:516
+#: phraseology/views.py:606 phraseology/views.py:1666 translations/views.py:113
+#: translations/views.py:481 translations/views.py:754
 msgid "Aucune modification."
 msgstr "No change."
 
 #: justifications/views.py:291 phraseology/views.py:468
-#: phraseology/views.py:608 phraseology/views.py:1668 translations/views.py:102
+#: phraseology/views.py:608 phraseology/views.py:1668 translations/views.py:115
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
@@ -1658,7 +1658,7 @@ msgstr "Edit the justification"
 #: templates/phraseology/unit_edit.html:22
 #: templates/translations/project_form.html:21
 #: templates/translations/source_edit.html:14
-#: templates/translations/version_edit.html:43
+#: templates/translations/version_edit.html:45
 #: templates/translations/version_form.html:21
 msgid "Enregistrer"
 msgstr "Save"
@@ -2441,7 +2441,7 @@ msgstr "late"
 msgid "à éviter"
 msgstr "to avoid"
 
-#: phraseology/models.py:48 templates/translations/version_detail.html:36
+#: phraseology/models.py:48 templates/translations/version_detail.html:37
 #: translations/models.py:345
 msgid "brouillon"
 msgstr "draft"
@@ -3777,6 +3777,7 @@ msgid "Supprimer définitivement"
 msgstr "Delete permanently"
 
 #: templates/accounts/delete.html:19 templates/accounts/password_change.html:14
+#: templates/translations/source_sentence_form.html:27
 msgid "Annuler"
 msgstr "Cancel"
 
@@ -3803,7 +3804,7 @@ msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
 #: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:7
-#: templates/base.html:13 translations/views.py:566
+#: templates/base.html:13 translations/views.py:805
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -4254,7 +4255,7 @@ msgstr ""
 msgid "Trois buts liés"
 msgstr "Three connected goals"
 
-#: templates/core/home.html:18 templates/translations/version_detail.html:61
+#: templates/core/home.html:18 templates/translations/version_detail.html:62
 #: templates/translations/version_edit.html:4
 #: templates/translations/version_edit.html:11
 msgid "Traduire"
@@ -4282,7 +4283,7 @@ msgstr ""
 
 #: templates/core/home.html:31
 #: templates/justifications/challenge_detail.html:15
-#: templates/translations/bitext_rows.html:18
+#: templates/translations/bitext_rows.html:19
 msgid "Justifier"
 msgstr "Justify"
 
@@ -4874,7 +4875,7 @@ msgstr "depends on"
 #: templates/corpus/correction_form.html:16
 #: templates/phraseology/word_panel.html:97
 #: templates/translations/source_detail.html:31
-#: templates/translations/version_detail.html:40
+#: templates/translations/version_detail.html:41
 msgid "Origine"
 msgstr "Origin"
 
@@ -5294,7 +5295,7 @@ msgstr "Filters"
 #: templates/justifications/search_attestations.html:8
 #: templates/phraseology/annotate_panel.html:27
 #: templates/phraseology/schema_search.html:24
-#: templates/translations/version_edit.html:79
+#: templates/translations/version_edit.html:81
 msgid "Chercher"
 msgstr "Search"
 
@@ -5616,6 +5617,7 @@ msgstr "Challenge this justification"
 
 #: templates/justifications/justification_detail.html:81
 #: templates/phraseology/neologism_detail.html:55
+#: templates/translations/source_sentences.html:28
 msgid "Modifier"
 msgstr "Edit"
 
@@ -7325,53 +7327,53 @@ msgstr ""
 msgid "Proposer une correction"
 msgstr "Propose a correction"
 
-#: templates/translations/bitext_rows.html:7
+#: templates/translations/bitext_rows.html:8
 #: templates/translations/project_compare.html:38
 #: templates/translations/version_print.html:33
 msgid "non traduite"
 msgstr "not translated"
 
-#: templates/translations/bitext_rows.html:8
+#: templates/translations/bitext_rows.html:9
 #, python-format
 msgid "modifiée à l’étape %(number)s"
 msgstr "changed at step %(number)s"
 
-#: templates/translations/bitext_rows.html:8
+#: templates/translations/bitext_rows.html:9
 msgid "modifiée à une étape non publique"
 msgstr "changed at a step that is not public"
 
-#: templates/translations/bitext_rows.html:8
+#: templates/translations/bitext_rows.html:9
 #, python-format
 msgid "écrite par %(name)s"
 msgstr "written by %(name)s"
 
-#: templates/translations/bitext_rows.html:9
+#: templates/translations/bitext_rows.html:10
 msgid "Unités repérées :"
 msgstr "Units spotted:"
 
-#: templates/translations/bitext_rows.html:16
-#: templates/translations/version_edit.html:64
+#: templates/translations/bitext_rows.html:17
+#: templates/translations/version_edit.html:66
 #, python-format
 msgid "Contesté : « %(excerpt)s »"
 msgstr "Challenged: “%(excerpt)s”"
 
-#: templates/translations/bitext_rows.html:16
+#: templates/translations/bitext_rows.html:17
 msgid "une justification est attendue"
 msgstr "a justification is expected"
 
-#: templates/translations/bitext_rows.html:19
+#: templates/translations/bitext_rows.html:20
 msgid "Contester"
 msgstr "Challenge"
 
 #: templates/translations/project_compare.html:4
 #: templates/translations/project_compare.html:9
 #: templates/translations/project_detail.html:27
-#: templates/translations/version_detail.html:64
+#: templates/translations/version_detail.html:65
 msgid "Comparer les versions"
 msgstr "Compare the versions"
 
 #: templates/translations/project_compare.html:11
-#: templates/translations/project_detail.html:46
+#: templates/translations/project_detail.html:47
 msgid "Aucune version publiée pour l’instant."
 msgstr "No published version yet."
 
@@ -7401,6 +7403,10 @@ msgstr "your working text"
 #: templates/translations/project_compare.html:25
 msgid "Afficher"
 msgstr "Show"
+
+#: templates/translations/project_compare.html:39
+msgid "d’après un texte source antérieur"
+msgstr "from an earlier source text"
 
 #: templates/translations/project_detail.html:8
 msgid "Projet de traduction"
@@ -7435,19 +7441,23 @@ msgstr "Write a version"
 msgid "Modifier le projet"
 msgstr "Edit the project"
 
-#: templates/translations/project_detail.html:33
+#: templates/translations/project_detail.html:29
+msgid "Modifier le texte à traduire"
+msgstr "Change the text to translate"
+
+#: templates/translations/project_detail.html:34
 msgid "Vos brouillons"
 msgstr "Your drafts"
 
-#: templates/translations/project_detail.html:34
+#: templates/translations/project_detail.html:35
 msgid "Visibles de vous seul, jusqu’à leur publication."
 msgstr "Visible to you only, until they are published."
 
-#: templates/translations/project_detail.html:40
+#: templates/translations/project_detail.html:41
 msgid "Versions publiées"
 msgstr "Published versions"
 
-#: templates/translations/project_detail.html:42
+#: templates/translations/project_detail.html:43
 msgid ""
 "Vous avez créé ce projet : c’est vous qui choisissez la version de référence."
 msgstr "You created this project: you choose the reference version."
@@ -7474,7 +7484,7 @@ msgstr "Create the project"
 
 #: templates/translations/project_list.html:4
 #: templates/translations/project_list.html:8
-#: templates/translations/source_detail.html:45
+#: templates/translations/source_detail.html:46
 msgid "Projets de traduction"
 msgstr "Translation projects"
 
@@ -7506,7 +7516,7 @@ msgstr[0] "%(counter)s published version"
 msgstr[1] "%(counter)s published versions"
 
 #: templates/translations/project_list.html:19
-#: templates/translations/source_detail.html:50
+#: templates/translations/source_detail.html:51
 #, python-format
 msgid "lancé par %(name)s"
 msgstr "started by %(name)s"
@@ -7518,7 +7528,7 @@ msgstr "No project yet."
 #: templates/translations/proposal_create.html:4
 #: templates/translations/proposal_create.html:9
 #: templates/translations/proposal_list.html:15
-#: templates/translations/version_detail.html:72
+#: templates/translations/version_detail.html:73
 msgid "Proposer des modifications"
 msgstr "Propose changes"
 
@@ -7604,7 +7614,9 @@ msgid ""
 "La phrase source a changé depuis cette proposition : elle ne peut plus être "
 "acceptée telle quelle. Refusez-la, ou recopiez son latin dans votre texte de "
 "travail."
-msgstr "The source sentence has changed since this proposal: it can no longer be accepted as it is. Refuse it, or copy its Latin into your working text."
+msgstr ""
+"The source sentence has changed since this proposal: it can no longer be "
+"accepted as it is. Refuse it, or copy its Latin into your working text."
 
 #: templates/translations/proposal_detail.html:52
 msgid ""
@@ -7656,6 +7668,27 @@ msgstr "hidden"
 msgid "Aucune proposition pour l’instant."
 msgstr "No proposal yet."
 
+#: templates/translations/source_changed.html:1
+msgid "Texte source changé depuis la dernière étape. Avant :"
+msgstr "Source text changed since the latest step. Before:"
+
+#: templates/translations/source_changed.html:1
+msgid "Phrase ajoutée au texte source depuis la dernière étape."
+msgstr "Sentence added to the source text since the latest step."
+
+#: templates/translations/source_changed_notice.html:1
+#, python-format
+msgid ""
+"Le texte source a changé depuis l’étape %(number)s : les phrases touchées "
+"sont signalées, et le latin déjà écrit les a suivies. Votre prochaine étape "
+"intégrera le nouveau texte source."
+msgstr "The source text has changed since step %(number)s: the sentences concerned are flagged, and the Latin already written has followed them. Your next step will include the new source text."
+
+#: templates/translations/source_changed_notice.html:4
+#: templates/translations/source_sentences.html:40
+msgid "Changements du texte"
+msgstr "Changes of the text"
+
 #: templates/translations/source_create.html:4
 #: templates/translations/source_list.html:15
 msgid "Ajouter un texte"
@@ -7698,7 +7731,7 @@ msgstr ""
 msgid "Enregistrer le texte"
 msgstr "Save the text"
 
-#: templates/translations/source_create.html:28
+#: templates/translations/source_create.html:28 translations/views.py:365
 msgid "Découper en phrases"
 msgstr "Split into sentences"
 
@@ -7709,7 +7742,7 @@ msgstr "died in %(year)s"
 
 #: templates/translations/source_detail.html:26
 #: templates/translations/step_detail.html:37
-#: templates/translations/version_detail.html:54
+#: templates/translations/version_detail.html:55
 msgid "Licence"
 msgstr "License"
 
@@ -7721,15 +7754,23 @@ msgstr "Added by"
 msgid "Modifier les informations"
 msgstr "Edit the information"
 
-#: templates/translations/source_detail.html:53
+#: templates/translations/source_detail.html:42
+msgid "Ajouter, modifier, fusionner ou scinder des phrases"
+msgstr "Add, edit, merge or split sentences"
+
+#: templates/translations/source_detail.html:42
+msgid "Phrases et changements du texte"
+msgstr "Sentences and changes of the text"
+
+#: templates/translations/source_detail.html:54
 msgid "Aucun projet sur ce texte pour l’instant."
 msgstr "No project on this text yet."
 
-#: templates/translations/source_detail.html:57
+#: templates/translations/source_detail.html:58
 msgid "Lancer un projet"
 msgstr "Start a project"
 
-#: templates/translations/source_detail.html:60
+#: templates/translations/source_detail.html:61
 msgid "Phrases"
 msgstr "Sentences"
 
@@ -7742,8 +7783,15 @@ msgid "Modifier les informations du texte"
 msgstr "Edit the information of the text"
 
 #: templates/translations/source_edit.html:10
-msgid "Le découpage en phrases ne change pas."
-msgstr "The split into sentences does not change."
+msgid "Pour ajouter, modifier, fusionner ou scinder des phrases :"
+msgstr "To add, edit, merge or split sentences:"
+
+#: templates/translations/source_edit.html:10
+#: templates/translations/source_sentence_form.html:8
+#: templates/translations/source_sentences.html:4
+#: templates/translations/source_sentences.html:9
+msgid "Phrases du texte"
+msgstr "Sentences of the text"
 
 #: templates/translations/source_list.html:10
 msgid ""
@@ -7757,6 +7805,44 @@ msgstr ""
 #: templates/translations/source_list.html:25
 msgid "Aucun texte pour l’instant."
 msgstr "No text yet."
+
+#: templates/translations/source_sentences.html:10
+msgid ""
+"Ajouter, modifier, fusionner ou scinder des phrases change le texte de tous "
+"les projets qui le traduisent. Les anciennes phrases restent dans les étapes "
+"qui les ont figées ; le latin déjà écrit suit ses phrases, et chaque version "
+"intègre le changement à sa prochaine étape."
+msgstr "Adding, editing, merging or splitting sentences changes the text for every project that translates it. The former sentences remain in the steps that froze them; the Latin already written follows its sentences, and each version includes the change at its next step."
+
+#: templates/translations/source_sentences.html:16 translations/views.py:354
+msgid "Ajouter des phrases au début"
+msgstr "Add sentences at the beginning"
+
+#: templates/translations/source_sentences.html:25 translations/models.py:176
+msgid "début de paragraphe"
+msgstr "start of paragraph"
+
+#: templates/translations/source_sentences.html:29
+msgid "Scinder"
+msgstr "Split"
+
+#: templates/translations/source_sentences.html:30
+msgid "Fusionner avec la suivante"
+msgstr "Merge with the next one"
+
+#: templates/translations/source_sentences.html:31
+msgid "Ajouter des phrases après"
+msgstr "Add sentences after"
+
+#: templates/translations/source_sentences.html:44
+#, python-format
+msgid "Changement %(number)s : %(kind)s"
+msgstr "Change %(number)s: %(kind)s"
+
+#: templates/translations/source_sentences.html:45
+#, python-format
+msgid "adopté par %(name)s"
+msgstr "adopted by %(name)s"
 
 #: templates/translations/step_compare.html:4
 #: templates/translations/step_compare.html:9
@@ -7817,8 +7903,8 @@ msgstr "History of steps"
 #: templates/translations/step_create.html:4
 #: templates/translations/step_create.html:9
 #: templates/translations/step_list.html:15
-#: templates/translations/version_detail.html:26
-#: templates/translations/version_detail.html:62
+#: templates/translations/version_detail.html:27
+#: templates/translations/version_detail.html:63
 msgid "Créer une étape"
 msgstr "Create a step"
 
@@ -7861,7 +7947,7 @@ msgstr "sentence %(number)s"
 msgid "Créer l’étape"
 msgstr "Create the step"
 
-#: templates/translations/step_create.html:43 translations/services.py:510
+#: templates/translations/step_create.html:43 translations/services.py:522
 msgid "Rien n’a changé depuis la dernière étape."
 msgstr "Nothing has changed since the latest step."
 
@@ -7882,7 +7968,7 @@ msgid "Le texte a pu changer depuis cette étape."
 msgstr "The text may have changed since this step."
 
 #: templates/translations/step_detail.html:19
-#: templates/translations/version_edit.html:45
+#: templates/translations/version_edit.html:47
 msgid "Voir la version"
 msgstr "View the version"
 
@@ -7895,12 +7981,12 @@ msgid "Phrases changées"
 msgstr "Changed sentences"
 
 #: templates/translations/step_detail.html:32
-#: templates/translations/version_detail.html:49
+#: templates/translations/version_detail.html:50
 msgid "Avancement"
 msgstr "Progress"
 
 #: templates/translations/step_detail.html:33
-#: templates/translations/version_detail.html:50
+#: templates/translations/version_detail.html:51
 #: templates/translations/version_edit.html:13
 #: templates/translations/version_item.html:3
 #: templates/translations/version_publish.html:10
@@ -7925,7 +8011,7 @@ msgid "Partir de cette étape"
 msgstr "Start from this step"
 
 #: templates/translations/step_detail.html:51
-#: templates/translations/version_detail.html:78
+#: templates/translations/version_detail.html:79
 msgid "Texte et traduction"
 msgstr "Text and translation"
 
@@ -7963,7 +8049,7 @@ msgstr "No step yet."
 
 #: templates/translations/version_copy.html:4
 #: templates/translations/version_copy.html:9
-#: templates/translations/version_detail.html:69
+#: templates/translations/version_detail.html:70
 msgid "Partir de cette version"
 msgstr "Start from this version"
 
@@ -7997,7 +8083,7 @@ msgstr "reference version"
 msgid "Brouillon : cette version n’est visible que de vous."
 msgstr "Draft: this version is visible to you only."
 
-#: templates/translations/version_detail.html:18
+#: templates/translations/version_detail.html:19
 #, python-format
 msgid ""
 "Vous voyez votre texte de travail : %(counter)s phrase a changé depuis la "
@@ -8012,102 +8098,102 @@ msgstr[1] ""
 "You are seeing your working text: %(counter)s sentences have changed since "
 "the latest step."
 
-#: templates/translations/version_detail.html:22
+#: templates/translations/version_detail.html:23
 #, python-format
 msgid "%(counter)s justification paraîtra à la prochaine étape."
 msgid_plural "%(counter)s justifications paraîtront à la prochaine étape."
 msgstr[0] "%(counter)s justification will appear at the next step."
 msgstr[1] "%(counter)s justifications will appear at the next step."
 
-#: templates/translations/version_detail.html:26
+#: templates/translations/version_detail.html:27
 msgid "Le public ne verra ces changements qu’à la prochaine étape."
 msgstr "The public will see these changes only at the next step."
 
-#: templates/translations/version_detail.html:26
+#: templates/translations/version_detail.html:27
 msgid "Voir les différences"
 msgstr "See the differences"
 
-#: templates/translations/version_detail.html:31
+#: templates/translations/version_detail.html:32
 msgid "Style déclaré"
 msgstr "Declared style"
 
-#: templates/translations/version_detail.html:35
+#: templates/translations/version_detail.html:36
 msgid "État"
 msgstr "Status"
 
-#: templates/translations/version_detail.html:36
+#: templates/translations/version_detail.html:37
 #: templates/translations/version_item.html:3
 #, python-format
 msgid "publiée le %(date)s"
 msgstr "published on %(date)s"
 
-#: templates/translations/version_detail.html:41
+#: templates/translations/version_detail.html:42
 #, python-format
 msgid "copiée de la version de %(name)s, étape %(number)s"
 msgstr "copied from the version by %(name)s, step %(number)s"
 
-#: templates/translations/version_detail.html:45
+#: templates/translations/version_detail.html:46
 msgid "Dernière étape"
 msgstr "Latest step"
 
-#: templates/translations/version_detail.html:46
+#: templates/translations/version_detail.html:47
 #, python-format
 msgid "étape %(number)s, du %(date)s"
 msgstr "step %(number)s, of %(date)s"
 
-#: templates/translations/version_detail.html:46
+#: templates/translations/version_detail.html:47
 msgid "historique des étapes"
 msgstr "history of steps"
 
-#: templates/translations/version_detail.html:46
+#: templates/translations/version_detail.html:47
 msgid "aucune"
 msgstr "none"
 
-#: templates/translations/version_detail.html:63
+#: templates/translations/version_detail.html:64
 msgid "Modifier le style"
 msgstr "Edit the style"
 
-#: templates/translations/version_detail.html:65
+#: templates/translations/version_detail.html:66
 #: templates/translations/version_publish.html:28
 msgid "Publier"
 msgstr "Publish"
 
-#: templates/translations/version_detail.html:69
+#: templates/translations/version_detail.html:70
 msgid "pour rédiger votre propre version à partir de son texte"
 msgstr "to write your own version from its text"
 
-#: templates/translations/version_detail.html:73
+#: templates/translations/version_detail.html:74
 #, python-format
 msgid "%(counter)s proposition ouverte"
 msgid_plural "%(counter)s propositions ouvertes"
 msgstr[0] "%(counter)s open proposal"
 msgstr[1] "%(counter)s open proposals"
 
-#: templates/translations/version_detail.html:75
+#: templates/translations/version_detail.html:76
 msgid "Exporter :"
 msgstr "Export:"
 
-#: templates/translations/version_detail.html:75
+#: templates/translations/version_detail.html:76
 msgid "texte bilingue"
 msgstr "bilingual text"
 
-#: templates/translations/version_detail.html:75
+#: templates/translations/version_detail.html:76
 msgid "version imprimable avec notes (PDF)"
 msgstr "printable version with notes (PDF)"
 
-#: templates/translations/version_detail.html:75
+#: templates/translations/version_detail.html:76
 msgid "mémoire de traduction (TMX)"
 msgstr "translation memory (TMX)"
 
-#: templates/translations/version_detail.html:80
+#: templates/translations/version_detail.html:81
 msgid "Votre texte de travail, tel que vous l’avez enregistré."
 msgstr "Your working text, as you saved it."
 
-#: templates/translations/version_detail.html:82
+#: templates/translations/version_detail.html:83
 msgid "Aucune étape publique pour l’instant."
 msgstr "No public step yet."
 
-#: templates/translations/version_detail.html:84
+#: templates/translations/version_detail.html:85
 msgid ""
 "Dans le latin, un trait pointillé signale une unité connue repérée dans la "
 "phrase, à titre de suggestion ; un double trait, un passage justifié par une "
@@ -8128,23 +8214,23 @@ msgstr ""
 "Published version: the public sees the latest step. Your changes stay "
 "private until the next step."
 
-#: templates/translations/version_edit.html:17
+#: templates/translations/version_edit.html:18
 msgid "Enregistrement…"
 msgstr "Saving…"
 
-#: templates/translations/version_edit.html:18
+#: templates/translations/version_edit.html:19
 msgid "Enregistré"
 msgstr "Saved"
 
-#: templates/translations/version_edit.html:19
+#: templates/translations/version_edit.html:20
 msgid "Échec de l’enregistrement : vérifiez la connexion, puis réessayez."
 msgstr "Saving failed: check the connection, then try again."
 
-#: templates/translations/version_edit.html:20
+#: templates/translations/version_edit.html:21
 msgid "Les unités connues n’ont pas pu être chargées."
 msgstr "The known units could not be loaded."
 
-#: templates/translations/version_edit.html:22
+#: templates/translations/version_edit.html:23
 msgid ""
 "Une voyelle suivie de = prend un macron : a= donne ā (tapez = une seconde "
 "fois pour revenir à a=). Entrée passe à la phrase suivante ; chaque phrase "
@@ -8154,46 +8240,46 @@ msgstr ""
 "get a= back). Enter moves to the next sentence; each sentence is saved as "
 "soon as you leave it."
 
-#: templates/translations/version_edit.html:39
+#: templates/translations/version_edit.html:41
 msgid "Voyelles longues"
 msgstr "Long vowels"
 
-#: templates/translations/version_edit.html:44
+#: templates/translations/version_edit.html:46
 msgid "Enregistrer et créer une étape"
 msgstr "Save and create a step"
 
-#: templates/translations/version_edit.html:49
+#: templates/translations/version_edit.html:51
 msgid "Justifications et corpus"
 msgstr "Justifications and corpus"
 
-#: templates/translations/version_edit.html:51
+#: templates/translations/version_edit.html:53
 msgid "Justifications"
 msgstr "Justifications"
 
-#: templates/translations/version_edit.html:52
+#: templates/translations/version_edit.html:54
 msgid ""
 "Placez-vous sur une phrase ; sélectionnez des mots latins pour justifier ce "
 "choix."
 msgstr "Go to a sentence; select Latin words to justify that choice."
 
-#: templates/translations/version_edit.html:55
+#: templates/translations/version_edit.html:57
 #, python-format
 msgid "Phrase %(number)s"
 msgstr "Sentence %(number)s"
 
-#: templates/translations/version_edit.html:61
+#: templates/translations/version_edit.html:63
 msgid "Aucune justification pour cette phrase."
 msgstr "No justification for this sentence."
 
-#: templates/translations/version_edit.html:66
+#: templates/translations/version_edit.html:68
 msgid "Justifier la sélection"
 msgstr "Justify the selection"
 
-#: templates/translations/version_edit.html:67
+#: templates/translations/version_edit.html:69
 msgid "Unités connues dans cette phrase"
 msgstr "Known units in this sentence"
 
-#: templates/translations/version_edit.html:69
+#: templates/translations/version_edit.html:71
 msgid "Voir les unités repérées"
 msgstr "See the units found"
 
@@ -8372,7 +8458,7 @@ msgstr ""
 "Paste the text: it will be split into sentences, which you will check before "
 "saving. Wikipedia note calls ([1], [citation needed]) are removed."
 
-#: translations/forms.py:73
+#: translations/forms.py:73 translations/forms.py:219
 msgid "Le texte est vide."
 msgstr "The text is empty."
 
@@ -8386,7 +8472,7 @@ msgstr[0] "A text has at most %(limit)d sentence: split it into several texts."
 msgstr[1] ""
 "A text has at most %(limit)d sentences: split it into several texts."
 
-#: translations/forms.py:86
+#: translations/forms.py:86 translations/forms.py:222
 #, python-format
 msgid "Une phrase compte au plus %(limit)d caractères : vérifiez le découpage."
 msgstr "A sentence has at most %(limit)d characters: check the split."
@@ -8410,6 +8496,35 @@ msgid ""
 msgstr ""
 "The public will be able to follow how your translation took shape. This "
 "choice is final."
+
+#: translations/forms.py:183
+msgid "Phrase"
+msgstr "Sentence"
+
+#: translations/forms.py:187
+msgid "Commence un paragraphe"
+msgstr "Starts a paragraph"
+
+#: translations/forms.py:192 translations/sources.py:65
+msgid "Une phrase ne peut pas être vide."
+msgstr "A sentence cannot be empty."
+
+#: translations/forms.py:199
+msgid "Parties"
+msgstr "Parts"
+
+#: translations/forms.py:200
+msgid ""
+"Allez à la ligne là où la phrase doit être coupée : une partie par ligne."
+msgstr "Start a new line where the sentence is to be cut: one part per line."
+
+#: translations/forms.py:210
+msgid "Texte à ajouter"
+msgstr "Text to add"
+
+#: translations/forms.py:212
+msgid "La première phrase commence un paragraphe"
+msgstr "The first sentence starts a paragraph"
 
 #: translations/models.py:26
 msgid "français"
@@ -8524,10 +8639,6 @@ msgstr "position"
 #: translations/models.py:506
 msgid "numéro"
 msgstr "number"
-
-#: translations/models.py:176
-msgid "début de paragraphe"
-msgstr "start of paragraph"
 
 #: translations/models.py:177
 msgid "ajoutée au changement"
@@ -8857,68 +8968,72 @@ msgstr "Sentences %(number)d and %(next)d merged"
 msgid "Phrase %(number)d scindée en %(count)d"
 msgstr "Sentence %(number)d split into %(count)d"
 
-#: translations/services.py:259
+#: translations/services.py:176
+msgid ""
+"Le texte a changé pendant que vous le modifiiez : vérifiez la phrase, puis "
+"recommencez."
+msgstr "The text changed while you were editing it: check the sentence, then try again."
+
+#: translations/services.py:269
 msgid "Texte source changé"
 msgstr "Source text changed"
 
-#: translations/services.py:326
+#: translations/services.py:338
 msgid "Changez au moins une phrase avant d’envoyer la proposition."
 msgstr "Change at least one sentence before sending the proposal."
 
-#: translations/services.py:350 translations/services.py:382
+#: translations/services.py:362 translations/services.py:394
 msgid "Cette proposition est close."
 msgstr "This proposal is closed."
 
-#: translations/services.py:353
+#: translations/services.py:365
 msgid "Cette phrase a déjà été examinée."
 msgstr "This sentence has already been decided on."
 
-#: translations/services.py:357
+#: translations/services.py:369
 msgid ""
 "La phrase source a changé depuis cette proposition : refusez cette phrase, "
 "ou recopiez son latin dans votre texte de travail."
-msgstr "The source sentence has changed since this proposal: refuse this sentence, or copy its Latin into your working text."
+msgstr ""
+"The source sentence has changed since this proposal: refuse this sentence, "
+"or copy its Latin into your working text."
 
-#: translations/services.py:372
+#: translations/services.py:384
 msgid "Proposition close"
 msgstr "Proposal closed"
 
-#: translations/services.py:385
+#: translations/services.py:397
 msgid "Proposition retirée"
 msgstr "Proposal withdrawn"
 
-#: translations/services.py:419
+#: translations/services.py:431
 #, python-format
 msgid "Copie de la version de %(author)s, étape %(number)d"
 msgstr "Copy of the version by %(author)s, step %(number)d"
 
-#: translations/services.py:441
+#: translations/services.py:453
 msgid "Traduisez au moins une phrase avant de publier."
 msgstr "Translate at least one sentence before publishing."
 
-#: translations/services.py:446 translations/services.py:448
+#: translations/services.py:458 translations/services.py:460
 msgid "Publication"
 msgstr "Publication"
 
-#: translations/services.py:498
+#: translations/services.py:510
 msgid "Écrivez un message : ce qui a changé depuis l’étape précédente."
 msgstr "Write a message: what changed since the previous step."
 
-#: translations/services.py:528
+#: translations/services.py:540
 msgid "La version de référence doit être une version publiée de ce projet."
 msgstr "The reference version must be a published version of this project."
 
-#: translations/services.py:532
+#: translations/services.py:544
 msgid "Choix de la version de référence"
 msgstr "Choice of the reference version"
 
 #: translations/sources.py:54
 msgid "Ajoutez au moins une phrase."
 msgstr "Add at least one sentence."
-
-#: translations/sources.py:65
-msgid "Une phrase ne peut pas être vide."
-msgstr "A sentence cannot be empty."
 
 #: translations/sources.py:68
 msgid "Rien n’a changé dans cette phrase."
@@ -8932,75 +9047,154 @@ msgstr "Cut the sentence into at least two parts, one per line."
 msgid ""
 "Une scission ne change aucun mot : recollées, les parties doivent redonner "
 "la phrase. Pour changer ses mots, modifiez la phrase."
-msgstr "A split changes no word: joined again, the parts must give back the sentence. To change its words, edit the sentence."
+msgstr ""
+"A split changes no word: joined again, the parts must give back the "
+"sentence. To change its words, edit the sentence."
 
 #: translations/sources.py:96
 msgid "Cette phrase n’existe plus dans le texte : rechargez la page."
 msgstr "This sentence is no longer in the text: reload the page."
 
-#: translations/views.py:154
+#: translations/views.py:168
 msgid "Le texte est ajouté."
 msgstr "The text has been added."
 
-#: translations/views.py:204
+#: translations/views.py:243
+msgid "Le texte est modifié. Chaque version l’intégrera à sa prochaine étape."
+msgstr "The text is changed. Each version will include it at its next step."
+
+#: translations/views.py:280
+#, python-format
+msgid "Modifier la phrase %(number)d"
+msgstr "Edit sentence %(number)d"
+
+#: translations/views.py:282
+msgid ""
+"La phrase est remplacée ; l’ancienne reste dans les étapes qui l’ont figée. "
+"Le latin déjà écrit reste attaché à la phrase."
+msgstr "The sentence is replaced; the former one remains in the steps that froze it. The Latin already written stays with the sentence."
+
+#: translations/views.py:286
+msgid "Enregistrer la phrase"
+msgstr "Save the sentence"
+
+#: translations/views.py:305
+#, python-format
+msgid "Scinder la phrase %(number)d"
+msgstr "Split sentence %(number)d"
+
+#: translations/views.py:307
+msgid ""
+"Allez à la ligne là où la phrase doit être coupée. Les mots ne changent "
+"pas ; le latin déjà écrit reste sur la première partie."
+msgstr "Start a new line where the sentence is to be cut. The words do not change; the Latin already written stays on the first part."
+
+#: translations/views.py:311
+msgid "Scinder la phrase"
+msgstr "Split the sentence"
+
+#: translations/views.py:329
+#, python-format
+msgid "Fusionner les phrases %(number)d et %(next)d"
+msgstr "Merge sentences %(number)d and %(next)d"
+
+#: translations/views.py:332
+msgid ""
+"Les deux phrases n’en font plus qu’une. Dans chaque version, leurs latins "
+"sont mis bout à bout."
+msgstr "The two sentences become one. In each version, their Latin is joined end to end."
+
+#: translations/views.py:336
+msgid "Fusionner"
+msgstr "Merge"
+
+#: translations/views.py:356
+msgid "Ajouter des phrases à la fin"
+msgstr "Add sentences at the end"
+
+#: translations/views.py:358
+#, python-format
+msgid "Ajouter des phrases après la phrase %(number)d"
+msgstr "Add sentences after sentence %(number)d"
+
+#: translations/views.py:363
+msgid ""
+"Collez le texte : il sera découpé en phrases, que vous vérifierez avant "
+"d’enregistrer."
+msgstr "Paste the text: it will be split into sentences, which you will check before saving."
+
+#: translations/views.py:374
+msgid ""
+"Vérifiez le découpage : une phrase par ligne, une ligne vide entre deux "
+"paragraphes."
+msgstr "Check the split: one sentence per line, a blank line between two paragraphs."
+
+#: translations/views.py:376
+msgid "Ajouter les phrases"
+msgstr "Add the sentences"
+
+#: translations/views.py:414
 msgid "Le projet est créé."
 msgstr "The project has been created."
 
-#: translations/views.py:266
+#: translations/views.py:477
 msgid "Choisissez une version publiée de ce projet."
 msgstr "Choose a published version of this project."
 
-#: translations/views.py:272
+#: translations/views.py:483
 msgid "Le projet n’a plus de version de référence."
 msgstr "The project no longer has a reference version."
 
-#: translations/views.py:274
+#: translations/views.py:485
 msgid "La version de référence est choisie."
 msgstr "The reference version has been chosen."
 
-#: translations/views.py:507
+#: translations/views.py:745
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:518
+#: translations/views.py:756
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:655
+#: translations/views.py:894
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:670
+#: translations/views.py:909
 msgid "La version est publiée."
 msgstr "The version has been published."
 
-#: translations/views.py:768
+#: translations/views.py:1007
 msgid "La copie est créée : c’est votre brouillon, visible de vous seul."
 msgstr "The copy is created: it is your draft, visible to you only."
 
-#: translations/views.py:896
+#: translations/views.py:1135
 msgid "La proposition est envoyée."
 msgstr "The proposal is sent."
 
-#: translations/views.py:1009
+#: translations/views.py:1248
 msgid "La phrase est acceptée : elle entre dans votre texte de travail."
 msgstr "The sentence is accepted: it enters your working text."
 
-#: translations/views.py:1012
+#: translations/views.py:1251
 msgid "La phrase est refusée."
 msgstr "The sentence is refused."
 
-#: translations/views.py:1025
+#: translations/views.py:1264
 msgid "La proposition est retirée."
 msgstr "The proposal is withdrawn."
 
-#: translations/views.py:1051
+#: translations/views.py:1290
 #, python-format
 msgid "L’étape %(number)d est créée."
 msgstr "Step %(number)d is created."
+
+#~ msgid "Le découpage en phrases ne change pas."
+#~ msgstr "The split into sentences does not change."
 
 #~ msgid "Phrase masquée à la suite d’un signalement."
 #~ msgstr "Sentence hidden following a report."

@@ -14,6 +14,7 @@
   {% if version.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
   {% endif %}
+  {% include "translations/source_changed_notice.html" %}
   {% if pending_count or waiting_count %}
   <p class="notice notice-info">{% if pending_count %}{% blocktranslate trimmed count counter=pending_count %}
     Vous voyez votre texte de travail : {{ counter }} phrase a changé depuis la dernière étape.

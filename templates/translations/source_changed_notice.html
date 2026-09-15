@@ -1,0 +1,4 @@
+{% load i18n %}{% if source_step %}<p class="notice notice-info">{% blocktranslate trimmed with number=source_step.number %}
+  Le texte source a changé depuis l’étape {{ number }} : les phrases touchées sont signalées, et
+  le latin déjà écrit les a suivies. Votre prochaine étape intégrera le nouveau texte source.
+{% endblocktranslate %} <a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Changements du texte" %}</a></p>{% endif %}

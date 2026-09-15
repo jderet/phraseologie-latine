@@ -168,6 +168,78 @@ class TranslationTextForm(forms.Form):
         return text
 
 
+class SourceStateForm(forms.Form):
+    """A change of the sentences of a text, written against a given state of the text."""
+
+    state = forms.IntegerField(widget=forms.HiddenInput, min_value=0)
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+
+class SentenceEditForm(SourceStateForm):
+    text = forms.CharField(
+        label=_("Phrase"),
+        max_length=MAX_SENTENCE_LENGTH,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+    starts_paragraph = forms.BooleanField(label=_("Commence un paragraphe"), required=False)
+
+    def clean_text(self):
+        text = normalize_sentence(self.cleaned_data["text"])
+        if not text:
+            raise ValidationError(_("Une phrase ne peut pas être vide."), code="empty")
+        check_text_for_links(self.user, text)
+        return text
+
+
+class SentenceSplitForm(SourceStateForm):
+    parts = forms.CharField(
+        label=_("Parties"),
+        help_text=_("Allez à la ligne là où la phrase doit être coupée : une partie par ligne."),
+        widget=forms.Textarea(attrs={"rows": 5}),
+    )
+
+    def clean_parts(self):
+        lines = (normalize_sentence(line) for line in self.cleaned_data["parts"].splitlines())
+        return [line for line in lines if line]
+
+
+class SentenceInsertForm(SourceStateForm):
+    text = forms.CharField(label=_("Texte à ajouter"), widget=forms.Textarea(attrs={"rows": 10}))
+    new_paragraph = forms.BooleanField(
+        label=_("La première phrase commence un paragraphe"), required=False
+    )
+
+    def clean_text(self):
+        text = self.cleaned_data["text"]
+        sentences = from_lines(text)
+        if not sentences:
+            raise ValidationError(_("Le texte est vide."), code="empty")
+        if any(len(sentence.text) > MAX_SENTENCE_LENGTH for sentence in sentences):
+            raise ValidationError(
+                _("Une phrase compte au plus %(limit)d caractères : vérifiez le découpage.")
+                % {"limit": MAX_SENTENCE_LENGTH},
+                code="sentence_too_long",
+            )
+        check_text_for_links(self.user, text)
+        return text
+
+    @property
+    def sentences(self):
+        """The sentences to add; the first starts a paragraph only if asked."""
+        return [
+            {
+                "text": sentence.text,
+                "starts_paragraph": self.cleaned_data["new_paragraph"]
+                if index == 0
+                else sentence.starts_paragraph,
+            }
+            for index, sentence in enumerate(from_lines(self.cleaned_data["text"]))
+        ]
+
+
 class ReferenceForm(forms.Form):
     """A published version of the project, or nothing to remove the reference."""
 
