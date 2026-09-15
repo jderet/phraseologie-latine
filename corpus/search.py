@@ -1,8 +1,9 @@
 """Searching the corpus by word form or lemma, with filters and context.
 
-A query has one to three terms. Each term is one or more patterns separated by "|"; a
-pattern ending with "*" matches the beginning of a word. Forms are compared in their
-normalized spelling (corpus.text.normalize); lemmas come from the default analysis layer.
+A query has one to five terms, the others within a distance of the first. Each term is one
+or more patterns separated by "|"; a pattern ending with "*" matches the beginning of a word.
+Forms are compared in their normalized spelling (corpus.text.normalize); lemmas come from the
+default analysis layer.
 """
 
 from collections import defaultdict

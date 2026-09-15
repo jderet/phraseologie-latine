@@ -32,6 +32,12 @@ class SearchTests(PerseusSourceMixin, TestCase):
         self.assertEqual(self.forms("consilium", "Tullius", distance=5), [])
         self.assertEqual(len(self.forms("consilium", "Tullius", distance=10)), 1)
 
+    def test_up_to_five_terms(self):
+        words = ("consilium", "cep*", "ut", "ait", "Tullius")
+        self.assertEqual(self.forms(*words, distance=5), [])
+        self.assertEqual(self.forms(*words, distance=10), [("consilium", "Cic. Off. 1, 2")])
+        self.assertEqual(self.forms(*words[:4], "Lucina", distance=10), [])
+
     def test_order_can_be_imposed(self):
         self.assertEqual(len(self.forms("cepit", "consilium")), 1)
         self.assertEqual(self.forms("cepit", "consilium", ordered=True), [])
@@ -84,6 +90,14 @@ class SearchPageTests(PerseusSourceMixin, TestCase):
         self.assertContains(response, "Cicéron")
         self.assertContains(response, "Perseus aaaaaaa")
 
+    def test_five_terms_are_highlighted(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, 'name="term5"')
+        terms = {"term1": "consilium", "term2": "cepit", "term3": "ut", "term4": "ait"}
+        response = self.client.get(self.url, terms | {"term5": "Tullius", "distance": "10"})
+        self.assertContains(response, "1 occurrence")
+        self.assertContains(response, "<mark", count=5)
+
     def test_absence_names_the_corpus_version(self):
         response = self.client.get(self.url, {"term1": "consilium", "term2": "inire"})
         self.assertContains(
@@ -101,3 +115,5 @@ class SearchPageTests(PerseusSourceMixin, TestCase):
         self.assertContains(response, "au moins deux lettres")
         response = self.client.get(self.url, {"term1": "consilium capere"})
         self.assertContains(response, "Un seul mot par case")
+        response = self.client.get(self.url, {"term1": "consilium", "term5": "c*"})
+        self.assertContains(response, "au moins deux lettres")

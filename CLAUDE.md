@@ -56,7 +56,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 |---|---|---|
 | `accounts` | utilisateurs, rôles, limites des nouveaux comptes | connexion par e-mail, inscription, rôles, limites |
 | `core` | pages générales | page d'accueil |
-| `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | noyau importé et analysé (LatinCy), lecture continue par pages (`corpus/reading.py`) avec traduction en regard, recherche par forme et par lemme, exports TEI et CoNLL-U d'un passage ou d'une œuvre avec sa phraséologie (`corpus/exports.py`) |
+| `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | noyau importé et analysé (LatinCy), lecture continue par pages (`corpus/reading.py`) avec traduction en regard, recherche par forme et par lemme (jusqu'à cinq mots), exports TEI et CoNLL-U d'un passage ou d'une œuvre avec sa phraséologie (`corpus/exports.py`) |
 | `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements, discussions, avis indicatifs |
 | `translations` | textes sources, projets, versions, segments, étapes, propositions | textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable ; étapes à la manière de Git (`translations/steps.py`), texte source modifiable dont le latin suit les phrases (`translations/sources.py`), différences mot à mot (`translations/diffs.py`), copie d'une version publiée, propositions de modifications décidées phrase par phrase |
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |

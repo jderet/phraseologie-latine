@@ -959,6 +959,27 @@ article > h2 {
   font-weight: 400;
 }
 
+.panel-more summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.panel-more-fields {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.panel-search input[type="number"] {
+  width: 6rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
 .panel-results .results h2 {
   font-size: 1.05rem;
 }

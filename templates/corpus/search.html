@@ -16,9 +16,9 @@
   <form method="get" class="form search-form">
     {{ form.non_field_errors }}
     <div class="terms">
-      <div class="field">{{ form.term1.as_field_group }}{{ form.mode1.as_field_group }}</div>
-      <div class="field">{{ form.term2.as_field_group }}{{ form.mode2.as_field_group }}</div>
-      <div class="field">{{ form.term3.as_field_group }}{{ form.mode3.as_field_group }}</div>
+      {% for term, mode in form.term_fields %}
+      <div class="field">{{ term.as_field_group }}{{ mode.as_field_group }}</div>
+      {% endfor %}
     </div>
     <div class="options">
       <div class="field">{{ form.distance.as_field_group }}</div>

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-15 09:53+0200\n"
+"POT-Creation-Date: 2026-09-15 11:49+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -247,7 +247,7 @@ msgstr "Annotation guide, version %(number)d"
 msgid "La nouvelle version du guide est publiée."
 msgstr "The new version of the guide is published."
 
-#: corpus/apps.py:7 corpus/forms.py:80 phraseology/forms.py:382
+#: corpus/apps.py:7 corpus/forms.py:90 phraseology/forms.py:382
 #: templates/base.html:15 templates/corpus/correction_list.html:8
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
 #: templates/corpus/work.html:8 templates/translations/version_edit.html:76
@@ -347,143 +347,155 @@ msgstr ""
 "%(corpus)s. Status of a unit: validated (validated by a reviewer), proposed "
 "(proposed by a person), automatic (found automatically, never checked)."
 
-#: corpus/forms.py:23
+#: corpus/forms.py:25
 msgid "Dépend du mot"
 msgstr "Depends on the word"
 
-#: corpus/forms.py:26
+#: corpus/forms.py:28
 msgid "Un mot du même passage ; laissez vide pour ne rien changer."
 msgstr "A word of the same passage; leave empty to change nothing."
 
-#: corpus/forms.py:33
+#: corpus/forms.py:35
 msgid "Étiquette Universal Dependencies : NOUN, VERB, ADJ, ADV…"
 msgstr "Universal Dependencies tag: NOUN, VERB, ADJ, ADV…"
 
-#: corpus/forms.py:34
+#: corpus/forms.py:36
 msgid "Traits Universal Dependencies : Case=Acc|Number=Sing…"
 msgstr "Universal Dependencies features: Case=Acc|Number=Sing…"
 
-#: corpus/forms.py:35
+#: corpus/forms.py:37
 msgid "Relation Universal Dependencies : obj, nsubj, obl, amod…"
 msgstr "Universal Dependencies relation: obj, nsubj, obl, amod…"
 
-#: corpus/forms.py:57
+#: corpus/forms.py:59
 msgid "Chercher comme"
 msgstr "Search as"
 
-#: corpus/forms.py:58 corpus/forms.py:208 corpus/models.py:92
+#: corpus/forms.py:60 corpus/forms.py:249 corpus/models.py:92
 msgid "forme"
 msgstr "form"
 
-#: corpus/forms.py:58 corpus/forms.py:208 corpus/models.py:372
+#: corpus/forms.py:60 corpus/forms.py:249 corpus/models.py:372
 #: corpus/models.py:427 phraseology/models.py:772
 msgid "lemme"
 msgstr "lemma"
 
-#: corpus/forms.py:66
+#: corpus/forms.py:68
 msgid "Mot"
 msgstr "Word"
 
-#: corpus/forms.py:68
+#: corpus/forms.py:70
 msgid ""
 "Un mot par case ; * pour un début de mot, | pour des variantes : cap* | cep*"
 msgstr ""
 "One word per box; * for the beginning of a word, | for variants: cap* | cep*"
 
-#: corpus/forms.py:71
+#: corpus/forms.py:73
 msgid "Deuxième mot"
 msgstr "Second word"
 
-#: corpus/forms.py:73
+#: corpus/forms.py:75
 msgid "Troisième mot"
 msgstr "Third word"
 
-#: corpus/forms.py:76
+#: corpus/forms.py:77
+msgid "Quatrième mot"
+msgstr "Fourth word"
+
+#: corpus/forms.py:79
+msgid "Cinquième mot"
+msgstr "Fifth word"
+
+#: corpus/forms.py:82
 msgid "Distance maximale (en mots)"
 msgstr "Maximum distance (in words)"
 
-#: corpus/forms.py:78
+#: corpus/forms.py:83
+msgid "Entre le premier mot et chacun des autres."
+msgstr "Between the first word and each of the others."
+
+#: corpus/forms.py:88
 msgid "Les mots dans cet ordre"
 msgstr "Words in this order"
 
-#: corpus/forms.py:81 corpus/forms.py:228 corpus/models.py:96
+#: corpus/forms.py:91 corpus/forms.py:269 corpus/models.py:96
 #: phraseology/forms.py:383 phraseology/models.py:716 phraseology/views.py:1362
 msgid "noyau"
 msgstr "core"
 
-#: corpus/forms.py:81 corpus/forms.py:228 phraseology/forms.py:383
+#: corpus/forms.py:91 corpus/forms.py:269 phraseology/forms.py:383
 #: phraseology/models.py:718
 msgid "tout le corpus"
 msgstr "whole corpus"
 
-#: corpus/forms.py:86
+#: corpus/forms.py:96
 msgid "Auteurs"
 msgstr "Authors"
 
-#: corpus/forms.py:92
+#: corpus/forms.py:102
 msgid "Œuvres"
 msgstr "Works"
 
-#: corpus/forms.py:98 phraseology/forms.py:388 templates/corpus/work.html:23
+#: corpus/forms.py:108 phraseology/forms.py:388 templates/corpus/work.html:23
 #: templates/phraseology/unit_survey.html:62
 msgid "Forme"
 msgstr "Form"
 
-#: corpus/forms.py:104 templates/corpus/work.html:18
+#: corpus/forms.py:114 templates/corpus/work.html:18
 msgid "Genre"
 msgstr "Genre"
 
-#: corpus/forms.py:110 templates/corpus/work.html:28
+#: corpus/forms.py:120 templates/corpus/work.html:28
 #: templates/phraseology/unit_detail.html:32
 msgid "Registre"
 msgstr "Register"
 
-#: corpus/forms.py:116
+#: corpus/forms.py:126
 msgid "Époque"
 msgstr "Period"
 
-#: corpus/forms.py:122
+#: corpus/forms.py:132
 msgid "Écrit en ou après"
 msgstr "Written in or after"
 
-#: corpus/forms.py:123
+#: corpus/forms.py:133
 msgid "Année ; négative avant notre ère."
 msgstr "Year; negative before the common era."
 
-#: corpus/forms.py:126
+#: corpus/forms.py:136
 msgid "Écrit en ou avant"
 msgstr "Written in or before"
 
-#: corpus/forms.py:134
+#: corpus/forms.py:144
 msgid "Écrivez un mot."
 msgstr "Write a word."
 
-#: corpus/forms.py:138
+#: corpus/forms.py:148
 msgid "Un seul mot par case : utilisez les cases suivantes pour les autres."
 msgstr "One word per box: use the next boxes for the others."
 
-#: corpus/forms.py:142
+#: corpus/forms.py:152
 msgid "Écrivez au moins deux lettres avant *."
 msgstr "Write at least two letters before *."
 
-#: corpus/forms.py:160
+#: corpus/forms.py:201
 msgid ""
 "La recherche par lemme n’est pas encore disponible : le corpus n’a pas été "
 "analysé."
 msgstr "Lemma search is not available yet: the corpus has not been analyzed."
 
-#: corpus/forms.py:223
+#: corpus/forms.py:264
 #, python-format
 msgid "à %(count)d mot au plus"
 msgid_plural "à %(count)d mots au plus"
 msgstr[0] "within %(count)d word"
 msgstr[1] "within %(count)d words"
 
-#: corpus/forms.py:227
+#: corpus/forms.py:268
 msgid "dans cet ordre"
 msgstr "in this order"
 
-#: corpus/forms.py:230
+#: corpus/forms.py:271
 msgid "avec filtres"
 msgstr "with filters"
 
@@ -1639,13 +1651,13 @@ msgid "Enregistrer la justification"
 msgstr "Save the justification"
 
 #: justifications/views.py:289 phraseology/views.py:466
-#: phraseology/views.py:606 phraseology/views.py:1666 translations/views.py:115
-#: translations/views.py:483 translations/views.py:756
+#: phraseology/views.py:606 phraseology/views.py:1666 translations/views.py:119
+#: translations/views.py:487 translations/views.py:760
 msgid "Aucune modification."
 msgstr "No change."
 
 #: justifications/views.py:291 phraseology/views.py:468
-#: phraseology/views.py:608 phraseology/views.py:1668 translations/views.py:117
+#: phraseology/views.py:608 phraseology/views.py:1668 translations/views.py:121
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
@@ -3804,7 +3816,7 @@ msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
 #: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:7
-#: templates/base.html:13 translations/views.py:807
+#: templates/base.html:13 translations/views.py:811
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -4978,6 +4990,10 @@ msgstr "outside the core"
 msgid "Aucun texte importé pour l’instant."
 msgstr "No text imported yet."
 
+#: templates/corpus/panel_terms.html:5
+msgid "Jusqu’à cinq mots"
+msgstr "Up to five words"
+
 #: templates/corpus/passage.html:10
 msgid "Lire dans l’œuvre"
 msgstr "Read in the work"
@@ -5292,10 +5308,10 @@ msgid "Filtres"
 msgstr "Filters"
 
 #: templates/corpus/search.html:41
-#: templates/justifications/search_attestations.html:8
+#: templates/justifications/search_attestations.html:7
 #: templates/phraseology/annotate_panel.html:27
 #: templates/phraseology/schema_search.html:24
-#: templates/translations/version_edit.html:81
+#: templates/translations/version_edit.html:80
 msgid "Chercher"
 msgstr "Search"
 
@@ -5339,7 +5355,7 @@ msgid "Aucune occurrence"
 msgstr "No occurrence"
 
 #: templates/corpus/search_results.html:40
-#: templates/justifications/search_attestations.html:31
+#: templates/justifications/search_attestations.html:30
 #, python-format
 msgid "Introuvable dans le corpus interrogé (version %(label)s)."
 msgstr "Not found in the searched corpus (version %(label)s)."
@@ -5660,14 +5676,14 @@ msgstr "to be reviewed"
 msgid "Chercher des attestations"
 msgstr "Search for attestations"
 
-#: templates/justifications/search_attestations.html:13
+#: templates/justifications/search_attestations.html:12
 #, python-format
 msgid "%(counter)s occurrence : cochez celles qui attestent l’unité."
 msgid_plural "%(counter)s occurrences : cochez celles qui attestent l’unité."
 msgstr[0] "%(counter)s occurrence: tick those that attest the unit."
 msgstr[1] "%(counter)s occurrences: tick those that attest the unit."
 
-#: templates/justifications/search_attestations.html:17
+#: templates/justifications/search_attestations.html:16
 #, python-format
 msgid "%(counter)s occurrence : cochez celles qui justifient votre choix."
 msgid_plural ""
@@ -5675,11 +5691,11 @@ msgid_plural ""
 msgstr[0] "%(counter)s occurrence: tick those that justify your choice."
 msgstr[1] "%(counter)s occurrences: tick those that justify your choice."
 
-#: templates/justifications/search_attestations.html:21
+#: templates/justifications/search_attestations.html:20
 msgid "Seules les premières sont affichées : précisez la recherche au besoin."
 msgstr "Only the first ones are shown: narrow the search if needed."
 
-#: templates/justifications/search_attestations.html:26
+#: templates/justifications/search_attestations.html:25
 #: templates/phraseology/occurrences.html:19
 #: templates/phraseology/unit_survey.html:112
 msgid "contexte"
@@ -7742,7 +7758,7 @@ msgstr ""
 msgid "Enregistrer le texte"
 msgstr "Save the text"
 
-#: templates/translations/source_create.html:28 translations/views.py:367
+#: templates/translations/source_create.html:28 translations/views.py:371
 msgid "Découper en phrases"
 msgstr "Split into sentences"
 
@@ -7829,7 +7845,7 @@ msgstr ""
 "froze them; the Latin already written follows its sentences, and each "
 "version includes the change at its next step."
 
-#: templates/translations/source_sentences.html:16 translations/views.py:356
+#: templates/translations/source_sentences.html:16 translations/views.py:360
 msgid "Ajouter des phrases au début"
 msgstr "Add sentences at the beginning"
 
@@ -9132,20 +9148,20 @@ msgid_plural "%(count)d scissions"
 msgstr[0] "%(count)d split"
 msgstr[1] "%(count)d splits"
 
-#: translations/views.py:170
+#: translations/views.py:174
 msgid "Le texte est ajouté."
 msgstr "The text has been added."
 
-#: translations/views.py:245
+#: translations/views.py:249
 msgid "Le texte est modifié. Chaque version l’intégrera à sa prochaine étape."
 msgstr "The text is changed. Each version will include it at its next step."
 
-#: translations/views.py:282
+#: translations/views.py:286
 #, python-format
 msgid "Modifier la phrase %(number)d"
 msgstr "Edit sentence %(number)d"
 
-#: translations/views.py:284
+#: translations/views.py:288
 msgid ""
 "La phrase est remplacée ; l’ancienne reste dans les étapes qui l’ont figée. "
 "Le latin déjà écrit reste attaché à la phrase."
@@ -9153,16 +9169,16 @@ msgstr ""
 "The sentence is replaced; the former one remains in the steps that froze it. "
 "The Latin already written stays with the sentence."
 
-#: translations/views.py:288
+#: translations/views.py:292
 msgid "Enregistrer la phrase"
 msgstr "Save the sentence"
 
-#: translations/views.py:307
+#: translations/views.py:311
 #, python-format
 msgid "Scinder la phrase %(number)d"
 msgstr "Split sentence %(number)d"
 
-#: translations/views.py:309
+#: translations/views.py:313
 msgid ""
 "Allez à la ligne là où la phrase doit être coupée. Les mots ne changent "
 "pas ; le latin déjà écrit reste sur la première partie."
@@ -9170,16 +9186,16 @@ msgstr ""
 "Start a new line where the sentence is to be cut. The words do not change; "
 "the Latin already written stays on the first part."
 
-#: translations/views.py:313
+#: translations/views.py:317
 msgid "Scinder la phrase"
 msgstr "Split the sentence"
 
-#: translations/views.py:331
+#: translations/views.py:335
 #, python-format
 msgid "Fusionner les phrases %(number)d et %(next)d"
 msgstr "Merge sentences %(number)d and %(next)d"
 
-#: translations/views.py:334
+#: translations/views.py:338
 msgid ""
 "Les deux phrases n’en font plus qu’une. Dans chaque version, leurs latins "
 "sont mis bout à bout."
@@ -9187,20 +9203,20 @@ msgstr ""
 "The two sentences become one. In each version, their Latin is joined end to "
 "end."
 
-#: translations/views.py:338
+#: translations/views.py:342
 msgid "Fusionner"
 msgstr "Merge"
 
-#: translations/views.py:358
+#: translations/views.py:362
 msgid "Ajouter des phrases à la fin"
 msgstr "Add sentences at the end"
 
-#: translations/views.py:360
+#: translations/views.py:364
 #, python-format
 msgid "Ajouter des phrases après la phrase %(number)d"
 msgstr "Add sentences after sentence %(number)d"
 
-#: translations/views.py:365
+#: translations/views.py:369
 msgid ""
 "Collez le texte : il sera découpé en phrases, que vous vérifierez avant "
 "d’enregistrer."
@@ -9208,73 +9224,73 @@ msgstr ""
 "Paste the text: it will be split into sentences, which you will check before "
 "saving."
 
-#: translations/views.py:376
+#: translations/views.py:380
 msgid ""
 "Vérifiez le découpage : une phrase par ligne, une ligne vide entre deux "
 "paragraphes."
 msgstr ""
 "Check the split: one sentence per line, a blank line between two paragraphs."
 
-#: translations/views.py:378
+#: translations/views.py:382
 msgid "Ajouter les phrases"
 msgstr "Add the sentences"
 
-#: translations/views.py:416
+#: translations/views.py:420
 msgid "Le projet est créé."
 msgstr "The project has been created."
 
-#: translations/views.py:479
+#: translations/views.py:483
 msgid "Choisissez une version publiée de ce projet."
 msgstr "Choose a published version of this project."
 
-#: translations/views.py:485
+#: translations/views.py:489
 msgid "Le projet n’a plus de version de référence."
 msgstr "The project no longer has a reference version."
 
-#: translations/views.py:487
+#: translations/views.py:491
 msgid "La version de référence est choisie."
 msgstr "The reference version has been chosen."
 
-#: translations/views.py:747
+#: translations/views.py:751
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:758
+#: translations/views.py:762
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:896
+#: translations/views.py:900
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:911
+#: translations/views.py:915
 msgid "La version est publiée."
 msgstr "The version has been published."
 
-#: translations/views.py:1019
+#: translations/views.py:1023
 msgid "La copie est créée : c’est votre brouillon, visible de vous seul."
 msgstr "The copy is created: it is your draft, visible to you only."
 
-#: translations/views.py:1132
+#: translations/views.py:1136
 msgid "La proposition est envoyée."
 msgstr "The proposal is sent."
 
-#: translations/views.py:1245
+#: translations/views.py:1249
 msgid "La phrase est acceptée : elle entre dans votre texte de travail."
 msgstr "The sentence is accepted: it enters your working text."
 
-#: translations/views.py:1248
+#: translations/views.py:1252
 msgid "La phrase est refusée."
 msgstr "The sentence is refused."
 
-#: translations/views.py:1261
+#: translations/views.py:1265
 msgid "La proposition est retirée."
 msgstr "The proposal is withdrawn."
 
-#: translations/views.py:1295
+#: translations/views.py:1299
 #, python-format
 msgid "L’étape %(number)d est créée."
 msgstr "Step %(number)d is created."

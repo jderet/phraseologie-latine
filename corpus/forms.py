@@ -13,7 +13,9 @@ SCOPE_CORE = "core"
 SCOPE_ALL = "all"
 MODE_FORM = "form"
 MODE_LEMMA = "lemma"
-TERM_NUMBERS = (1, 2, 3)
+TERM_NUMBERS = (1, 2, 3, 4, 5)
+# The terms a panel shows at once; the others are folded away.
+PANEL_TERMS = 2
 
 
 class CorrectionForm(forms.ModelForm):
@@ -72,8 +74,16 @@ class SearchForm(forms.Form):
     mode2 = mode_field()
     term3 = forms.CharField(label=_("Troisième mot"), max_length=100, required=False)
     mode3 = mode_field()
+    term4 = forms.CharField(label=_("Quatrième mot"), max_length=100, required=False)
+    mode4 = mode_field()
+    term5 = forms.CharField(label=_("Cinquième mot"), max_length=100, required=False)
+    mode5 = mode_field()
     distance = forms.IntegerField(
-        label=_("Distance maximale (en mots)"), min_value=1, max_value=20, required=False
+        label=_("Distance maximale (en mots)"),
+        help_text=_("Entre le premier mot et chacun des autres."),
+        min_value=1,
+        max_value=20,
+        required=False,
     )
     ordered = forms.BooleanField(label=_("Les mots dans cet ordre"), required=False)
     scope = forms.ChoiceField(
@@ -150,6 +160,37 @@ class SearchForm(forms.Form):
 
     def clean_term3(self):
         return self._clean_term("term3")
+
+    def clean_term4(self):
+        return self._clean_term("term4")
+
+    def clean_term5(self):
+        return self._clean_term("term5")
+
+    def term_fields(self):
+        """(term, mode) bound fields, in order, for templates."""
+        return [(self[f"term{number}"], self[f"mode{number}"]) for number in TERM_NUMBERS]
+
+    def panel_terms(self):
+        """The terms a panel shows at once."""
+        return self.term_fields()[:PANEL_TERMS]
+
+    def folded_terms(self):
+        """The terms a panel folds away."""
+        return self.term_fields()[PANEL_TERMS:]
+
+    @property
+    def folded_terms_used(self):
+        """Whether a folded term, the distance or the order was given: the fold then stays open."""
+        if not self.is_bound:
+            return False
+        names = [f"term{number}" for number in TERM_NUMBERS[PANEL_TERMS:]]
+        distance = self.data.get("distance", "").strip()
+        return (
+            any(self.data.get(name, "").strip() for name in names)
+            or "ordered" in self.data
+            or distance not in ("", str(self.DEFAULT_DISTANCE))
+        )
 
     def clean(self):
         data = super().clean()
@@ -239,6 +280,10 @@ SEARCH_FIELDS = (
     "mode2",
     "term3",
     "mode3",
+    "term4",
+    "mode4",
+    "term5",
+    "mode5",
     "distance",
     "ordered",
     "scope",

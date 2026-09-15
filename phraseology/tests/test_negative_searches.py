@@ -17,6 +17,10 @@ class SearchQueryTests(PhraseologyTestCase):
     def test_a_query_keeps_the_search_parameters_in_order(self):
         data = QueryDict("page=3&scope=all&term2=consilium&term1=sumpsit&other=x")
         self.assertEqual(search_query(data), NOTHING)
+        data = QueryDict("term5=bene&distance=8&term4=publica&term1=de&mode5=lemma")
+        self.assertEqual(
+            search_query(data), "term1=de&term4=publica&term5=bene&mode5=lemma&distance=8"
+        )
 
     def test_a_search_described_in_words(self):
         make_layer()
@@ -25,6 +29,12 @@ class SearchQueryTests(PhraseologyTestCase):
         self.assertEqual(
             form.description,
             "consilium (lemme) + cap* (forme), à 5 mots au plus, dans cet ordre, noyau",
+        )
+        form = bound_search_form(QueryDict("term1=de&term2=re&term4=publica&term5=bene"))
+        self.assertTrue(form.is_valid())
+        self.assertEqual(
+            form.description,
+            "de (forme) + re (forme) + publica (forme) + bene (forme), à 5 mots au plus, noyau",
         )
         form = bound_search_form(QueryDict("term1=abiret&scope=all&date_from=-50"))
         self.assertTrue(form.is_valid())

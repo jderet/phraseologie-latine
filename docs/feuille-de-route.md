@@ -31,6 +31,7 @@ Développement :
 - [x] Forme normalisée pour la recherche
 - [x] Analyse automatique sur le Mac (LatinCy) : lemmes, morphologie, syntaxe UD, en couches versionnées
 - [x] Recherche par forme et par lemme, avec filtres et contexte
+- [x] Recherche jusqu'à cinq mots, aussi dans les panneaux des fiches, des justifications et de l'éditeur (15 septembre 2026)
 
 Terminé quand on trouve toutes les occurrences de *consilium capere* dans le noyau, avec leurs références.
 

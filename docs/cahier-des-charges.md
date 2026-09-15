@@ -110,7 +110,7 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 - Lemmes et morphologie importés de données vérifiées quand la licence le permet, calculés automatiquement ailleurs, corrigeables par la communauté (Q28).
 - Analyse syntaxique en dépendances, avec les étiquettes Universal Dependencies (Q29, Q30).
 - Les annotations humaines pointent vers des **identifiants de mots stables**, qui survivent à une nouvelle analyse automatique (Q31).
-- Recherche par forme et par lemme, puis requêtes par schémas (Q32) et profils statistiques de collocations (Q33).
+- Recherche par forme et par lemme, jusqu'à cinq mots (chacun à une distance donnée du premier), dans la page de recherche comme dans les panneaux des fiches, des justifications et de l'éditeur (choix du 15 septembre 2026), puis requêtes par schémas (Q32) et profils statistiques de collocations (Q33).
 
 ### 4.6 Comptes, rôles et modération
 

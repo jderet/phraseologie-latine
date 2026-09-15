@@ -75,8 +75,7 @@
       </section>
       <h2 id="panel-corpus">{% translate "Corpus" %}</h2>
       <form method="get" action="{% url 'corpus:search' %}" target="_blank" class="panel-search" data-fragment-url="{% url 'corpus:search_fragment' %}">
-        <div class="field">{{ search_form.term1.as_field_group }}{{ search_form.mode1.as_field_group }}</div>
-        <div class="field">{{ search_form.term2.as_field_group }}{{ search_form.mode2.as_field_group }}</div>
+        {% include "corpus/panel_terms.html" with form=search_form %}
         <div class="field">{{ search_form.scope.as_field_group }}</div>
         <button type="submit" class="button">{% translate "Chercher" %}</button>
       </form>
