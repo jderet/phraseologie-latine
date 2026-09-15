@@ -34,6 +34,7 @@ from .models import (
     UnitSurvey,
 )
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
+from .schema import format_schema, writes_case
 from .spotting import refresh_unit_forms
 
 
@@ -182,6 +183,27 @@ def update_unit(unit, user):
     if previous != {"schema": unit.schema, "reference_form": unit.reference_form}:
         refresh_unit_forms(unit)
     _check_still_complete(unit)
+    return revision
+
+
+@transaction.atomic
+def convert_schema(unit, administrator):
+    """Write the prepositional phrases of a schema with the preposition first; None if none is
+    written as the analysis writes it.
+
+    Run by an administrator on every unit, drafts included (``convert_schemas``): the schema
+    keeps its lemmas and its meaning, so its forms stay, but the change is recorded like any
+    other and its frequency is counted again.
+    """
+    written = format_schema(unit.edges)
+    if written == unit.schema or not writes_case(unit.schema):
+        return None
+    unit.schema = written
+    revision = save_with_revision(
+        unit, administrator, gettext("Schéma converti : préposition en tête du syntagme.")
+    )
+    with suppress(FrequencyTooLong):
+        refresh_frequency(unit)
     return revision
 
 
