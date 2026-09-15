@@ -402,6 +402,8 @@ class TokenAnalysis(models.Model):
                 name="corpus_analysis_lemma",
                 opclasses=["int8_ops", "varchar_pattern_ops"],
             ),
+            # The dependents of a word: a query by schema goes from each head to its dependents.
+            models.Index(fields=["layer", "head", "head_part"], name="corpus_analysis_head"),
         ]
 
     def __str__(self):

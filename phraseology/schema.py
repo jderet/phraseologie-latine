@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass
 
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext, gettext_noop
+from django.utils.translation import gettext, gettext_noop, pgettext_lazy
 
 from corpus.text import normalize
 
@@ -21,6 +21,47 @@ RELATIONS = frozenset(
     "acl advcl advmod amod appos aux case cc ccomp clf compound conj cop csubj dep det "
     "discourse dislocated expl fixed flat goeswith iobj list mark nmod nsubj nummod obj obl "
     "orphan parataxis punct reparandum root vocative xcomp".split()
+)
+# The relations offered when a schema is drawn, the common ones first; each label reads after
+# "a pour", as in "capere a pour objet consilium". The root is no relation between two words.
+RELATION_CHOICES = (
+    ("obj", pgettext_lazy("relation syntaxique", "objet"), True),
+    ("nsubj", pgettext_lazy("relation syntaxique", "sujet"), True),
+    ("nsubj:pass", pgettext_lazy("relation syntaxique", "sujet d’un passif"), True),
+    ("obl", pgettext_lazy("relation syntaxique", "complément circonstanciel"), True),
+    ("amod", pgettext_lazy("relation syntaxique", "épithète"), True),
+    ("advmod", pgettext_lazy("relation syntaxique", "adverbe"), True),
+    ("nmod", pgettext_lazy("relation syntaxique", "complément du nom"), True),
+    ("case", pgettext_lazy("relation syntaxique", "préposition"), True),
+    ("xcomp", pgettext_lazy("relation syntaxique", "infinitif complément"), True),
+    ("iobj", pgettext_lazy("relation syntaxique", "complément d’attribution"), True),
+    ("ccomp", pgettext_lazy("relation syntaxique", "complétive"), False),
+    ("advcl", pgettext_lazy("relation syntaxique", "subordonnée circonstancielle"), False),
+    ("acl", pgettext_lazy("relation syntaxique", "proposition complément du nom"), False),
+    ("csubj", pgettext_lazy("relation syntaxique", "proposition sujet"), False),
+    ("det", pgettext_lazy("relation syntaxique", "déterminant"), False),
+    ("nummod", pgettext_lazy("relation syntaxique", "numéral"), False),
+    ("cop", pgettext_lazy("relation syntaxique", "copule"), False),
+    ("aux", pgettext_lazy("relation syntaxique", "auxiliaire"), False),
+    ("mark", pgettext_lazy("relation syntaxique", "conjonction de subordination"), False),
+    ("conj", pgettext_lazy("relation syntaxique", "coordonné"), False),
+    ("cc", pgettext_lazy("relation syntaxique", "coordination"), False),
+    ("appos", pgettext_lazy("relation syntaxique", "apposition"), False),
+    ("vocative", pgettext_lazy("relation syntaxique", "vocatif"), False),
+    ("fixed", pgettext_lazy("relation syntaxique", "expression figée"), False),
+    ("flat", pgettext_lazy("relation syntaxique", "nom composé"), False),
+    ("compound", pgettext_lazy("relation syntaxique", "composé"), False),
+    ("parataxis", pgettext_lazy("relation syntaxique", "parataxe"), False),
+    ("discourse", pgettext_lazy("relation syntaxique", "particule de discours"), False),
+    ("dislocated", pgettext_lazy("relation syntaxique", "élément détaché"), False),
+    ("expl", pgettext_lazy("relation syntaxique", "explétif"), False),
+    ("orphan", pgettext_lazy("relation syntaxique", "ellipse"), False),
+    ("list", pgettext_lazy("relation syntaxique", "liste"), False),
+    ("clf", pgettext_lazy("relation syntaxique", "classificateur"), False),
+    ("goeswith", pgettext_lazy("relation syntaxique", "fragment de mot"), False),
+    ("reparandum", pgettext_lazy("relation syntaxique", "reprise"), False),
+    ("punct", pgettext_lazy("relation syntaxique", "ponctuation"), False),
+    ("dep", pgettext_lazy("relation syntaxique", "relation indéterminée"), False),
 )
 MAX_RELATIONS = 4
 # An open dependent, in queries only.

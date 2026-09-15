@@ -17,7 +17,7 @@ from django.utils.translation import ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
-from corpus.forms import MODE_FORM, SCOPE_CORE, SearchForm
+from corpus.forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm
 from justifications.display import visible_evidences
 from justifications.models import Challenge, Justification
 from moderation.registry import can_view
@@ -97,7 +97,11 @@ from .steps import (
 ITEMS_PER_PAGE = 50
 # Value of the comparison parameter that designates the working text of the author.
 WORKING_TEXT = "travail"
-PANEL_SEARCH_DEFAULTS = {"scope": SCOPE_CORE, "mode1": MODE_FORM, "mode2": MODE_FORM}
+PANEL_SEARCH_DEFAULTS = {
+    "scope": SCOPE_CORE,
+    "distance": SearchForm.DEFAULT_DISTANCE,
+    **{f"mode{number}": MODE_FORM for number in TERM_NUMBERS},
+}
 
 
 def _visible(user, queryset, pk):

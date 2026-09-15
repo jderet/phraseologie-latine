@@ -1,0 +1,13 @@
+{% load i18n %}{% for term, mode in form.panel_terms %}
+<div class="field">{{ term.as_field_group }}{{ mode.as_field_group }}</div>
+{% endfor %}
+<details class="panel-more"{% if form.folded_terms_used %} open{% endif %}>
+  <summary>{% translate "Jusqu’à cinq mots" %}</summary>
+  <div class="panel-more-fields">
+    {% for term, mode in form.folded_terms %}
+    <div class="field">{{ term.as_field_group }}{{ mode.as_field_group }}</div>
+    {% endfor %}
+    <div class="field">{{ form.distance.as_field_group }}</div>
+    <div class="field">{{ form.ordered.as_field_group }}</div>
+  </div>
+</details>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% translate "Modifier la fiche" %} · {{ unit.reference_form }} · {{ block.super }}{% endblock %}
 
@@ -13,13 +13,14 @@
   <form method="post" class="form">
     {% csrf_token %}
     {{ form }}
-    <p class="note">{% blocktranslate trimmed %}
+    <noscript><p class="note">{% blocktranslate trimmed %}
       Relations syntaxiques (Universal Dependencies) : obj pour l’objet, nsubj pour le sujet,
       nsubj:pass pour le sujet d’un passif, obl pour un complément circonstanciel, amod pour un
       adjectif épithète, advmod pour un adverbe, nmod pour un complément du nom, case pour une
       préposition.
-    {% endblocktranslate %}</p>
+    {% endblocktranslate %}</p></noscript>
     <button type="submit" class="button">{% translate "Enregistrer" %}</button>
   </form>
 </section>
+<script src="{% static 'js/schema.js' %}" defer></script>
 {% endblock %}

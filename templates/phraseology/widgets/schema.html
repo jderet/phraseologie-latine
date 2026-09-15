@@ -1,0 +1,92 @@
+{% load i18n %}{% include "django/forms/widgets/input.html" %}
+<div class="schema-builder" hidden
+  data-input="{{ widget.attrs.id }}"
+  data-words-from="{{ builder.words_from }}"
+  data-slot="{% if builder.slot %}1{% endif %}"
+  data-count="{% if builder.count %}1{% endif %}"
+  data-max-relations="{{ builder.max_relations }}"
+  data-lemmas-url="{{ builder.lemmas_url }}"
+  data-check-url="{{ builder.check_url }}"
+  data-label-written="{% translate 'Voir le schéma écrit' %}"
+  data-label-any="{% translate 'n’importe quel mot' %}"
+  data-label-lemma-of="{% translate 'Lemme de « %s »' %}"
+  data-label-ambiguous="{% translate 'Plusieurs lemmes possibles' %}"
+  data-label-unknown="{% translate 'Absent du corpus analysé' %}"
+  data-label-outside="{% translate 'Hors du schéma : relié à aucun mot' %}"
+  data-label-passive="{% translate 'aussi au passif' %}"
+  data-label-or="{% translate 'ou' %}"
+  data-label-variant="{% translate 'Variante' %}"
+  data-label-remove-variant="{% translate 'retirer' %}"
+  data-label-chosen="{% translate '« %s » est choisi : choisissez maintenant le mot qui en dépend.' %}"
+  data-label-choose="{% translate 'Choisissez une relation.' %}"
+  data-label-replaced="{% translate '« %s » dépendait déjà d’un autre mot : le nouveau lien remplace l’ancien.' %}"
+  data-label-cycle="{% translate 'Ce lien ferait une boucle : un mot ne peut pas dépendre d’un mot qui dépend de lui.' %}"
+  data-label-too-many="{% blocktranslate with limit=builder.max_relations %}Un schéma compte au plus {{ limit }} relations.{% endblocktranslate %}"
+  data-label-slot-head="{% translate '« n’importe quel mot » ne peut que dépendre d’un autre mot.' %}"
+  data-label-bad-lemma="{% translate 'Un lemme s’écrit en un seul mot, avec des lettres seulement.' %}"
+  data-label-error="{% translate 'Le serveur ne répond pas : réessayez dans un instant.' %}"{% if builder.count %}
+  data-label-counting="{% translate 'Recherche des occurrences…' %}"
+  data-label-one="{% translate '1 occurrence dans le noyau' %}"
+  data-label-many="{% translate '%s occurrences dans le noyau' %}"
+  data-label-none="{% translate 'Aucune occurrence dans le noyau (corpus %s)' %}"
+  data-label-too-long="{% translate 'Trop long à compter : le schéma est peut-être trop général.' %}"
+  data-label-see="{% translate 'voir' %}"{% endif %}>
+  <p class="schema-help">{% blocktranslate trimmed %}
+    Reliez les mots : cliquez sur le mot qui régit, puis sur le mot qui en dépend, ou tirez une
+    flèche de l’un vers l’autre. Au clavier, Entrée sur chacun des deux mots. Les mots en
+    pointillé restent hors du schéma ; ▾ change le lemme d’un mot.
+  {% endblocktranslate %}</p>
+  <div class="schema-canvas">
+    <svg class="schema-arcs" aria-hidden="true"></svg>
+    <ol class="schema-words" aria-label="{% translate 'Mots à relier' %}"></ol>
+  </div>
+  <p class="schema-empty note" hidden>{% if builder.words_from %}{% translate "Écrivez d’abord la forme de référence, ou ajoutez un mot." %}{% else %}{% translate "Ajoutez les mots à relier." %}{% endif %}</p>
+  <ul class="schema-links" aria-label="{% translate 'Liens du schéma' %}" hidden></ul>
+
+  <div class="schema-panel schema-link-panel" role="group" aria-label="{% translate 'Relation entre deux mots' %}" hidden>
+    <p class="schema-sentence">
+      <strong class="schema-head" lang="la"></strong> {% translate "a pour" %}
+      <select class="schema-relation" aria-label="{% translate 'Relation' %}">
+        <option value="">{% translate "— choisir la relation —" %}</option>
+        <optgroup label="{% translate 'Relations courantes' %}">
+          {% for relation in builder.common %}<option value="{{ relation.code }}" data-short="{{ relation.label }}">{{ relation.label }} ({{ relation.code }})</option>{% endfor %}
+        </optgroup>
+        <optgroup label="{% translate 'Plus de relations' %}">
+          {% for relation in builder.others %}<option value="{{ relation.code }}" data-short="{{ relation.label }}">{{ relation.label }} ({{ relation.code }})</option>{% endfor %}
+        </optgroup>
+      </select>
+      <strong class="schema-dependent" lang="la"></strong>
+    </p>
+    <p class="schema-passive" hidden><label><input type="checkbox" class="schema-passive-box" checked> {% translate "trouver aussi le passif" %}</label></p>
+    <div class="schema-variants"></div>
+    <p class="schema-panel-actions">
+      <button type="button" class="button schema-confirm">{% translate "Relier" %}</button>
+      <button type="button" class="button button-quiet schema-swap">⇄ {% translate "Inverser" %}</button>
+      <button type="button" class="button button-danger schema-unlink" hidden>{% translate "Supprimer le lien" %}</button>
+      <button type="button" class="link-button schema-add-variant">{% translate "ajouter une variante" %}</button>
+      <button type="button" class="link-button schema-cancel">{% translate "Annuler" %}</button>
+    </p>
+  </div>
+
+  <div class="schema-panel schema-word-panel" role="group" aria-label="{% translate 'Lemme d’un mot' %}" hidden>
+    <p class="schema-word-title"></p>
+    <p class="schema-lemma-choices"></p>
+    <p class="schema-lemma-other">
+      <label>{% translate "Autre lemme" %} <input type="text" class="schema-lemma-input" lang="la" spellcheck="false" autocomplete="off" maxlength="60"></label>
+      <button type="button" class="button button-quiet schema-lemma-set">{% translate "Choisir" %}</button>
+    </p>
+    <p class="schema-panel-actions">
+      <button type="button" class="link-button schema-word-remove">{% translate "Retirer ce mot" %}</button>
+      <button type="button" class="link-button schema-cancel">{% translate "Fermer" %}</button>
+    </p>
+  </div>
+
+  <p class="schema-add">
+    <label>{% translate "Ajouter un mot" %} <input type="text" class="schema-add-input" lang="la" spellcheck="false" autocomplete="off" maxlength="60"></label>
+    <button type="button" class="button button-quiet schema-add-word">{% translate "Ajouter" %}</button>
+    {% if builder.slot %}<button type="button" class="button button-quiet schema-add-slot">{% translate "Ajouter « n’importe quel mot »" %}</button>{% endif %}
+  </p>
+  <p class="schema-status" aria-live="polite"></p>
+  <p class="schema-problems" aria-live="polite"></p>
+  <p class="schema-preview" aria-live="polite"></p>
+</div>

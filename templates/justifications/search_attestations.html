@@ -2,8 +2,7 @@
   <h2 id="search-title">{% translate "Chercher des attestations" %}</h2>
   <form method="get" class="panel-search">
     {% for name, value in keep.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
-    <div class="field">{{ search.form.term1.as_field_group }}{{ search.form.mode1.as_field_group }}</div>
-    <div class="field">{{ search.form.term2.as_field_group }}{{ search.form.mode2.as_field_group }}</div>
+    {% include "corpus/panel_terms.html" with form=search.form %}
     <div class="field">{{ search.form.scope.as_field_group }}</div>
     <button type="submit" class="button button-quiet">{% translate "Chercher" %}</button>
   </form>

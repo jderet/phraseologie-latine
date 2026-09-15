@@ -21,6 +21,7 @@ class EditorPageTests(TranslationTestCase):
         self.assertContains(response, 'class="editor-panel"')
         self.assertContains(response, f'data-save-url="{save_url}"')
         self.assertContains(response, f'data-fragment-url="{reverse("corpus:search_fragment")}"')
+        self.assertContains(response, 'name="term5"')
         self.assertContains(response, 'data-insert="ā"')
         self.assertContains(response, 'data-insert="Ȳ"')
         self.assertContains(response, "js/editor.js")

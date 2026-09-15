@@ -42,6 +42,29 @@ class TimeLimitTests(TestCase):
         with self.assertRaises(ZeroDivisionError), TimeLimit():
             raise ZeroDivisionError
 
+    def statement_timeout(self):
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW statement_timeout")
+            return cursor.fetchone()[0]
+
+    def test_a_limit_of_its_own_where_the_site_sets_none(self):
+        with TimeLimit(seconds=0.05) as limit, connection.cursor() as cursor:
+            cursor.execute("SELECT pg_sleep(1)")
+        self.assertTrue(limit.exceeded)
+        self.assertEqual(self.statement_timeout(), "0")
+        with TimeLimit(seconds=5) as limit:
+            inside = self.statement_timeout()
+        self.assertFalse(limit.exceeded)
+        self.assertEqual(inside, "5s")
+        self.assertEqual(self.statement_timeout(), "0")
+
+    def test_the_timeout_of_the_site_applies_when_it_is_shorter(self):
+        with connection.cursor() as cursor:
+            cursor.execute("SET LOCAL statement_timeout = 2000")
+        with TimeLimit(seconds=5):
+            self.assertEqual(self.statement_timeout(), "2s")
+        self.assertEqual(self.statement_timeout(), "2s")
+
 
 class TooBroadSearchTests(PerseusSourceMixin, TestCase):
     def setUp(self):

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n corpus_tags %}
+{% load i18n corpus_tags static %}
 
 {% block title %}{% translate "Recherche par schéma" %} · {{ block.super }}{% endblock %}
 
@@ -23,7 +23,7 @@
     </div>
     <button type="submit" class="button">{% translate "Chercher" %}</button>
   </form>
-  <p class="note">{% translate "Relations les plus utiles : obj (objet), nsubj (sujet), nsubj:pass (sujet d’un passif), obl (complément du verbe), amod (adjectif épithète), advmod (adverbe), nmod (complément du nom), case (préposition), xcomp (infinitif complément)." %}</p>
+  <noscript><p class="note">{% translate "Relations les plus utiles : obj (objet), nsubj (sujet), nsubj:pass (sujet d’un passif), obl (complément du verbe), amod (adjectif épithète), advmod (adverbe), nmod (complément du nom), case (préposition), xcomp (infinitif complément)." %}</p></noscript>
   {% if form.is_bound and not layer %}
   <p class="notice">{% translate "La recherche par schéma n’est pas encore disponible : le corpus n’a pas été analysé." %}</p>
   {% endif %}
@@ -82,4 +82,5 @@
   <p class="note">{% blocktranslate trimmed with label=version.label %}Corpus interrogé : {{ label }}.{% endblocktranslate %}</p>
 </section>
 {% endif %}
+<script src="{% static 'js/schema.js' %}" defer></script>
 {% endblock %}

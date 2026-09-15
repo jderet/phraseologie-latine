@@ -48,7 +48,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 
 ## Architecture
 
-- Django 6.1, PostgreSQL, HTMX, deux composants JavaScript : l'éditeur de traduction et la lecture annotée (étape 6). Le corpus étant importé, PostgreSQL (Docker) est nécessaire en local ; l'intégration continue teste aussi sur PostgreSQL.
+- Django 6.1, PostgreSQL, HTMX, trois composants JavaScript : l'éditeur de traduction, la lecture annotée (étape 6) et le dessin du schéma des fiches (étape 9). Le corpus étant importé, PostgreSQL (Docker) est nécessaire en local ; l'intégration continue teste aussi sur PostgreSQL.
 - Réglages lus dans les variables d'environnement (`.env`, modèle dans `.env.example`) avec django-environ.
 - `config/` contient les réglages et les routes. Une application Django par domaine :
 
@@ -56,19 +56,19 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 |---|---|---|
 | `accounts` | utilisateurs, rôles, limites des nouveaux comptes | connexion par e-mail, inscription, rôles, limites |
 | `core` | pages générales | page d'accueil |
-| `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | noyau importé et analysé (LatinCy), lecture continue par pages (`corpus/reading.py`) avec traduction en regard, recherche par forme et par lemme, exports TEI et CoNLL-U d'un passage ou d'une œuvre avec sa phraséologie (`corpus/exports.py`) |
+| `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | noyau importé et analysé (LatinCy), lecture continue par pages (`corpus/reading.py`) avec traduction en regard, recherche par forme et par lemme (jusqu'à cinq mots), exports TEI et CoNLL-U d'un passage ou d'une œuvre avec sa phraséologie (`corpus/exports.py`) |
 | `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements, discussions, avis indicatifs |
 | `translations` | textes sources, projets, versions, segments, étapes, propositions | textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable ; étapes à la manière de Git (`translations/steps.py`), texte source modifiable dont le latin suit les phrases, et propositions de modification du texte adoptées ou refusées en bloc (`translations/sources.py`), différences mot à mot (`translations/diffs.py`), copie d'une version publiée, propositions de modifications décidées phrase par phrase |
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
 | `api` | API publique en lecture, export complet, page des données ouvertes | API JSON (fiches, néologismes, versions publiées, recherches infructueuses, repérages, notes de lecture, corrections validées), export zip |
 | `notebook` | carnet personnel : surlignages, notes privées, listes de passages | visible de son seul propriétaire, jamais dans l'API ni les exports, effacé avec le compte |
-| `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications |
+| `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications ; schéma dessiné en reliant des mots (`phraseology/widgets.py`, `phraseology/schema_help.py`) |
 
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.
 - Les traitements lourds du corpus sont des commandes `manage.py` lancées sur le Mac : `import_perseus` lit le catalogue `corpus/data/` et les fichiers TEI ; `analyze_corpus` crée une couche d'analyse LatinCy, raccrochée aux mots par leur position dans le texte (un seul processus : le modèle ne se transmet pas entre processus).
 - Contenus contribués : hériter de `moderation.models.ModeratedContent`, s'inscrire avec `moderation.registry.register` et enregistrer chaque modification par `moderation.services.save_with_revision`. `register` déclare aussi le propriétaire, la règle de visibilité (brouillons), ce qui compte dans la limite des nouveaux comptes, les champs qu'un retour arrière ne rétablit pas, et qui peut discuter ou voter.
 - `deploy/` : scripts d'exploitation (sauvegarde, restauration, vérification) ; procédures et tâches quotidiennes dans [docs/exploitation.md](docs/exploitation.md).
-- Deux composants JavaScript seulement : l'éditeur de traduction (`static/js/editor.js`) et la lecture annotée (étape 6, choix du 14 septembre 2026). Sans eux, les pages fonctionnent par formulaires ; la lecture montre ses soulignements et des liens vers les fiches. Le PDF est enregistré par le navigateur depuis la page imprimable.
+- Trois composants JavaScript seulement : l'éditeur de traduction (`static/js/editor.js`), la lecture annotée (`static/js/reading.js`, étape 6, choix du 14 septembre 2026) et le dessin du schéma (`static/js/schema.js`, étape 9, choix du 15 septembre 2026). Sans eux, les pages fonctionnent par formulaires ; la lecture montre ses soulignements et des liens vers les fiches ; le schéma s'écrit à la main. Le PDF est enregistré par le navigateur depuis la page imprimable.
 
 ## Conventions
 
