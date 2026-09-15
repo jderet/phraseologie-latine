@@ -61,8 +61,15 @@ def save_with_revision(obj, author, comment="", m2m=None):
     registration = get_registration(obj)
     creating = obj._state.adding
     check_can_contribute(author, counted=creating and registration.counts_toward_limit)
-    check_text_for_links(author, *(getattr(obj, name) for name in registration.text_fields))
     before = None if creating else snapshot(_locked(obj))
+    # Only the text this change writes is checked: closing a proposal whose explanation holds a
+    # link, for instance, does not block a new account.
+    written = [
+        getattr(obj, name)
+        for name in registration.text_fields
+        if creating or before.get(name) != getattr(obj, name)
+    ]
+    check_text_for_links(author, *written)
     obj.save()
     for name, values in (m2m or {}).items():
         getattr(obj, name).set(values)

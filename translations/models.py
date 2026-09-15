@@ -467,6 +467,122 @@ class StepSentence(models.Model):
         return self.text
 
 
+class ChangeProposal(ModeratedContent):
+    """Changes proposed to the published version of someone else, like a pull request.
+
+    The author of the version accepts or refuses each proposed sentence (Q36).
+    """
+
+    class Status(models.TextChoices):
+        OPEN = "open", _("ouverte")
+        CLOSED = "closed", _("close")
+        WITHDRAWN = "withdrawn", _("retirée par son auteur")
+
+    version = models.ForeignKey(
+        TranslationVersion,
+        on_delete=models.PROTECT,
+        related_name="proposals",
+        verbose_name=_("version"),
+    )
+    base_step = models.ForeignKey(
+        VersionStep,
+        on_delete=models.PROTECT,
+        related_name="proposals",
+        editable=False,
+        verbose_name=_("étape de départ"),
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="change_proposals",
+        verbose_name=_("auteur"),
+    )
+    explanation = models.TextField(
+        _("explication"),
+        max_length=3000,
+        help_text=_("Pourquoi ces changements : tours attestés, fautes corrigées, style visé."),
+    )
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.OPEN, editable=False
+    )
+    created_at = models.DateTimeField(_("proposée le"), default=timezone.now, editable=False)
+    closed_at = models.DateTimeField(_("close le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("proposition de modifications")
+        verbose_name_plural = _("propositions de modifications")
+        ordering = ["-created_at", "-pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(status="open", closed_at__isnull=True)
+                | (~Q(status="open") & Q(closed_at__isnull=False)),
+                name="translations_proposal_closing",
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("Proposition de %(name)s pour %(version)s") % {
+            "name": self.author.public_name,
+            "version": self.version,
+        }
+
+    def get_absolute_url(self):
+        return reverse("translations:proposal", args=[self.pk])
+
+    @property
+    def is_open(self):
+        return self.status == self.Status.OPEN
+
+
+class ProposedSentence(ModeratedContent):
+    """The Latin proposed for one sentence, and the decision of the author of the version."""
+
+    class Decision(models.TextChoices):
+        PENDING = "pending", _("en attente")
+        ACCEPTED = "accepted", _("acceptée")
+        REFUSED = "refused", _("refusée")
+
+    proposal = models.ForeignKey(
+        ChangeProposal,
+        on_delete=models.PROTECT,
+        related_name="sentences",
+        verbose_name=_("proposition"),
+    )
+    segment = models.ForeignKey(
+        Segment, on_delete=models.PROTECT, related_name="+", verbose_name=_("phrase source")
+    )
+    base_text = models.TextField(_("latin de l’étape de départ"), blank=True, editable=False)
+    text = models.TextField(_("latin proposé"), max_length=4000, blank=True)
+    decision = models.CharField(
+        _("décision"),
+        max_length=10,
+        choices=Decision.choices,
+        default=Decision.PENDING,
+        editable=False,
+    )
+    decided_at = models.DateTimeField(_("examinée le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("phrase proposée")
+        verbose_name_plural = _("phrases proposées")
+        ordering = ["proposal", "segment__order"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["proposal", "segment"], name="translations_one_proposed_text_per_segment"
+            ),
+        ]
+
+    def __str__(self):
+        return self.text
+
+    def get_absolute_url(self):
+        return f"{self.proposal.get_absolute_url()}#phrase-{self.segment.order}"
+
+    @property
+    def is_pending(self):
+        return self.decision == self.Decision.PENDING
+
+
 def version_visible_to(user, version):
     return version.is_published or is_version_author(user, version)
 
@@ -513,4 +629,21 @@ register(
     visible_to=step_visible_to,
     counts_toward_limit=False,
     not_reverted=("during_draft",),
+)
+register(
+    ChangeProposal,
+    owner_field="author",
+    text_fields=("explanation",),
+    visible_to=lambda user, proposal: version_visible_to(user, proposal.version),
+    # A revert never reopens or closes a proposal.
+    not_reverted=("status", "closed_at"),
+    discussion=lambda user, proposal: proposal.is_open,
+)
+register(
+    ProposedSentence,
+    owner_field="proposal.author",
+    text_fields=("text",),
+    visible_to=lambda user, proposed: version_visible_to(user, proposed.proposal.version),
+    counts_toward_limit=False,
+    not_reverted=("decision", "decided_at"),
 )

@@ -28,6 +28,11 @@ def can_copy(user, step):
     )
 
 
+def can_propose(user, version):
+    """Anyone but its author may propose changes to a published version; its author decides."""
+    return can_challenge(user, version)
+
+
 def can_challenge(user, version):
     """Anyone but its author may contest the choices of a published version."""
     return (

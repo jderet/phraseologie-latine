@@ -11,6 +11,8 @@ from django.utils.translation import gettext
 from moderation.services import save_with_revision
 
 from .models import (
+    ChangeProposal,
+    ProposedSentence,
     Segment,
     StepSentence,
     TranslatedSegment,
@@ -18,9 +20,9 @@ from .models import (
     TranslationVersion,
     VersionStep,
 )
-from .permissions import can_copy
+from .permissions import can_copy, can_propose
 from .segmentation import to_lines
-from .steps import pending_changes, step_sentences, waiting_justifications
+from .steps import pending_changes, public_step, step_sentences, waiting_justifications
 
 
 def normalize_sentence(text):
@@ -60,8 +62,11 @@ def create_version(version, author):
 
 
 @transaction.atomic
-def save_translation(version, segment, text, author):
-    """Save the Latin of one sentence of a version; return None when nothing changed."""
+def save_translation(version, segment, text, author, written_by=None):
+    """Save the Latin of one sentence of a version; return None when nothing changed.
+
+    ``written_by`` credits someone else with the new Latin: the author of an accepted proposal.
+    """
     if author.pk != version.author_id:
         raise PermissionDenied
     if segment.source_text_id != version.project.source_text_id:
@@ -73,10 +78,87 @@ def save_translation(version, segment, text, author):
             return None
         translated = TranslatedSegment(version=version, segment=segment)
     if translated.text != text:
-        # The author rewrites the sentence: it is theirs again.
-        translated.written_by = None
+        # A rewritten sentence belongs to whoever wrote the new Latin.
+        credited = written_by is not None and written_by.pk != version.author_id
+        translated.written_by = written_by if credited else None
     translated.text = text
     return save_with_revision(translated, author)
+
+
+@transaction.atomic
+def create_proposal(proposal, author, texts):
+    """Propose changes to the published version of someone else, like a pull request.
+
+    ``texts`` maps sentences of the source text to Latin; only those that differ from the
+    latest public step are kept. The author of the version decides on each (Q36).
+    """
+    version = proposal.version
+    step = public_step(version)
+    if step is None or not can_propose(author, version):
+        raise PermissionDenied
+    frozen = step_sentences(step)
+    changed = []
+    for segment, text in sorted(texts.items(), key=lambda item: item[0].order):
+        if segment.source_text_id != version.project.source_text_id:
+            raise ValueError("The sentence does not belong to the text of the version.")
+        text = normalize_sentence(text)
+        base = frozen[segment.pk].text if segment.pk in frozen else ""
+        if text != base:
+            changed.append((segment, base, text))
+    if not changed:
+        raise ValidationError(
+            gettext("Changez au moins une phrase avant d’envoyer la proposition."),
+            code="unchanged",
+        )
+    proposal.author = author
+    proposal.base_step = step
+    save_with_revision(proposal, author)
+    for segment, base, text in changed:
+        proposed = ProposedSentence(proposal=proposal, segment=segment, base_text=base, text=text)
+        save_with_revision(proposed, author)
+    return proposal
+
+
+@transaction.atomic
+def decide_sentence(proposed, user, accept):
+    """The author of the version accepts or refuses a proposed sentence (Q36).
+
+    An accepted sentence replaces the working text, in the name of whoever proposed it; the
+    public sees it at the next step. The proposal closes once every sentence is decided.
+    """
+    proposal = ChangeProposal.objects.select_for_update().get(pk=proposed.proposal_id)
+    version = proposal.version
+    if user.pk != version.author_id:
+        raise PermissionDenied
+    if not proposal.is_open:
+        raise ValidationError(gettext("Cette proposition est close."), code="closed")
+    proposed = ProposedSentence.objects.select_for_update().get(pk=proposed.pk)
+    if not proposed.is_pending:
+        raise ValidationError(gettext("Cette phrase a déjà été examinée."), code="decided")
+    if accept:
+        save_translation(version, proposed.segment, proposed.text, user, written_by=proposal.author)
+        proposed.decision = ProposedSentence.Decision.ACCEPTED
+    else:
+        proposed.decision = ProposedSentence.Decision.REFUSED
+    proposed.decided_at = timezone.now()
+    save_with_revision(proposed, user, comment=proposed.get_decision_display())
+    if not proposal.sentences.filter(decision=ProposedSentence.Decision.PENDING).exists():
+        proposal.status = ChangeProposal.Status.CLOSED
+        proposal.closed_at = timezone.now()
+        save_with_revision(proposal, user, comment=gettext("Proposition close"))
+    return proposed
+
+
+@transaction.atomic
+def withdraw_proposal(proposal, user):
+    proposal = ChangeProposal.objects.select_for_update().get(pk=proposal.pk)
+    if user.pk != proposal.author_id:
+        raise PermissionDenied
+    if not proposal.is_open:
+        raise ValidationError(gettext("Cette proposition est close."), code="closed")
+    proposal.status = ChangeProposal.Status.WITHDRAWN
+    proposal.closed_at = timezone.now()
+    return save_with_revision(proposal, user, comment=gettext("Proposition retirée"))
 
 
 @transaction.atomic

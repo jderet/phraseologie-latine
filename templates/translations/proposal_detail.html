@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ proposal }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a> · <a href="{% url 'translations:proposal_list' version.pk %}">{% translate "Propositions" %}</a></p>
+  <h1>{% blocktranslate with name=proposal.author.public_name %}Proposition de {{ name }}{% endblocktranslate %}</h1>
+  <p><span class="badge{% if proposal.is_open %} review-badge{% endif %}">{{ proposal.get_status_display }}</span></p>
+  {% if proposal.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Auteur" %}</dt>
+      <dd><a href="{{ proposal.author.get_absolute_url }}">{{ proposal.author.public_name }}</a>, {{ proposal.created_at|date:"j F Y" }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Texte de départ" %}</dt>
+      <dd><a href="{{ proposal.base_step.get_absolute_url }}">{% blocktranslate with number=proposal.base_step.number %}étape {{ number }}{% endblocktranslate %}</a></dd>
+    </div>
+    {% if proposal.closed_at %}
+    <div>
+      <dt>{% translate "Close le" %}</dt>
+      <dd>{{ proposal.closed_at|date:"j F Y" }}</dd>
+    </div>
+    {% endif %}
+  </dl>
+
+  <h2>{% translate "Explication" %}</h2>
+  <p>{{ proposal.explanation|linebreaksbr }}</p>
+
+  <h2>{% translate "Phrases proposées" %}</h2>
+  {% if can_decide %}
+  <p class="note">{% translate "Acceptez ou refusez chaque phrase. Une phrase acceptée entre dans votre texte de travail, au nom de qui l’a proposée ; le public la verra à votre prochaine étape." %}</p>
+  {% endif %}
+  <ol class="step-changes">
+    {% for item in sentences %}{% with proposed=item.proposed %}
+    <li class="step-change" id="phrase-{{ proposed.segment.order }}">
+      <span class="bitext-number">{{ proposed.segment.order }}</span>
+      <div>
+        <p class="muted" lang="{{ source.language }}">{{ proposed.segment.text }}</p>
+        <p class="word-diff" lang="la">{% include "translations/word_diff.html" with chunks=item.chunks %}</p>
+        {% if not proposed.text %}<p class="muted">{% translate "(phrase effacée)" %}</p>{% endif %}
+        <p class="row-origin"><span class="badge">{{ proposed.get_decision_display }}</span>{% if proposed.decided_at %} {{ proposed.decided_at|date:"j F Y" }}{% endif %}</p>
+        {% if item.changed_since %}
+        <p class="notice">{% translate "Votre texte de travail a changé depuis cette proposition ; accepter le remplacera :" %} <span lang="la">{{ item.working|default:"—" }}</span></p>
+        {% endif %}
+        {% if can_decide and proposed.is_pending %}
+        <form method="post" action="{% url 'translations:proposed_sentence_decide' proposed.pk %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" name="decision" value="accept" class="button">{% translate "Accepter" %}</button>
+          <button type="submit" name="decision" value="refuse" class="button button-quiet">{% translate "Refuser" %}</button>
+        </form>
+        {% endif %}
+      </div>
+    </li>
+    {% endwith %}{% endfor %}
+  </ol>
+
+  {% if can_withdraw %}
+  <form method="post" action="{% url 'translations:proposal_withdraw' proposal.pk %}" class="actions">
+    {% csrf_token %}
+    <button type="submit" class="button button-quiet">{% translate "Retirer ma proposition" %}</button>
+  </form>
+  {% endif %}
+
+  {% translate "La discussion est close." as closed_message %}
+  {% discussion proposal closed_message %}
+  {% moderation_links proposal %}
+</article>
+{% endblock %}

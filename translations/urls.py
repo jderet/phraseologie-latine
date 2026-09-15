@@ -32,6 +32,15 @@ urlpatterns = [
     path("versions/<int:pk>/etapes/comparer/", views.step_compare, name="step_compare"),
     path("versions/<int:pk>/etapes/<int:number>/", views.step_detail, name="step"),
     path("versions/<int:pk>/etapes/<int:number>/copier/", views.version_copy, name="version_copy"),
+    path("versions/<int:pk>/proposer/", views.proposal_create, name="proposal_create"),
+    path("versions/<int:pk>/propositions/", views.proposal_list, name="proposal_list"),
+    path("propositions/<int:pk>/", views.proposal_detail, name="proposal"),
+    path("propositions/<int:pk>/retirer/", views.proposal_withdraw, name="proposal_withdraw"),
+    path(
+        "propositions/phrases/<int:pk>/decider/",
+        views.proposed_sentence_decide,
+        name="proposed_sentence_decide",
+    ),
     path("versions/<int:pk>/style/", views.version_settings, name="version_settings"),
     path("versions/<int:pk>/publier/", views.version_publish, name="version_publish"),
     path(

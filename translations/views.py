@@ -7,7 +7,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Prefetch, Q
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -26,6 +26,7 @@ from .diffs import word_diff
 from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
+    ProposalForm,
     PublishForm,
     ReferenceForm,
     SourceTextEditForm,
@@ -34,18 +35,28 @@ from .forms import (
     TranslationTextForm,
     VersionForm,
 )
-from .models import SourceText, TranslationProject, TranslationVersion, is_version_author
-from .permissions import can_challenge, can_copy, can_edit, can_translate
+from .models import (
+    ChangeProposal,
+    ProposedSentence,
+    SourceText,
+    TranslationProject,
+    TranslationVersion,
+    is_version_author,
+)
+from .permissions import can_challenge, can_copy, can_edit, can_propose, can_translate
 from .segmentation import from_lines, segment, to_lines
 from .services import (
     copy_version,
     create_project,
+    create_proposal,
     create_source_text,
     create_step,
     create_version,
+    decide_sentence,
     publish_version,
     save_translation,
     set_reference_version,
+    withdraw_proposal,
 )
 from .steps import (
     latest_step,
@@ -429,6 +440,10 @@ def version_detail(request, pk):
             "is_reference": version.pk == version.project.reference_version_id,
             "can_challenge": step is not None and can_challenge(user, version),
             "copy_step": copy_step if copy_step and can_copy(user, copy_step) else None,
+            "can_propose": step is not None and can_propose(user, version),
+            "open_proposal_count": version.proposals.filter(
+                status=ChangeProposal.Status.OPEN, is_hidden=False
+            ).count(),
             **_progress(rows),
         },
     )
@@ -804,6 +819,175 @@ def step_compare(request, pk):
             "rows": rows,
         },
     )
+
+
+# Proposals
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def proposal_create(request, pk):
+    """Propose changes to the latest public step of the published version of someone else."""
+    user = request.user
+    version = _version(user, pk)
+    step = public_step(version)
+    if step is None:
+        raise Http404
+    if not can_propose(user, version):
+        raise PermissionDenied
+    frozen = _frozen_texts(step)
+    rows = [
+        {"segment": source_segment, "text": frozen.get(source_segment.pk, ""), "errors": None}
+        for source_segment in version.project.source_text.segments.all()
+    ]
+    form = ProposalForm(request.POST or None, user=user)
+    if request.method == "POST":
+        texts = {}
+        for row in rows:
+            key = f"s{row['segment'].pk}"
+            if key not in request.POST:
+                continue
+            row["text"] = request.POST[key]
+            text_form = TranslationTextForm({"text": request.POST[key]}, user=user)
+            if text_form.is_valid():
+                texts[row["segment"]] = text_form.cleaned_data["text"]
+            else:
+                row["errors"] = text_form.errors["text"]
+        if form.is_valid() and not any(row["errors"] for row in rows):
+            proposal = form.save(commit=False)
+            proposal.version = version
+            try:
+                proposal, saved = _contribute(request, create_proposal, proposal, user, texts)
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                if saved:
+                    messages.success(request, _("La proposition est envoyée."))
+                    return redirect(proposal)
+    return render(
+        request,
+        "translations/proposal_create.html",
+        {
+            "version": version,
+            "project": version.project,
+            "source": version.project.source_text,
+            "step": step,
+            "rows": rows,
+            "form": form,
+        },
+    )
+
+
+def _proposal(user, pk):
+    queryset = ChangeProposal.objects.select_related(
+        "version__project__source_text", "version__author", "author", "base_step"
+    )
+    proposal = get_object_or_404(queryset, pk=pk)
+    if not can_view(user, proposal.version) or not can_view(user, proposal):
+        raise Http404
+    return proposal
+
+
+def proposal_detail(request, pk):
+    """The proposed sentences word by word; the author of the version decides on each."""
+    user = request.user
+    proposal = _proposal(user, pk)
+    version = proposal.version
+    can_decide = proposal.is_open and can_translate(user, version)
+    # Only the author of the version sees their working text, to spot what changed since.
+    working = dict(version.segments.values_list("segment_id", "text")) if can_decide else {}
+    sentences = []
+    for proposed in proposal.sentences.select_related("segment"):
+        proposed.proposal = proposal
+        if not can_view(user, proposed):
+            continue
+        current = working.get(proposed.segment_id, "")
+        sentences.append(
+            {
+                "proposed": proposed,
+                "chunks": word_diff(proposed.base_text, proposed.text),
+                "working": current,
+                "changed_since": can_decide
+                and proposed.is_pending
+                and current != proposed.base_text,
+            }
+        )
+    return render(
+        request,
+        "translations/proposal_detail.html",
+        {
+            "proposal": proposal,
+            "version": version,
+            "project": version.project,
+            "source": version.project.source_text,
+            "sentences": sentences,
+            "can_decide": can_decide,
+            "can_withdraw": proposal.is_open and user.pk == proposal.author_id,
+        },
+    )
+
+
+def proposal_list(request, pk):
+    """The proposals made to a version, open ones first."""
+    user = request.user
+    version = _version(user, pk)
+    proposals = []
+    queryset = version.proposals.select_related("author").annotate(
+        sentence_count=Count("sentences")
+    )
+    for proposal in queryset:
+        proposal.version = version
+        if can_view(user, proposal):
+            proposals.append(proposal)
+    proposals.sort(key=lambda proposal: not proposal.is_open)
+    step = public_step(version)
+    return render(
+        request,
+        "translations/proposal_list.html",
+        {
+            "version": version,
+            "project": version.project,
+            "proposals": proposals,
+            "can_propose": step is not None and can_propose(user, version),
+        },
+    )
+
+
+@login_required
+@require_POST
+def proposed_sentence_decide(request, pk):
+    """The author of the version accepts or refuses one proposed sentence."""
+    proposed = get_object_or_404(ProposedSentence.objects.select_related("segment"), pk=pk)
+    proposal = _proposal(request.user, proposed.proposal_id)
+    decision = request.POST.get("decision")
+    if decision not in ("accept", "refuse"):
+        return HttpResponseBadRequest()
+    accept = decision == "accept"
+    try:
+        decide_sentence(proposed, request.user, accept=accept)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        if accept:
+            messages.success(
+                request, _("La phrase est acceptée : elle entre dans votre texte de travail.")
+            )
+        else:
+            messages.success(request, _("La phrase est refusée."))
+    return redirect(f"{proposal.get_absolute_url()}#phrase-{proposed.segment.order}")
+
+
+@login_required
+@require_POST
+def proposal_withdraw(request, pk):
+    proposal = _proposal(request.user, pk)
+    try:
+        withdraw_proposal(proposal, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("La proposition est retirée."))
+    return redirect(proposal)
 
 
 def _frozen_texts(step):

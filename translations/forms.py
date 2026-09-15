@@ -5,7 +5,13 @@ from django.utils.translation import ngettext
 
 from accounts.limits import check_text_for_links
 
-from .models import SourceText, TranslationProject, TranslationVersion, VersionStep
+from .models import (
+    ChangeProposal,
+    SourceText,
+    TranslationProject,
+    TranslationVersion,
+    VersionStep,
+)
 from .segmentation import from_lines
 from .services import normalize_sentence
 
@@ -113,6 +119,15 @@ class StepForm(ContributionForm):
     class Meta:
         model = VersionStep
         fields = ("message",)
+
+
+class ProposalForm(ContributionForm):
+    link_fields = ("explanation",)
+
+    class Meta:
+        model = ChangeProposal
+        fields = ("explanation",)
+        widgets = {"explanation": forms.Textarea(attrs={"rows": 5})}
 
 
 class PublishForm(forms.Form):
