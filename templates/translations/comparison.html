@@ -1,0 +1,33 @@
+{% load i18n %}{% if comparison.source_changes %}
+<p class="step-part">{% translate "Texte source" %}</p>
+<ol class="step-changes">
+  {% for item in comparison.source_changes %}
+  <li class="step-change">
+    <span class="bitext-number" aria-hidden="true">·</span>
+    <div>
+      <p><strong>{{ item.label }}</strong> <span class="muted">{% blocktranslate with name=item.change.author.public_name %}par {{ name }}{% endblocktranslate %}{% if item.change.adopted_by %}, {% blocktranslate with name=item.change.adopted_by.public_name %}adopté par {{ name }}{% endblocktranslate %}{% endif %}</span></p>
+      {% if item.chunks %}
+      <p class="word-diff" lang="{{ source.language }}">{% include "translations/word_diff.html" with chunks=item.chunks %}</p>
+      {% else %}
+      {% for number, sentence in item.removed %}<p class="muted" lang="{{ source.language }}">{{ number }}. {{ sentence.text }}</p>{% endfor %}
+      {% for number, sentence in item.added %}<p class="word-diff" lang="{{ source.language }}">{% if item.removed %}→ {% endif %}{{ number }}. <ins>{{ sentence.text }}</ins></p>{% endfor %}
+      {% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}{% if comparison.sentences %}
+<p class="step-part">{% translate "Latin" %}</p>
+<ol class="step-changes">
+  {% for row in comparison.sentences %}
+  <li class="step-change">
+    <span class="bitext-number">{{ row.number }}</span>
+    <div>
+      <p class="muted" lang="{{ source.language }}">{{ row.segment.text }}</p>
+      <p class="word-diff" lang="la">{% include "translations/word_diff.html" with chunks=row.chunks %}</p>
+      {% if not row.after %}<p class="muted">{% translate "(phrase effacée)" %}</p>{% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}

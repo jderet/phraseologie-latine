@@ -780,6 +780,29 @@ article > h2 {
   margin: 0;
 }
 
+.step-part {
+  margin: 14px 0 4px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.step-summary {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.step-detail {
+  margin-top: 6px;
+}
+
+.step-detail summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
 .word-diff {
   font-family: var(--serif);
   font-size: 1.08rem;

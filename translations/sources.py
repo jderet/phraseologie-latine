@@ -10,7 +10,9 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext
+from django.utils.translation import gettext, ngettext
+
+from .diffs import word_diff
 
 INSERT, EDIT, MERGE, SPLIT = "insert", "edit", "merge", "split"
 
@@ -105,6 +107,40 @@ class Carried:
     written_by_id: int | None = None
 
 
+@dataclass(frozen=True)
+class Described:
+    """A change of the source text as a comparison shows it.
+
+    ``removed`` and ``added`` are (number, sentence) pairs, numbered as in the text before and
+    after the change; ``chunks`` is the word diff of an edited sentence.
+    """
+
+    change: object
+    removed: list
+    added: list
+    chunks: list
+
+    @property
+    def label(self):
+        kind = self.change.kind
+        if kind == INSERT:
+            return ngettext(
+                "Phrase %(first)d ajoutée", "Phrases %(first)d à %(last)d ajoutées", len(self.added)
+            ) % {"first": self.added[0][0], "last": self.added[-1][0]}
+        number = self.removed[0][0]
+        if kind == EDIT:
+            return gettext("Phrase %(number)d modifiée") % {"number": number}
+        if kind == MERGE:
+            return gettext("Phrases %(number)d et %(next)d fusionnées") % {
+                "number": number,
+                "next": self.removed[-1][0],
+            }
+        return gettext("Phrase %(number)d scindée en %(count)d") % {
+            "number": number,
+            "count": len(self.added),
+        }
+
+
 def is_active(segment, state):
     """Whether the sentence belongs to the text at this state."""
     return segment.added_in <= state and (segment.removed_in is None or segment.removed_in > state)
@@ -197,3 +233,22 @@ class SourceHistory:
             if carried is not None:
                 texts[self.added[number][0].pk] = carried
         return texts
+
+    def describe(self, from_state, to_state=None):
+        """The changes of the text after ``from_state`` up to ``to_state``, in order."""
+        to_state = self._state(to_state)
+        if to_state <= from_state:
+            return []
+        changes = self.source_text.changes.filter(
+            number__gt=from_state, number__lte=to_state
+        ).select_related("author", "adopted_by")
+        described = []
+        before = self.numbers_at(from_state)
+        for change in changes.order_by("number"):
+            after = self.numbers_at(change.number)
+            removed = [(before[segment.pk], segment) for segment in self.removed[change.number]]
+            added = [(after[segment.pk], segment) for segment in self.added[change.number]]
+            chunks = word_diff(removed[0][1].text, added[0][1].text) if change.kind == EDIT else []
+            described.append(Described(change, removed, added, chunks))
+            before = after
+        return described

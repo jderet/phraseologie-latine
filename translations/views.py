@@ -74,10 +74,12 @@ from .services import (
 from .sources import SourceHistory
 from .steps import (
     carried,
+    compare,
     latest_step,
     pending_changes,
     public_step,
     shown_sentences,
+    step_history,
     step_sentences,
     waiting_justifications,
 )
@@ -925,15 +927,19 @@ def version_publish(request, pk):
 
 
 def step_list(request, pk):
-    """The steps of a version the user may see, the latest first."""
+    """The steps of a version the user may see, the latest first, each with what it changed
+    since the previous one: a summary, and the detail word by word."""
     user = request.user
     version = _version(user, pk)
-    steps = []
-    queryset = version.steps.annotate(changed_count=Count("sentences")).order_by("-number")
-    for step in queryset:
-        step.version = version
-        if can_view(user, step):
-            steps.append(step)
+    steps = [
+        step
+        for step in version.steps.order_by("number")
+        if can_view(user, _with_version(step, version))
+    ]
+    entries = [
+        {"step": step, "comparison": comparison}
+        for step, comparison in reversed(step_history(version, steps))
+    ]
     current = public_step(version)
     return render(
         request,
@@ -941,7 +947,9 @@ def step_list(request, pk):
         {
             "version": version,
             "project": version.project,
-            "steps": steps,
+            "source": version.project.source_text,
+            "steps": steps[::-1],
+            "entries": entries,
             "current_id": current.pk if current else None,
             "can_translate": can_translate(user, version),
         },
@@ -957,11 +965,15 @@ def step_detail(request, pk, number):
     if not can_view(user, step):
         raise Http404
     _step, rows = _rows(user, version, step)
-    visible = [
-        other.number
+    others = [
+        other
         for other in version.steps.exclude(pk=step.pk).order_by("number")
         if can_view(user, _with_version(other, version))
     ]
+    visible = [other.number for other in others]
+    # What this step changed since the previous step the user may see.
+    earlier = [other for other in others if other.number < step.number]
+    _step, comparison = step_history(version, [*earlier, step])[-1]
     current = public_step(version)
     return render(
         request,
@@ -972,7 +984,7 @@ def step_detail(request, pk, number):
             "source": version.project.source_text,
             "step": step,
             "rows": rows,
-            "changed_count": step.sentences.count(),
+            "comparison": comparison,
             "previous_number": max((n for n in visible if n < step.number), default=None),
             "next_number": min((n for n in visible if n > step.number), default=None),
             "is_current": current is not None and current.pk == step.pk,
@@ -1046,28 +1058,12 @@ def step_compare(request, pk):
     if base is not None and target is not None and base.number > target.number:
         base, target = target, base
 
-    # The Latin of the earlier text is carried to the source text of the later one.
     history = SourceHistory(version.project.source_text)
-    state = target.source_state if target else history.state
-    before = history.project(_frozen_texts(base), base.source_state, state) if base else {}
     if target is None:
-        after = carried({item.segment_id: item for item in version.segments.current()})
+        after = {item.segment_id: item for item in version.segments.current()}
+        comparison = _comparison(history, base, after, history.state)
     else:
-        after = _frozen_texts(target)
-    rows = []
-    for number, source_segment in enumerate(history.segments_at(state), start=1):
-        old, new = before.get(source_segment.pk), after.get(source_segment.pk)
-        old, new = (old.text if old else ""), (new.text if new else "")
-        if old != new:
-            rows.append(
-                {
-                    "segment": source_segment,
-                    "number": number,
-                    "before": old,
-                    "after": new,
-                    "chunks": word_diff(old, new),
-                }
-            )
+        comparison = _comparison(history, base, _frozen_texts(target), target.source_state)
     return render(
         request,
         "translations/step_compare.html",
@@ -1080,7 +1076,8 @@ def step_compare(request, pk):
             "target": target,
             "is_author": is_author,
             "working": WORKING_TEXT,
-            "rows": rows,
+            "comparison": comparison,
+            "rows": comparison.sentences,
         },
     )
 
@@ -1270,6 +1267,14 @@ def _frozen_texts(step):
     return carried(step_sentences(step)) if step is not None else {}
 
 
+def _comparison(history, base, after, state):
+    """What changed from the text of ``base`` (a step, or None for no text) to ``after``, a
+    text at ``state`` of the source text."""
+    if base is None:
+        return compare(history, {}, state, after, state)
+    return compare(history, _frozen_texts(base), base.source_state, after, state)
+
+
 def _with_version(step, version):
     step.version = version
     return step
@@ -1289,24 +1294,23 @@ def step_create(request, pk):
         else:
             messages.success(request, _("L’étape %(number)d est créée.") % {"number": step.number})
             return redirect(step)
+    history = SourceHistory(version.project.source_text)
+    latest = latest_step(version)
+    working = {item.segment_id: item for item in version.segments.current()}
+    comparison = _comparison(history, latest, working, history.state)
     return render(
         request,
         "translations/step_create.html",
         {
             "version": version,
             "project": version.project,
+            "source": version.project.source_text,
             "form": form,
-            "changes": [
-                {
-                    "segment": change.segment,
-                    "after": change.after,
-                    "chunks": word_diff(change.before, change.after),
-                }
-                for change in pending_changes(version)
-            ],
+            "comparison": comparison,
+            "changes": comparison.sentences,
             "waiting": waiting_justifications(version).select_related(
                 "translated_segment__segment"
             ),
-            "latest": latest_step(version),
+            "latest": latest,
         },
     )

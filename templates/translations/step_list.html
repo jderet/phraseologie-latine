@@ -15,12 +15,20 @@
   <p class="form-links"><a class="button" href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></p>
   {% endif %}
   <ol class="item-list">
-    {% for step in steps %}
+    {% for entry in entries %}{% with step=entry.step comparison=entry.comparison %}
     <li>
       <span><a class="item-title" href="{{ step.get_absolute_url }}">{% blocktranslate with number=step.number %}Étape {{ number }}{% endblocktranslate %}</a> {{ step.message }}{% if step.pk == current_id %} <span class="badge">{% translate "vue par le public" %}</span>{% endif %}</span>
-      <span class="muted">{{ step.created_at|date:"j F Y, H:i" }} · <a href="{% url 'translations:step_compare' version.pk %}?a={{ step.number }}">{% blocktranslate count counter=step.changed_count %}{{ counter }} phrase changée{% plural %}{{ counter }} phrases changées{% endblocktranslate %}</a>{% if step.during_draft %} · {% translate "pendant le brouillon" %}{% if not version.shows_draft_steps %}, {% translate "visible de vous seul" %}{% endif %}{% endif %}{% if step.is_hidden %} · {% translate "masquée" %}{% endif %}</span>
+      <span class="muted">{{ step.created_at|date:"j F Y, H:i" }}{% if step.during_draft %} · {% translate "pendant le brouillon" %}{% if not version.shows_draft_steps %}, {% translate "visible de vous seul" %}{% endif %}{% endif %}{% if step.is_hidden %} · {% translate "masquée" %}{% endif %}</span>
+      <span class="step-summary">{{ comparison.latin_summary|capfirst }}{% if comparison.source_changes %} · {% translate "texte source :" %} {{ comparison.source_summary }}{% endif %}</span>
+      {% if comparison.sentences or comparison.source_changes %}
+      <details class="step-detail">
+        <summary>{% translate "Voir le détail" %}</summary>
+        {% include "translations/comparison.html" %}
+        <p class="form-links"><a href="{% url 'translations:step_compare' version.pk %}?a={{ step.number }}">{% translate "Comparer avec une autre étape" %}</a></p>
+      </details>
+      {% endif %}
     </li>
-    {% empty %}
+    {% endwith %}{% empty %}
     <li>{% translate "Aucune étape pour l’instant." %}</li>
     {% endfor %}
   </ol>

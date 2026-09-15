@@ -10,21 +10,11 @@
   <p class="lede">{% translate "Une étape fige le texte de toute la version, avec un message qui dit ce qui a changé." %}
     {% if version.is_published %}{% translate "Le public verra ce texte." %}{% else %}{% translate "Tant que la version est un brouillon, l’étape reste visible de vous seul." %}{% endif %}</p>
 
-  {% if changes or waiting %}
-  {% if changes %}
+  {% if changes or waiting or comparison.source_changes %}
+  {% if changes or comparison.source_changes %}
   <h2>{% if latest %}{% blocktranslate with number=latest.number %}Changements depuis l’étape {{ number }}{% endblocktranslate %}{% else %}{% translate "Phrases de la première étape" %}{% endif %}</h2>
-  <ol class="step-changes">
-    {% for change in changes %}
-    <li class="step-change">
-      <span class="bitext-number">{{ change.segment.order }}</span>
-      <div>
-        <p class="muted" lang="{{ project.source_text.language }}">{{ change.segment.text }}</p>
-        <p class="word-diff" lang="la">{% include "translations/word_diff.html" with chunks=change.chunks %}</p>
-        {% if not change.after %}<p class="muted">{% translate "(phrase effacée)" %}</p>{% endif %}
-      </div>
-    </li>
-    {% endfor %}
-  </ol>
+  <p class="step-summary">{{ comparison.latin_summary|capfirst }}{% if comparison.source_changes %} · {% translate "texte source :" %} {{ comparison.source_summary }}{% endif %}</p>
+  {% include "translations/comparison.html" %}
   {% endif %}
   {% if waiting %}
   <h2>{% translate "Justifications qui paraîtront avec cette étape" %}</h2>

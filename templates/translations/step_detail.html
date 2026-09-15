@@ -25,8 +25,8 @@
       <dd>{{ step.created_at|date:"j F Y, H:i" }}</dd>
     </div>
     <div>
-      <dt>{% translate "Phrases changées" %}</dt>
-      <dd>{{ changed_count }}</dd>
+      <dt>{% translate "Changements" %}</dt>
+      <dd>{{ comparison.latin_summary|capfirst }}{% if comparison.source_changes %} · {% translate "texte source :" %} {{ comparison.source_summary }}{% endif %}</dd>
     </div>
     <div>
       <dt>{% translate "Avancement" %}</dt>
@@ -47,6 +47,13 @@
     <a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a>
   </p>
   {% moderation_links step %}
+
+  {% if comparison.sentences or comparison.source_changes %}
+  <details class="step-detail">
+    <summary>{% translate "Voir ce qu’a changé cette étape" %}</summary>
+    {% include "translations/comparison.html" %}
+  </details>
+  {% endif %}
 
   <h2>{% translate "Texte et traduction" %}</h2>
   {% include "translations/bitext_rows.html" %}

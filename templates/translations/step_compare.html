@@ -28,19 +28,9 @@
   </form>
 
   <h2>{% if base %}<a href="{{ base.get_absolute_url }}">{% blocktranslate with number=base.number %}Étape {{ number }}{% endblocktranslate %}</a>{% else %}{% translate "Aucun texte" %}{% endif %} → {% if target %}<a href="{{ target.get_absolute_url }}">{% blocktranslate with number=target.number %}Étape {{ number }}{% endblocktranslate %}</a>{% else %}{% translate "Votre texte de travail" %}{% endif %}</h2>
-  {% if rows %}
-  <ol class="step-changes">
-    {% for row in rows %}
-    <li class="step-change" id="phrase-{{ row.number }}">
-      <span class="bitext-number">{{ row.number }}</span>
-      <div>
-        <p class="muted" lang="{{ source.language }}">{{ row.segment.text }}</p>
-        <p class="word-diff" lang="la">{% if row.after or row.before %}{% include "translations/word_diff.html" with chunks=row.chunks %}{% endif %}</p>
-        {% if not row.after %}<p class="muted">{% translate "(phrase effacée)" %}</p>{% endif %}
-      </div>
-    </li>
-    {% endfor %}
-  </ol>
+  {% if comparison.sentences or comparison.source_changes %}
+  <p class="step-summary">{{ comparison.latin_summary|capfirst }}{% if comparison.source_changes %} · {% translate "texte source :" %} {{ comparison.source_summary }}{% endif %}</p>
+  {% include "translations/comparison.html" %}
   {% else %}
   <p>{% translate "Aucune différence." %}</p>
   {% endif %}
