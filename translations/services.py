@@ -18,8 +18,9 @@ from .models import (
     TranslationVersion,
     VersionStep,
 )
+from .permissions import can_copy
 from .segmentation import to_lines
-from .steps import pending_changes, waiting_justifications
+from .steps import pending_changes, step_sentences, waiting_justifications
 
 
 def normalize_sentence(text):
@@ -71,8 +72,43 @@ def save_translation(version, segment, text, author):
         if not text:
             return None
         translated = TranslatedSegment(version=version, segment=segment)
+    if translated.text != text:
+        # The author rewrites the sentence: it is theirs again.
+        translated.written_by = None
     translated.text = text
     return save_with_revision(translated, author)
+
+
+@transaction.atomic
+def copy_version(step, version, author):
+    """Start one's own draft version from a public step of a published version, like a fork.
+
+    ``version`` carries the declared style. Each copied sentence stays credited to whoever
+    wrote it, until the new author rewrites it; justifications are not copied.
+    """
+    source = step.version
+    if not can_copy(author, step):
+        raise PermissionDenied
+    version.project = source.project
+    version.copied_from = step
+    create_version(version, author)
+    for segment_id, sentence in step_sentences(step).items():
+        if not sentence.text:
+            continue
+        writer_id = sentence.written_by_id or source.author_id
+        translated = TranslatedSegment(
+            version=version,
+            segment_id=segment_id,
+            text=sentence.text,
+            written_by_id=None if writer_id == author.pk else writer_id,
+        )
+        save_with_revision(translated, author)
+    message = gettext("Copie de la version de %(author)s, étape %(number)d") % {
+        "author": source.author.public_name,
+        "number": step.number,
+    }
+    _record_step(version, author, message, pending_changes(version))
+    return version
 
 
 @transaction.atomic

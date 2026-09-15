@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Partir de cette version" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ step.get_absolute_url }}">{% blocktranslate with name=source.author.public_name number=step.number %}Version de {{ name }}, étape {{ number }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Partir de cette version" %}</h1>
+  <p class="lede">{% blocktranslate trimmed with name=source.author.public_name number=step.number %}
+    Vous obtenez votre propre version, en brouillon, qui reprend le texte de la version de
+    {{ name }} à l’étape {{ number }}. Chaque phrase reprise reste au nom de qui l’a écrite,
+    jusqu’à ce que vous la réécriviez ; les justifications ne sont pas copiées.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% translate "Créer ma version" %}</button>
+  </form>
+</section>
+{% endblock %}

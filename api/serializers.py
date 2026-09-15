@@ -219,7 +219,7 @@ def public_versions():
             project__is_hidden=False,
             project__source_text__is_hidden=False,
         )
-        .select_related("project__source_text", "author")
+        .select_related("project__source_text", "author", "copied_from")
         .order_by("pk")
     )
 
@@ -241,6 +241,11 @@ def version_summary(version, link):
         "style": version.style,
         "style_note": version.style_note,
         "published_at": _date(version.published_at),
+        "copied_from": (
+            {"version": version.copied_from.version_id, "step": version.copied_from.number}
+            if version.copied_from_id
+            else None
+        ),
         "license": LICENSE,
     }
 

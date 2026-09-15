@@ -35,6 +35,12 @@
       <dt>{% translate "État" %}</dt>
       <dd>{% if version.is_published %}{% blocktranslate with date=version.published_at|date:"j F Y" %}publiée le {{ date }}{% endblocktranslate %}{% else %}{% translate "brouillon" %}{% endif %}</dd>
     </div>
+    {% if version.copied_from %}
+    <div>
+      <dt>{% translate "Origine" %}</dt>
+      <dd><a href="{{ version.copied_from.get_absolute_url }}">{% blocktranslate with name=version.copied_from.version.author.public_name number=version.copied_from.number %}copiée de la version de {{ name }}, étape {{ number }}{% endblocktranslate %}</a></dd>
+    </div>
+    {% endif %}
     <div>
       <dt>{% translate "Dernière étape" %}</dt>
       <dd>{% if latest_step %}<a href="{{ latest_step.get_absolute_url }}">{% blocktranslate with number=latest_step.number date=latest_step.created_at|date:"j F Y" %}étape {{ number }}, du {{ date }}{% endblocktranslate %}</a> : {{ latest_step.message }} · <a href="{% url 'translations:step_list' version.pk %}">{% translate "historique des étapes" %}</a>{% else %}{% translate "aucune" %}{% endif %}</dd>
@@ -58,6 +64,9 @@
     {% if version.is_published %}<a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer les versions" %}</a>{% endif %}
     {% if version.is_draft %}<a href="{% url 'translations:version_publish' version.pk %}">{% translate "Publier" %}</a>{% endif %}
   </p>
+  {% endif %}
+  {% if copy_step %}
+  <p class="form-links"><a href="{% url 'translations:version_copy' version.pk copy_step.number %}">{% translate "Partir de cette version" %}</a> <span class="muted">{% translate "pour rédiger votre propre version à partir de son texte" %}</span></p>
   {% endif %}
   <p class="export-links">{% translate "Exporter :" %} <a href="{% url 'translations:version_export_text' version.pk %}">{% translate "texte bilingue" %}</a> · <a href="{% url 'translations:version_export_print' version.pk %}">{% translate "version imprimable avec notes (PDF)" %}</a> · <a href="{% url 'translations:version_export_tei' version.pk %}">TEI</a> · <a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "mémoire de traduction (TMX)" %}</a></p>
   {% moderation_links version %}

@@ -35,9 +35,10 @@ from .forms import (
     VersionForm,
 )
 from .models import SourceText, TranslationProject, TranslationVersion, is_version_author
-from .permissions import can_challenge, can_edit, can_translate
+from .permissions import can_challenge, can_copy, can_edit, can_translate
 from .segmentation import from_lines, segment, to_lines
 from .services import (
+    copy_version,
     create_project,
     create_source_text,
     create_step,
@@ -196,7 +197,11 @@ def project_detail(request, pk):
     project = _visible(
         request.user, TranslationProject.objects.select_related("source_text", "created_by"), pk
     )
-    versions = list(project.versions.visible_to(request.user).select_related("author"))
+    versions = list(
+        project.versions.visible_to(request.user).select_related(
+            "author", "copied_from__version__author"
+        )
+    )
     for version in versions:
         _step, sentences = shown_sentences(request.user, version)
         version.translated_count = sum(1 for sentence in sentences.values() if sentence.text)
@@ -299,7 +304,9 @@ def project_compare(request, pk):
 
 
 def _version(user, pk):
-    queryset = TranslationVersion.objects.select_related("project__source_text", "author")
+    queryset = TranslationVersion.objects.select_related(
+        "project__source_text", "author", "copied_from__version__author"
+    )
     return _visible(user, queryset, pk)
 
 
@@ -403,6 +410,9 @@ def version_detail(request, pk):
     version = _version(user, pk)
     step, rows = _rows(user, version)
     is_author = is_version_author(user, version)
+    copy_step = step or public_step(version)
+    if copy_step is not None:
+        copy_step.version = version
     return render(
         request,
         "translations/version_detail.html",
@@ -418,6 +428,7 @@ def version_detail(request, pk):
             "can_translate": can_translate(user, version),
             "is_reference": version.pk == version.project.reference_version_id,
             "can_challenge": step is not None and can_challenge(user, version),
+            "copy_step": copy_step if copy_step and can_copy(user, copy_step) else None,
             **_progress(rows),
         },
     )
@@ -695,8 +706,39 @@ def step_detail(request, pk, number):
             "is_current": current is not None and current.pk == step.pk,
             "is_private": step.during_draft and not version.shows_draft_steps,
             "show_origin": True,
+            "can_copy": can_copy(user, step),
             **_progress(rows),
         },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def version_copy(request, pk, number):
+    """Start one's own draft version from a public step of a published version."""
+    source = _version(request.user, pk)
+    step = get_object_or_404(source.steps, number=number)
+    step.version = source
+    if not can_copy(request.user, step):
+        raise Http404
+    form = VersionForm(
+        request.POST or None,
+        user=request.user,
+        initial={"style": source.style, "style_note": source.style_note},
+    )
+    if request.method == "POST" and form.is_valid():
+        version, saved = _contribute(
+            request, copy_version, step, form.save(commit=False), request.user
+        )
+        if saved:
+            messages.success(
+                request, _("La copie est créée : c’est votre brouillon, visible de vous seul.")
+            )
+            return redirect("translations:version_edit", version.pk)
+    return render(
+        request,
+        "translations/version_copy.html",
+        {"form": form, "source": source, "step": step, "project": source.project},
     )
 
 

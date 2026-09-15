@@ -14,6 +14,20 @@ def can_translate(user, version):
     return user.is_active and is_owner(user, version) and can_view(user, version)
 
 
+def can_copy(user, step):
+    """Any active account may start its own version from a public step, like a Git fork."""
+    version = step.version
+    return (
+        user.is_authenticated
+        and user.is_active
+        and version.is_published
+        and not version.is_hidden
+        and not version.project.is_hidden
+        and not step.is_hidden
+        and (not step.during_draft or version.shows_draft_steps)
+    )
+
+
 def can_challenge(user, version):
     """Anyone but its author may contest the choices of a published version."""
     return (

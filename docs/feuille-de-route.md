@@ -114,7 +114,7 @@ Demandée par le porteur le 15 septembre 2026. Détail dans la section 4.1 du [c
 - [x] Étapes d'une version : message, historique, adresse fixe de chaque étape ; le public voit partout la dernière étape (pages, comparaison, exports, API, contestations), le texte de travail reste privé ; reprise des versions existantes
 - [x] Publication avec choix de montrer les étapes du brouillon ; justifications parues avec une étape
 - [x] Différences mot à mot entre deux étapes, ou avec le texte de travail ; étape et auteur de chaque phrase
-- [ ] Copie d'une version publiée, avec mention de son origine
+- [x] Copie d'une version publiée, avec mention de son origine
 - [ ] Propositions de modifications : phrases proposées, explication, discussion, décision phrase par phrase, phrase modifiée depuis la proposition
 
 Terminé quand un testeur a copié la version d'un autre, lui a proposé des modifications, et que l'auteur en a accepté une partie, visible du public à l'étape suivante.

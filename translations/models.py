@@ -276,6 +276,15 @@ class TranslationVersion(ModeratedContent):
         editable=False,
         help_text=_("Choisi une fois pour toutes à la publication."),
     )
+    copied_from = models.ForeignKey(
+        "VersionStep",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="copies",
+        verbose_name=_("copiée de l’étape"),
+    )
 
     objects = VersionQuerySet.as_manager()
 
@@ -486,7 +495,7 @@ register(
     owner_field="author",
     text_fields=("style_note",),
     visible_to=version_visible_to,
-    not_reverted=("state", "published_at", "shows_draft_steps"),
+    not_reverted=("state", "published_at", "shows_draft_steps", "copied_from"),
 )
 register(
     TranslatedSegment,
