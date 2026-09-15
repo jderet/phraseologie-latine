@@ -1,6 +1,7 @@
 """Creating, completing and validating phraseological units; every change is recorded."""
 
 from collections import defaultdict
+from contextlib import suppress
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -15,6 +16,7 @@ from accounts.roles import is_reviewer
 from corpus.forms import bound_search_form, search_query
 from corpus.models import Token
 from corpus.search import corpus_version, default_layer
+from corpus.timeouts import TimeLimit
 from justifications.services import attach_evidences
 from moderation.registry import can_view
 from moderation.services import post_comment, save_with_revision
@@ -49,15 +51,31 @@ def current_frequency(unit):
     return frequency if frequency is not None and frequency.schema == unit.schema else None
 
 
-def refresh_frequency(unit):
-    """Count the occurrences of the schema in the analysed corpus; None when it cannot."""
+# A count made while a page waits gives up after this time; the command refresh_units, run on
+# the Mac, counts without limit.
+FREQUENCY_SECONDS = 10
+
+
+class FrequencyTooLong(Exception):
+    """The occurrences of a schema could not be counted in the time given."""
+
+
+def refresh_frequency(unit, seconds=None):
+    """Count the occurrences of the schema in the analysed corpus; None when it cannot.
+
+    Raise FrequencyTooLong when counting takes longer than ``seconds`` or than the timeout of
+    the site: the unit then has no frequency for its present schema.
+    """
     if not unit.schema:
         UnitFrequency.objects.filter(unit=unit).delete()
         return None
     layer = default_layer()
     if layer is None:
         return None
-    rows = count_by_author(schema_matches(unit.edges, layer))
+    with TimeLimit(seconds) as limit:
+        rows = list(count_by_author(schema_matches(unit.edges, layer)))
+    if limit.exceeded:
+        raise FrequencyTooLong
     frequency, _created = UnitFrequency.objects.update_or_create(
         unit=unit,
         defaults={
@@ -158,7 +176,9 @@ def update_unit(unit, user):
     previous = Unit.objects.values("schema", "reference_form").get(pk=unit.pk)
     revision = save_with_revision(unit, user)
     if current_frequency(unit) is None:
-        refresh_frequency(unit)
+        # A count too long to wait for is left for later: the change is saved all the same.
+        with suppress(FrequencyTooLong):
+            refresh_frequency(unit, FREQUENCY_SECONDS)
     if previous != {"schema": unit.schema, "reference_form": unit.reference_form}:
         refresh_unit_forms(unit)
     _check_still_complete(unit)
@@ -736,7 +756,8 @@ def create_unit_from_candidate(candidate, user, unit, definition, attestations):
     """Make a unit of a candidate: it receives the schema of the candidate and its frequency."""
     unit.schema = candidate.schema
     create_unit(unit, user, definition, attestations, origin=Attestation.Origin.CANDIDATE)
-    refresh_frequency(unit)
+    with suppress(FrequencyTooLong):
+        refresh_frequency(unit, FREQUENCY_SECONDS)
     retain_candidate(candidate, user, unit)
     return unit
 

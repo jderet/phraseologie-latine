@@ -88,6 +88,8 @@ from .reading_notes import create_reading_note, word_reading_notes
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
 from .schema_help import check_schema, lemma_choices, written_words
 from .services import (
+    FREQUENCY_SECONDS,
+    FrequencyTooLong,
     add_attestations,
     add_neologism_evidences,
     contest_attestation,
@@ -95,6 +97,7 @@ from .services import (
     create_neologism,
     create_unit,
     create_unit_from_candidate,
+    current_frequency,
     decide_doubts,
     doubt_attestation,
     missing_fields,
@@ -257,6 +260,12 @@ def unit_list(request):
     )
 
 
+FREQUENCY_LATER = gettext_lazy(
+    "Le nombre d’occurrences de ce schéma est trop long à compter maintenant : "
+    "il sera compté plus tard."
+)
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def unit_create(request):
@@ -289,7 +298,10 @@ def unit_create(request):
                 form.add_error(None, error)
             else:
                 if unit.schema:
-                    refresh_frequency(unit)
+                    try:
+                        refresh_frequency(unit, FREQUENCY_SECONDS)
+                    except FrequencyTooLong:
+                        messages.info(request, FREQUENCY_LATER)
                 # An entry made from a sighting closes the sighting, if its words are ticked.
                 sighting = open_sighting(request.POST.get("reperage"))
                 if sighting is not None:
@@ -468,6 +480,8 @@ def unit_edit(request, pk):
                 messages.info(request, _("Aucune modification."))
             else:
                 messages.success(request, _("Les modifications sont enregistrées."))
+            if unit.schema and current_frequency(unit) is None and default_layer() is not None:
+                messages.info(request, FREQUENCY_LATER)
             return redirect(unit)
     return render(request, "phraseology/unit_edit.html", {"unit": unit, "form": form})
 
@@ -476,7 +490,11 @@ def unit_edit(request, pk):
 @require_POST
 def unit_frequency(request, pk):
     unit = _editable_unit(request.user, pk)
-    frequency = refresh_frequency(unit)
+    try:
+        frequency = refresh_frequency(unit, FREQUENCY_SECONDS)
+    except FrequencyTooLong:
+        messages.error(request, FREQUENCY_LATER)
+        return redirect(f"{unit.get_absolute_url()}#frequence")
     if frequency is None:
         messages.error(
             request,

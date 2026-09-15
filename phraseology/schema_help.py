@@ -21,6 +21,8 @@ MAX_WORDS = MAX_RELATIONS + 2
 MAX_WORD_LENGTH = 60
 MAX_LEMMAS = 5
 MAX_SCHEMA_LENGTH = 300
+# The count shown while a schema is drawn gives up after this time.
+COUNT_SECONDS = 5
 WORD = re.compile(r"[^\W\d_]+")
 
 
@@ -85,7 +87,7 @@ def check_schema(text, slot=False, count=False):
         result["search_url"] = (
             f"{reverse('phraseology:schema_search')}?{urlencode({'schema': result['text']})}"
         )
-        with TimeLimit() as limit:
+        with TimeLimit(COUNT_SECONDS) as limit:
             result["core"] = schema_matches(edges, layer, core_only=True).count()
         if limit.exceeded:
             result["core"] = None
