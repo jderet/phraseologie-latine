@@ -182,12 +182,22 @@ class EnglishTranslationTests(SimpleTestCase):
             catalog = gettext.GNUTranslations(compiled)
         stale = []
         for fields, _flags in self.entries():
+            # An entry with a context is looked up with its context.
+            context = fields.get("msgctxt")
             if "msgid_plural" in fields:
                 plural = (fields["msgid"], fields["msgid_plural"])
-                found = [catalog.ngettext(*plural, 1), catalog.ngettext(*plural, 2)]
+                if context is None:
+                    found = [catalog.ngettext(*plural, 1), catalog.ngettext(*plural, 2)]
+                else:
+                    found = [
+                        catalog.npgettext(context, *plural, 1),
+                        catalog.npgettext(context, *plural, 2),
+                    ]
                 expected = [fields["msgstr[0]"], fields["msgstr[1]"]]
-            else:
+            elif context is None:
                 found, expected = catalog.gettext(fields["msgid"]), fields["msgstr"]
+            else:
+                found, expected = catalog.pgettext(context, fields["msgid"]), fields["msgstr"]
             if found != expected:
                 stale.append(fields["msgid"])
         self.assertEqual(stale, [])

@@ -4,13 +4,13 @@ from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
-from django.http import Http404, HttpResponseBadRequest, QueryDict
+from django.http import Http404, HttpResponseBadRequest, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy, ngettext
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached, is_limited
 from accounts.roles import is_reviewer
@@ -85,6 +85,7 @@ from .panel import unit_card, word_analysis, word_attestations
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 from .reading_notes import create_reading_note, word_reading_notes
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
+from .schema_help import check_schema, lemma_choices, written_words
 from .services import (
     add_attestations,
     add_neologism_evidences,
@@ -2062,6 +2063,26 @@ def schema_search(request):
                 context["fillers"], context["filler_count"] = _filler_rows(matches, edges, layer)
         context["too_broad"] = limit.exceeded
     return render(request, "phraseology/schema_search.html", context)
+
+
+@require_GET
+def schema_help_lemmas(request):
+    """The lemmas the words of a text may have, for the drawing of a schema."""
+    layer = default_layer()
+    words = written_words(request.GET.get("formes", "")[:1000])
+    return JsonResponse({"words": [lemma_choices(word, layer) for word in words]})
+
+
+@require_GET
+def schema_help_check(request):
+    """A schema checked while it is drawn, with its occurrences in the core if asked."""
+    return JsonResponse(
+        check_schema(
+            request.GET.get("schema", ""),
+            slot=request.GET.get("case_vide") == "1",
+            count=request.GET.get("compter") == "1",
+        )
+    )
 
 
 # Profiles of collocations
