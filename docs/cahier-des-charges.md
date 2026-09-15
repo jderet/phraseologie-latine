@@ -38,7 +38,15 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 - Chaque participant rédige **sa propre version** latine et déclare un style (Q36, Q41).
 - Une version reste un **brouillon visible de son seul auteur**, jusqu'à ce que celui-ci la publie (T7). Tout ce qui est publié est public ; il n'y a pas d'espace de groupe privé (Q42).
 - Une **vue de comparaison** aligne toutes les versions publiées, phrase par phrase.
-- Le **créateur du projet** désigne la version de référence (T6).
+- Le **créateur du projet** désigne la version de référence (T6). Elle suit la dernière étape de la version choisie.
+- **Étapes, à la manière de Git** (choix du 15 septembre 2026) :
+  - L'éditeur enregistre chaque phrase au fil de la saisie : c'est le **texte de travail**, visible de son seul auteur. Quand il le décide, l'auteur crée une **étape** de toute la version, avec un message. Chaque étape garde le texte de toutes les phrases et reste consultable à une adresse fixe, citable.
+  - Le public voit la **dernière étape** d'une version publiée : les retouches restent privées jusqu'à l'étape suivante. La vue de comparaison, les exports et l'API montrent aussi la dernière étape.
+  - Publier crée une étape. L'auteur choisit alors, une fois pour toutes, de montrer ou non les étapes créées pendant le brouillon.
+  - Une justification paraît avec l'étape qui suit sa création. Une contestation vise le texte d'une étape publique.
+  - On compare deux étapes, ou la dernière étape et le texte de travail, phrase par phrase et mot à mot. Chaque phrase d'une étape indique l'étape où elle a changé et qui l'a écrite.
+  - Tout compte peut **partir d'une version publiée** : il obtient sa propre version, en brouillon, qui mentionne son origine (version et étape). Les justifications ne sont pas copiées ; chaque phrase reprise reste au nom de qui l'a écrite.
+  - Tout compte actif peut **proposer des modifications** à la version publiée d'un autre, avec une explication et une discussion. L'auteur de la version accepte ou refuse chaque phrase proposée ; une phrase acceptée entre dans son texte de travail, au nom de qui l'a proposée, et paraît à l'étape suivante. L'auteur reste seul maître de sa version (Q36). Une proposition compte dans la limite des nouveaux comptes (T10).
 - Alignement phrase à phrase, et au niveau du groupe de mots en option (Q39).
 - Écran principal en trois colonnes : texte source, latin, corpus et justifications (Q67). Saisie facilitée des macrons (Q68) : une voyelle suivie de = prend un macron (a= donne ā), et des boutons ā ē ī ō ū ȳ complètent la saisie. Conçu d'abord pour ordinateur (Q69).
 - Réalités modernes : périphrase classique de préférence. Le *Lexicon recentis Latinitatis* est cité par simple référence. La plateforme tient son propre lexique de néologismes, justifiés comme le reste et marqués « néologisme » (Q40, T5).

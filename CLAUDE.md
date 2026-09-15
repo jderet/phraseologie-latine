@@ -96,6 +96,10 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | texte source, segment | `SourceText`, `Segment` |
 | projet de traduction | `TranslationProject` |
 | version en brouillon ou publiée | `TranslationVersion` (`state` : `draft`, `published`) |
+| texte de travail (phrase) | `TranslatedSegment` |
+| étape, phrase d'une étape | `VersionStep`, `StepSentence` |
+| version copiée | `TranslationVersion.copied_from` |
+| proposition de modifications, phrase proposée | `ChangeProposal`, `ProposedSentence` |
 | style déclaré | `style` |
 | justification, preuve | `Justification`, `Evidence` |
 | force de preuve | `evidence_strength` |

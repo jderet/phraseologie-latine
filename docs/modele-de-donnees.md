@@ -18,6 +18,11 @@ erDiagram
   SOURCE_TEXT ||--o{ TRANSLATION_PROJECT : "traduit dans"
   TRANSLATION_PROJECT ||--o{ TRANSLATION_VERSION : regroupe
   TRANSLATION_VERSION ||--o{ TRANSLATED_SEGMENT : contient
+  TRANSLATION_VERSION ||--o{ VERSION_STEP : "figée en"
+  VERSION_STEP ||--o{ STEP_SENTENCE : "change"
+  VERSION_STEP |o--o{ TRANSLATION_VERSION : "copiée dans"
+  TRANSLATION_VERSION ||--o{ CHANGE_PROPOSAL : reçoit
+  CHANGE_PROPOSAL ||--|{ PROPOSED_SENTENCE : contient
   SEGMENT ||--o{ TRANSLATED_SEGMENT : "traduit par"
   TRANSLATED_SEGMENT ||--o{ JUSTIFICATION : "justifié par"
   JUSTIFICATION ||--|{ EVIDENCE : "s'appuie sur"
@@ -72,21 +77,25 @@ Noms de code provisoires, fixés au moment de coder. Les fonctions sont décrite
 - **Texte source** (`SourceText`) : titre, auteur, langue, adresse d'origine, licence déclarée, statut juridique (domaine public, licence libre), ajouté par.
 - **Segment** (`Segment`) : texte source, ordre, phrase.
 - **Projet de traduction** (`TranslationProject`) : texte source, créateur, description, version de référence.
-- **Version** (`TranslationVersion`) : projet, auteur, style déclaré (liste fermée : classique sans modèle particulier, cicéronien, césarien, sallustien, livien, sénéquien, tacitéen, plinien, latin tardif et chrétien, humaniste, latin vivant contemporain) et précision libre, état (brouillon, publiée), date de publication. Une version publiée reste modifiable par son auteur mais ne redevient jamais brouillon, même par un retour arrière.
-- **Segment traduit** (`TranslatedSegment`) : version, segment, texte latin, révisions. Seul l'auteur de la version l'écrit ; son enregistrement ne compte pas dans la limite des nouveaux comptes.
+- **Version** (`TranslationVersion`) : projet, auteur, style déclaré (liste fermée : classique sans modèle particulier, cicéronien, césarien, sallustien, livien, sénéquien, tacitéen, plinien, latin tardif et chrétien, humaniste, latin vivant contemporain) et précision libre, état (brouillon, publiée), date de publication, étapes du brouillon montrées ou non (choisi à la publication, définitif), étape dont elle est copiée (facultatif). Une version publiée reste modifiable par son auteur mais ne redevient jamais brouillon, même par un retour arrière. Copier une version crée une version en brouillon dont le texte de travail et la première étape reprennent le texte de l'étape copiée ; la copie compte dans la limite des nouveaux comptes, comme toute version.
+- **Segment traduit** (`TranslatedSegment`) : le **texte de travail** d'une phrase. Version, segment, texte latin, écrite par (vide : l'auteur de la version), révisions. Seul l'auteur de la version l'écrit ; son enregistrement ne compte pas dans la limite des nouveaux comptes. Visible de son seul auteur : le public voit le texte des étapes. « Écrite par » prend le nom de qui a proposé une phrase acceptée, ou de qui a écrit une phrase copiée ; il revient à l'auteur quand celui-ci réécrit la phrase.
+- **Étape** (`VersionStep`) : version, numéro (1, 2, 3… dans la version), message, auteur, date, créée pendant le brouillon ou non. Seul l'auteur de la version la crée, quand le texte de travail a changé depuis l'étape précédente ou qu'une justification attend de paraître ; publier en crée toujours une. Une étape ne se modifie pas et sa création ne compte pas dans la limite des nouveaux comptes. Elle est visible de tous quand la version est publiée, sauf une étape du brouillon si l'auteur a choisi de ne pas les montrer. Masquée après un signalement, elle sort de l'historique public ; le public voit alors la dernière étape non masquée.
+- **Phrase d'une étape** (`StepSentence`) : étape, segment, texte latin (vide si la phrase a été effacée), écrite par (vide : l'auteur de la version). Seules les phrases changées depuis l'étape précédente sont enregistrées : le texte d'une étape est, pour chaque segment, celui de la dernière étape qui l'a changé. Les différences entre deux étapes se calculent mot à mot.
+- **Proposition de modifications** (`ChangeProposal`) : version publiée, étape de départ (la dernière étape publique au moment de proposer), auteur, explication, statut (ouverte, close, retirée), date de clôture, discussion. Tout compte actif sauf l'auteur de la version propose ; la proposition compte dans la limite des nouveaux comptes. Son auteur la retire tant qu'elle est ouverte ; elle se clôt quand chaque phrase est acceptée ou refusée.
+- **Phrase proposée** (`ProposedSentence`) : proposition, segment, texte de l'étape de départ, texte proposé, décision (en attente, acceptée, refusée), date de la décision. Seul l'auteur de la version décide. Si son texte de travail a changé depuis l'étape de départ, la page le signale et montre les trois textes ; accepter remplace le texte de travail.
 - **Alignement fin** (`PhraseAlignment`, facultatif) : segment traduit, empan du texte source, empan du latin.
 
 ## 4. Justification
 
-- **Justification** (`Justification`) : segment traduit, passage latin justifié (les mots tels qu'ils étaient écrits, avec leur position), empan du texte source (facultatif), force de preuve (1 à 5), commentaire, version du corpus interrogé (force 5), fiches phraséologiques citées, auteur. L'auteur choisit les fiches citées parmi les unités connues repérées dans sa phrase (ou celle d'où il a ouvert la justification), et seulement parmi celles qu'il peut voir ; il peut reprendre leurs attestations comme preuves. Chaque fiche montre en retour les justifications qui la citent, selon la visibilité des versions (Q49). Seul l'auteur de la version justifie ses choix. Ce qu'exige chaque force :
+- **Justification** (`Justification`) : segment traduit, passage latin justifié (les mots tels qu'ils étaient écrits, avec leur position), empan du texte source (facultatif), force de preuve (1 à 5), commentaire, version du corpus interrogé (force 5), fiches phraséologiques citées, auteur, étape de parution (la première étape créée après elle ; vide tant qu'il n'y en a pas). Seul l'auteur la voit tant qu'elle n'a pas d'étape de parution. L'auteur choisit les fiches citées parmi les unités connues repérées dans sa phrase (ou celle d'où il a ouvert la justification), et seulement parmi celles qu'il peut voir ; il peut reprendre leurs attestations comme preuves. Chaque fiche montre en retour les justifications qui la citent, selon la visibilité des versions (Q49). Seul l'auteur de la version justifie ses choix. Ce qu'exige chaque force :
   - 1 à 3 : au moins une attestation du corpus ;
   - 4, par analogie : un commentaire et au moins une preuve ;
   - 5, introuvable : la version du corpus interrogé est enregistrée, et un commentaire ou une preuve explique le choix.
 
-  « À revoir » n'est pas enregistré mais calculé : la justification est à revoir quand la phrase latine ne contient plus le passage justifié (un passage seulement déplacé reste valable). Cela vaut aussi après un retour arrière.
+  « À revoir » n'est pas enregistré mais calculé : la justification est à revoir quand la phrase latine ne contient plus le passage justifié (un passage seulement déplacé reste valable). Cela vaut aussi après un retour arrière. La phrase comparée est celle que voit le lecteur : le texte de travail pour l'auteur, le texte de l'étape pour les autres.
 - **Preuve** (`Evidence`) : justification, contestation ou néologisme (un seul des trois), type (attestation, règle de grammaire, article de dictionnaire), mots cités du corpus (identifiants stables) et leur passage, ou ouvrage de référence avec sa localisation (paragraphe, entrée), note, attestation de fiche dont elle est reprise (facultatif), retirée ou non. Une preuve ne peut être retirée que si la justification garde ce qu'exige sa force. L'attestation (`Attestation`) de l'étape 3 s'y ajoutera.
 - **Ouvrage de référence** (`BibliographicWork`) : titre, abréviation (K-St, E-T, A&G, Gaffiot, L&S, TLL…), type (grammaire, dictionnaire), statut de droits (libre, ou sous droits et donc cité seulement). Liste tenue par les administrateurs ; aucun extrait n'est jamais stocké.
-- **Contestation** (`Challenge`) : phrase traduite d'une version publiée, justification contestée (facultatif), passage contesté, auteur, argument, contre-exemples (preuves), discussion, votes, statut, décision motivée. Tout le monde sauf l'auteur de la version peut contester ; tant que la contestation est ouverte, une justification est attendue de l'auteur de la version (Q46). Un relecteur la retient ou l'écarte en motivant sa décision, ou son auteur la retire ; les arguments restent affichés (Q53). Un retour arrière ne rouvre ni ne clôt une contestation.
+- **Contestation** (`Challenge`) : phrase traduite d'une version publiée, étape contestée (la dernière étape publique : le passage contesté est pris dans son texte), justification contestée (facultatif), passage contesté, auteur, argument, contre-exemples (preuves), discussion, votes, statut, décision motivée. Tout le monde sauf l'auteur de la version peut contester ; tant que la contestation est ouverte, une justification est attendue de l'auteur de la version (Q46). Un relecteur la retient ou l'écarte en motivant sa décision, ou son auteur la retire ; les arguments restent affichés (Q53). Un retour arrière ne rouvre ni ne clôt une contestation.
 
 ## 5. Communauté
 
@@ -104,6 +113,8 @@ Noms de code provisoires, fixés au moment de coder. Les fonctions sont décrite
 | Unité | brouillon → proposée → validée ; contestée à tout moment |
 | Attestation | automatique ou proposée → validée, ou rejetée |
 | Version de traduction | brouillon → publiée |
+| Proposition de modifications | ouverte → close quand chaque phrase est acceptée ou refusée, ou retirée par son auteur |
+| Phrase proposée | en attente → acceptée ou refusée |
 | Justification | normale ; contestée ; à revoir quand le latin visé a changé |
 | Contestation | ouverte → retenue ou écartée par un relecteur, ou retirée par son auteur |
 | Candidat | à examiner → retenu ou rejeté |
@@ -122,7 +133,7 @@ Noms de code provisoires, fixés au moment de coder. Les fonctions sont décrite
 5. Une justification de force « analogie » exige un commentaire.
 6. Si le latin visé par une justification change, elle passe « à revoir ».
 7. Toute mention d'absence indique la version du corpus interrogée.
-8. Un brouillon n'est visible que de son auteur : aucune page, API ou export ne le renvoie à quelqu'un d'autre.
+8. Un brouillon n'est visible que de son auteur : aucune page, API ou export ne le renvoie à quelqu'un d'autre. Il en va de même du texte de travail d'une version publiée, des étapes du brouillon que l'auteur n'a pas choisi de montrer et des justifications qui n'ont pas encore paru avec une étape.
 9. Un texte source sans licence compatible ne peut pas être ajouté.
 10. Toute modification de contenu crée une révision.
 11. Supprimer un compte anonymise ses contributions sans les supprimer.

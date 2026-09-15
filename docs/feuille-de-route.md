@@ -107,6 +107,18 @@ Menée avant les deux cases restantes de l'étape 5 (choix du 14 septembre 2026)
 
 Terminé quand un livre du noyau (par exemple Cic. *Off.* 1) est entièrement relu, avec ses attestations visibles dans le texte.
 
+## Étape 7 : versions de traduction à la manière de Git
+
+Demandée par le porteur le 15 septembre 2026. Détail dans la section 4.1 du [cahier des charges](cahier-des-charges.md).
+
+- [ ] Étapes d'une version : message, historique, adresse fixe de chaque étape ; le public voit partout la dernière étape (pages, comparaison, exports, API, contestations), le texte de travail reste privé ; reprise des versions existantes
+- [ ] Publication avec choix de montrer les étapes du brouillon ; justifications parues avec une étape
+- [ ] Différences mot à mot entre deux étapes, ou avec le texte de travail ; étape et auteur de chaque phrase
+- [ ] Copie d'une version publiée, avec mention de son origine
+- [ ] Propositions de modifications : phrases proposées, explication, discussion, décision phrase par phrase, phrase modifiée depuis la proposition
+
+Terminé quand un testeur a copié la version d'un autre, lui a proposé des modifications, et que l'auteur en a accepté une partie, visible du public à l'étape suivante.
+
 ## Ouverture publique
 
 - [ ] Conditions de la section 7 du cahier des charges remplies
