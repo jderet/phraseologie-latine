@@ -36,6 +36,7 @@ pip install -r requirements-corpus.txt     # spaCy et LatinCy, sur le Mac seulem
 python manage.py analyze_corpus --make-default   # analyse LatinCy du corpus (sur le Mac, environ 45 min)
 python manage.py extract_candidates        # candidats de la phraséologie (sur le Mac, quelques secondes)
 python manage.py refresh_units             # fréquences et formes des fiches, après une nouvelle couche d'analyse
+python manage.py convert_schemas --email <administrateur>   # schémas écrits à la manière UD convertis (--dry-run pour lister)
 python manage.py compute_collocations      # profils de collocations (sur le Mac, après une analyse)
 python manage.py import_translations       # traductions du domaine public en regard (sur le Mac)
 python manage.py export_data               # export complet des données publiques (archive zip)
@@ -62,7 +63,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
 | `api` | API publique en lecture, export complet, page des données ouvertes | API JSON (fiches, néologismes, versions publiées, recherches infructueuses, repérages, notes de lecture, corrections validées), export zip |
 | `notebook` | carnet personnel : surlignages, notes privées, listes de passages | visible de son seul propriétaire, jamais dans l'API ni les exports, effacé avec le compte |
-| `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications ; schéma dessiné en reliant des mots (`phraseology/widgets.py`, `phraseology/schema_help.py`) |
+| `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications ; schéma dessiné en reliant des mots (`phraseology/widgets.py`, `phraseology/schema_help.py`) ; syntagme prépositionnel noté la préposition en tête (`sp`, `reg`, traduits pour la recherche par `corpus_edges`) ; fiches contenues dans un schéma repérées d'après les schémas (`phraseology/composition.py`) |
 
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.
 - Les traitements lourds du corpus sont des commandes `manage.py` lancées sur le Mac : `import_perseus` lit le catalogue `corpus/data/` et les fichiers TEI ; `analyze_corpus` crée une couche d'analyse LatinCy, raccrochée aux mots par leur position dans le texte (un seul processus : le modèle ne se transmet pas entre processus).
@@ -85,6 +86,8 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | unité phraséologique | `Unit` |
 | réalisation | `Realization` |
 | sens | `Sense` |
+| syntagme prépositionnel, régime | relations `sp`, `reg` du schéma |
+| composante (fiche contenue dans un schéma) | `Component` |
 | équivalent | `Equivalent` |
 | attestation validée ou automatique | `Attestation` (`level` : `validated`, `automatic`) |
 | candidat | `Candidate` |

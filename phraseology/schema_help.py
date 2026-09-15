@@ -13,8 +13,10 @@ from corpus.search import corpus_version, default_layer
 from corpus.text import normalize
 from corpus.timeouts import TimeLimit
 
+from .composition import components
 from .frequency import schema_matches
-from .schema import MAX_RELATIONS, format_schema, parse_schema
+from .schema import MAX_RELATIONS, format_schema, parse_schema, schema_lemmas
+from .spotting import visible_units
 
 # A schema has at most five lemmas; the words of a reference form beyond are not offered.
 MAX_WORDS = MAX_RELATIONS + 2
@@ -23,6 +25,9 @@ MAX_LEMMAS = 5
 MAX_SCHEMA_LENGTH = 300
 # The count shown while a schema is drawn gives up after this time.
 COUNT_SECONDS = 5
+# Units offered to be inserted in a drawing.
+MAX_UNITS = 10
+MAX_QUERY_LENGTH = 100
 WORD = re.compile(r"[^\W\d_]+")
 
 
@@ -60,10 +65,45 @@ def lemma_choices(word, layer=None):
     return {"form": word, "lemmas": lemmas, "known": known}
 
 
-def check_schema(text, slot=False, count=False):
+def _edges_as_json(edges):
+    return [
+        {"head": edge.head, "relations": list(edge.relations), "dependent": edge.dependent}
+        for edge in edges
+    ]
+
+
+def unit_schemas(user, query):
+    """Units the user may see whose reference form contains the query, with their schemas."""
+    query = " ".join((query or "").split())[:MAX_QUERY_LENGTH]
+    if not query:
+        return []
+    units = (
+        visible_units(user)
+        .exclude(schema="")
+        .filter(reference_form__icontains=query)
+        .order_by("reference_form", "pk")
+    )
+    found = []
+    for unit in units[:MAX_UNITS]:
+        try:
+            edges = parse_schema(unit.schema)
+        except ValidationError:
+            continue
+        found.append(
+            {
+                "reference_form": unit.reference_form,
+                "status": unit.get_status_display(),
+                "edges": _edges_as_json(edges),
+            }
+        )
+    return found
+
+
+def check_schema(text, slot=False, count=False, user=None):
     """A schema as the drawing needs it: its relations, its written form, or its errors.
 
-    With ``count``, the occurrences in the core of the corpus, if they are counted in time.
+    With ``count``, the occurrences in the core of the corpus, if they are counted in time;
+    with ``user``, the units this user may see that are part of the schema.
     """
     text = text or ""
     result = {"text": "", "edges": [], "errors": []}
@@ -78,10 +118,17 @@ def check_schema(text, slot=False, count=False):
         result["errors"] = error.messages
         return result
     result["text"] = format_schema(edges)
-    result["edges"] = [
-        {"head": edge.head, "relations": list(edge.relations), "dependent": edge.dependent}
-        for edge in edges
-    ]
+    result["edges"] = _edges_as_json(edges)
+    if user is not None:
+        result["components"] = [
+            {
+                "reference_form": component.unit.reference_form,
+                "status": component.unit.get_status_display(),
+                "url": component.unit.get_absolute_url(),
+                "lemmas": schema_lemmas(component.edges),
+            }
+            for component in components(user, edges)
+        ]
     layer = default_layer()
     if count and edges and layer is not None:
         result["search_url"] = (

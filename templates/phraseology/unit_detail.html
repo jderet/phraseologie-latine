@@ -22,8 +22,20 @@
     </div>
     <div>
       <dt>{% translate "Schéma" %}</dt>
-      <dd lang="la">{% for edge in edges %}<span class="schema-edge">{{ edge.label }}</span>{% if not forloop.last %} ; {% endif %}{% empty %}—{% endfor %}{% if unit.schema %} <a class="small-link" href="{% url 'phraseology:schema_search' %}?schema={{ unit.schema|urlencode }}&amp;scope=all" lang="fr">{% translate "chercher ce schéma" %}</a> <span class="small-link" lang="fr">{% translate "profils :" %}</span>{% for lemma in schema_lemmas %} <a class="small-link" href="{% url 'phraseology:collocation_lemma' lemma %}">{{ lemma }}</a>{% endfor %}{% endif %}</dd>
+      <dd lang="la">{% include "phraseology/schema_parts.html" %}{% if not edges %}—{% endif %}{% if unit.schema %} <a class="small-link" href="{% url 'phraseology:schema_search' %}?schema={{ unit.schema|urlencode }}&amp;scope=all" lang="fr">{% translate "chercher ce schéma" %}</a> <span class="small-link" lang="fr">{% translate "profils :" %}</span>{% for lemma in schema_lemmas %} <a class="small-link" href="{% url 'phraseology:collocation_lemma' lemma %}">{{ lemma }}</a>{% endfor %}{% endif %}</dd>
     </div>
+    {% if other_components %}
+    <div>
+      <dt>{% translate "Contient aussi" %}</dt>
+      <dd>{% include "phraseology/unit_links.html" with components=other_components %}</dd>
+    </div>
+    {% endif %}
+    {% if containers %}
+    <div>
+      <dt>{% translate "Entre dans" %}</dt>
+      <dd>{% include "phraseology/unit_links.html" with components=containers %}</dd>
+    </div>
+    {% endif %}
     <div>
       <dt>{% translate "Construction" %}</dt>
       <dd lang="la">{{ unit.construction|default:"—" }}</dd>

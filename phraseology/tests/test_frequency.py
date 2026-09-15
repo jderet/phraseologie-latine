@@ -1,6 +1,6 @@
 from corpus.models import Author
 from justifications.tests.factories import make_passage
-from phraseology.frequency import count_by_author, occurrence_tokens, schema_matches
+from phraseology.frequency import count_by_author, occurrence_tokens, schema_matches, slot_fillers
 from phraseology.schema import parse_schema
 from phraseology.services import current_frequency, refresh_frequency, update_unit
 from phraseology.tests.factories import analyze, make_layer, make_outside_passage
@@ -58,6 +58,62 @@ class SchemaMatchesTests(AnalysedCorpusTestCase):
         matches = schema_matches(parse_schema("capio -obj|nsubj:pass-> consilium"), self.layer)
         rows = [(author.cts_id, total, core) for author, total, core in count_by_author(matches)]
         self.assertEqual(rows, [("phi1017", 1, 0), ("phi0474", 3, 3)])
+
+
+class PrepositionalPhraseTests(PhraseologyTestCase):
+    """De re (publica) bene meritus, the noun in obl, nmod or advmod; in memoriam, in memoria."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.layer = make_layer()
+        verb = {"upos": "VERB"}
+        texts = (
+            (("De", "re", "publica", "bene", "meritus."), "obl", "Case=Abl"),
+            (("De", "re", "bene", "meritus."), "nmod", ""),
+            (("De", "re", "meritus."), "advmod", "Case=Abl"),
+        )
+        for number, (forms, relation, feats) in enumerate(texts, start=1):
+            _passage, words = make_passage(forms, reference=f"3.{number}")
+            de, re, meritus = words[0], words[1], words[-1]
+            analyze(cls.layer, meritus, "mereor", **verb)
+            analyze(cls.layer, re, "res", relation, meritus, upos="NOUN", feats=feats)
+            analyze(cls.layer, de, "de", "case", re, upos="ADP")
+            if number == 1:
+                cls.phrase_words = (de, re, meritus)
+                analyze(cls.layer, words[2], "publicus", "amod", re, upos="ADJ")
+        for number, (noun, case) in enumerate((("memoriam", "Acc"), ("memoria", "Abl")), start=4):
+            _passage, (in_, memoria, redegit) = make_passage(
+                ("In", noun, "redegit."), reference=f"3.{number}"
+            )
+            analyze(cls.layer, redegit, "redigo", **verb)
+            analyze(cls.layer, memoria, "memoria", "obl", redegit, feats=f"Case={case}")
+            analyze(cls.layer, in_, "in", "case", memoria, upos="ADP")
+
+    def count(self, schema):
+        return schema_matches(parse_schema(schema, slot=True), self.layer).count()
+
+    def test_the_phrase_depends_on_its_head_by_obl_or_nmod(self):
+        self.assertEqual(self.count("mereor -sp-> de; de -reg-> res"), 2)
+        self.assertEqual(self.count("mereor -obl-> res; res -case-> de"), 2)
+        self.assertEqual(self.count("mereor -sp-> de; de -reg-> res; res -amod-> publicus"), 1)
+
+    def test_the_case_of_the_regime(self):
+        self.assertEqual(self.count("mereor -sp-> de; de -reg:abl-> res"), 1)
+        self.assertEqual(self.count("redigo -sp-> in; in -reg:acc-> memoria"), 1)
+        self.assertEqual(self.count("redigo -sp-> in; in -reg:abl-> memoria"), 1)
+        self.assertEqual(self.count("redigo -sp-> in; in -reg-> memoria"), 2)
+
+    def test_a_phrase_alone_and_an_open_regime(self):
+        self.assertEqual(self.count("de -reg-> res"), 3)
+        edges = parse_schema("mereor -sp-> de; de -reg-> *", slot=True)
+        matches = schema_matches(edges, self.layer)
+        self.assertEqual(slot_fillers(matches, edges, self.layer), [("res", 2)])
+
+    def test_the_words_of_an_occurrence(self):
+        edges = parse_schema("mereor -sp-> de; de -reg:abl-> res")
+        (match,) = schema_matches(edges, self.layer)
+        self.assertEqual(occurrence_tokens(match, edges, self.layer), list(self.phrase_words))
 
 
 class UnitFrequencyTests(AnalysedCorpusTestCase):

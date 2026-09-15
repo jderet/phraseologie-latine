@@ -36,7 +36,8 @@
 <section class="results" aria-labelledby="results-title">
   {% if page.paginator.count %}
   <h2 id="results-title">{% blocktranslate count counter=page.paginator.count %}{{ counter }} occurrence repérée automatiquement{% plural %}{{ counter }} occurrences repérées automatiquement{% endblocktranslate %}</h2>
-  <p class="note" lang="la">{% for edge in edges %}<span class="schema-edge">{{ edge.label }}</span>{% if not forloop.last %} ; {% endif %}{% endfor %}</p>
+  <p class="note" lang="la">{% include "phraseology/schema_parts.html" %}</p>
+  {% if other_components %}<p class="note">{% translate "Contient aussi :" %} {% include "phraseology/unit_links.html" with components=other_components %}</p>{% endif %}
   <ul class="distribution">
     {% for author, count in distribution %}<li>{{ author.name }} <span class="muted">{{ count }}</span></li>{% endfor %}
   </ul>
