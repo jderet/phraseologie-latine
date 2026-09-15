@@ -253,6 +253,14 @@ class SourceChange(models.Model):
         related_name="+",
         verbose_name=_("adopté par"),
     )
+    proposal = models.ForeignKey(
+        "SourceProposal",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="changes",
+        verbose_name=_("proposition"),
+    )
     created_at = models.DateTimeField(_("date"), default=timezone.now, editable=False)
 
     class Meta:
@@ -270,6 +278,99 @@ class SourceChange(models.Model):
             "text": self.source_text,
             "number": self.number,
         }
+
+
+class SourceProposal(ModeratedContent):
+    """Changes to the sentences of a source text, proposed by someone who may not make them.
+
+    Prepared change by change and seen by its author only, then sent with an explanation;
+    whoever added the text, or a reviewer, adopts or refuses it as a whole.
+    """
+
+    class Status(models.TextChoices):
+        PREPARING = "preparing", _("en préparation")
+        OPEN = "open", _("ouverte")
+        ADOPTED = "adopted", _("adoptée")
+        REFUSED = "refused", _("refusée")
+        WITHDRAWN = "withdrawn", _("retirée par son auteur")
+
+    source_text = models.ForeignKey(
+        SourceText,
+        on_delete=models.PROTECT,
+        related_name="proposals",
+        verbose_name=_("texte source"),
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="source_proposals",
+        verbose_name=_("auteur"),
+    )
+    explanation = models.TextField(
+        _("explication"),
+        max_length=3000,
+        blank=True,
+        help_text=_(
+            "Pourquoi ces changements : fautes corrigées, phrases oubliées, découpage revu."
+        ),
+    )
+    # The changes in order, as ``sources.apply_operation`` takes them, each applying to the
+    # text the previous ones left, from the state ``base_state`` of the source text.
+    operations = models.JSONField(_("changements"), default=list, editable=False)
+    base_state = models.PositiveIntegerField(_("état du texte de départ"), editable=False)
+    status = models.CharField(
+        _("statut"),
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PREPARING,
+        editable=False,
+    )
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("examinée par"),
+    )
+    created_at = models.DateTimeField(_("commencée le"), default=timezone.now, editable=False)
+    sent_at = models.DateTimeField(_("envoyée le"), null=True, blank=True, editable=False)
+    closed_at = models.DateTimeField(_("close le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("proposition de modification du texte")
+        verbose_name_plural = _("propositions de modification du texte")
+        ordering = ["-created_at", "-pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(status__in=["preparing", "open"], closed_at__isnull=True)
+                | (~Q(status__in=["preparing", "open"]) & Q(closed_at__isnull=False)),
+                name="translations_source_proposal_closing",
+            ),
+            models.UniqueConstraint(
+                fields=["source_text", "author"],
+                condition=Q(status="preparing"),
+                name="translations_one_source_proposal_in_preparation",
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("Proposition de %(name)s pour %(text)s") % {
+            "name": self.author.public_name,
+            "text": self.source_text,
+        }
+
+    def get_absolute_url(self):
+        return reverse("translations:source_proposal", args=[self.pk])
+
+    @property
+    def is_preparing(self):
+        return self.status == self.Status.PREPARING
+
+    @property
+    def is_open(self):
+        return self.status == self.Status.OPEN
 
 
 class Style(models.TextChoices):
@@ -703,6 +804,13 @@ def is_version_author(user, version):
     return user.is_authenticated and user.pk == version.author_id
 
 
+def source_proposal_visible_to(user, proposal):
+    """A proposal never sent, even abandoned, is seen by its author only (rule 8)."""
+    if proposal.sent_at is None:
+        return user.is_authenticated and user.pk == proposal.author_id
+    return True
+
+
 def step_visible_to(user, step):
     version = step.version
     if is_version_author(user, version):
@@ -716,6 +824,15 @@ register(
     text_fields=("title", "author", "text"),
     # The sentences change only through ``SourceChange``: a revert never desynchronizes them.
     not_reverted=("text", "state"),
+)
+register(
+    SourceProposal,
+    owner_field="author",
+    text_fields=("explanation",),
+    visible_to=source_proposal_visible_to,
+    # A revert never changes what was proposed, nor reopens or closes a proposal.
+    not_reverted=("operations", "base_state", "status", "decided_by", "sent_at", "closed_at"),
+    discussion=lambda user, proposal: proposal.is_open,
 )
 register(
     TranslationProject,

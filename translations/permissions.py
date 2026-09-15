@@ -14,6 +14,17 @@ def can_change_source(user, source):
     return user.is_authenticated and user.is_active and can_edit(user, source)
 
 
+def can_propose_source(user, source):
+    """Any other active account may propose changes to the sentences of a text."""
+    return (
+        user.is_authenticated
+        and user.is_active
+        and not source.is_hidden
+        and can_view(user, source)
+        and not can_change_source(user, source)
+    )
+
+
 def can_translate(user, version):
     """Only its author writes the Latin of a version."""
     return user.is_active and is_owner(user, version) and can_view(user, version)

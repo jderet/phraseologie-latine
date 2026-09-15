@@ -33,6 +33,7 @@ from .forms import (
     SentenceEditForm,
     SentenceInsertForm,
     SentenceSplitForm,
+    SourceProposalForm,
     SourceStateForm,
     SourceTextEditForm,
     SourceTextForm,
@@ -43,6 +44,7 @@ from .forms import (
 from .models import (
     ChangeProposal,
     ProposedSentence,
+    SourceProposal,
     SourceText,
     TranslationProject,
     TranslationVersion,
@@ -54,10 +56,13 @@ from .permissions import (
     can_copy,
     can_edit,
     can_propose,
+    can_propose_source,
     can_translate,
 )
 from .segmentation import from_lines, segment, to_lines
 from .services import (
+    add_proposal_operation,
+    adopt_source_proposal,
     change_source_text,
     copy_version,
     create_project,
@@ -67,11 +72,16 @@ from .services import (
     create_version,
     decide_sentence,
     publish_version,
+    rebase_source_proposal,
+    refuse_source_proposal,
     save_translation,
+    send_source_proposal,
     set_reference_version,
+    undo_proposal_operation,
     withdraw_proposal,
+    withdraw_source_proposal,
 )
-from .sources import SourceHistory
+from .sources import Line, SourceHistory, describe_operations, simulate
 from .steps import (
     carried,
     compare,
@@ -141,6 +151,7 @@ def source_detail(request, pk):
             "projects": source.projects.filter(is_hidden=False).select_related("created_by"),
             "can_edit": can_edit(request.user, source),
             "can_change": can_change_source(request.user, source),
+            "may_propose": can_propose_source(request.user, source),
         },
     )
 
@@ -196,74 +207,138 @@ def source_edit(request, pk):
 # Sentences of a source text
 
 
+def _lines(sentences):
+    return [Line(sentence.text, sentence.starts_paragraph) for sentence in sentences]
+
+
+def _shown(lines, number):
+    """A sentence of ``lines`` by its number, for the templates; 404 if there is none."""
+    if not 1 <= number <= len(lines):
+        raise Http404
+    line = lines[number - 1]
+    return {"order": number, "text": line.text, "starts_paragraph": line.starts_paragraph}
+
+
+def _preparing_proposal(user, source):
+    """The user's proposal in preparation for a text, if any."""
+    if not user.is_authenticated:
+        return None
+    return SourceProposal.objects.filter(
+        source_text=source, author=user, status=SourceProposal.Status.PREPARING
+    ).first()
+
+
 def source_sentences(request, pk):
-    """The sentences of a text and its changes, with the actions to change it for whoever may."""
-    source = _visible(request.user, SourceText.objects.all(), pk)
+    """The sentences of a text and its changes, with the actions to change it.
+
+    Whoever may change the text changes it directly; any other active account prepares a
+    proposal, whose changes the page shows already applied.
+    """
+    user = request.user
+    source = _visible(user, SourceText.objects.all(), pk)
+    can_change = can_change_source(user, source)
+    may_propose = can_propose_source(user, source)
+    lines = _lines(source.segments.current())
+    proposal = _preparing_proposal(user, source) if may_propose else None
+    prepared, stale = [], False
+    if proposal is not None:
+        stale = proposal.base_state != source.state
+        base = SourceHistory(source).segments_at(proposal.base_state)
+        prepared = describe_operations(_lines(base), proposal.operations)
+        if not stale:
+            lines = simulate(lines, proposal.operations)
+    open_proposals = source.proposals.filter(status=SourceProposal.Status.OPEN, is_hidden=False)
     return render(
         request,
         "translations/source_sentences.html",
         {
             "source": source,
-            "segments": source.segments.current(),
+            "sentences": [_shown(lines, number) for number in range(1, len(lines) + 1)],
             "changes": source.changes.select_related("author", "adopted_by").order_by("-number"),
-            "can_change": can_change_source(request.user, source),
+            "can_change": can_change,
+            "may_propose": may_propose,
+            "actions": can_change or (may_propose and not stale),
+            "proposal": proposal,
+            "prepared": prepared,
+            "stale": stale,
+            "send_form": SourceProposalForm(user=user) if prepared and not stale else None,
+            "open_proposal_count": open_proposals.count(),
         },
     )
 
 
-def _changeable_source(user, pk):
+def _editing(user, pk):
+    """(source, lines, state): the sentences the user changes, and the state they are at.
+
+    Whoever may change the text changes its current sentences, at the state of the text; any
+    other active account, those of their proposal in preparation, at its number of changes.
+    """
     source = _visible(user, SourceText.objects.all(), pk)
-    if not can_change_source(user, source):
+    lines = _lines(source.segments.current())
+    if can_change_source(user, source):
+        return source, lines, source.state
+    if not can_propose_source(user, source):
         raise PermissionDenied
-    return source
-
-
-def _numbered(source, number):
-    """The sentence of the current text with this number."""
-    return get_object_or_404(source.segments.current(), order=number)
+    proposal = _preparing_proposal(user, source)
+    if proposal is None:
+        return source, lines, 0
+    if proposal.base_state == source.state:
+        lines = simulate(lines, proposal.operations)
+    return source, lines, len(proposal.operations)
 
 
 def _change_sentences(request, source, form, operation, anchor):
-    """Apply a change from a valid form; return the redirection, or None with form errors."""
+    """Apply a change from a valid form, or add it to the user's proposal.
+
+    Return the redirection, or None with the errors on the form.
+    """
+    user = request.user
+    proposing = not can_change_source(user, source)
+    save = add_proposal_operation if proposing else change_source_text
     try:
-        _change, saved = _contribute(
-            request, change_source_text, source, operation, request.user, form.cleaned_data["state"]
+        _result, saved = _contribute(
+            request, save, source, operation, user, form.cleaned_data["state"]
         )
     except ValidationError as error:
         if error.code == "stale":
             # The form is shown again against the current text.
             form.data = form.data.copy()
-            form.data["state"] = SourceText.objects.values_list("state", flat=True).get(
-                pk=source.pk
-            )
+            form.data["state"] = _editing(user, source.pk)[2]
         form.add_error(None, error)
         return None
     if not saved:
         return None
-    messages.success(
-        request,
-        _("Le texte est modifié. Chaque version l’intégrera à sa prochaine étape."),
-    )
+    if proposing:
+        messages.success(
+            request,
+            _("Le changement est ajouté à votre proposition. Envoyez-la quand elle est prête."),
+        )
+    else:
+        messages.success(
+            request,
+            _("Le texte est modifié. Chaque version l’intégrera à sa prochaine étape."),
+        )
     return redirect(f"{reverse('translations:source_sentences', args=[source.pk])}#phrase-{anchor}")
 
 
 def _sentence_form(request, source, form, **context):
+    proposing = not can_change_source(request.user, source)
     return render(
         request,
         "translations/source_sentence_form.html",
-        {"source": source, "form": form, **context},
+        {"source": source, "form": form, "proposing": proposing, **context},
     )
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
 def source_sentence_edit(request, pk, number):
-    source = _changeable_source(request.user, pk)
-    sentence = _numbered(source, number)
+    source, lines, state = _editing(request.user, pk)
+    sentence = _shown(lines, number)
     initial = {
-        "text": sentence.text,
-        "starts_paragraph": sentence.starts_paragraph,
-        "state": source.state,
+        "text": sentence["text"],
+        "starts_paragraph": sentence["starts_paragraph"],
+        "state": state,
     }
     form = SentenceEditForm(request.POST or None, user=request.user, initial=initial)
     if request.method == "POST" and form.is_valid():
@@ -272,6 +347,7 @@ def source_sentence_edit(request, pk, number):
             "index": number - 1,
             "text": form.cleaned_data["text"],
             "starts_paragraph": form.cleaned_data["starts_paragraph"],
+            "expected": [sentence["text"]],
         }
         if response := _change_sentences(request, source, form, operation, number):
             return response
@@ -292,12 +368,17 @@ def source_sentence_edit(request, pk, number):
 @login_required
 @require_http_methods(["GET", "POST"])
 def source_sentence_split(request, pk, number):
-    source = _changeable_source(request.user, pk)
-    sentence = _numbered(source, number)
-    initial = {"parts": sentence.text, "state": source.state}
+    source, lines, state = _editing(request.user, pk)
+    sentence = _shown(lines, number)
+    initial = {"parts": sentence["text"], "state": state}
     form = SentenceSplitForm(request.POST or None, user=request.user, initial=initial)
     if request.method == "POST" and form.is_valid():
-        operation = {"kind": "split", "index": number - 1, "parts": form.cleaned_data["parts"]}
+        operation = {
+            "kind": "split",
+            "index": number - 1,
+            "parts": form.cleaned_data["parts"],
+            "expected": [sentence["text"]],
+        }
         if response := _change_sentences(request, source, form, operation, number):
             return response
     return _sentence_form(
@@ -317,11 +398,15 @@ def source_sentence_split(request, pk, number):
 @login_required
 @require_http_methods(["GET", "POST"])
 def source_sentence_merge(request, pk, number):
-    source = _changeable_source(request.user, pk)
-    shown = [_numbered(source, number), _numbered(source, number + 1)]
-    form = SourceStateForm(request.POST or None, user=request.user, initial={"state": source.state})
+    source, lines, state = _editing(request.user, pk)
+    shown = [_shown(lines, number), _shown(lines, number + 1)]
+    form = SourceStateForm(request.POST or None, user=request.user, initial={"state": state})
     if request.method == "POST" and form.is_valid():
-        operation = {"kind": "merge", "index": number - 1}
+        operation = {
+            "kind": "merge",
+            "index": number - 1,
+            "expected": [sentence["text"] for sentence in shown],
+        }
         if response := _change_sentences(request, source, form, operation, number):
             return response
     return _sentence_form(
@@ -346,8 +431,8 @@ def source_sentence_insert(request, pk):
 
     ``apres`` is the number of the sentence they follow; 0 adds them at the start.
     """
-    source = _changeable_source(request.user, pk)
-    count = source.segments.current().count()
+    source, lines, state = _editing(request.user, pk)
+    count = len(lines)
     after = request.GET.get("apres", "")
     after = int(after) if after.isdigit() else count
     if after > count:
@@ -360,14 +445,14 @@ def source_sentence_insert(request, pk):
         heading = _("Ajouter des phrases après la phrase %(number)d") % {"number": after}
     context = {
         "heading": heading,
-        "shown": [_numbered(source, after)] if after else [],
+        "shown": [_shown(lines, after)] if after else [],
         "intro": _(
             "Collez le texte : il sera découpé en phrases, que vous vérifierez avant d’enregistrer."
         ),
         "submit": _("Découper en phrases"),
     }
     if request.method != "POST":
-        form = SentenceInsertForm(user=request.user, initial={"state": source.state})
+        form = SentenceInsertForm(user=request.user, initial={"state": state})
         return _sentence_form(request, source, form, **context)
     data = request.POST.copy()
     context |= {
@@ -383,10 +468,120 @@ def source_sentence_insert(request, pk):
         return _sentence_form(request, source, form, **context)
     form = SentenceInsertForm(data, user=request.user)
     if form.is_valid():
-        operation = {"kind": "insert", "before": after, "sentences": form.sentences}
+        operation = {
+            "kind": "insert",
+            "before": after,
+            "sentences": form.sentences,
+            "expected": [lines[after - 1].text] if after else [],
+        }
         if response := _change_sentences(request, source, form, operation, after + 1):
             return response
     return _sentence_form(request, source, form, **context)
+
+
+# Proposals of changes to a source text
+
+
+def _source_proposal(user, pk):
+    queryset = SourceProposal.objects.select_related("source_text", "author", "decided_by")
+    proposal = get_object_or_404(queryset, pk=pk)
+    if not can_view(user, proposal.source_text) or not can_view(user, proposal):
+        raise Http404
+    return proposal
+
+
+def source_proposal_list(request, pk):
+    """The proposals sent for a text, open ones first."""
+    user = request.user
+    source = _visible(user, SourceText.objects.all(), pk)
+    proposals = [
+        proposal
+        for proposal in source.proposals.filter(sent_at__isnull=False).select_related("author")
+        if can_view(user, proposal)
+    ]
+    proposals.sort(key=lambda proposal: not proposal.is_open)
+    return render(
+        request,
+        "translations/source_proposal_list.html",
+        {
+            "source": source,
+            "proposals": proposals,
+            "may_propose": can_propose_source(user, source),
+        },
+    )
+
+
+def source_proposal_detail(request, pk):
+    """The changes of a proposal, described on the text they start from.
+
+    Whoever may change the text adopts or refuses them as a whole.
+    """
+    user = request.user
+    proposal = _source_proposal(user, pk)
+    source = proposal.source_text
+    base = SourceHistory(source).segments_at(proposal.base_state)
+    pending = proposal.is_preparing or proposal.is_open
+    stale = pending and proposal.base_state != source.state
+    is_author = user.pk == proposal.author_id
+    can_decide = proposal.is_open and can_change_source(user, source)
+    return render(
+        request,
+        "translations/source_proposal_detail.html",
+        {
+            "proposal": proposal,
+            "source": source,
+            "described": describe_operations(_lines(base), proposal.operations),
+            "stale": stale,
+            "can_adopt": can_decide and not stale,
+            "can_refuse": can_decide,
+            "can_withdraw": is_author and pending,
+            "can_rebase": is_author and stale,
+        },
+    )
+
+
+@login_required
+@require_POST
+def source_proposal_send(request, pk):
+    proposal = _source_proposal(request.user, pk)
+    form = SourceProposalForm(request.POST, user=request.user)
+    if not form.is_valid():
+        for errors in form.errors.values():
+            messages.error(request, errors[0])
+        return redirect("translations:source_sentences", proposal.source_text_id)
+    try:
+        send_source_proposal(proposal, request.user, form.cleaned_data["explanation"])
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+        return redirect("translations:source_sentences", proposal.source_text_id)
+    messages.success(request, _("La proposition est envoyée."))
+    return redirect(proposal)
+
+
+@login_required
+@require_POST
+def source_proposal_act(request, pk, action):
+    """Adopt, refuse, withdraw or take up again a proposal, or undo its latest change."""
+    proposal = _source_proposal(request.user, pk)
+    actions = {
+        "adopter": (adopt_source_proposal, _("La proposition est adoptée : le texte est modifié.")),
+        "refuser": (refuse_source_proposal, _("La proposition est refusée.")),
+        "retirer": (withdraw_source_proposal, _("La proposition est retirée.")),
+        "reprendre": (rebase_source_proposal, _("La proposition est reprise sur le texte actuel.")),
+        "annuler": (undo_proposal_operation, _("Le dernier changement est annulé.")),
+    }
+    if action not in actions:
+        raise Http404
+    act, message = actions[action]
+    try:
+        act(proposal, request.user)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, message)
+    if proposal.is_preparing and action in ("annuler", "reprendre"):
+        return redirect("translations:source_sentences", proposal.source_text_id)
+    return redirect(proposal)
 
 
 # Projects
@@ -441,6 +636,7 @@ def project_detail(request, pk):
             "drafts": [version for version in versions if version.is_draft],
             "can_edit": can_edit(request.user, project),
             "can_change_source": can_change_source(request.user, project.source_text),
+            "can_propose_source": can_propose_source(request.user, project.source_text),
             "reference_id": project.reference_version_id,
             "is_creator": request.user.pk == project.created_by_id,
         },

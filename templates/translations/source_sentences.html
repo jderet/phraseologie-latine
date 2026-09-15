@@ -12,18 +12,58 @@
     le traduisent. Les anciennes phrases restent dans les étapes qui les ont figées ; le latin
     déjà écrit suit ses phrases, et chaque version intègre le changement à sa prochaine étape.
   {% endblocktranslate %}</p>
-  {% if can_change %}
-  <p class="form-links"><a href="{% url 'translations:source_sentence_insert' source.pk %}?apres=0">{% translate "Ajouter des phrases au début" %}</a></p>
+  {% if may_propose %}
+  <p class="notice notice-info">{% blocktranslate trimmed %}
+    Vos changements forment une proposition, visible de vous seul jusqu’à ce que vous l’envoyiez.
+    La personne qui a ajouté le texte, ou un relecteur, l’adoptera ou la refusera en bloc.
+  {% endblocktranslate %}</p>
   {% endif %}
 
+  {% if proposal %}
+  <section>
+    <h2>{% translate "Votre proposition en préparation" %}</h2>
+    {% if stale %}
+    <p class="notice">{% translate "Le texte a changé depuis le début de votre proposition : reprenez-la sur le texte actuel avant de continuer." %}</p>
+    <form method="post" action="{% url 'translations:source_proposal_act' proposal.pk 'reprendre' %}" class="actions">
+      {% csrf_token %}
+      <button type="submit" class="button">{% translate "Reprendre sur le texte actuel" %}</button>
+    </form>
+    {% endif %}
+    {% if prepared %}
+    <p class="note">{% translate "Numérotés comme dans le texte au début de la proposition ; chaque changement s’applique au texte que laissent les précédents." %}</p>
+    {% include "translations/source_changes.html" with items=prepared %}
+    <form method="post" action="{% url 'translations:source_proposal_act' proposal.pk 'annuler' %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button button-quiet">{% translate "Annuler le dernier changement" %}</button>
+    </form>
+    {% else %}
+    <p class="note">{% translate "Aucun changement pour l’instant." %}</p>
+    {% endif %}
+    {% if send_form %}
+    <form method="post" action="{% url 'translations:source_proposal_send' proposal.pk %}" class="form">
+      {% csrf_token %}
+      {{ send_form }}
+      <button type="submit" class="button">{% translate "Envoyer la proposition" %}</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{% url 'translations:source_proposal_act' proposal.pk 'retirer' %}" class="actions">
+      {% csrf_token %}
+      <button type="submit" class="button button-quiet">{% translate "Abandonner la proposition" %}</button>
+    </form>
+  </section>
+  {% endif %}
+
+  {% if actions %}
+  <p class="form-links"><a href="{% url 'translations:source_sentence_insert' source.pk %}?apres=0">{% translate "Ajouter des phrases au début" %}</a></p>
+  {% endif %}
   <ol class="step-changes">
-    {% for sentence in segments %}
+    {% for sentence in sentences %}
     <li class="step-change" id="phrase-{{ sentence.order }}">
       <span class="bitext-number">{{ sentence.order }}</span>
       <div>
         <p lang="{{ source.language }}">{{ sentence.text }}</p>
         {% if sentence.starts_paragraph and not forloop.first %}<p class="muted">{% translate "début de paragraphe" %}</p>{% endif %}
-        {% if can_change %}
+        {% if actions %}
         <p class="form-links">
           <a class="small-link" href="{% url 'translations:source_sentence_edit' source.pk sentence.order %}">{% translate "Modifier" %}</a>
           <a class="small-link" href="{% url 'translations:source_sentence_split' source.pk sentence.order %}">{% translate "Scinder" %}</a>
@@ -36,13 +76,15 @@
     {% endfor %}
   </ol>
 
+  <p class="form-links"><a href="{% url 'translations:source_proposal_list' source.pk %}">{% translate "Propositions de modification du texte" %}</a> <span class="muted">{% blocktranslate count counter=open_proposal_count %}{{ counter }} proposition ouverte{% plural %}{{ counter }} propositions ouvertes{% endblocktranslate %}</span></p>
+
   {% if changes %}
   <h2>{% translate "Changements du texte" %}</h2>
   <ul class="item-list">
     {% for change in changes %}
     <li>
       <span class="item-title">{% blocktranslate with number=change.number kind=change.get_kind_display %}Changement {{ number }} : {{ kind }}{% endblocktranslate %}</span>
-      <span class="muted">{{ change.author.public_name }}{% if change.adopted_by %}, {% blocktranslate with name=change.adopted_by.public_name %}adopté par {{ name }}{% endblocktranslate %}{% endif %} · {{ change.created_at|date:"j F Y, H:i" }}</span>
+      <span class="muted">{{ change.author.public_name }}{% if change.adopted_by %}, {% blocktranslate with name=change.adopted_by.public_name %}adopté par {{ name }}{% endblocktranslate %}{% endif %} · {{ change.created_at|date:"j F Y, H:i" }}{% if change.proposal_id %} · <a href="{% url 'translations:source_proposal' change.proposal_id %}">{% translate "voir la proposition" %}</a>{% endif %}</span>
     </li>
     {% endfor %}
   </ul>

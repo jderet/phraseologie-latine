@@ -7,6 +7,7 @@ from accounts.limits import check_text_for_links
 
 from .models import (
     ChangeProposal,
+    SourceProposal,
     SourceText,
     TranslationProject,
     TranslationVersion,
@@ -238,6 +239,25 @@ class SentenceInsertForm(SourceStateForm):
             }
             for index, sentence in enumerate(from_lines(self.cleaned_data["text"]))
         ]
+
+
+class SourceProposalForm(ContributionForm):
+    """The explanation that goes with a proposal when it is sent."""
+
+    link_fields = ("explanation",)
+
+    explanation = forms.CharField(
+        label=_("Explication"),
+        max_length=3000,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text=_(
+            "Pourquoi ces changements : fautes corrigées, phrases oubliées, découpage revu."
+        ),
+    )
+
+    class Meta:
+        model = SourceProposal
+        fields = ("explanation",)
 
 
 class ReferenceForm(forms.Form):

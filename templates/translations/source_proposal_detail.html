@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ proposal }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{{ source.get_absolute_url }}">{{ source.title }}</a> · <a href="{% url 'translations:source_proposal_list' source.pk %}">{% translate "Propositions de modification du texte" %}</a></p>
+  <h1>{% blocktranslate with name=proposal.author.public_name %}Proposition de {{ name }}{% endblocktranslate %}</h1>
+  <p><span class="badge{% if proposal.is_open %} review-badge{% endif %}">{{ proposal.get_status_display }}</span></p>
+  {% if proposal.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+  {% if proposal.is_preparing %}
+  <p class="notice notice-info">{% translate "En préparation : visible de vous seul jusqu’à son envoi." %} <a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Continuer la proposition" %}</a></p>
+  {% endif %}
+  {% if stale %}
+  <p class="notice">{% translate "Le texte a changé depuis le début de cette proposition : elle ne peut plus être adoptée telle quelle. Son auteur peut la reprendre sur le texte actuel." %}</p>
+  {% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Auteur" %}</dt>
+      <dd><a href="{{ proposal.author.get_absolute_url }}">{{ proposal.author.public_name }}</a>{% if proposal.sent_at %}, {{ proposal.sent_at|date:"j F Y" }}{% endif %}</dd>
+    </div>
+    {% if proposal.decided_by %}
+    <div>
+      <dt>{% translate "Examinée par" %}</dt>
+      <dd>{{ proposal.decided_by.public_name }}, {{ proposal.closed_at|date:"j F Y" }}</dd>
+    </div>
+    {% elif proposal.closed_at %}
+    <div>
+      <dt>{% translate "Close le" %}</dt>
+      <dd>{{ proposal.closed_at|date:"j F Y" }}</dd>
+    </div>
+    {% endif %}
+  </dl>
+
+  {% if proposal.explanation %}
+  <h2>{% translate "Explication" %}</h2>
+  <p>{{ proposal.explanation|linebreaksbr }}</p>
+  {% endif %}
+
+  <h2>{% translate "Changements proposés" %}</h2>
+  <p class="note">{% translate "Numérotés comme dans le texte au début de la proposition ; chaque changement s’applique au texte que laissent les précédents." %}</p>
+  {% include "translations/source_changes.html" with items=described %}
+
+  {% if can_adopt %}
+  <p class="note">{% translate "Adopter applique tous ces changements au texte, pour tous les projets qui le traduisent ; le latin déjà écrit suit ses phrases." %}</p>
+  {% endif %}
+  <div class="form-links">
+    {% if can_adopt %}
+    <form method="post" action="{% url 'translations:source_proposal_act' proposal.pk 'adopter' %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button">{% translate "Adopter la proposition" %}</button>
+    </form>
+    {% endif %}
+    {% if can_refuse %}
+    <form method="post" action="{% url 'translations:source_proposal_act' proposal.pk 'refuser' %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button button-quiet">{% translate "Refuser la proposition" %}</button>
+    </form>
+    {% endif %}
+    {% if can_rebase %}
+    <form method="post" action="{% url 'translations:source_proposal_act' proposal.pk 'reprendre' %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button">{% translate "Reprendre sur le texte actuel" %}</button>
+    </form>
+    {% endif %}
+    {% if can_withdraw %}
+    <form method="post" action="{% url 'translations:source_proposal_act' proposal.pk 'retirer' %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button button-quiet">{% translate "Retirer ma proposition" %}</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if proposal.sent_at %}
+  {% translate "La discussion est close." as closed_message %}
+  {% discussion proposal closed_message %}
+  {% moderation_links proposal %}
+  {% endif %}
+</article>
+{% endblock %}

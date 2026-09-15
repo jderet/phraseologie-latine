@@ -170,8 +170,8 @@ class Comparison:
 
     @property
     def source_summary(self):
-        kinds = Counter(item.change.kind for item in self.source_changes)
-        added = sum(len(item.added) for item in self.source_changes if item.change.kind == INSERT)
+        kinds = Counter(item.kind for item in self.source_changes)
+        added = sum(len(item.added) for item in self.source_changes if item.kind == INSERT)
         parts = []
         if added:
             parts.append(

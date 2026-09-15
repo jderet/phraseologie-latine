@@ -126,7 +126,7 @@ Demandée par le porteur le 15 septembre 2026. Détail dans la section 4.1 du [c
 - [x] Historique du texte source : ajouter, modifier, fusionner ou scinder des phrases sans effacer les anciennes ; le latin suit dans toutes les versions ; chaque étape fige son texte source, et toutes les pages, exports et l'API le lisent à l'état de leur étape ; reprise des textes existants
 - [x] Pages pour ajouter, modifier, fusionner et scinder des phrases ; phrases touchées signalées dans l'éditeur
 - [x] Historique des étapes : résumé et détail dépliable ; changements du texte source dans « Créer une étape » et les comparaisons
-- [ ] Propositions de modification du texte source : préparation, envoi, discussion, adoption ou refus en bloc
+- [x] Propositions de modification du texte source : préparation, envoi, discussion, adoption ou refus en bloc
 
 Terminé quand un testeur a proposé une scission et un ajout, que la personne qui a ajouté le texte les a adoptés, que l'auteur d'une version publiée a vu les phrases signalées puis créé une étape, et que l'historique montre clairement ce que cette étape a changé.
 

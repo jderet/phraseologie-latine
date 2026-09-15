@@ -16,6 +16,7 @@ from .models import (
     ProposedSentence,
     Segment,
     SourceChange,
+    SourceProposal,
     SourceText,
     StepSentence,
     TranslatedSegment,
@@ -23,7 +24,7 @@ from .models import (
     TranslationVersion,
     VersionStep,
 )
-from .permissions import can_change_source, can_copy, can_propose
+from .permissions import can_change_source, can_copy, can_propose, can_propose_source
 from .segmentation import MAX_SENTENCE_LENGTH, MAX_SENTENCES, to_lines
 from .sources import (
     EDIT,
@@ -36,6 +37,8 @@ from .sources import (
     apply_operation,
     carry,
     is_active,
+    relocate,
+    simulate,
 )
 from .steps import (
     latest_step,
@@ -83,24 +86,37 @@ def normalize_operation(operation):
             }
             for item in operation["sentences"]
         ]
-        return {
+        normalized = {
             "kind": kind,
             "before": int(operation["before"]),
             "sentences": [item for item in sentences if item["text"]],
         }
-    if kind == EDIT:
-        return {
+    elif kind == EDIT:
+        normalized = {
             "kind": kind,
             "index": int(operation["index"]),
             "text": normalize_sentence(operation["text"]),
             "starts_paragraph": bool(operation.get("starts_paragraph")),
         }
-    if kind == MERGE:
-        return {"kind": kind, "index": int(operation["index"])}
-    if kind == SPLIT:
+    elif kind == MERGE:
+        normalized = {"kind": kind, "index": int(operation["index"])}
+    elif kind == SPLIT:
         parts = [normalize_sentence(part) for part in operation["parts"]]
-        return {"kind": kind, "index": int(operation["index"]), "parts": [p for p in parts if p]}
-    raise ValueError(f"Unknown operation: {kind!r}")
+        normalized = {
+            "kind": kind,
+            "index": int(operation["index"]),
+            "parts": [p for p in parts if p],
+        }
+    else:
+        raise ValueError(f"Unknown operation: {kind!r}")
+    return _with_expected(normalized, operation)
+
+
+def _with_expected(normalized, operation):
+    """Keep the texts an operation was written against, if given (see ``apply_operation``)."""
+    if operation.get("expected") is not None:
+        normalized["expected"] = [normalize_sentence(text) for text in operation["expected"]]
+    return normalized
 
 
 def check_sentence_limits(lines):
@@ -171,17 +187,188 @@ def change_source_text(source, operation, user, expected_state=None):
     if not can_change_source(user, source):
         raise PermissionDenied
     if expected_state is not None and expected_state != source.state:
-        raise ValidationError(
-            gettext(
-                "Le texte a changé pendant que vous le modifiiez : vérifiez la phrase, puis "
-                "recommencez."
-            ),
-            code="stale",
-        )
+        raise _stale()
     return apply_source_operation(source, operation, author=user)
 
 
-def apply_source_operation(source, operation, author, adopted_by=None):
+def _stale():
+    return ValidationError(
+        gettext(
+            "Le texte a changé pendant que vous le modifiiez : vérifiez la phrase, puis "
+            "recommencez."
+        ),
+        code="stale",
+    )
+
+
+def _current_lines(source):
+    return [Line(segment.text, segment.starts_paragraph) for segment in source.segments.current()]
+
+
+def _closed_proposal():
+    return ValidationError(gettext("Cette proposition est close."), code="closed")
+
+
+def _stale_proposal():
+    return ValidationError(
+        gettext(
+            "Le texte a changé depuis le début de cette proposition : son auteur doit la reprendre "
+            "sur le texte actuel."
+        ),
+        code="stale_proposal",
+    )
+
+
+@transaction.atomic
+def add_proposal_operation(source, operation, user, expected_count=None):
+    """Add a change to the user's proposal in preparation for a text, created with its first.
+
+    ``expected_count`` is the number of changes the page showed: the numbers of the sentences
+    depend on them.
+    """
+    source = SourceText.objects.select_for_update().get(pk=source.pk)
+    if not can_propose_source(user, source):
+        raise PermissionDenied
+    proposal = (
+        SourceProposal.objects.select_for_update()
+        .filter(source_text=source, author=user, status=SourceProposal.Status.PREPARING)
+        .first()
+    )
+    operations = proposal.operations if proposal else []
+    if expected_count is not None and expected_count != len(operations):
+        raise _stale()
+    if proposal is not None and proposal.base_state != source.state:
+        raise _stale_proposal()
+    operation = normalize_operation(operation)
+    lines = simulate(_current_lines(source), operations)
+    check_sentence_limits(apply_operation(lines, operation).lines)
+    if proposal is None:
+        proposal = SourceProposal(source_text=source, author=user, base_state=source.state)
+    proposal.operations = [*operations, operation]
+    save_with_revision(proposal, user, comment=describe_operation(operation, len(lines)))
+    return proposal
+
+
+@transaction.atomic
+def undo_proposal_operation(proposal, user):
+    """Remove the latest change of a proposal in preparation."""
+    proposal = SourceProposal.objects.select_for_update().get(pk=proposal.pk)
+    if user.pk != proposal.author_id:
+        raise PermissionDenied
+    if not proposal.is_preparing:
+        raise _closed_proposal()
+    if not proposal.operations:
+        raise ValidationError(gettext("Il n’y a aucun changement à annuler."), code="nothing")
+    proposal.operations = proposal.operations[:-1]
+    return save_with_revision(proposal, user, comment=gettext("Dernier changement annulé"))
+
+
+@transaction.atomic
+def send_source_proposal(proposal, user, explanation):
+    """Send a proposal in preparation with an explanation: it becomes public and open."""
+    source = SourceText.objects.select_for_update().get(pk=proposal.source_text_id)
+    proposal = SourceProposal.objects.select_for_update().get(pk=proposal.pk)
+    if user.pk != proposal.author_id:
+        raise PermissionDenied
+    if not proposal.is_preparing:
+        raise _closed_proposal()
+    if not proposal.operations:
+        raise ValidationError(
+            gettext("Ajoutez au moins un changement avant d’envoyer la proposition."),
+            code="empty",
+        )
+    if proposal.base_state != source.state:
+        raise _stale_proposal()
+    proposal.explanation = explanation.strip()
+    if not proposal.explanation:
+        raise ValidationError(gettext("Expliquez ces changements."), code="no_explanation")
+    proposal.status = SourceProposal.Status.OPEN
+    proposal.sent_at = timezone.now()
+    return save_with_revision(proposal, user, comment=gettext("Proposition envoyée"))
+
+
+@transaction.atomic
+def adopt_source_proposal(proposal, user):
+    """Whoever added the text, or a reviewer, applies all the changes of an open proposal.
+
+    Each becomes a ``SourceChange`` in the name of the author of the proposal.
+    """
+    source = SourceText.objects.select_for_update().get(pk=proposal.source_text_id)
+    proposal = SourceProposal.objects.select_for_update().get(pk=proposal.pk)
+    if not can_change_source(user, source):
+        raise PermissionDenied
+    if not proposal.is_open:
+        raise _closed_proposal()
+    if proposal.base_state != source.state:
+        raise _stale_proposal()
+    for operation in proposal.operations:
+        apply_source_operation(
+            source, operation, author=proposal.author, adopted_by=user, proposal=proposal
+        )
+    return _close_source_proposal(
+        proposal, user, SourceProposal.Status.ADOPTED, gettext("Proposition adoptée")
+    )
+
+
+@transaction.atomic
+def refuse_source_proposal(proposal, user):
+    proposal = SourceProposal.objects.select_for_update().get(pk=proposal.pk)
+    if not can_change_source(user, proposal.source_text):
+        raise PermissionDenied
+    if not proposal.is_open:
+        raise _closed_proposal()
+    return _close_source_proposal(
+        proposal, user, SourceProposal.Status.REFUSED, gettext("Proposition refusée")
+    )
+
+
+def _close_source_proposal(proposal, user, status, comment):
+    proposal.status = status
+    proposal.decided_by = user
+    proposal.closed_at = timezone.now()
+    return save_with_revision(proposal, user, comment=comment)
+
+
+@transaction.atomic
+def withdraw_source_proposal(proposal, user):
+    """Its author withdraws a proposal, sent or still in preparation."""
+    proposal = SourceProposal.objects.select_for_update().get(pk=proposal.pk)
+    if user.pk != proposal.author_id:
+        raise PermissionDenied
+    if not (proposal.is_preparing or proposal.is_open):
+        raise _closed_proposal()
+    proposal.status = SourceProposal.Status.WITHDRAWN
+    proposal.closed_at = timezone.now()
+    return save_with_revision(proposal, user, comment=gettext("Proposition retirée"))
+
+
+@transaction.atomic
+def rebase_source_proposal(proposal, user):
+    """Its author takes a proposal up again on the current text, if its changes still apply."""
+    source = SourceText.objects.select_for_update().get(pk=proposal.source_text_id)
+    proposal = SourceProposal.objects.select_for_update().get(pk=proposal.pk)
+    if user.pk != proposal.author_id:
+        raise PermissionDenied
+    if not (proposal.is_preparing or proposal.is_open):
+        raise _closed_proposal()
+    try:
+        operations, _lines = relocate(_current_lines(source), proposal.operations)
+    except ValidationError as error:
+        raise ValidationError(
+            gettext(
+                "Cette proposition ne s’applique plus au texte actuel : une phrase qu’elle change "
+                "a changé entre-temps. Annulez ce changement, ou retirez la proposition."
+            ),
+            code="no_longer_applies",
+        ) from error
+    proposal.operations = operations
+    proposal.base_state = source.state
+    return save_with_revision(
+        proposal, user, comment=gettext("Proposition reprise sur le texte actuel")
+    )
+
+
+def apply_source_operation(source, operation, author, adopted_by=None, proposal=None):
     """Record one change of the sentences of a locked source text; the caller checks rights.
 
     The removed sentences stay for the steps that froze them. In the working text of every
@@ -238,6 +425,7 @@ def apply_source_operation(source, operation, author, adopted_by=None):
         kind=operation["kind"],
         author=author,
         adopted_by=adopted_by,
+        proposal=proposal,
     )
     source.state = number
     source.text = to_lines(applied.lines)

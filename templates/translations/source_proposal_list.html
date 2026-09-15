@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Propositions de modification du texte" %} · {{ source.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ source.get_absolute_url }}">{{ source.title }}</a> · <a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Phrases du texte" %}</a></p>
+  <h1>{% translate "Propositions de modification du texte" %}</h1>
+  <p class="lede">{% translate "Les changements proposés aux phrases du texte, que la personne qui l’a ajouté, ou un relecteur, adopte ou refuse en bloc." %}</p>
+  {% if may_propose %}
+  <p class="form-links"><a class="button" href="{% url 'translations:source_sentences' source.pk %}">{% translate "Proposer des modifications" %}</a></p>
+  {% endif %}
+  <ul class="item-list">
+    {% for proposal in proposals %}
+    <li>
+      <span><a class="item-title" href="{{ proposal.get_absolute_url }}">{% blocktranslate with name=proposal.author.public_name %}Proposition de {{ name }}{% endblocktranslate %}</a> <span class="badge{% if proposal.is_open %} review-badge{% endif %}">{{ proposal.get_status_display }}</span></span>
+      <span class="muted">{{ proposal.sent_at|date:"j F Y" }} · {% blocktranslate count counter=proposal.operations|length %}{{ counter }} changement{% plural %}{{ counter }} changements{% endblocktranslate %}{% if proposal.is_hidden %} · {% translate "masquée" %}{% endif %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune proposition pour l’instant." %}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

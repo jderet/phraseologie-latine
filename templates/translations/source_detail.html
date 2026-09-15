@@ -39,7 +39,7 @@
   </dl>
   <p class="form-links">
     {% if can_edit %}<a href="{% url 'translations:source_edit' source.pk %}">{% translate "Modifier les informations" %}</a>{% endif %}
-    <a href="{% url 'translations:source_sentences' source.pk %}">{% if can_change %}{% translate "Ajouter, modifier, fusionner ou scinder des phrases" %}{% else %}{% translate "Phrases et changements du texte" %}{% endif %}</a>
+    <a href="{% url 'translations:source_sentences' source.pk %}">{% if can_change %}{% translate "Ajouter, modifier, fusionner ou scinder des phrases" %}{% elif may_propose %}{% translate "Proposer des modifications du texte" %}{% else %}{% translate "Phrases et changements du texte" %}{% endif %}</a>
   </p>
   {% moderation_links source %}
 

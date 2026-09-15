@@ -8,6 +8,9 @@
   <p class="eyebrow"><a href="{{ source.get_absolute_url }}">{{ source.title }}</a> · <a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Phrases du texte" %}</a></p>
   <h1>{{ heading }}</h1>
   <p class="lede">{{ intro }}</p>
+  {% if proposing %}
+  <p class="notice notice-info">{% translate "Ce changement s’ajoutera à votre proposition, visible de vous seul jusqu’à son envoi." %}</p>
+  {% endif %}
   {% if shown %}
   <ol class="step-changes">
     {% for sentence in shown %}

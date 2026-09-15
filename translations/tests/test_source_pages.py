@@ -1,6 +1,6 @@
 from django.urls import reverse
 
-from translations.models import SourceChange
+from translations.models import SourceChange, SourceProposal
 from translations.services import change_source_text
 
 from .factories import make_published_version
@@ -30,11 +30,14 @@ class SourceSentencePagesTests(TranslationTestCase):
         edit_page = self.client.get(reverse("translations:source_edit", args=[self.source.pk]))
         self.assertNotContains(edit_page, "ne change pas")
 
+        # Any other account finds the same actions, but its changes form a proposal.
         self.client.force_login(self.other)
         page = self.client.get(self.url("source_sentences"))
-        self.assertNotContains(page, self.url("source_sentence_edit", 1))
+        self.assertContains(page, self.url("source_sentence_edit", 1))
         response = self.client.post(self.url("source_sentence_merge", 1), {"state": 0})
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, self.url("source_sentences") + "#phrase-1")
+        self.assertFalse(SourceChange.objects.exists())
+        self.assertTrue(SourceProposal.objects.filter(author=self.other).exists())
         self.client.logout()
         response = self.client.post(self.url("source_sentence_merge", 1), {"state": 0})
         self.assertEqual(response.status_code, 302)

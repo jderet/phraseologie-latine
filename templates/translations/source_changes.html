@@ -1,0 +1,16 @@
+{% load i18n %}<ol class="step-changes">
+  {% for item in items %}
+  <li class="step-change">
+    <span class="bitext-number" aria-hidden="true">·</span>
+    <div>
+      <p><strong>{{ item.label }}</strong>{% if item.change %} <span class="muted">{% blocktranslate with name=item.change.author.public_name %}par {{ name }}{% endblocktranslate %}{% if item.change.adopted_by %}, {% blocktranslate with name=item.change.adopted_by.public_name %}adopté par {{ name }}{% endblocktranslate %}{% endif %}</span>{% endif %}</p>
+      {% if item.chunks %}
+      <p class="word-diff" lang="{{ source.language }}">{% include "translations/word_diff.html" with chunks=item.chunks %}</p>
+      {% else %}
+      {% for number, sentence in item.removed %}<p class="muted" lang="{{ source.language }}">{{ number }}. {{ sentence.text }}</p>{% endfor %}
+      {% for number, sentence in item.added %}<p class="word-diff" lang="{{ source.language }}">{% if item.removed %}→ {% endif %}{{ number }}. <ins>{{ sentence.text }}</ins></p>{% endfor %}
+      {% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>

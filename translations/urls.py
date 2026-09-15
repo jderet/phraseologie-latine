@@ -30,6 +30,18 @@ urlpatterns = [
         views.source_sentence_merge,
         name="source_sentence_merge",
     ),
+    path("textes/<int:pk>/propositions/", views.source_proposal_list, name="source_proposal_list"),
+    path("propositions-texte/<int:pk>/", views.source_proposal_detail, name="source_proposal"),
+    path(
+        "propositions-texte/<int:pk>/envoyer/",
+        views.source_proposal_send,
+        name="source_proposal_send",
+    ),
+    path(
+        "propositions-texte/<int:pk>/<slug:action>/",
+        views.source_proposal_act,
+        name="source_proposal_act",
+    ),
     path("textes/<int:source_pk>/nouveau-projet/", views.project_create, name="project_create"),
     path("projets/", views.project_list, name="project_list"),
     path("projets/<int:pk>/", views.project_detail, name="project"),

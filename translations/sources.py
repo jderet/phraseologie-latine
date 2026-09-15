@@ -45,11 +45,20 @@ def apply_operation(lines, operation):
     ``{"kind": "edit", "index": i, "text", "starts_paragraph"}``,
     ``{"kind": "merge", "index": i}`` (with the next sentence),
     ``{"kind": "split", "index": i, "parts": [text, ...]}``.
+
+    ``expected``, if given, lists the texts the operation was written against: those of the
+    sentences it changes, or of the sentence an insertion follows (none at the start). Where
+    they differ, the operation no longer applies: it would change another sentence.
     """
     kind = operation["kind"]
+    expected = operation.get("expected")
     if kind == INSERT:
         start = operation["before"]
         if not 0 <= start <= len(lines):
+            raise _missing()
+        if expected is not None and expected != [
+            line.text for line in lines[max(start - 1, 0) : start]
+        ]:
             raise _missing()
         added = [Line(item["text"], item["starts_paragraph"]) for item in operation["sentences"]]
         if not added:
@@ -59,6 +68,10 @@ def apply_operation(lines, operation):
         start = operation["index"]
         removed = 2 if kind == MERGE else 1
         if not 0 <= start <= len(lines) - removed:
+            raise _missing()
+        if expected is not None and expected != [
+            line.text for line in lines[start : start + removed]
+        ]:
             raise _missing()
         line = lines[start]
         if kind == EDIT:
@@ -99,6 +112,66 @@ def _missing():
     )
 
 
+def simulate(lines, operations):
+    """The sentences after operations applied in order; ValidationError if one does not apply."""
+    for operation in operations:
+        lines = apply_operation(lines, operation).lines
+    return lines
+
+
+def relocate(lines, operations):
+    """(operations, lines): operations moved, where needed, to the single place where the
+    texts they expect now are, and the sentences they give.
+
+    Raise ValidationError when an operation has no such single place.
+    """
+    moved = []
+    for operation in operations:
+        operation = dict(operation)
+        try:
+            applied = apply_operation(lines, operation)
+        except ValidationError:
+            if operation.get("expected") is None:
+                raise
+            places = _places([line.text for line in lines], operation)
+            if len(places) != 1:
+                raise _missing() from None
+            operation["before" if operation["kind"] == INSERT else "index"] = places[0]
+            applied = apply_operation(lines, operation)
+        moved.append(operation)
+        lines = applied.lines
+    return moved, lines
+
+
+def _places(texts, operation):
+    """The indexes where an operation finds the texts it expects."""
+    expected = operation["expected"]
+    if operation["kind"] == INSERT:
+        if not expected:
+            return [0]
+        return [index + 1 for index, text in enumerate(texts) if text == expected[0]]
+    size = len(expected)
+    return [
+        index for index in range(len(texts) - size + 1) if texts[index : index + size] == expected
+    ]
+
+
+def describe_operations(lines, operations):
+    """Operations applied in order to ``lines``, as ``Described`` changes."""
+    described = []
+    for operation in operations:
+        applied = apply_operation(lines, operation)
+        start = applied.start
+        removed = list(enumerate(lines[start : start + applied.removed], start=start + 1))
+        added = list(enumerate(applied.added, start=start + 1))
+        chunks = (
+            word_diff(removed[0][1].text, added[0][1].text) if operation["kind"] == EDIT else []
+        )
+        described.append(Described(operation["kind"], removed, added, chunks))
+        lines = applied.lines
+    return described
+
+
 @dataclass(frozen=True)
 class Carried:
     """The Latin of a sentence, and who wrote it (None: the author of the version)."""
@@ -109,20 +182,21 @@ class Carried:
 
 @dataclass(frozen=True)
 class Described:
-    """A change of the source text as a comparison shows it.
+    """A change of the source text, made (``change``, a ``SourceChange``) or proposed.
 
     ``removed`` and ``added`` are (number, sentence) pairs, numbered as in the text before and
     after the change; ``chunks`` is the word diff of an edited sentence.
     """
 
-    change: object
+    kind: str
     removed: list
     added: list
     chunks: list
+    change: object = None
 
     @property
     def label(self):
-        kind = self.change.kind
+        kind = self.kind
         if kind == INSERT:
             return ngettext(
                 "Phrase %(first)d ajoutée", "Phrases %(first)d à %(last)d ajoutées", len(self.added)
@@ -249,6 +323,6 @@ class SourceHistory:
             removed = [(before[segment.pk], segment) for segment in self.removed[change.number]]
             added = [(after[segment.pk], segment) for segment in self.added[change.number]]
             chunks = word_diff(removed[0][1].text, added[0][1].text) if change.kind == EDIT else []
-            described.append(Described(change, removed, added, chunks))
+            described.append(Described(change.kind, removed, added, chunks, change))
             before = after
         return described
