@@ -320,7 +320,10 @@ def unit_create(request):
         key: request.GET[key] for key in ("forme", "mots", "schema", "sens") if request.GET.get(key)
     }
     terms = marked_search(request.user, request.GET.get("forme", ""), request.GET.get("schema", ""))
-    context = _search_page(request, evidences, terms=terms, form=form, keep=keep)
+    # The constructions come from the reference form: no field adds one by its name.
+    context = _search_page(
+        request, evidences, terms=terms, form=form, keep=keep, constructions_from_form=True
+    )
     return render(request, "phraseology/unit_create.html", context)
 
 
@@ -736,6 +739,7 @@ def attestation_add(request, pk):
         request,
         evidences,
         terms=marked_search(request.user, unit.marked_form, unit.schema),
+        constructions_from_form=True,
         unit=unit,
         place=place,
         errors=errors,

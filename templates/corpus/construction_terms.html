@@ -6,5 +6,5 @@
     {% endfor %}
   </fieldset>
   {{ form.construction.errors }}
-  {{ form.construction_name.as_field_group }}
+  {% if not constructions_from_form %}{{ form.construction_name.as_field_group }}{% endif %}
 </div>

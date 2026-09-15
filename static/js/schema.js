@@ -33,6 +33,21 @@
       .replace(/j/g, "i");
   }
 
+  // The words of a reference form in order, each telling whether a mark holds it.
+  function formWords(text) {
+    const found = [];
+    const add = (piece, marked) =>
+      (piece.match(/\p{L}+/gu) || []).forEach((form) => found.push({ form, marked }));
+    let last = 0;
+    for (const match of text.matchAll(MARK)) {
+      add(text.slice(last, match.index), false);
+      add(match[2], true);
+      last = match.index + match[0].length;
+    }
+    add(text.slice(last), false);
+    return found;
+  }
+
   // The reference form without its marks: the words as they are written.
   function plainForm(text) {
     return text.replace(MARK, (_whole, _name, words) => words);
@@ -160,10 +175,9 @@
     // made are kept unless they are those the schema gives.
     let searchTouched = false;
     let searchMade = termFields.length > 0 && new URLSearchParams(window.location.search).has("term1");
-    // The units the reference form marks, as the server read them, and the relations drawn: the
-    // search looks for these units as constructions, and for the other lemmas as words.
+    // The units the reference form marks, as the server read them: the search looks for them as
+    // constructions, and for the other words of the form by their lemmas.
     let markUnits = [];
-    let lastEdges = [];
     let marksPending = Boolean(source) && markNames(source.value).length > 0;
     let nextKey = 0;
     const removed = new Set();
@@ -811,30 +825,45 @@
       choices.hidden = units.length === 0;
     }
 
+    // The other words of the reference form, in order: each by the lemma the drawing gives it,
+    // or as it is written when the corpus does not know it.
+    function unmarkedTerms() {
+      const drawn = words.filter((word) => !word.added && !word.slot);
+      const terms = [];
+      let next = 0;
+      formWords(source ? source.value : "").forEach((item) => {
+        const place = drawn.findIndex((word, index) => index >= next && word.form === item.form);
+        const word = place >= 0 ? drawn[place] : null;
+        if (place >= 0) {
+          next = place + 1;
+        }
+        if (item.marked) {
+          return;
+        }
+        const term = word && word.known ? { value: word.lemma, mode: "lemma" } : { value: item.form, mode: "form" };
+        if (!terms.some((other) => other.value === term.value && other.mode === term.mode)) {
+          terms.push(term);
+        }
+      });
+      return terms;
+    }
+
     // The search of attestations looks for the units the form marks, as constructions, then for
-    // the lemmas of the schema they do not cover, the root first.
+    // the other words of the form.
     function fillSearch() {
       if (!termFields.length || searchTouched || marksPending) {
         return;
       }
       const units = [...new Map(markUnits.map((unit) => [unit.pk, unit])).values()].slice(0, MAX_CONSTRUCTIONS);
-      const covered = new Set(units.flatMap((unit) => unit.edges.flatMap((edge) => [edge.head, edge.dependent])));
-      const lemmas = [];
-      lastEdges.forEach((edge) =>
-        [edge.head, edge.dependent].forEach((lemma) => {
-          if (lemma !== SLOT && !covered.has(lemma) && !lemmas.includes(lemma)) {
-            lemmas.push(lemma);
-          }
-        }),
-      );
-      if (!lemmas.length && !units.length) {
+      const terms = unmarkedTerms();
+      if (!terms.length && !units.length) {
         return;
       }
       if (searchMade) {
         searchMade = false;
         const shown = [...searchForm.querySelectorAll("input[name='construction']")].map((box) => box.value);
         const sameUnits = shown.join() === units.map((unit) => unit.pk).join();
-        const sameTerms = termFields.every((field, index) => field.value === (lemmas[index] || ""));
+        const sameTerms = termFields.every((field, index) => field.value === (terms[index] ? terms[index].value : ""));
         if (!sameUnits || !sameTerms) {
           searchTouched = true;
           return;
@@ -842,10 +871,10 @@
       }
       fillConstructions(units);
       termFields.forEach((field, index) => {
-        field.value = lemmas[index] || "";
+        field.value = terms[index] ? terms[index].value : "";
         const mode = searchForm.elements.namedItem(`mode${index + 1}`);
-        if (mode && lemmas[index]) {
-          mode.value = "lemma";
+        if (mode && terms[index]) {
+          mode.value = terms[index].mode;
         }
       });
       const more = searchForm.querySelector(".panel-more");
@@ -893,6 +922,7 @@
       if (!text.trim()) {
         preview.textContent = "";
         showComponents([]);
+        fillSearch();
         if (redraw) {
           attach([]);
           render();
@@ -937,7 +967,6 @@
       }
       showComponents(data.components || []);
       showPreview(data);
-      lastEdges = data.edges;
       fillSearch();
       if (source) {
         scheduleFormHelp();
@@ -1342,6 +1371,7 @@
           await rebuild();
           render();
           write();
+          fillSearch();
         }, DELAY);
       });
     }

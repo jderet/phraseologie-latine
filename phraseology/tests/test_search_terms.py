@@ -8,7 +8,7 @@ from phraseology.search_terms import marked_search
 
 from .test_frequency import AnalysedCorpusTestCase
 
-MARKED = "[bonum consilium;bonum consilium] capere"
+MARKED = "[bonum consilium;bonum consilium] cepit"
 SCHEMA = "capio -obj-> consilium; consilium -amod-> bonus"
 
 
@@ -73,11 +73,16 @@ class ConstructionSearchTests(AnalysedCorpusTestCase):
     def test_the_first_search_of_a_unit(self):
         self.assertEqual(
             marked_search(self.author, MARKED, SCHEMA),
-            {"term1": "capio", "construction": [self.construction.pk]},
+            {"term1": "capio", "mode1": "lemma", "construction": [self.construction.pk]},
+        )
+        # Without schema too; a word the corpus does not know is looked for as it is written.
+        self.assertEqual(
+            marked_search(self.author, MARKED),
+            {"term1": "capio", "mode1": "lemma", "construction": [self.construction.pk]},
         )
         self.assertEqual(
-            marked_search(self.author, "consilium capere", "capio -obj-> consilium"),
-            {"term1": "capio", "term2": "consilium"},
+            marked_search(self.author, "consilium capere"),
+            {"term1": "consilium", "mode1": "lemma", "term2": "capere", "mode2": "form"},
         )
 
     def test_pages_show_the_constructions(self):
@@ -86,6 +91,7 @@ class ConstructionSearchTests(AnalysedCorpusTestCase):
             reverse("corpus:search"), {"construction": pk, "term1": "", "scope": "all"}
         )
         self.assertContains(page, f'name="construction" value="{pk}" checked')
+        self.assertContains(page, 'name="construction_name"')
         self.assertEqual(page.context["page"].paginator.count, 1)
         self.client.force_login(self.author)
         creation = self.client.get(
@@ -95,10 +101,12 @@ class ConstructionSearchTests(AnalysedCorpusTestCase):
         self.assertEqual(search.construction_units, [self.construction])
         self.assertEqual(search["term1"].value(), "capio")
         self.assertContains(creation, f'name="construction" value="{pk}" checked')
+        # The reference form gives the constructions: no field adds one by its name.
+        self.assertNotContains(creation, 'name="construction_name"')
 
     def test_the_attestations_of_a_unit_start_from_its_marks(self):
         composed = Unit.objects.create(
-            reference_form="bonum consilium capere",
+            reference_form="bonum consilium cepit",
             marked_form=MARKED,
             schema=SCHEMA,
             status=Unit.Status.PROPOSED,
@@ -109,3 +117,4 @@ class ConstructionSearchTests(AnalysedCorpusTestCase):
         search = page.context["search"]["form"]
         self.assertEqual(search.construction_units, [self.construction])
         self.assertEqual((search["term1"].value(), search["mode1"].value()), ("capio", "lemma"))
+        self.assertNotContains(page, 'name="construction_name"')

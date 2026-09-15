@@ -198,12 +198,12 @@ class CreationPageTests(PhraseologyTestCase):
         html = page.content.decode()
         self.assertLess(html.index('name="schema"'), html.index('id="attestation-search"'))
         self.assertLess(html.index('id="attestation-search"'), html.index('name="definition"'))
+        # Words outside the marks; administrāre, unknown here, is looked for as written.
         search = page.context["search"]["form"]
         self.assertEqual(
-            [search[f"term{number}"].value() for number in (1, 2, 3)],
-            ["administro", "res", "publicus"],
+            [search["term1"].value(), search["term2"].value(), search["mode1"].value()],
+            ["administrāre", None, "form"],
         )
-        self.assertEqual(search["mode1"].value(), "lemma")
         self.assertContains(page, f'value="{MARKED}"')
         self.assertContains(page, "gouverner l’État</textarea>")
         self.assertContains(page, '<button type="submit" class="button" form="unit-form">')

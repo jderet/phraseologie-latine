@@ -10,12 +10,13 @@ from dataclasses import dataclass
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
-from corpus.forms import MAX_CONSTRUCTIONS, TERM_NUMBERS
-from corpus.search import NoAnalysisLayer
+from corpus.forms import MAX_CONSTRUCTIONS, MODE_FORM, MODE_LEMMA, TERM_NUMBERS
+from corpus.search import NoAnalysisLayer, default_layer
 
 from .frequency import occurrence_words, schema_matches
-from .markup import STATUS_ORDER, resolve, units_named
-from .schema import SLOT, parse_schema, schema_lemmas
+from .markup import STATUS_ORDER, resolve, segments, units_named
+from .schema import parse_schema, schema_lemmas
+from .schema_help import WORD, lemma_choices
 from .spotting import visible_units
 
 
@@ -69,18 +70,42 @@ def construction_named(user, name):
     return units[0] if units else None
 
 
+def form_words(marked):
+    """The words of a reference form outside its marks, in order, as they are written."""
+    return [
+        word for part in segments(marked or "") if not part.name for word in WORD.findall(part.text)
+    ]
+
+
 def marked_search(user, marked, schema=""):
     """The first search for attestations of a unit: the units its reference form marks, as
-    constructions, then the lemmas of its schema that they do not cover, the root first."""
+    constructions, then its other words.
+
+    Each word is looked for by its lemma, the one of the schema if it has several, or as it is
+    written when the analysis of the corpus does not know it.
+    """
     try:
         edges = parse_schema(schema)
     except ValidationError:
         edges = []
     units = [part.unit for part in resolve(user, marked or "", edges) if part.unit is not None]
     units = [unit for unit in dict.fromkeys(units) if construction_term(unit)][:MAX_CONSTRUCTIONS]
-    covered = {lemma for unit in units for lemma in schema_lemmas(construction_term(unit).edges)}
-    lemmas = [lemma for lemma in schema_lemmas(edges) if lemma not in covered and lemma != SLOT]
-    initial = {f"term{number}": lemma for number, lemma in zip(TERM_NUMBERS, lemmas, strict=False)}
+    layer = default_layer()
+    lemmas_of_schema = set(schema_lemmas(edges))
+    terms = []
+    for word in form_words(marked):
+        choice = lemma_choices(word, layer)
+        if choice["known"]:
+            lemmas = [lemma for lemma in choice["lemmas"] if lemma in lemmas_of_schema]
+            term = ((lemmas or choice["lemmas"])[0], MODE_LEMMA)
+        else:
+            term = (word, MODE_FORM)
+        if term not in terms:
+            terms.append(term)
+    initial = {}
+    for number, (value, mode) in zip(TERM_NUMBERS, terms, strict=False):
+        initial[f"term{number}"] = value
+        initial[f"mode{number}"] = mode
     if units:
         initial["construction"] = [unit.pk for unit in units]
     return initial
