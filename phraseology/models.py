@@ -55,6 +55,11 @@ class Unit(ModeratedContent):
         max_length=200,
         help_text=_("La forme sous laquelle on cite l’unité, par exemple : consilium capere."),
     )
+    # The reference form with the units it is made of marked, as written in the form:
+    # "[rēs pūblica;rem pūblicam] administrāre"; empty when it marks none.
+    marked_form = models.CharField(
+        _("forme de référence balisée"), max_length=300, blank=True, editable=False
+    )
     kind = models.CharField(_("type"), max_length=20, choices=Kind.choices, blank=True)
     tags = models.JSONField(_("étiquettes"), default=list, blank=True)
     schema = models.CharField(

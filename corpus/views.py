@@ -39,6 +39,7 @@ from .corrections import correction_changes, current_analysis, propose_correctio
 from .exports import FORMATS, conllu_export, export_filename, tei_export
 from .forms import (
     MODE_FORM,
+    MODE_LEMMA,
     SCOPE_CORE,
     TERM_NUMBERS,
     CorrectionForm,
@@ -370,7 +371,15 @@ def reading(request, work_id, part=None):
     )
 
 
-def search_context(request, per_page):
+def lemma_search_initial(terms=None):
+    """A search of attestations looks for lemmas, unless the corpus has no analysis yet."""
+    if default_layer() is None:
+        return terms or {}
+    return {f"mode{number}": MODE_LEMMA for number in TERM_NUMBERS} | (terms or {})
+
+
+def search_context(request, per_page, initial=None):
+    """The search of a page; ``initial`` fills the form before any search (terms, modes)."""
     if "term1" in request.GET:
         form = bound_search_form(request.GET)
     else:
@@ -379,6 +388,7 @@ def search_context(request, per_page):
                 "scope": SCOPE_CORE,
                 "distance": SearchForm.DEFAULT_DISTANCE,
                 **{f"mode{number}": MODE_FORM for number in TERM_NUMBERS},
+                **(initial or {}),
             }
         )
     context = {"form": form, "version": corpus_version(), "searched": False}

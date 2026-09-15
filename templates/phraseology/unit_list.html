@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load phraseology_tags %}
 {% load i18n %}
 
 {% block title %}{% translate "Phraséologie" %} · {{ block.super }}{% endblock %}
@@ -42,7 +43,7 @@
   <h2>{% translate "Mes brouillons" %}</h2>
   <ul class="item-list">
     {% for unit in drafts %}
-    <li><a class="item-title" lang="la" href="{{ unit.get_absolute_url }}">{{ unit.reference_form }}</a></li>
+    <li>{% marked_form unit href=unit.get_absolute_url css_class="item-title" %}</li>
     {% endfor %}
   </ul>
   <h2>{% translate "Fiches publiques" %}</h2>
@@ -50,7 +51,7 @@
   <ul class="item-list">
     {% for unit in page %}
     <li>
-      <a class="item-title" lang="la" href="{{ unit.get_absolute_url }}">{{ unit.reference_form }}</a>
+      {% marked_form unit href=unit.get_absolute_url css_class="item-title" %}
       <span class="muted">{{ unit.get_status_display|capfirst }}{% if unit.kind %} · {{ unit.get_kind_display }}{% endif %}</span>
     </li>
     {% empty %}

@@ -1,12 +1,32 @@
 from django import template
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import ValidationError
 from django.utils.html import format_html, format_html_join
 
 from corpus.templatetags.corpus_tags import render_sentence
 from moderation.registry import history_url
+from phraseology.markup import resolve
 from phraseology.reading import sentence_marks
 
 register = template.Library()
+
+
+@register.inclusion_tag("phraseology/marked_form.html", takes_context=True)
+def marked_form(context, unit, href="", css_class=""):
+    """The reference form of a unit, the units it names highlighted, each with its bubble.
+
+    With ``href``, the form is a link, and the bubbles follow it rather than sit inside it.
+    """
+    parts = []
+    if unit.marked_form:
+        request = context.get("request")
+        user = request.user if request is not None else AnonymousUser()
+        try:
+            edges = unit.edges
+        except ValidationError:
+            edges = []
+        parts = resolve(user, unit.marked_form, edges, exclude=unit)
+    return {"unit": unit, "parts": parts, "href": href, "css_class": css_class}
 
 
 @register.filter

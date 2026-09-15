@@ -15,8 +15,9 @@ from corpus.timeouts import TimeLimit
 
 from .composition import components
 from .frequency import schema_matches
+from .markup import clean_marks, name_key, name_pattern, resolve
 from .schema import MAX_RELATIONS, format_schema, parse_schema, schema_lemmas
-from .spotting import visible_units
+from .spotting import spot_units, visible_units
 
 # A schema has at most five lemmas; the words of a reference form beyond are not offered.
 MAX_WORDS = MAX_RELATIONS + 2
@@ -28,6 +29,7 @@ COUNT_SECONDS = 5
 # Units offered to be inserted in a drawing.
 MAX_UNITS = 10
 MAX_QUERY_LENGTH = 100
+MAX_FORM_LENGTH = 300
 WORD = re.compile(r"[^\W\d_]+")
 
 
@@ -72,31 +74,92 @@ def _edges_as_json(edges):
     ]
 
 
+def _unit_json(unit, with_edges=True):
+    data = {
+        "reference_form": unit.reference_form,
+        "status": unit.get_status_display(),
+        "url": unit.get_absolute_url(),
+    }
+    if with_edges:
+        try:
+            data["edges"] = _edges_as_json(parse_schema(unit.schema))
+        except ValidationError:
+            data["edges"] = []
+    return data
+
+
 def unit_schemas(user, query):
-    """Units the user may see whose reference form contains the query, with their schemas."""
+    """Units the user may see whose reference form contains the query, with their schemas.
+
+    The query matches whatever its macrons, u or v, i or j; a unit of that very name comes first.
+    """
     query = " ".join((query or "").split())[:MAX_QUERY_LENGTH]
-    if not query:
+    if not name_key(query):
         return []
     units = (
         visible_units(user)
         .exclude(schema="")
-        .filter(reference_form__icontains=query)
+        .filter(reference_form__iregex=name_pattern(query, whole=False))
         .order_by("reference_form", "pk")
     )
     found = []
-    for unit in units[:MAX_UNITS]:
-        try:
-            edges = parse_schema(unit.schema)
-        except ValidationError:
-            continue
-        found.append(
-            {
-                "reference_form": unit.reference_form,
-                "status": unit.get_status_display(),
-                "edges": _edges_as_json(edges),
-            }
-        )
+    for unit in sorted(
+        units[:MAX_UNITS], key=lambda unit: name_key(unit.reference_form) != name_key(query)
+    ):
+        data = _unit_json(unit)
+        if data["edges"]:
+            found.append(data)
     return found
+
+
+def form_help(user, text, schema=""):
+    """A reference form being written, as the drawing shows it under the field.
+
+    The units its marks name, chosen as on the page of the unit, and the known units found in
+    its words that no mark names yet, to suggest.
+    """
+    result = {"parts": [], "suggestions": [], "errors": []}
+    text = " ".join((text or "").split())[:MAX_FORM_LENGTH]
+    try:
+        text = clean_marks(text)
+    except ValidationError as error:
+        result["errors"] = error.messages
+        return result
+    try:
+        edges = parse_schema(schema)
+    except ValidationError:
+        edges = []
+    parts = resolve(user, text, edges)
+    result["parts"] = [
+        {
+            "text": part.text,
+            "name": part.name,
+            "unit": _unit_json(part.unit) if part.unit else None,
+            "others": [_unit_json(other, with_edges=False) for other in part.others],
+        }
+        for part in parts
+    ]
+    plain, marked = "", []
+    for part in parts:
+        if part.name:
+            marked.append((len(plain), len(plain) + len(part.text)))
+        plain += part.text
+    named = {name_key(part.name) for part in parts if part.name}
+    _words, spots = spot_units(plain, user, describe=False)
+    for spot in spots:
+        end = spot.start + len(spot.excerpt)
+        if (
+            not spot.unit.schema
+            or name_key(spot.unit.reference_form) in named
+            # The unit being written is no suggestion for itself.
+            or name_key(spot.excerpt) == name_key(plain)
+            or any(spot.start < stop and start < end for start, stop in marked)
+        ):
+            continue
+        suggestion = _unit_json(spot.unit)
+        if suggestion["edges"]:
+            result["suggestions"].append({**suggestion, "excerpt": spot.excerpt})
+    return result
 
 
 def check_schema(text, slot=False, count=False, user=None):

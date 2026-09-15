@@ -56,7 +56,7 @@ class ListAndCreationPagesTests(PhraseologyTestCase):
         response = self.client.post(
             url, {"reference_form": "consilium capere", "definition": "", "attestation": [value]}
         )
-        self.assertContains(response, f'value="{value}" checked')
+        self.assertContains(response, f'value="{value}" form="unit-form" checked')
         response = self.client.post(
             url, {"reference_form": "consilium capere", "definition": "décider"}
         )

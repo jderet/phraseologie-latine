@@ -8,6 +8,15 @@
   data-lemmas-url="{{ builder.lemmas_url }}"
   data-check-url="{{ builder.check_url }}"
   data-units-url="{{ builder.units_url }}"
+  data-form-url="{{ builder.form_url }}"
+  data-search="{{ builder.search }}"
+  data-keep="{{ builder.keep }}"
+  data-label-built-on="{% translate 'Construite sur la fiche' %}"
+  data-label-use="{% translate 'Utiliser cette fiche' %}"
+  data-label-suggestion="{% translate '« %s » : fiche' %}"
+  data-label-no-unit-named="{% translate 'aucune fiche de ce nom' %}"
+  data-label-same-name="{% translate 'même nom :' %}"
+  data-label-words-gone="{% translate 'Les mots « %s » ne se trouvent plus tels quels dans la forme de référence.' %}"
   data-label-regime="{% translate 'Reliez maintenant « %s » à son régime : cliquez sur le nom qu’elle introduit.' %}"
   data-label-no-unit="{% translate 'Aucune fiche avec un schéma ne porte ce nom.' %}"
   data-label-inserted="{% translate 'Les liens de « %s » sont ajoutés au schéma.' %}"
@@ -36,6 +45,12 @@
   data-label-none="{% translate 'Aucune occurrence dans le noyau (corpus %s)' %}"
   data-label-too-long="{% translate 'Trop long à compter : le schéma est peut-être trop général.' %}"
   data-label-see="{% translate 'voir' %}"{% endif %}>
+  {# Shown under the reference form: its marked units, and the known units found in it. #}
+  <div class="schema-source-tools" hidden>
+    <p class="form-mark-preview" lang="la" hidden></p>
+    <p class="schema-form-problems" aria-live="polite"></p>
+    <ul class="schema-suggestions" aria-label="{% translate 'Fiches reconnues dans la forme de référence' %}" hidden></ul>
+  </div>
   <p class="schema-help">{% blocktranslate trimmed %}
     Reliez les mots : cliquez sur le mot qui régit, puis sur le mot qui en dépend, ou tirez une
     flèche de l’un vers l’autre. Au clavier, Entrée sur chacun des deux mots. Les mots en

@@ -14,12 +14,12 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from accounts.limits import ContributionLimitReached, is_limited
 from accounts.roles import is_reviewer
-from corpus.forms import search_query
+from corpus.forms import TERM_NUMBERS, search_query
 from corpus.models import Author, Passage, Token, Work
 from corpus.search import corpus_version, default_layer, quotation
 from corpus.text import normalize
 from corpus.timeouts import TimeLimit
-from corpus.views import search_context
+from corpus.views import lemma_search_initial, search_context
 from justifications.display import visible_evidences
 from justifications.forms import ReferenceFormSet
 from justifications.models import Evidence
@@ -87,7 +87,7 @@ from .panel import unit_card, word_analysis, word_attestations
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 from .reading_notes import create_reading_note, word_reading_notes
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
-from .schema_help import check_schema, lemma_choices, unit_schemas, written_words
+from .schema_help import check_schema, form_help, lemma_choices, unit_schemas, written_words
 from .services import (
     FREQUENCY_SECONDS,
     FrequencyTooLong,
@@ -210,9 +210,18 @@ def _chosen_attestations(request, name="attestation"):
     return evidences, errors
 
 
-def _search_page(request, evidences, **extra):
+def _schema_terms(text):
+    """Search terms from the lemmas of a schema, the root first."""
+    try:
+        lemmas = [lemma for lemma in schema_lemmas(parse_schema(text)) if lemma != SLOT]
+    except ValidationError:
+        return {}
+    return {f"term{number}": lemma for number, lemma in zip(TERM_NUMBERS, lemmas, strict=False)}
+
+
+def _search_page(request, evidences, terms=None, **extra):
     """The corpus search of the page, and the attestations already ticked."""
-    search = search_context(request, SEARCH_RESULTS)
+    search = search_context(request, SEARCH_RESULTS, initial=lemma_search_initial(terms))
     found = {hit.word_ids for hit in search.get("hits", [])}
     chosen = [quotation(evidence.tokens) for evidence in evidences]
     return {
@@ -276,8 +285,11 @@ def unit_create(request):
         initial={
             "reference_form": request.GET.get("forme", ""),
             "schema": request.GET.get("schema", ""),
+            "definition": request.GET.get("sens", ""),
         },
     )
+    # The sense comes after the search of attestations, outside the form it belongs to.
+    form.fields["definition"].widget.attrs["form"] = UNIT_FORM_ID
     evidences, errors = _chosen_attestations(request)
     if request.method == "GET" and request.GET.get("mots"):
         # Words chosen in the text being read come ticked.
@@ -312,8 +324,11 @@ def unit_create(request):
                     request, _("La fiche est créée : c’est un brouillon visible de vous seul.")
                 )
                 return redirect(unit)
-    keep = {key: request.GET[key] for key in ("forme", "mots", "schema") if request.GET.get(key)}
-    context = _search_page(request, evidences, form=form, keep=keep)
+    keep = {
+        key: request.GET[key] for key in ("forme", "mots", "schema", "sens") if request.GET.get(key)
+    }
+    terms = _schema_terms(request.GET.get("schema", ""))
+    context = _search_page(request, evidences, terms=terms, form=form, keep=keep)
     return render(request, "phraseology/unit_create.html", context)
 
 
@@ -2111,6 +2126,14 @@ def schema_help_check(request):
             count=request.GET.get("compter") == "1",
             user=request.user,
         )
+    )
+
+
+@require_GET
+def schema_help_form(request):
+    """The reference form being written: the units it marks, and the known units to suggest."""
+    return JsonResponse(
+        form_help(request.user, request.GET.get("forme", ""), request.GET.get("schema", ""))
     )
 
 

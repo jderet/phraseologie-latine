@@ -1,6 +1,6 @@
 {% load i18n corpus_tags %}<section class="attestation-search" aria-labelledby="search-title">
   <h2 id="search-title">{% translate "Chercher des attestations" %}</h2>
-  <form method="get" class="panel-search">
+  <form method="get" class="panel-search" id="attestation-search">
     {% for name, value in keep.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
     {% include "corpus/panel_terms.html" with form=search.form %}
     <div class="field">{{ search.form.scope.as_field_group }}</div>

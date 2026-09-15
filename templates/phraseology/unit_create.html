@@ -9,19 +9,26 @@
   <h1>{% translate "Créer une fiche" %}</h1>
   <p class="lede">{% blocktranslate trimmed %}
     Trois champs suffisent : la forme de référence, un sens et une attestation, que vous
-    choisissez ci-dessous dans le corpus. La fiche reste un brouillon visible de vous seul, que
-    vous complétez ensuite.
+    choisissez dans le corpus. La fiche reste un brouillon visible de vous seul, que vous
+    complétez ensuite.
   {% endblocktranslate %}</p>
 
-  {% include "justifications/search_attestations.html" %}
-
+  {# The fields after the search of attestations belong to this form by their form attribute. #}
   <form method="post" id="unit-form" class="form">
     {% csrf_token %}
     {% if keep.reperage %}<input type="hidden" name="reperage" value="{{ keep.reperage }}">{% endif %}
-    {% include "phraseology/chosen_attestations.html" %}
-    {{ form }}
-    <button type="submit" class="button">{% translate "Créer la fiche" %}</button>
+    {{ form.non_field_errors }}
+    <div>{{ form.reference_form.as_field_group }}</div>
+    <div>{{ form.schema.as_field_group }}</div>
   </form>
+
+  {% include "justifications/search_attestations.html" %}
+
+  <div class="form">
+    {% include "phraseology/chosen_attestations.html" %}
+    <div>{{ form.definition.as_field_group }}</div>
+    <button type="submit" class="button" form="unit-form">{% translate "Créer la fiche" %}</button>
+  </div>
 </section>
 <script src="{% static 'js/schema.js' %}" defer></script>
 {% endblock %}

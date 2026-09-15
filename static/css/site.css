@@ -1473,6 +1473,94 @@ article > h2 {
   white-space: nowrap;
 }
 
+/* Under the reference form: the unit it is built on, its marks, the units to suggest */
+.schema-source-tools {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.schema-source-tools[hidden],
+.schema-source-tools [hidden] {
+  display: none !important;
+}
+
+.schema-source-tools p {
+  margin: 0;
+}
+
+.form-mark-preview {
+  font-size: 1.05rem;
+}
+
+.schema-form-problems {
+  color: var(--danger);
+}
+
+.schema-form-problems:empty {
+  display: none;
+}
+
+.schema-suggestions {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+/* A unit named in a reference form: its words highlighted, its name in a bubble */
+.form-mark,
+.marked-form {
+  position: relative;
+}
+
+.form-mark {
+  cursor: help;
+}
+
+.form-mark-words {
+  padding: 0 2px;
+  color: inherit;
+  background: var(--highlight);
+  border-radius: 3px;
+}
+
+.form-mark-bubble {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  width: max-content;
+  max-width: min(26rem, 80vw);
+  padding: 6px 10px;
+  font: 400 0.9rem/1.4 var(--sans);
+  color: var(--ink);
+  white-space: normal;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
+}
+
+.form-mark:hover > .form-mark-bubble,
+.form-mark:focus-within > .form-mark-bubble,
+.marked-form:hover > .form-mark-bubble,
+.marked-form:focus-within > .form-mark-bubble {
+  display: block;
+}
+
+.form-mark-entry {
+  display: block;
+}
+
+.form-mark-status {
+  font-size: 0.85em;
+  color: var(--ink-2);
+}
+
 /* A unit within a schema: its relations framed under its name */
 .schema-component {
   display: inline;

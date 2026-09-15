@@ -152,6 +152,16 @@ Demandée par le porteur le 15 septembre 2026 : montrer qu'une fiche en contient
 
 Terminé quand un testeur a dessiné *dē rē pūblicā bene merērī* sans écrire le schéma, vu *rēs pūblica* comme composante, et retrouvé ses occurrences dans la recherche par schéma.
 
+## Étape 11 : construction à partir d'une fiche existante
+
+Demandée par le porteur le 15 septembre 2026 : créer *rem pūblicam administrāre* en indiquant qu'elle contient *rēs pūblica*, ou se le voir suggérer.
+
+- [x] Forme de référence balisée `[rēs pūblica;rem pūblicam]` : forme simple gardée, surbrillance et bulle sur la fiche et dans les listes
+- [x] Création d'une fiche : recherche d'attestations après le schéma, remplie de ses lemmes ; recherches d'attestations en lemme par défaut
+- [x] Dessin : champ « Construite sur la fiche », crochets reconnus, suggestions, aperçu sous le champ
+
+Terminé quand un testeur a créé *rem pūblicam administrāre* une fois en tapant les crochets, une fois en acceptant la suggestion, et vu la bulle mener à *rēs pūblica*.
+
 ## Ouverture publique
 
 - [ ] Conditions de la section 7 du cahier des charges remplies

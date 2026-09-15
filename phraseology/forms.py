@@ -11,6 +11,7 @@ from translations.forms import ContributionForm
 from translations.models import Language
 from translations.services import normalize_sentence
 
+from .markup import MARK, clean_marks, plain_form
 from .models import (
     Equivalent,
     NegativeSearch,
@@ -27,10 +28,49 @@ from .schema import format_schema, parse_schema
 from .widgets import SchemaWidget
 
 MAX_TAGS = 10
+MAX_MARKED_LENGTH = 300
+
+
+class MarkedReferenceFormMixin:
+    """The reference form, where a unit it is made of may be marked: [rēs pūblica;rem pūblicam].
+
+    The unit keeps the plain form as its reference form, and the marked text beside it.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["reference_form"] = forms.CharField(
+            label=_("Forme de référence"),
+            max_length=MAX_MARKED_LENGTH,
+            help_text=_(
+                "La forme sous laquelle on cite l’unité, par exemple : consilium capere. Une "
+                "fiche qu’elle contient se marque entre crochets, son nom puis ses mots : "
+                "[rēs pūblica;rem pūblicam] administrāre."
+            ),
+            widget=forms.TextInput(attrs={"lang": "la"}),
+        )
+        if not self.is_bound and self.instance.marked_form:
+            self.initial["reference_form"] = self.instance.marked_form
+
+    def clean_reference_form(self):
+        marked = clean_marks(normalize_sentence(self.cleaned_data["reference_form"]))
+        plain = normalize_sentence(plain_form(marked))
+        limit = Unit._meta.get_field("reference_form").max_length
+        if not plain:
+            raise ValidationError(_("Indiquez la forme de référence."), code="required")
+        if len(plain) > limit:
+            raise ValidationError(
+                _("La forme de référence compte au plus %(limit)d caractères.") % {"limit": limit},
+                code="max_length",
+            )
+        self.instance.marked_form = marked if MARK.search(marked) else ""
+        return plain
+
+
 MAX_TAG_LENGTH = 40
 
 
-class UnitCreateForm(ContributionForm):
+class UnitCreateForm(MarkedReferenceFormMixin, ContributionForm):
     """The three fields a unit needs to be created; the attestation is chosen in the corpus."""
 
     link_fields = ("reference_form", "definition")
@@ -47,11 +87,13 @@ class UnitCreateForm(ContributionForm):
         fields = ("reference_form", "schema")
         widgets = {
             "reference_form": forms.TextInput(attrs={"lang": "la"}),
-            "schema": SchemaWidget(words_from="reference_form", count=True),
+            "schema": SchemaWidget(
+                words_from="reference_form",
+                count=True,
+                search="attestation-search",
+                keep={"reference_form": "forme", "schema": "schema", "definition": "sens"},
+            ),
         }
-
-    def clean_reference_form(self):
-        return normalize_sentence(self.cleaned_data["reference_form"])
 
     def clean_schema(self):
         return format_schema(parse_schema(self.cleaned_data["schema"]))
@@ -64,7 +106,7 @@ class CandidateUnitForm(UnitCreateForm):
         fields = ("reference_form",)
 
 
-class UnitForm(ContributionForm):
+class UnitForm(MarkedReferenceFormMixin, ContributionForm):
     link_fields = ("reference_form", "construction")
 
     usage_marks = forms.MultipleChoiceField(
@@ -104,9 +146,6 @@ class UnitForm(ContributionForm):
         super().__init__(*args, **kwargs)
         if not self.is_bound:
             self.initial["tags"] = ", ".join(self.instance.tags)
-
-    def clean_reference_form(self):
-        return normalize_sentence(self.cleaned_data["reference_form"])
 
     def clean_schema(self):
         return format_schema(parse_schema(self.cleaned_data["schema"]))

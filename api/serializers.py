@@ -85,6 +85,7 @@ def unit_summary(unit, link):
         "id": unit.pk,
         "url": link(unit.get_absolute_url()),
         "reference_form": unit.reference_form,
+        "marked_form": unit.marked_form,
         "kind": unit.kind,
         "schema": unit.schema,
         "construction": unit.construction,

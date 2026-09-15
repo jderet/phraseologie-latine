@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load phraseology_tags %}
 {% load i18n corpus_tags moderation_tags %}
 
 {% block title %}{{ unit.reference_form }} · {{ block.super }}{% endblock %}
@@ -6,7 +7,7 @@
 {% block content %}
 <article class="page-medium unit">
   <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
-  <h1 lang="la">{{ unit.reference_form }}</h1>
+  <h1 lang="la">{% marked_form unit %}</h1>
   <p class="badges"><span class="badge status-{{ unit.status }}">{{ unit.get_status_display }}</span>{% for label in unit.usage_mark_labels %} <span class="badge">{{ label }}</span>{% endfor %}</p>
   {% if unit.is_draft %}
   <p class="notice notice-info">{% translate "Brouillon : cette fiche n’est visible que de vous." %}</p>

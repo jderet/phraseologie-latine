@@ -16,6 +16,8 @@
   const BRACKET_ROW = 24;
   const SVG = "http://www.w3.org/2000/svg";
   const EDGE = /^(\p{L}+)\s*[-—–]\s*([a-zA-Z:|\s]+?)\s*(?:->|→)\s*(\p{L}+|\*)$/u;
+  // A unit named in a reference form, then its words there: [rēs pūblica;rem pūblicam].
+  const MARK = /\[([^[\];]*);([^[\];]*)\]/g;
 
   // The search form of a Latin word, as the server writes lemmas.
   function normalizeLatin(text) {
@@ -27,6 +29,37 @@
       .toLowerCase()
       .replace(/v/g, "u")
       .replace(/j/g, "i");
+  }
+
+  // The reference form without its marks: the words as they are written.
+  function plainForm(text) {
+    return text.replace(MARK, (_whole, _name, words) => words);
+  }
+
+  // A name as the server compares names.
+  function nameKey(name) {
+    return normalizeLatin(name.trim().split(/\s+/).join(" "));
+  }
+
+  function markNames(text) {
+    return [...text.matchAll(MARK)].map((match) => nameKey(match[1]));
+  }
+
+  // The text with the first occurrence of words outside the marks put in a mark; null if none.
+  function markWords(text, words, name) {
+    let offset = 0;
+    for (const match of [...text.matchAll(MARK), null]) {
+      const end = match ? match.index : text.length;
+      const place = text.slice(offset, end).indexOf(words);
+      if (place >= 0) {
+        const start = offset + place;
+        return `${text.slice(0, start)}[${name};${words}]${text.slice(start + words.length)}`;
+      }
+      if (match) {
+        offset = match.index + match[0].length;
+      }
+    }
+    return null;
   }
 
   // The relations of a written schema, without checking it is a tree; null if it cannot be read.
@@ -96,6 +129,16 @@
     const componentList = builder.querySelector(".schema-component-list");
     const insertInput = builder.querySelector(".schema-insert-input");
     const insertResults = builder.querySelector(".schema-insert-results");
+    const sourceTools = builder.querySelector(".schema-source-tools");
+    const markPreview = sourceTools.querySelector(".form-mark-preview");
+    const formProblems = sourceTools.querySelector(".schema-form-problems");
+    const suggestionList = sourceTools.querySelector(".schema-suggestions");
+    // The search of attestations of the page, filled with the lemmas of the schema.
+    const searchForm = labels.search ? document.getElementById(labels.search) : null;
+    const termFields = searchForm
+      ? [1, 2, 3, 4, 5].map((number) => searchForm.elements.namedItem(`term${number}`)).filter(Boolean)
+      : [];
+    const keep = JSON.parse(labels.keep || "{}");
     const variants = linkPanel.querySelector(".schema-variants");
     const unlinkButton = linkPanel.querySelector(".schema-unlink");
     const wordPanel = builder.querySelector(".schema-word-panel");
@@ -107,6 +150,14 @@
     let edges = [];
     // The units the server finds within the schema: their names, statuses, pages and lemmas.
     let components = [];
+    // The units named in the reference form whose links already came into the drawing.
+    const handledNames = new Set();
+    let formRequest = 0;
+    let formTimer = null;
+    // Terms typed in the search are no longer filled from the schema; terms of a search already
+    // made are kept unless they are those the schema gives.
+    let searchTouched = false;
+    let searchMade = termFields.length > 0 && new URLSearchParams(window.location.search).has("term1");
     let nextKey = 0;
     const removed = new Set();
     let chosen = null;
@@ -553,7 +604,7 @@
       insertResults.replaceChildren(
         ...found.map((unit) => {
           const item = element("li");
-          const choice = button(unit.reference_form, () => insertUnit(unit), "link-button");
+          const choice = button(unit.reference_form, () => (source ? buildOn(unit) : insertUnit(unit)), "link-button");
           choice.lang = "la";
           item.append(choice, " ", element("span", "schema-component-status", unit.status));
           return item;
@@ -576,12 +627,12 @@
           triples.push({ head: edge.head, dependent: edge.dependent, relations: [...edge.relations] });
         } else if (existing.head !== edge.head) {
           say(labels.labelInsertConflict.replace("%s", edge.dependent));
-          return;
+          return false;
         }
       }
       if (triples.length > maxRelations) {
         say(labels.labelTooMany);
-        return;
+        return false;
       }
       attach(triples);
       insertResults.replaceChildren();
@@ -591,11 +642,181 @@
       render();
       write();
       say(labels.labelInserted.replace("%s", unit.reference_form));
+      return true;
     }
 
-    // The words of the reference form, keeping the lemma chosen for a word still there.
+    // A unit the new one is built on: its mark joins the reference form, where its words are to
+    // be written as they appear, and its links join the drawing.
+    async function buildOn(unit) {
+      const mark = `[${unit.reference_form};${unit.reference_form}]`;
+      const before = source.value.trim();
+      source.value = before ? `${before} ${mark}` : mark;
+      handledNames.add(nameKey(unit.reference_form));
+      await rebuild();
+      insertUnit(unit);
+      const end = source.value.length - 1;
+      source.focus();
+      source.setSelectionRange(end - unit.reference_form.length, end);
+      scheduleFormHelp();
+    }
+
+    // A known unit found in the words of the reference form: marked there, linked in the drawing.
+    async function useSuggestion(suggestion) {
+      const marked = markWords(source.value, suggestion.excerpt, suggestion.reference_form);
+      if (marked === null) {
+        say(labels.labelWordsGone.replace("%s", suggestion.excerpt));
+        return;
+      }
+      source.value = marked;
+      handledNames.add(nameKey(suggestion.reference_form));
+      await rebuild();
+      insertUnit(suggestion);
+      scheduleFormHelp();
+    }
+
+    function scheduleFormHelp() {
+      clearTimeout(formTimer);
+      formTimer = setTimeout(formHelp, DELAY);
+    }
+
+    // The server reads the reference form: the units its marks name, and the units to suggest.
+    async function formHelp() {
+      const current = ++formRequest;
+      if (!source.value.trim()) {
+        showFormHelp({ parts: [], suggestions: [], errors: [] });
+        return;
+      }
+      let data;
+      try {
+        data = await getJson(labels.formUrl, { forme: source.value, schema: input.value });
+      } catch {
+        if (current === formRequest) {
+          say(labels.labelError);
+        }
+        return;
+      }
+      if (current !== formRequest) {
+        return;
+      }
+      // A unit newly named in the form brings its links into the drawing.
+      for (const part of data.parts) {
+        if (part.name && !handledNames.has(nameKey(part.name))) {
+          handledNames.add(nameKey(part.name));
+          if (part.unit) {
+            insertUnit(part.unit);
+          }
+        }
+      }
+      showFormHelp(data);
+    }
+
+    function unitLink(unit) {
+      const link = element("a", "", unit.reference_form);
+      link.href = unit.url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.lang = "la";
+      return link;
+    }
+
+    // A marked piece of the reference form, as the page of the unit shows it.
+    function previewPart(part) {
+      if (!part.name) {
+        return document.createTextNode(part.text);
+      }
+      const entry = element("span", "form-mark-entry");
+      entry.lang = "fr";
+      if (part.unit) {
+        entry.append(unitLink(part.unit), " ", element("span", "form-mark-status", part.unit.status));
+      } else {
+        const name = element("span", "", part.name);
+        name.lang = "la";
+        entry.append(name, " ", element("span", "form-mark-status", labels.labelNoUnitNamed));
+      }
+      if (part.others.length) {
+        const others = element("span", "form-mark-others", ` · ${labels.labelSameName} `);
+        part.others.forEach((other, index) => {
+          others.append(index ? ", " : "", unitLink(other), " ", element("span", "form-mark-status", other.status));
+        });
+        entry.append(others);
+      }
+      const bubble = element("span", "form-mark-bubble");
+      bubble.setAttribute("role", "tooltip");
+      bubble.append(entry);
+      const mark = element("span", "form-mark");
+      mark.tabIndex = 0;
+      mark.append(element("mark", "form-mark-words", part.text), bubble);
+      return mark;
+    }
+
+    function showFormHelp(data) {
+      formProblems.textContent = data.errors.join(" ");
+      markPreview.replaceChildren(...data.parts.map(previewPart));
+      markPreview.hidden = !data.parts.some((part) => part.name);
+      const [before, after] = labels.labelSuggestion.split("%s");
+      suggestionList.replaceChildren(
+        ...data.suggestions.map((suggestion) => {
+          const item = element("li");
+          const words = element("span", "", suggestion.excerpt);
+          words.lang = "la";
+          item.append(
+            before,
+            words,
+            after,
+            " ",
+            unitLink(suggestion),
+            " ",
+            element("span", "form-mark-status", suggestion.status),
+            " ",
+            button(labels.labelUse, () => useSuggestion(suggestion), "button button-quiet"),
+          );
+          return item;
+        }),
+      );
+      suggestionList.hidden = data.suggestions.length === 0;
+    }
+
+    // The search of attestations looks for the lemmas of the schema, the root first.
+    function fillSearch(found) {
+      if (!termFields.length || searchTouched) {
+        return;
+      }
+      const lemmas = [];
+      found.forEach((edge) =>
+        [edge.head, edge.dependent].forEach((lemma) => {
+          if (lemma !== SLOT && !lemmas.includes(lemma)) {
+            lemmas.push(lemma);
+          }
+        }),
+      );
+      if (!lemmas.length) {
+        return;
+      }
+      if (searchMade) {
+        searchMade = false;
+        if (!termFields.every((field, index) => field.value === (lemmas[index] || ""))) {
+          searchTouched = true;
+          return;
+        }
+      }
+      termFields.forEach((field, index) => {
+        field.value = lemmas[index] || "";
+        const mode = searchForm.elements.namedItem(`mode${index + 1}`);
+        if (mode && lemmas[index]) {
+          mode.value = "lemma";
+        }
+      });
+      const more = searchForm.querySelector(".panel-more");
+      if (more && [...more.querySelectorAll("input[name^='term']")].some((field) => field.value)) {
+        more.open = true;
+      }
+    }
+
+    // The words of the reference form, keeping the lemma chosen for a word still there. Without
+    // ``triples``, the links kept are those drawn once the lemmas come back, so that links added
+    // meanwhile (a unit named in the form) are not lost.
     async function rebuild(triples) {
-      const text = source ? source.value : "";
+      const text = source ? plainForm(source.value) : "";
       let found = [];
       if (text.trim()) {
         try {
@@ -605,6 +826,7 @@
           found = words.filter((word) => !word.added).map((word) => ({ ...word }));
         }
       }
+      const links = triples || currentTriples();
       const previous = new Map();
       words
         .filter((word) => !word.added)
@@ -614,7 +836,7 @@
         .filter((word) => !removed.has(word.form.toLowerCase()))
         .map((word) => makeWord(word.form, word.lemmas, word.known, previous.get(word.form)));
       words.push(...kept);
-      attach(triples);
+      attach(links);
     }
 
     function scheduleCheck(text, redraw) {
@@ -673,6 +895,10 @@
       }
       showComponents(data.components || []);
       showPreview(data);
+      fillSearch(data.edges);
+      if (source) {
+        scheduleFormHelp();
+      }
     }
 
     function showComponents(found) {
@@ -980,7 +1206,7 @@
 
     window.addEventListener("pointercancel", stopDrag);
 
-    builder.addEventListener("keydown", (event) => {
+    function onKeydown(event) {
       if (event.key === "Escape") {
         if (!linkPanel.hidden || !wordPanel.hidden) {
           const key = pending ? pending.dependent : shownWord;
@@ -1004,7 +1230,11 @@
           setLemma(shownWord, lemmaInput.value);
         }
       }
-    });
+    }
+
+    builder.addEventListener("keydown", onKeydown);
+    // The field of the unit built on sits under the reference form, outside the drawing.
+    sourceTools.addEventListener("keydown", onKeydown);
 
     async function addWord() {
       const text = addInput.value.trim();
@@ -1063,9 +1293,10 @@
     input.addEventListener("input", () => scheduleCheck(input.value, true));
     if (source) {
       source.addEventListener("input", () => {
+        scheduleFormHelp();
         clearTimeout(sourceTimer);
         sourceTimer = setTimeout(async () => {
-          await rebuild(currentTriples());
+          await rebuild();
           render();
           write();
         }, DELAY);
@@ -1080,6 +1311,38 @@
       builder.after(written);
       written.append(input);
       builder.hidden = false;
+      if (source) {
+        // Under the reference form: the unit it is built on, its marks, the units to suggest.
+        (source.parentElement || source).after(sourceTools);
+        const insert = builder.querySelector(".schema-insert");
+        insert.querySelector("label").firstChild.textContent = `${labels.labelBuiltOn} `;
+        sourceTools.prepend(insert, insertResults);
+        sourceTools.hidden = false;
+        markNames(source.value).forEach((name) => handledNames.add(name));
+        if (source.value.trim()) {
+          scheduleFormHelp();
+        }
+      }
+      if (searchForm) {
+        // A search reloads the page: what is written in the form comes back with it.
+        searchForm.addEventListener("submit", () => {
+          Object.entries(keep).forEach(([fieldName, parameter]) => {
+            const field = input.form ? input.form.elements.namedItem(fieldName) : null;
+            if (!field) {
+              return;
+            }
+            let hidden = searchForm.querySelector(`input[type="hidden"][name="${parameter}"]`);
+            if (!hidden) {
+              hidden = document.createElement("input");
+              hidden.type = "hidden";
+              hidden.name = parameter;
+              searchForm.append(hidden);
+            }
+            hidden.value = field.value;
+            hidden.disabled = !field.value;
+          });
+        });
+      }
       await rebuild([]);
       render();
       if (initial.trim()) {

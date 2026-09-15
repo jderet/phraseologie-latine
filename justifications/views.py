@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from accounts.limits import ContributionLimitReached
 from accounts.roles import is_reviewer
 from corpus.search import quotation
-from corpus.views import search_context
+from corpus.views import lemma_search_initial, search_context
 from moderation.registry import can_view
 from phraseology.models import Attestation, Unit
 from phraseology.spotting import spot_units, unit_attestations, visible_units
@@ -115,7 +115,7 @@ def _page_context(translated, latin=None, **extra):
 
 def _search_page_context(request, translated, evidences, **extra):
     """The corpus search of the page, and the attestations already ticked."""
-    search = search_context(request, SEARCH_RESULTS)
+    search = search_context(request, SEARCH_RESULTS, initial=lemma_search_initial())
     found = {hit.word_ids for hit in search.get("hits", [])}
     chosen = [quotation(evidence.tokens) for evidence in evidences]
     return _page_context(

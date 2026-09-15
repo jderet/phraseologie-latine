@@ -112,7 +112,7 @@ class AnnotationViewTests(AnnotationTestCase):
             url, {"forme": "consilia capiunt", "mots": chosen, "schema": SCHEMA}
         )
         self.assertContains(response, 'value="consilia capiunt"')
-        self.assertContains(response, f'value="{chosen}" checked')
+        self.assertContains(response, f'value="{chosen}" form="unit-form" checked')
         data = {
             "reference_form": "consilia capere",
             "schema": SCHEMA,
