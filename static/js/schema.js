@@ -7,6 +7,7 @@
 
   const DRAG_DISTANCE = 6;
   const DELAY = 500;
+  const RETRY_DELAY = 1000;
   const OBJECT = "obj";
   const PASSIVE = "nsubj:pass";
   const SLOT = "*";
@@ -475,14 +476,29 @@
 
     // Server
 
-    async function getJson(address, params) {
+    // A request that finds no server (while it restarts, for instance) is tried once more; the
+    // message of a failure goes away as soon as the server answers again.
+    async function getJson(address, params, retries = 1) {
       const url = new URL(address, window.location.origin);
       Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
-      const response = await fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } });
+      let response;
+      try {
+        response = await fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } });
+      } catch (error) {
+        if (retries > 0) {
+          await new Promise((resolve) => window.setTimeout(resolve, RETRY_DELAY));
+          return getJson(address, params, retries - 1);
+        }
+        throw error;
+      }
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      return response.json();
+      const data = await response.json();
+      if (status.textContent === labels.labelError) {
+        say("");
+      }
+      return data;
     }
 
     async function lemmasOf(text) {
