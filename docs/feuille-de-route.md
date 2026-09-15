@@ -162,6 +162,16 @@ Demandée par le porteur le 15 septembre 2026 : créer *rem pūblicam administr�
 
 Terminé quand un testeur a créé *rem pūblicam administrāre* une fois en tapant les crochets, une fois en acceptant la suggestion, et vu la bulle mener à *rēs pūblica*.
 
+## Étape 12 : chercher une construction
+
+Demandée par le porteur le 15 septembre 2026 : dans « Chercher des attestations », chercher *rēs pūblica* comme construction plutôt que *rēs* et *pūblica* comme mots.
+
+- [x] Recherche par construction : une fiche cherchée par son schéma, combinée aux mots par la distance, ses mots surlignés dans les résultats
+- [x] Constructions cochées en tête des mots, retirées en les décochant, ajoutées par leur nom, sur la page « Recherche » et dans les recherches d'attestations
+- [x] Création d'une fiche et ajout d'une attestation : la recherche part des fiches marquées dans la forme de référence, puis des lemmes du schéma qu'elles ne couvrent pas
+
+Terminé quand un testeur a écrit `[rēs pūblica;rem pūblicam] administrāre`, vu *rēs pūblica* en tête de la recherche et *administro* comme mot, et trouvé des attestations sans rien taper dans la recherche.
+
 ## Ouverture publique
 
 - [ ] Conditions de la section 7 du cahier des charges remplies

@@ -14,7 +14,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from accounts.limits import ContributionLimitReached, is_limited
 from accounts.roles import is_reviewer
-from corpus.forms import TERM_NUMBERS, search_query
+from corpus.forms import search_query
 from corpus.models import Author, Passage, Token, Work
 from corpus.search import corpus_version, default_layer, quotation
 from corpus.text import normalize
@@ -88,6 +88,7 @@ from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attesta
 from .reading_notes import create_reading_note, word_reading_notes
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
 from .schema_help import check_schema, form_help, lemma_choices, unit_schemas, written_words
+from .search_terms import marked_search
 from .services import (
     FREQUENCY_SECONDS,
     FrequencyTooLong,
@@ -210,15 +211,6 @@ def _chosen_attestations(request, name="attestation"):
     return evidences, errors
 
 
-def _schema_terms(text):
-    """Search terms from the lemmas of a schema, the root first."""
-    try:
-        lemmas = [lemma for lemma in schema_lemmas(parse_schema(text)) if lemma != SLOT]
-    except ValidationError:
-        return {}
-    return {f"term{number}": lemma for number, lemma in zip(TERM_NUMBERS, lemmas, strict=False)}
-
-
 def _search_page(request, evidences, terms=None, **extra):
     """The corpus search of the page, and the attestations already ticked."""
     search = search_context(request, SEARCH_RESULTS, initial=lemma_search_initial(terms))
@@ -327,7 +319,7 @@ def unit_create(request):
     keep = {
         key: request.GET[key] for key in ("forme", "mots", "schema", "sens") if request.GET.get(key)
     }
-    terms = _schema_terms(request.GET.get("schema", ""))
+    terms = marked_search(request.user, request.GET.get("forme", ""), request.GET.get("schema", ""))
     context = _search_page(request, evidences, terms=terms, form=form, keep=keep)
     return render(request, "phraseology/unit_create.html", context)
 
@@ -743,6 +735,7 @@ def attestation_add(request, pk):
     context = _search_page(
         request,
         evidences,
+        terms=marked_search(request.user, unit.marked_form, unit.schema),
         unit=unit,
         place=place,
         errors=errors,

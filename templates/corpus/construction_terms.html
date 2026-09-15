@@ -1,0 +1,10 @@
+{% load i18n %}<div class="field construction-terms">
+  <fieldset class="construction-choices"{% if not form.construction_units %} hidden{% endif %}>
+    <legend>{{ form.construction.label }}</legend>
+    <div class="helptext">{{ form.construction.help_text }}</div>
+    {% for unit in form.construction_units %}<label class="construction-term"><input type="checkbox" name="construction" value="{{ unit.pk }}" checked> <span lang="la">{{ unit.reference_form }}</span> <span class="form-mark-status">{{ unit.get_status_display }}</span></label>
+    {% endfor %}
+  </fieldset>
+  {{ form.construction.errors }}
+  {{ form.construction_name.as_field_group }}
+</div>

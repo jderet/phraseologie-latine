@@ -59,6 +59,9 @@ def _patterns(term, field):
 
 
 def _condition(term, layer):
+    # A construction (phraseology.search_terms) brings its own condition.
+    if hasattr(term, "condition"):
+        return term.condition(layer)
     if not term.lemma:
         return _patterns(term, "norm")
     if layer is None:
@@ -166,35 +169,50 @@ def _nearby_words(tokens, reach):
 
 
 def build_hits(tokens, terms, distance=5, ordered=False, layer=None):
-    """Hits with the words around them, the words matching a term being highlighted."""
+    """Hits with the words around them, the words matching a term being highlighted.
+
+    A construction highlights every word of its occurrence.
+    """
     tokens = list(tokens)
     if not tokens:
         return []
     nearby = _nearby_words(tokens, distance + CONTEXT_WORDS)
-    lemmas = defaultdict(set)
+    positions_of = {word.pk: word.position for words in nearby.values() for word in words.values()}
+    ids = list(positions_of)
     if any(term.lemma for term in terms):
         layer = layer or default_layer()
-        ids = [word.pk for words in nearby.values() for word in words.values()]
+    lemmas = defaultdict(set)
+    if any(term.lemma and not hasattr(term, "occurrences") for term in terms):
         analyses = TokenAnalysis.objects.filter(layer=layer, token_id__in=ids)
         for token_id, lemma in analyses.values_list("token_id", "lemma_norm"):
             lemmas[token_id].add(lemma)
+    occurrences = {
+        index: term.occurrences(ids, layer)
+        for index, term in enumerate(terms)
+        if hasattr(term, "occurrences")
+    }
 
-    def matches(term, word):
+    def found(index, word):
+        """The words a term finds at a word: none, the word, or the words of an occurrence."""
+        if index in occurrences:
+            return occurrences[index].get(word.pk, set())
+        term = terms[index]
         values = lemmas[word.pk] if term.lemma else {word.norm}
-        return any(term.matches(value) for value in values)
+        return {word.pk} if any(term.matches(value) for value in values) else set()
 
     hits = []
     for token in tokens:
         words = nearby[token.edition_id]
-        highlighted = {token.pk}
-        positions = [token.position]
+        highlighted = found(0, token) or {token.pk}
+        positions = [positions_of.get(pk, token.position) for pk in highlighted]
         lowest = token.position + 1 if ordered else token.position - distance
-        for term in terms[1:]:
+        for index in range(1, len(terms)):
             for position in range(lowest, token.position + distance + 1):
                 word = words.get(position)
-                if position != token.position and word is not None and matches(term, word):
-                    highlighted.add(word.pk)
-                    positions.append(position)
+                if position != token.position and word is not None:
+                    matched = found(index, word)
+                    highlighted |= matched
+                    positions.extend(positions_of[pk] for pk in matched if pk in positions_of)
         start, end = min(positions) - CONTEXT_WORDS, max(positions) + CONTEXT_WORDS
         window = [words[p] for p in range(start, end + 1) if p in words]
         hits.append(Hit(token, window, highlighted))

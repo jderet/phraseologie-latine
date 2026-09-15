@@ -14,6 +14,8 @@
   const REGIME = "reg";
   const SLOT = "*";
   const BRACKET_ROW = 24;
+  // Units a search looks for by their schema at once, as the server allows.
+  const MAX_CONSTRUCTIONS = 3;
   const SVG = "http://www.w3.org/2000/svg";
   const EDGE = /^(\p{L}+)\s*[-—–]\s*([a-zA-Z:|\s]+?)\s*(?:->|→)\s*(\p{L}+|\*)$/u;
   // A unit named in a reference form, then its words there: [rēs pūblica;rem pūblicam].
@@ -158,6 +160,11 @@
     // made are kept unless they are those the schema gives.
     let searchTouched = false;
     let searchMade = termFields.length > 0 && new URLSearchParams(window.location.search).has("term1");
+    // The units the reference form marks, as the server read them, and the relations drawn: the
+    // search looks for these units as constructions, and for the other lemmas as words.
+    let markUnits = [];
+    let lastEdges = [];
+    let marksPending = Boolean(source) && markNames(source.value).length > 0;
     let nextKey = 0;
     const removed = new Set();
     let chosen = null;
@@ -684,6 +691,9 @@
       const current = ++formRequest;
       if (!source.value.trim()) {
         showFormHelp({ parts: [], suggestions: [], errors: [] });
+        markUnits = [];
+        marksPending = false;
+        fillSearch();
         return;
       }
       let data;
@@ -708,6 +718,9 @@
         }
       }
       showFormHelp(data);
+      markUnits = data.parts.filter((part) => part.unit && part.unit.edges.length).map((part) => part.unit);
+      marksPending = false;
+      fillSearch();
     }
 
     function unitLink(unit) {
@@ -776,29 +789,58 @@
       suggestionList.hidden = data.suggestions.length === 0;
     }
 
-    // The search of attestations looks for the lemmas of the schema, the root first.
-    function fillSearch(found) {
-      if (!termFields.length || searchTouched) {
+    // The constructions of the search are ticked boxes, as the server writes them.
+    function fillConstructions(units) {
+      const choices = searchForm.querySelector(".construction-choices");
+      if (!choices) {
         return;
       }
+      choices.querySelectorAll(".construction-term").forEach((label) => label.remove());
+      units.forEach((unit) => {
+        const box = document.createElement("input");
+        box.type = "checkbox";
+        box.name = "construction";
+        box.value = unit.pk;
+        box.checked = true;
+        const name = element("span", "", unit.reference_form);
+        name.lang = "la";
+        const label = element("label", "construction-term");
+        label.append(box, " ", name, " ", element("span", "form-mark-status", unit.status));
+        choices.append(label);
+      });
+      choices.hidden = units.length === 0;
+    }
+
+    // The search of attestations looks for the units the form marks, as constructions, then for
+    // the lemmas of the schema they do not cover, the root first.
+    function fillSearch() {
+      if (!termFields.length || searchTouched || marksPending) {
+        return;
+      }
+      const units = [...new Map(markUnits.map((unit) => [unit.pk, unit])).values()].slice(0, MAX_CONSTRUCTIONS);
+      const covered = new Set(units.flatMap((unit) => unit.edges.flatMap((edge) => [edge.head, edge.dependent])));
       const lemmas = [];
-      found.forEach((edge) =>
+      lastEdges.forEach((edge) =>
         [edge.head, edge.dependent].forEach((lemma) => {
-          if (lemma !== SLOT && !lemmas.includes(lemma)) {
+          if (lemma !== SLOT && !covered.has(lemma) && !lemmas.includes(lemma)) {
             lemmas.push(lemma);
           }
         }),
       );
-      if (!lemmas.length) {
+      if (!lemmas.length && !units.length) {
         return;
       }
       if (searchMade) {
         searchMade = false;
-        if (!termFields.every((field, index) => field.value === (lemmas[index] || ""))) {
+        const shown = [...searchForm.querySelectorAll("input[name='construction']")].map((box) => box.value);
+        const sameUnits = shown.join() === units.map((unit) => unit.pk).join();
+        const sameTerms = termFields.every((field, index) => field.value === (lemmas[index] || ""));
+        if (!sameUnits || !sameTerms) {
           searchTouched = true;
           return;
         }
       }
+      fillConstructions(units);
       termFields.forEach((field, index) => {
         field.value = lemmas[index] || "";
         const mode = searchForm.elements.namedItem(`mode${index + 1}`);
@@ -895,7 +937,8 @@
       }
       showComponents(data.components || []);
       showPreview(data);
-      fillSearch(data.edges);
+      lastEdges = data.edges;
+      fillSearch();
       if (source) {
         scheduleFormHelp();
       }
@@ -1324,6 +1367,12 @@
         }
       }
       if (searchForm) {
+        // Words or constructions changed by hand are no longer filled from the form.
+        searchForm.addEventListener("input", (event) => {
+          if (event.target.matches("input[name^='term'], input[name^='construction']")) {
+            searchTouched = true;
+          }
+        });
         // A search reloads the page: what is written in the form comes back with it.
         searchForm.addEventListener("submit", () => {
           Object.entries(keep).forEach(([fieldName, parameter]) => {

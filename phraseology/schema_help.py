@@ -76,6 +76,7 @@ def _edges_as_json(edges):
 
 def _unit_json(unit, with_edges=True):
     data = {
+        "pk": unit.pk,
         "reference_form": unit.reference_form,
         "status": unit.get_status_display(),
         "url": unit.get_absolute_url(),

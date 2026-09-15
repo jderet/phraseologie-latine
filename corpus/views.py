@@ -381,7 +381,7 @@ def lemma_search_initial(terms=None):
 def search_context(request, per_page, initial=None):
     """The search of a page; ``initial`` fills the form before any search (terms, modes)."""
     if "term1" in request.GET:
-        form = bound_search_form(request.GET)
+        form = bound_search_form(request.GET, user=request.user)
     else:
         form = SearchForm(
             initial={
@@ -389,7 +389,8 @@ def search_context(request, per_page, initial=None):
                 "distance": SearchForm.DEFAULT_DISTANCE,
                 **{f"mode{number}": MODE_FORM for number in TERM_NUMBERS},
                 **(initial or {}),
-            }
+            },
+            user=request.user,
         )
     context = {"form": form, "version": corpus_version(), "searched": False}
     if form.is_bound and form.is_valid():
@@ -407,9 +408,12 @@ def search_context(request, per_page, initial=None):
                 # What a search that finds nothing needs to be recorded.
                 query=search_query(request.GET),
                 expression=" ".join(
-                    form.cleaned_data[f"term{n}"]
-                    for n in TERM_NUMBERS
-                    if form.cleaned_data.get(f"term{n}")
+                    [unit.reference_form for unit in form.cleaned_data["construction"]]
+                    + [
+                        form.cleaned_data[f"term{n}"]
+                        for n in TERM_NUMBERS
+                        if form.cleaned_data.get(f"term{n}")
+                    ]
                 ),
             )
         context["too_broad"] = limit.exceeded
