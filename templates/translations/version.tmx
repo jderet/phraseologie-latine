@@ -8,7 +8,7 @@
     <prop type="x-source-license">{{ source.get_license_display }}</prop>
   </header>
   <body>
-{% for row in rows %}{% if row.saved and not row.hidden %}    <tu tuid="{{ row.segment.order }}">
+{% for row in rows %}{% if row.saved %}    <tu tuid="{{ row.segment.order }}">
       <tuv xml:lang="{{ source.language }}"><seg>{{ row.segment.text }}</seg></tuv>
       <tuv xml:lang="la"><seg>{{ row.saved }}</seg></tuv>
     </tu>

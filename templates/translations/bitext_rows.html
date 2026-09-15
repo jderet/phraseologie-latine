@@ -1,0 +1,22 @@
+{% load i18n phraseology_tags %}<ol class="bitext">
+  {% for row in rows %}
+  <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
+    <span class="bitext-number">{{ row.segment.order }}</span>
+    <p class="bitext-source" lang="{{ source.language }}">{{ row.segment.text }}</p>
+    <div class="bitext-latin">
+      <p lang="la">{% if row.saved %}{% latin_sentence row.saved row.justifications as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
+      {% if row.saved and sentence.units %}<p class="row-units">{% translate "Unités repérées :" %} {% for unit in sentence.units %}<a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+      {% if row.justifications %}
+      <ul class="row-justifications">
+        {% for justification in row.justifications %}{% include "justifications/justification_item.html" %}{% endfor %}
+      </ul>
+      {% endif %}
+      {% for challenge in row.challenges %}
+      <p class="row-alert"><a href="{{ challenge.get_absolute_url }}">{% blocktranslate with excerpt=challenge.latin_excerpt %}Contesté : « {{ excerpt }} »{% endblocktranslate %}</a>{% if can_translate and not row.justifications %} · {% translate "une justification est attendue" %}{% endif %}</p>
+      {% endfor %}
+      {% if can_translate and row.saved %}<a class="small-link" href="{% url 'justifications:create' version.pk row.segment.pk %}">{% translate "Justifier" %}</a>{% endif %}
+      {% if can_challenge and row.saved %}<a class="small-link" href="{% url 'justifications:challenge_create' row.translated_pk %}">{% translate "Contester" %}</a>{% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>

@@ -27,6 +27,7 @@ from justifications.services import corpus_evidence
 from moderation.registry import can_view
 from translations.models import TranslatedSegment, TranslationVersion
 from translations.permissions import can_translate
+from translations.steps import shown_text
 
 from .annotation import guess_schema, search_units, suggested_units
 from .collocations import profile, profile_computed
@@ -1922,8 +1923,8 @@ def units_in_sentence(request, version_pk, segment_pk):
     translated = TranslatedSegment.objects.filter(version=version, segment=segment).first()
     if translated is not None:
         translated.version = version
-        if can_view(request.user, translated):
-            text = translated.text
+        # The author's working text, or the latest public step for others.
+        text = shown_text(request.user, translated)
     tokens, spots = spot_units(text, request.user)
     fragment = bool(request.GET.get("fragment"))
     context = {

@@ -27,6 +27,9 @@ urlpatterns = [
         views.translation_save,
         name="translation_save",
     ),
+    path("versions/<int:pk>/etapes/", views.step_list, name="step_list"),
+    path("versions/<int:pk>/etapes/nouvelle/", views.step_create, name="step_create"),
+    path("versions/<int:pk>/etapes/<int:number>/", views.step_detail, name="step"),
     path("versions/<int:pk>/style/", views.version_settings, name="version_settings"),
     path("versions/<int:pk>/publier/", views.version_publish, name="version_publish"),
     path(

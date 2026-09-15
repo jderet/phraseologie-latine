@@ -4,13 +4,22 @@ import unicodedata
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.db.models import Max
 from django.utils import timezone
 from django.utils.translation import gettext
 
 from moderation.services import save_with_revision
 
-from .models import Segment, TranslatedSegment, TranslationProject, TranslationVersion
+from .models import (
+    Segment,
+    StepSentence,
+    TranslatedSegment,
+    TranslationProject,
+    TranslationVersion,
+    VersionStep,
+)
 from .segmentation import to_lines
+from .steps import pending_changes
 
 
 def normalize_sentence(text):
@@ -80,7 +89,55 @@ def publish_version(version, user):
         )
     version.state = TranslationVersion.State.PUBLISHED
     version.published_at = timezone.now()
-    return save_with_revision(version, user, comment=gettext("Publication"))
+    revision = save_with_revision(version, user, comment=gettext("Publication"))
+    # Publishing always creates a step, the first one the public may see.
+    _record_step(version, user, gettext("Publication"), pending_changes(version))
+    return revision
+
+
+def _record_step(version, author, message, changes):
+    last = version.steps.aggregate(last=Max("number"))["last"] or 0
+    step = VersionStep(
+        version=version,
+        number=last + 1,
+        message=message,
+        author=author,
+        during_draft=version.is_draft,
+    )
+    save_with_revision(step, author)
+    StepSentence.objects.bulk_create(
+        StepSentence(
+            step=step,
+            segment=change.segment,
+            text=change.after,
+            written_by_id=change.written_by_id,
+        )
+        for change in changes
+    )
+    return step
+
+
+@transaction.atomic
+def create_step(version, author, message):
+    """Freeze the working text of a version with a message, like a Git commit.
+
+    Only the author of the version may; the public then sees this step.
+    """
+    version = TranslationVersion.objects.select_for_update().get(pk=version.pk)
+    if author.pk != version.author_id:
+        raise PermissionDenied
+    message = normalize_sentence(message)
+    if not message:
+        raise ValidationError(
+            gettext("Écrivez un message : ce qui a changé depuis l’étape précédente."),
+            code="no_message",
+        )
+    changes = pending_changes(version)
+    if not changes:
+        raise ValidationError(
+            gettext("Rien n’a changé depuis la dernière étape."), code="unchanged"
+        )
+    return _record_step(version, author, message, changes)
 
 
 @transaction.atomic

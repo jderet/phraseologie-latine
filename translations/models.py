@@ -270,6 +270,12 @@ class TranslationVersion(ModeratedContent):
     )
     created_at = models.DateTimeField(_("commencée le"), default=timezone.now, editable=False)
     published_at = models.DateTimeField(_("publiée le"), null=True, blank=True, editable=False)
+    shows_draft_steps = models.BooleanField(
+        _("étapes du brouillon montrées"),
+        default=False,
+        editable=False,
+        help_text=_("Choisi une fois pour toutes à la publication."),
+    )
 
     objects = VersionQuerySet.as_manager()
 
@@ -304,7 +310,10 @@ class TranslationVersion(ModeratedContent):
 
 
 class TranslatedSegment(ModeratedContent):
-    """The Latin of one sentence in a version."""
+    """The Latin of one sentence in the working text of a version, seen by its author only.
+
+    Others see the text of the steps (``VersionStep``).
+    """
 
     version = models.ForeignKey(
         TranslationVersion,
@@ -319,6 +328,17 @@ class TranslatedSegment(ModeratedContent):
         verbose_name=_("phrase source"),
     )
     text = models.TextField(_("latin"), max_length=4000, blank=True)
+    # Who wrote this Latin when it is not the author of the version: the author of an accepted
+    # proposal, or of a copied sentence.
+    written_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("écrite par"),
+    )
     updated_at = models.DateTimeField(_("modifié le"), auto_now=True)
 
     class Meta:
@@ -341,8 +361,116 @@ class TranslatedSegment(ModeratedContent):
         return f"{self.version.get_absolute_url()}#phrase-{self.segment.order}"
 
 
+class StepQuerySet(models.QuerySet):
+    def public(self):
+        """Steps anyone may see: of a published version, not hidden, and not a draft step
+        unless the author chose to show them."""
+        return self.filter(
+            Q(during_draft=False) | Q(version__shows_draft_steps=True),
+            version__state=TranslationVersion.State.PUBLISHED,
+            is_hidden=False,
+        )
+
+
+class VersionStep(ModeratedContent):
+    """A frozen state of all the sentences of a version, with a message, like a Git commit.
+
+    Only the sentences changed since the previous step are stored (``StepSentence``).
+    """
+
+    version = models.ForeignKey(
+        TranslationVersion,
+        on_delete=models.PROTECT,
+        related_name="steps",
+        verbose_name=_("version"),
+    )
+    number = models.PositiveIntegerField(_("numéro"), editable=False)
+    message = models.CharField(
+        _("message"),
+        max_length=300,
+        help_text=_("Ce qui a changé, par exemple : « phrases 1 à 12 revues »."),
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        editable=False,
+        verbose_name=_("auteur"),
+    )
+    during_draft = models.BooleanField(
+        _("créée pendant le brouillon"), default=False, editable=False
+    )
+    created_at = models.DateTimeField(_("créée le"), default=timezone.now, editable=False)
+
+    objects = StepQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("étape")
+        verbose_name_plural = _("étapes")
+        ordering = ["version", "number"]
+        constraints = [
+            models.UniqueConstraint(fields=["version", "number"], name="translations_step_number"),
+        ]
+
+    def __str__(self):
+        return gettext("%(version)s, étape %(number)s") % {
+            "version": self.version,
+            "number": self.number,
+        }
+
+    def get_absolute_url(self):
+        return reverse("translations:step", args=[self.version_id, self.number])
+
+
+class StepSentence(models.Model):
+    """The Latin of a sentence as a step changed it; empty when the sentence was erased."""
+
+    step = models.ForeignKey(
+        VersionStep,
+        on_delete=models.PROTECT,
+        related_name="sentences",
+        verbose_name=_("étape"),
+    )
+    segment = models.ForeignKey(
+        Segment, on_delete=models.PROTECT, related_name="+", verbose_name=_("phrase source")
+    )
+    text = models.TextField(_("latin"), blank=True)
+    written_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("écrite par"),
+    )
+
+    class Meta:
+        verbose_name = _("phrase d’une étape")
+        verbose_name_plural = _("phrases d’une étape")
+        ordering = ["step", "segment__order"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["step", "segment"], name="translations_one_text_per_step_segment"
+            ),
+        ]
+
+    def __str__(self):
+        return self.text
+
+
 def version_visible_to(user, version):
-    return version.is_published or (user.is_authenticated and user.pk == version.author_id)
+    return version.is_published or is_version_author(user, version)
+
+
+def is_version_author(user, version):
+    return user.is_authenticated and user.pk == version.author_id
+
+
+def step_visible_to(user, step):
+    version = step.version
+    if is_version_author(user, version):
+        return True
+    return version.is_published and (not step.during_draft or version.shows_draft_steps)
 
 
 register(SourceText, owner_field="added_by", text_fields=("title", "author", "text"))
@@ -358,12 +486,22 @@ register(
     owner_field="author",
     text_fields=("style_note",),
     visible_to=version_visible_to,
-    not_reverted=("state", "published_at"),
+    not_reverted=("state", "published_at", "shows_draft_steps"),
 )
 register(
     TranslatedSegment,
     owner_field="version.author",
     text_fields=("text",),
-    visible_to=lambda user, translated: version_visible_to(user, translated.version),
+    # The working text stays private: others see the text of the steps (rule 8).
+    visible_to=lambda user, translated: is_version_author(user, translated.version),
     counts_toward_limit=False,
+    not_reverted=("written_by",),
+)
+register(
+    VersionStep,
+    owner_field="version.author",
+    text_fields=("message",),
+    visible_to=step_visible_to,
+    counts_toward_limit=False,
+    not_reverted=("during_draft",),
 )

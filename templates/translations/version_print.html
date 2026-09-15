@@ -14,6 +14,7 @@
     <h1>{{ project.title }}</h1>
     <p class="lede">{% blocktranslate with name=version.author.public_name style=version.get_style_display %}Version latine de {{ name }}, style {{ style }}{% endblocktranslate %}{% if version.style_note %} ({{ version.style_note }}){% endif %}</p>
     {% if version.is_draft %}<p class="notice">{% translate "Brouillon non publié." %}</p>{% endif %}
+    {% if step %}<p>{% blocktranslate with number=step.number date=step.created_at|date:"j F Y" %}Étape {{ number }} du {{ date }}{% endblocktranslate %} : {{ step.message }}</p>{% endif %}
   </header>
 
   <table class="export-bitext">
@@ -29,7 +30,7 @@
       <tr{% if row.segment.starts_paragraph and not forloop.first %} class="paragraph-start"{% endif %}>
         <td class="export-number">{{ row.segment.order }}</td>
         <td lang="{{ source.language }}">{{ row.segment.text }}</td>
-        <td lang="la" class="latin">{% if row.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif row.saved %}{{ row.saved }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}{% for note in row.notes %}<sup><a href="#note-{{ note.note_number }}" id="appel-{{ note.note_number }}">{{ note.note_number }}</a></sup>{% endfor %}</td>
+        <td lang="la" class="latin">{% if row.saved %}{{ row.saved }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}{% for note in row.notes %}<sup><a href="#note-{{ note.note_number }}" id="appel-{{ note.note_number }}">{{ note.note_number }}</a></sup>{% endfor %}</td>
       </tr>
       {% endfor %}
     </tbody>

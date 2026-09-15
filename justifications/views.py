@@ -18,6 +18,7 @@ from phraseology.models import Attestation, Unit
 from phraseology.spotting import spot_units, unit_attestations, visible_units
 from translations.models import TranslatedSegment, TranslationVersion
 from translations.permissions import can_challenge, can_translate
+from translations.steps import sentence_at, shown_text
 
 from .display import excerpt_parts, visible_evidences
 from .forms import ChallengeCloseForm, ChallengeForm, JustificationForm, ReferenceFormSet
@@ -99,11 +100,14 @@ def _reference_evidences(references):
     return [evidence for evidence in (form.evidence() for form in references) if evidence]
 
 
-def _page_context(translated, **extra):
+def _page_context(translated, latin=None, **extra):
+    """``latin`` is the sentence as the reader sees it; by default the working text, which only
+    the author of the version may see."""
     return {
         "version": translated.version,
         "segment": translated.segment,
         "translated": translated,
+        "latin": translated.text if latin is None else latin,
         "source_language": translated.version.project.source_text.language,
         **extra,
     }
@@ -232,6 +236,7 @@ def justification_create(request, version_pk, segment_pk):
 def justification_detail(request, pk):
     justification = _justification(request.user, pk)
     translated = justification.translated_segment
+    justification.shown_text = shown_text(request.user, translated)
     challenges = [
         challenge
         for challenge in justification.challenges.select_related("author")
@@ -242,6 +247,7 @@ def justification_detail(request, pk):
         "justifications/justification_detail.html",
         _page_context(
             translated,
+            latin=justification.shown_text,
             justification=justification,
             evidences=visible_evidences(
                 request.user, justification.evidences.all(), justification=justification
@@ -349,6 +355,7 @@ def _challenge(user, pk):
         "author",
         "closed_by",
         "justification",
+        "step",
         "translated_segment__segment",
         "translated_segment__version__project__source_text",
         "translated_segment__version__author",
@@ -386,22 +393,27 @@ def challenge_create(request, translated_pk):
     queryset = TranslatedSegment.objects.select_related(
         "segment", "version__project__source_text", "version__author"
     )
-    translated = get_object_or_404(queryset.exclude(text=""), pk=translated_pk)
-    if not can_view(request.user, translated):
+    translated = get_object_or_404(queryset, pk=translated_pk)
+    if not can_view(request.user, translated.version):
         raise Http404
     if not can_challenge(request.user, translated.version):
         raise PermissionDenied
+    # Only the text of the latest public step is contested, never the working text.
+    latin = shown_text(request.user, translated)
+    if not latin:
+        raise Http404
     justification = None
     if request.GET.get("justification", "").isdigit():
         justification = get_object_or_404(
             translated.justifications.filter(is_hidden=False), pk=request.GET["justification"]
         )
     default_excerpt = request.GET.get("extrait") or (
-        justification.latin_excerpt if justification else translated.text
+        justification.latin_excerpt if justification else latin
     )
     form = ChallengeForm(
         request.POST or None,
         translated=translated,
+        latin=latin,
         user=request.user,
         initial={"latin_excerpt": default_excerpt},
     )
@@ -434,6 +446,7 @@ def challenge_create(request, translated_pk):
         request,
         translated,
         evidences,
+        latin=latin,
         form=form,
         references=references,
         keep=keep,
@@ -453,6 +466,11 @@ def challenge_detail(request, pk):
     user = request.user
     challenge = _challenge(user, pk)
     translated = challenge.translated_segment
+    # The contested sentence as the contested step froze it.
+    if challenge.step_id:
+        challenge.shown_text = sentence_at(challenge.step, translated.segment_id)
+    else:
+        challenge.shown_text = shown_text(user, translated)
     justification = challenge.justification
     if justification is not None and not can_view(user, justification):
         justification = None
@@ -461,6 +479,7 @@ def challenge_detail(request, pk):
         "justifications/challenge_detail.html",
         _page_context(
             translated,
+            latin=challenge.shown_text,
             challenge=challenge,
             contested=justification,
             evidences=visible_evidences(user, challenge.evidences.all(), challenge=challenge),

@@ -6,7 +6,7 @@ from corpus.models import Token
 from corpus.search import quotation
 from moderation.registry import can_view
 
-from .models import Evidence
+from .models import Evidence, shown_latin
 
 
 def visible_evidences(user, queryset, **parent):
@@ -36,5 +36,5 @@ def visible_evidences(user, queryset, **parent):
 def excerpt_parts(obj):
     """The Latin sentence cut around the words of a justification or a challenge."""
     span = obj.locate()
-    text = obj.translated_segment.text
+    text = shown_latin(obj)
     return (text[: span[0]], text[span[0] : span[1]], text[span[1] :]) if span else None

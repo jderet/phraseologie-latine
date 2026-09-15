@@ -9,7 +9,7 @@
 <section>
   <p class="eyebrow"><a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a> · <a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
   <h1>{% translate "Traduire" %}</h1>
-  <p class="lede">{% if version.is_draft %}{% translate "Brouillon visible de vous seul." %}{% else %}{% translate "Version publiée : chaque modification est visible de tous et reste dans l’historique." %}{% endif %}</p>
+  <p class="lede">{% if version.is_draft %}{% translate "Brouillon visible de vous seul." %}{% else %}{% translate "Version publiée : le public voit la dernière étape. Vos modifications restent privées jusqu’à la prochaine étape." %}{% endif %}</p>
   <p class="note">{% blocktranslate asvar progress with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{{ progress|capfirst }}</p>
 
   <div class="editor-layout">
@@ -41,6 +41,7 @@
       </div>
       <div class="editor-actions">
         <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+        <button type="submit" class="button button-quiet" name="next" value="step">{% translate "Enregistrer et créer une étape" %}</button>
         <a href="{{ version.get_absolute_url }}">{% translate "Voir la version" %}</a>
       </div>
     </form>

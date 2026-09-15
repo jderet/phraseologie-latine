@@ -11,15 +11,19 @@ from .services import reference_evidence
 
 
 class LatinExcerptForm(ContributionForm):
-    """A form about some words of a translated sentence."""
+    """A form about some words of a translated sentence.
 
-    def __init__(self, *args, translated, **kwargs):
+    ``latin`` is the sentence as the user sees it; by default the working text.
+    """
+
+    def __init__(self, *args, translated, latin=None, **kwargs):
         self.translated = translated
+        self.latin = translated.text if latin is None else latin
         super().__init__(*args, **kwargs)
 
     def clean_latin_excerpt(self):
         excerpt = normalize_sentence(self.cleaned_data["latin_excerpt"])
-        if excerpt not in self.translated.text:
+        if excerpt not in self.latin:
             raise ValidationError(
                 _("Ce passage ne figure pas dans la phrase latine : copiez-le tel quel."),
                 code="excerpt_not_found",

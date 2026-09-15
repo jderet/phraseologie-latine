@@ -14,6 +14,13 @@
   {% if version.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
   {% endif %}
+  {% if is_author and pending_count %}
+  <p class="notice notice-info">{% blocktranslate trimmed count counter=pending_count %}
+    Vous voyez votre texte de travail : {{ counter }} phrase a changé depuis la dernière étape.
+  {% plural %}
+    Vous voyez votre texte de travail : {{ counter }} phrases ont changé depuis la dernière étape.
+  {% endblocktranslate %}{% if version.is_published %} {% translate "Le public ne verra ces changements qu’à la prochaine étape." %}{% endif %} <a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></p>
+  {% endif %}
 
   <dl class="facts">
     <div>
@@ -23,6 +30,10 @@
     <div>
       <dt>{% translate "État" %}</dt>
       <dd>{% if version.is_published %}{% blocktranslate with date=version.published_at|date:"j F Y" %}publiée le {{ date }}{% endblocktranslate %}{% else %}{% translate "brouillon" %}{% endif %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Dernière étape" %}</dt>
+      <dd>{% if latest_step %}<a href="{{ latest_step.get_absolute_url }}">{% blocktranslate with number=latest_step.number date=latest_step.created_at|date:"j F Y" %}étape {{ number }}, du {{ date }}{% endblocktranslate %}</a> : {{ latest_step.message }} · <a href="{% url 'translations:step_list' version.pk %}">{% translate "historique des étapes" %}</a>{% else %}{% translate "aucune" %}{% endif %}</dd>
     </div>
     <div>
       <dt>{% translate "Avancement" %}</dt>
@@ -38,6 +49,7 @@
   {% if can_translate %}
   <p class="form-links">
     <a class="button" href="{% url 'translations:version_edit' version.pk %}">{% translate "Traduire" %}</a>
+    <a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a>
     <a href="{% url 'translations:version_settings' version.pk %}">{% translate "Modifier le style" %}</a>
     {% if version.is_published %}<a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer les versions" %}</a>{% endif %}
     {% if version.is_draft %}<a href="{% url 'translations:version_publish' version.pk %}">{% translate "Publier" %}</a>{% endif %}
@@ -47,29 +59,12 @@
   {% moderation_links version %}
 
   <h2>{% translate "Texte et traduction" %}</h2>
-  {% load phraseology_tags %}
+  {% if is_author %}
+  <p class="note">{% translate "Votre texte de travail, tel que vous l’avez enregistré." %}</p>
+  {% elif not latest_step %}
+  <p class="note">{% translate "Aucune étape publique pour l’instant." %}</p>
+  {% endif %}
   <p class="note">{% translate "Dans le latin, un trait pointillé signale une unité connue repérée dans la phrase, à titre de suggestion ; un double trait, un passage justifié par une fiche." %}</p>
-  <ol class="bitext">
-    {% for row in rows %}
-    <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
-      <span class="bitext-number">{{ row.segment.order }}</span>
-      <p class="bitext-source" lang="{{ source.language }}">{{ row.segment.text }}</p>
-      <div class="bitext-latin">
-        <p lang="la">{% if row.hidden %}<span class="muted">{% translate "Phrase masquée à la suite d’un signalement." %}</span>{% elif row.saved %}{% latin_sentence row.saved row.justifications as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
-        {% if row.saved and not row.hidden and sentence.units %}<p class="row-units">{% translate "Unités repérées :" %} {% for unit in sentence.units %}<a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
-        {% if row.justifications %}
-        <ul class="row-justifications">
-          {% for justification in row.justifications %}{% include "justifications/justification_item.html" %}{% endfor %}
-        </ul>
-        {% endif %}
-        {% for challenge in row.challenges %}
-        <p class="row-alert"><a href="{{ challenge.get_absolute_url }}">{% blocktranslate with excerpt=challenge.latin_excerpt %}Contesté : « {{ excerpt }} »{% endblocktranslate %}</a>{% if can_translate and not row.justifications %} · {% translate "une justification est attendue" %}{% endif %}</p>
-        {% endfor %}
-        {% if can_translate and row.saved %}<a class="small-link" href="{% url 'justifications:create' version.pk row.segment.pk %}">{% translate "Justifier" %}</a>{% endif %}
-        {% if can_challenge and row.saved and not row.hidden %}<a class="small-link" href="{% url 'justifications:challenge_create' row.translation.pk %}">{% translate "Contester" %}</a>{% endif %}
-      </div>
-    </li>
-    {% endfor %}
-  </ol>
+  {% include "translations/bitext_rows.html" %}
 </article>
 {% endblock %}

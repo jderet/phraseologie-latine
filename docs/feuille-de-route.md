@@ -111,7 +111,7 @@ Terminé quand un livre du noyau (par exemple Cic. *Off.* 1) est entièrement re
 
 Demandée par le porteur le 15 septembre 2026. Détail dans la section 4.1 du [cahier des charges](cahier-des-charges.md).
 
-- [ ] Étapes d'une version : message, historique, adresse fixe de chaque étape ; le public voit partout la dernière étape (pages, comparaison, exports, API, contestations), le texte de travail reste privé ; reprise des versions existantes
+- [x] Étapes d'une version : message, historique, adresse fixe de chaque étape ; le public voit partout la dernière étape (pages, comparaison, exports, API, contestations), le texte de travail reste privé ; reprise des versions existantes
 - [ ] Publication avec choix de montrer les étapes du brouillon ; justifications parues avec une étape
 - [ ] Différences mot à mot entre deux étapes, ou avec le texte de travail ; étape et auteur de chaque phrase
 - [ ] Copie d'une version publiée, avec mention de son origine

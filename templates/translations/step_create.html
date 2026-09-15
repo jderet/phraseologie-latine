@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Créer une étape" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Créer une étape" %}</h1>
+  <p class="lede">{% translate "Une étape fige le texte de toute la version, avec un message qui dit ce qui a changé." %}
+    {% if version.is_published %}{% translate "Le public verra ce texte." %}{% else %}{% translate "Tant que la version est un brouillon, l’étape reste visible de vous seul." %}{% endif %}</p>
+
+  {% if changes %}
+  <h2>{% if latest %}{% blocktranslate with number=latest.number %}Changements depuis l’étape {{ number }}{% endblocktranslate %}{% else %}{% translate "Phrases de la première étape" %}{% endif %}</h2>
+  <ol class="step-changes">
+    {% for change in changes %}
+    <li class="step-change">
+      <span class="bitext-number">{{ change.segment.order }}</span>
+      <div>
+        <p class="step-before" lang="la">{% if change.before %}<del>{{ change.before }}</del>{% else %}<span class="muted">{% translate "(pas de texte)" %}</span>{% endif %}</p>
+        <p class="step-after" lang="la">{% if change.after %}<ins>{{ change.after }}</ins>{% else %}<span class="muted">{% translate "(phrase effacée)" %}</span>{% endif %}</p>
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% translate "Créer l’étape" %}</button>
+  </form>
+  {% else %}
+  <p>{% translate "Rien n’a changé depuis la dernière étape." %}</p>
+  {% endif %}
+  <p class="form-links"><a href="{% url 'translations:version_edit' version.pk %}">{% translate "Retour à la traduction" %}</a> <a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a></p>
+</section>
+{% endblock %}

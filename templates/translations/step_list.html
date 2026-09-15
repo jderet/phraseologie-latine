@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Historique des étapes" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Historique des étapes" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Chaque étape fige le texte de toute la version, avec un message. Le public voit la dernière
+    étape publique ; chaque étape reste consultable à son adresse.
+  {% endblocktranslate %}</p>
+  {% if can_translate %}
+  <p class="form-links"><a class="button" href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></p>
+  {% endif %}
+  <ol class="item-list">
+    {% for step in steps %}
+    <li>
+      <span><a class="item-title" href="{{ step.get_absolute_url }}">{% blocktranslate with number=step.number %}Étape {{ number }}{% endblocktranslate %}</a> {{ step.message }}{% if step.pk == current_id %} <span class="badge">{% translate "vue par le public" %}</span>{% endif %}</span>
+      <span class="muted">{{ step.created_at|date:"j F Y, H:i" }} · {% blocktranslate count counter=step.changed_count %}{{ counter }} phrase changée{% plural %}{{ counter }} phrases changées{% endblocktranslate %}{% if step.during_draft %} · {% translate "pendant le brouillon" %}{% if not version.shows_draft_steps %}, {% translate "visible de vous seul" %}{% endif %}{% endif %}{% if step.is_hidden %} · {% translate "masquée" %}{% endif %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune étape pour l’instant." %}</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

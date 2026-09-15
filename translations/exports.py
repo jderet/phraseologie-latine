@@ -1,5 +1,6 @@
 """Exports of a version: a bilingual text file. The printable page with notes is a template."""
 
+from django.utils.formats import date_format
 from django.utils.text import slugify
 from django.utils.translation import gettext
 
@@ -10,8 +11,11 @@ def export_filename(version, extension):
     return f"{name}.{extension}"
 
 
-def bilingual_text(version, rows):
-    """The source text and the Latin, sentence by sentence, with the licenses to credit."""
+def bilingual_text(version, rows, step=None):
+    """The source text and the Latin, sentence by sentence, with the licenses to credit.
+
+    ``step`` is the step whose text the rows give; None for the working text.
+    """
     project, source = version.project, version.project.source_text
     lines = [project.title, "=" * len(project.title), ""]
     lines.append(
@@ -20,6 +24,15 @@ def bilingual_text(version, rows):
     )
     if version.is_draft:
         lines.append(gettext("Brouillon non publié."))
+    if step is not None:
+        lines.append(
+            gettext("Étape %(number)d du %(date)s : %(message)s")
+            % {
+                "number": step.number,
+                "date": date_format(step.created_at, "DATE_FORMAT"),
+                "message": step.message,
+            }
+        )
     lines.append(
         gettext("Texte source : %(title)s, %(license)s.")
         % {"title": source.title, "license": source.get_license_display()}
@@ -34,10 +47,7 @@ def bilingual_text(version, rows):
         lines.append("")
         if segment.starts_paragraph and segment.order > 1:
             lines.append("")
-        if row["hidden"]:
-            latin = gettext("[phrase masquée]")
-        else:
-            latin = row["saved"] or gettext("[non traduite]")
+        latin = row["saved"] or gettext("[non traduite]")
         lines.append(f"{segment.order}. {segment.text}")
         lines.append(f"   {latin}")
     return "\n".join(lines) + "\n"

@@ -762,6 +762,37 @@ article > h2 {
   font-size: 1.08rem;
 }
 
+.step-changes {
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.step-change {
+  display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr);
+  gap: 4px 20px;
+  padding: 10px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.step-before,
+.step-after {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.08rem;
+}
+
+.step-changes del {
+  color: var(--ink-2);
+  text-decoration-color: var(--danger);
+}
+
+.step-changes ins {
+  text-decoration: none;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
 .bitext textarea {
   width: 100%;
   font: 1.08rem/1.5 var(--serif);

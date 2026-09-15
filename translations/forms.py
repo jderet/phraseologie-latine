@@ -5,7 +5,7 @@ from django.utils.translation import ngettext
 
 from accounts.limits import check_text_for_links
 
-from .models import SourceText, TranslationProject, TranslationVersion
+from .models import SourceText, TranslationProject, TranslationVersion, VersionStep
 from .segmentation import from_lines
 from .services import normalize_sentence
 
@@ -105,6 +105,14 @@ class VersionForm(ContributionForm):
     class Meta:
         model = TranslationVersion
         fields = ("style", "style_note")
+
+
+class StepForm(ContributionForm):
+    link_fields = ("message",)
+
+    class Meta:
+        model = VersionStep
+        fields = ("message",)
 
 
 class TranslationTextForm(forms.Form):

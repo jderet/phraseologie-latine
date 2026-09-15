@@ -13,6 +13,7 @@ from corpus.search import corpus_version
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 from translations.permissions import can_challenge, can_translate
+from translations.steps import public_step, sentence_at
 
 from .models import ATTESTED_STRENGTHS, Challenge, Evidence, Justification, Strength
 
@@ -200,16 +201,24 @@ def withdraw_evidence(evidence, author):
 
 @transaction.atomic
 def create_challenge(challenge, author, evidences, hint=None):
-    """Contest words of a published version; its author answers and justifies them (Q46)."""
+    """Contest words of a published version; its author answers and justifies them (Q46).
+
+    The words are those of the latest public step, which the challenge records.
+    """
     translated = challenge.translated_segment
     version = translated.version
-    if not can_challenge(author, version) or not can_view(author, translated):
+    if not can_challenge(author, version) or not can_view(author, version):
+        raise PermissionDenied
+    step = public_step(version)
+    text = sentence_at(step, translated.segment_id) if step else ""
+    if not text:
         raise PermissionDenied
     justification = challenge.justification
     if justification is not None and justification.translated_segment_id != translated.pk:
         raise ValueError("The justification is not about this sentence.")
     challenge.author = author
-    challenge.latin_start = find_excerpt(translated.text, challenge.latin_excerpt, hint)
+    challenge.step = step
+    challenge.latin_start = find_excerpt(text, challenge.latin_excerpt, hint)
     save_with_revision(challenge, author)
     for evidence in evidences:
         _save_evidence(evidence, author, challenge=challenge)

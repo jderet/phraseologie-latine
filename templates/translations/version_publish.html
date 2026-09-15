@@ -10,8 +10,9 @@
   <p class="lede">{% blocktranslate asvar progress with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{{ progress|capfirst }}</p>
   <p>{% blocktranslate trimmed %}
     Une fois publiée, la version est visible de tous, sous licence CC BY-SA 4.0, et ne peut plus
-    redevenir un brouillon. Vous pourrez toujours la modifier : chaque modification restera dans
-    l’historique.
+    redevenir un brouillon. Publier crée une étape : le public voit le texte de cette étape. Vous
+    pourrez toujours modifier votre texte de travail ; le public verra vos modifications quand
+    vous créerez une nouvelle étape.
   {% endblocktranslate %}</p>
   <form method="post" class="form">
     {% csrf_token %}

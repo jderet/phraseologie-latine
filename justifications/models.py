@@ -26,6 +26,16 @@ def locate_excerpt(text, excerpt, start):
     return None
 
 
+def shown_latin(obj):
+    """The Latin a justification or a challenge is read against.
+
+    Views set ``shown_text``, the sentence as the reader sees it (the working text for the
+    author of the version, the text of a step for others); without it, the working text.
+    """
+    text = getattr(obj, "shown_text", None)
+    return obj.translated_segment.text if text is None else text
+
+
 class BibliographicWork(models.Model):
     """A grammar or a dictionary, cited by reference only: nothing of it is copied (rule 12)."""
 
@@ -149,8 +159,8 @@ class Justification(ModeratedContent):
         return reverse("justifications:detail", args=[self.pk])
 
     def locate(self):
-        """(start, end) of the justified words in the current Latin, or None if they changed."""
-        return locate_excerpt(self.translated_segment.text, self.latin_excerpt, self.latin_start)
+        """(start, end) of the justified words in the Latin shown, or None if they changed."""
+        return locate_excerpt(shown_latin(self), self.latin_excerpt, self.latin_start)
 
     @property
     def needs_review(self):
@@ -314,6 +324,15 @@ class Challenge(ModeratedContent):
         help_text=_("Les mots contestés, tels qu’ils sont écrits."),
     )
     latin_start = models.PositiveIntegerField(_("position du passage"), default=0)
+    step = models.ForeignKey(
+        "translations.VersionStep",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="challenges",
+        verbose_name=_("étape contestée"),
+    )
     argument = models.TextField(
         _("argument"),
         max_length=5000,
@@ -356,7 +375,7 @@ class Challenge(ModeratedContent):
         return reverse("justifications:challenge", args=[self.pk])
 
     def locate(self):
-        return locate_excerpt(self.translated_segment.text, self.latin_excerpt, self.latin_start)
+        return locate_excerpt(shown_latin(self), self.latin_excerpt, self.latin_start)
 
     @property
     def is_open(self):

@@ -21,8 +21,8 @@
       <dd lang="{{ source_language }}">{{ segment.text }}</dd>
     </div>
     <div>
-      <dt>{% translate "Latin" %}</dt>
-      <dd lang="la" class="latin">{% if parts %}{{ parts.0 }}<mark>{{ parts.1 }}</mark>{{ parts.2 }}{% else %}{{ translated.text }} <span class="muted">(« {{ challenge.latin_excerpt }} »)</span>{% endif %}</dd>
+      <dt>{% if challenge.step %}{% blocktranslate with number=challenge.step.number %}Latin contesté (étape {{ number }}){% endblocktranslate %}{% else %}{% translate "Latin" %}{% endif %}</dt>
+      <dd lang="la" class="latin">{% if parts %}{{ parts.0 }}<mark>{{ parts.1 }}</mark>{{ parts.2 }}{% else %}{{ latin }} <span class="muted">(« {{ challenge.latin_excerpt }} »)</span>{% endif %}</dd>
     </div>
     {% if contested %}
     <div>

@@ -28,20 +28,23 @@ from .forms import (
     ReferenceForm,
     SourceTextEditForm,
     SourceTextForm,
+    StepForm,
     TranslationTextForm,
     VersionForm,
 )
-from .models import SourceText, TranslatedSegment, TranslationProject, TranslationVersion
+from .models import SourceText, TranslationProject, TranslationVersion, is_version_author
 from .permissions import can_challenge, can_edit, can_translate
 from .segmentation import from_lines, segment, to_lines
 from .services import (
     create_project,
     create_source_text,
+    create_step,
     create_version,
     publish_version,
     save_translation,
     set_reference_version,
 )
+from .steps import latest_step, pending_changes, public_step, shown_sentences
 
 ITEMS_PER_PAGE = 50
 PANEL_SEARCH_DEFAULTS = {"scope": SCOPE_CORE, "mode1": MODE_FORM, "mode2": MODE_FORM}
@@ -182,11 +185,10 @@ def project_detail(request, pk):
     project = _visible(
         request.user, TranslationProject.objects.select_related("source_text", "created_by"), pk
     )
-    versions = (
-        project.versions.visible_to(request.user)
-        .select_related("author")
-        .annotate(translated_count=Count("segments", filter=~Q(segments__text="")))
-    )
+    versions = list(project.versions.visible_to(request.user).select_related("author"))
+    for version in versions:
+        _step, sentences = shown_sentences(request.user, version)
+        version.translated_count = sum(1 for sentence in sentences.values() if sentence.text)
     return render(
         request,
         "translations/project_detail.html",
@@ -245,7 +247,10 @@ def project_reference(request, pk):
 
 
 def project_compare(request, pk):
-    """The versions of a project aligned sentence by sentence, the reference version first."""
+    """The versions of a project aligned sentence by sentence, the reference version first.
+
+    Each version shows its latest public step; the author's own versions, their working text.
+    """
     project = _visible(request.user, TranslationProject.objects.select_related("source_text"), pk)
     versions = sorted(
         project.versions.visible_to(request.user).select_related("author"),
@@ -257,20 +262,13 @@ def project_compare(request, pk):
     )
     asked = {int(value) for value in request.GET.getlist("v") if value.isdigit()}
     shown = [version for version in versions if version.pk in asked] or versions
-    translations = TranslatedSegment.objects.filter(version__in=shown).select_related("version")
-    texts = {(item.version_id, item.segment_id): item for item in translations}
+    sentences = {version.pk: shown_sentences(request.user, version)[1] for version in shown}
     rows = []
     for source_segment in project.source_text.segments.all():
         cells = []
         for version in shown:
-            item = texts.get((version.pk, source_segment.pk))
-            cells.append(
-                {
-                    "version": version,
-                    "text": item.text if item else "",
-                    "hidden": item is not None and not can_view(request.user, item),
-                }
-            )
+            sentence = sentences[version.pk].get(source_segment.pk)
+            cells.append({"version": version, "text": sentence.text if sentence else ""})
         rows.append({"segment": source_segment, "cells": cells})
     return render(
         request,
@@ -301,7 +299,8 @@ def _own_version(user, pk):
     return version
 
 
-def _justifications_by_segment(user, version):
+def _justifications_by_segment(user, version, texts):
+    """Justifications the user may see, read against the Latin shown (``texts`` by segment)."""
     grouped = defaultdict(list)
     open_challenges = Challenge.objects.filter(status=Challenge.Status.OPEN, is_hidden=False)
     queryset = (
@@ -312,9 +311,11 @@ def _justifications_by_segment(user, version):
         )
     )
     for justification in queryset:
-        justification.translated_segment.version = version
+        translated = justification.translated_segment
+        translated.version = version
+        justification.shown_text = texts.get(translated.segment_id, "")
         if can_view(user, justification):
-            grouped[justification.translated_segment.segment_id].append(justification)
+            grouped[translated.segment_id].append(justification)
     return grouped
 
 
@@ -332,28 +333,34 @@ def _challenges_by_segment(user, version):
     return grouped
 
 
-def _rows(user, version):
-    """Each sentence of the source text with its Latin and its justifications in the version."""
-    translated = {item.segment_id: item for item in version.segments.all()}
-    justifications = _justifications_by_segment(user, version)
+def _rows(user, version, step=None):
+    """The step shown and each sentence of the source text with its Latin and justifications.
+
+    Return (step, rows): the author sees the working text (step None), others the latest
+    public step; a step asked shows its own text.
+    """
+    step, sentences = shown_sentences(user, version, step)
+    texts = {segment_id: sentence.text for segment_id, sentence in sentences.items()}
+    justifications = _justifications_by_segment(user, version, texts)
     challenges = _challenges_by_segment(user, version)
+    translated_ids = dict(version.segments.values_list("segment_id", "pk"))
     rows = []
     for source_segment in version.project.source_text.segments.all():
-        item = translated.get(source_segment.pk)
-        text = item.text if item else ""
+        sentence = sentences.get(source_segment.pk)
+        text = sentence.text if sentence else ""
         rows.append(
             {
                 "segment": source_segment,
-                "translation": item,
+                "translated_pk": translated_ids.get(source_segment.pk),
+                "sentence": sentence,
                 "saved": text,
                 "text": text,
-                "hidden": item is not None and not can_view(user, item),
                 "errors": None,
                 "justifications": justifications.get(source_segment.pk, []),
                 "challenges": challenges.get(source_segment.pk, []),
             }
         )
-    return rows
+    return step, rows
 
 
 def _progress(rows):
@@ -364,8 +371,11 @@ def _progress(rows):
 
 
 def version_detail(request, pk):
-    version = _version(request.user, pk)
-    rows = _rows(request.user, version)
+    """The author sees the working text; others see the latest public step."""
+    user = request.user
+    version = _version(user, pk)
+    step, rows = _rows(user, version)
+    is_author = is_version_author(user, version)
     return render(
         request,
         "translations/version_detail.html",
@@ -374,9 +384,12 @@ def version_detail(request, pk):
             "project": version.project,
             "source": version.project.source_text,
             "rows": rows,
-            "can_translate": can_translate(request.user, version),
+            "latest_step": latest_step(version) if is_author else step,
+            "pending_count": len(pending_changes(version)) if is_author else 0,
+            "is_author": is_author,
+            "can_translate": can_translate(user, version),
             "is_reference": version.pk == version.project.reference_version_id,
-            "can_challenge": can_challenge(request.user, version),
+            "can_challenge": step is not None and can_challenge(user, version),
             **_progress(rows),
         },
     )
@@ -400,7 +413,7 @@ def version_create(request, project_pk):
 @require_http_methods(["GET", "POST"])
 def version_edit(request, pk):
     version = _own_version(request.user, pk)
-    rows = _rows(request.user, version)
+    _step, rows = _rows(request.user, version)
     if request.method == "POST":
         changes = []
         for row in rows:
@@ -427,7 +440,9 @@ def version_edit(request, pk):
                     )
                     % {"count": len(changes)},
                 )
-            else:
+            if request.POST.get("next") == "step":
+                return redirect("translations:step_create", version.pk)
+            if not changes:
                 messages.info(request, _("Aucune modification."))
             return redirect("translations:version_edit", version.pk)
         messages.error(request, _("Rien n’est enregistré : corrigez les phrases signalées."))
@@ -455,13 +470,14 @@ def _download(content, version, extension, content_type):
 def version_export_text(request, pk):
     """The source text and the Latin of a version, sentence by sentence, as a text file."""
     version = _version(request.user, pk)
-    content = bilingual_text(version, _rows(request.user, version))
+    step, rows = _rows(request.user, version)
+    content = bilingual_text(version, rows, step)
     return _download(content, version, "txt", "text/plain; charset=utf-8")
 
 
 def _export_context(request, version):
     """What the TEI and TMX exports show: the rows and, for TEI, the visible evidence."""
-    rows = _rows(request.user, version)
+    step, rows = _rows(request.user, version)
     for row in rows:
         for justification in row["justifications"]:
             justification.evidence_list = visible_evidences(
@@ -472,6 +488,7 @@ def _export_context(request, version):
         "version": version,
         "project": version.project,
         "source": version.project.source_text,
+        "step": step,
         "rows": rows,
         "exported_at": now,
         "creation_date": now.astimezone(dt.UTC).strftime("%Y%m%dT%H%M%SZ"),
@@ -497,11 +514,11 @@ def version_export_tmx(request, pk):
 def version_export_print(request, pk):
     """A printable page with the justifications as notes; the browser saves it as PDF."""
     version = _version(request.user, pk)
-    rows = _rows(request.user, version)
+    step, rows = _rows(request.user, version)
     notes = []
     corpus_sources = set()
     for row in rows:
-        row["notes"] = [] if row["hidden"] else row["justifications"]
+        row["notes"] = row["justifications"]
         for justification in row["notes"]:
             notes.append(justification)
             justification.note_number = len(notes)
@@ -519,6 +536,7 @@ def version_export_print(request, pk):
             "version": version,
             "project": version.project,
             "source": version.project.source_text,
+            "step": step,
             "rows": rows,
             "notes": notes,
             "corpus_sources": sorted(corpus_sources),
@@ -575,5 +593,102 @@ def version_publish(request, pk):
     return render(
         request,
         "translations/version_publish.html",
-        {"version": version, "project": version.project, **_progress(_rows(request.user, version))},
+        {
+            "version": version,
+            "project": version.project,
+            **_progress(_rows(request.user, version)[1]),
+        },
+    )
+
+
+# Steps
+
+
+def step_list(request, pk):
+    """The steps of a version the user may see, the latest first."""
+    user = request.user
+    version = _version(user, pk)
+    steps = []
+    queryset = version.steps.annotate(changed_count=Count("sentences")).order_by("-number")
+    for step in queryset:
+        step.version = version
+        if can_view(user, step):
+            steps.append(step)
+    current = public_step(version)
+    return render(
+        request,
+        "translations/step_list.html",
+        {
+            "version": version,
+            "project": version.project,
+            "steps": steps,
+            "current_id": current.pk if current else None,
+            "can_translate": can_translate(user, version),
+        },
+    )
+
+
+def step_detail(request, pk, number):
+    """The text of a version as a step froze it, at a fixed address that can be cited."""
+    user = request.user
+    version = _version(user, pk)
+    step = get_object_or_404(version.steps.select_related("author"), number=number)
+    step.version = version
+    if not can_view(user, step):
+        raise Http404
+    _step, rows = _rows(user, version, step)
+    visible = [
+        other.number
+        for other in version.steps.exclude(pk=step.pk).order_by("number")
+        if can_view(user, _with_version(other, version))
+    ]
+    current = public_step(version)
+    return render(
+        request,
+        "translations/step_detail.html",
+        {
+            "version": version,
+            "project": version.project,
+            "source": version.project.source_text,
+            "step": step,
+            "rows": rows,
+            "changed_count": step.sentences.count(),
+            "previous_number": max((n for n in visible if n < step.number), default=None),
+            "next_number": min((n for n in visible if n > step.number), default=None),
+            "is_current": current is not None and current.pk == step.pk,
+            "is_private": step.during_draft and not version.shows_draft_steps,
+            **_progress(rows),
+        },
+    )
+
+
+def _with_version(step, version):
+    step.version = version
+    return step
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def step_create(request, pk):
+    """What changed since the latest step, and the form to freeze it with a message."""
+    version = _own_version(request.user, pk)
+    form = StepForm(request.POST or None, user=request.user)
+    if request.method == "POST" and form.is_valid():
+        try:
+            step = create_step(version, request.user, form.cleaned_data["message"])
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, _("L’étape %(number)d est créée.") % {"number": step.number})
+            return redirect(step)
+    return render(
+        request,
+        "translations/step_create.html",
+        {
+            "version": version,
+            "project": version.project,
+            "form": form,
+            "changes": pending_changes(version),
+            "latest": latest_step(version),
+        },
     )

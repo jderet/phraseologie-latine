@@ -20,6 +20,7 @@ from phraseology.models import (
     UnitFrequency,
 )
 from translations.models import TranslationVersion
+from translations.steps import public_step, step_sentences
 
 LICENSE = "CC BY-SA 4.0"
 LICENSE_URL = "https://creativecommons.org/licenses/by-sa/4.0/"
@@ -244,8 +245,19 @@ def version_summary(version, link):
     }
 
 
+def step_data(step, link):
+    return {
+        "number": step.number,
+        "message": step.message,
+        "created_at": _date(step.created_at),
+        "url": link(step.get_absolute_url()),
+    }
+
+
 def version_data(version, link):
-    translated = {item.segment_id: item for item in version.segments.filter(is_hidden=False)}
+    """A published version as the public sees it: the text of its latest public step."""
+    step = public_step(version)
+    sentences = step_sentences(step) if step else {}
     justifications = (
         Justification.objects.filter(translated_segment__version=version, is_hidden=False)
         .select_related("translated_segment__segment")
@@ -254,11 +266,12 @@ def version_data(version, link):
     )
     return {
         **version_summary(version, link),
+        "step": step_data(step, link) if step else None,
         "segments": [
             {
                 "order": segment.order,
                 "source": segment.text,
-                "latin": translated[segment.pk].text if segment.pk in translated else "",
+                "latin": sentences[segment.pk].text if segment.pk in sentences else "",
             }
             for segment in version.project.source_text.segments.order_by("order")
         ],

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ step }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% blocktranslate with number=step.number %}Étape {{ number }}{% endblocktranslate %}</h1>
+  <p class="lede">{{ step.message }}</p>
+  {% if step.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
+  {% endif %}
+  {% if is_private %}
+  <p class="notice notice-info">{% translate "Étape du brouillon : visible de vous seul." %}</p>
+  {% elif is_current %}
+  <p class="notice notice-info">{% translate "C’est l’étape que voit le public." %}</p>
+  {% else %}
+  <p class="notice notice-info">{% translate "Le texte a pu changer depuis cette étape." %} <a href="{{ version.get_absolute_url }}">{% translate "Voir la version" %}</a></p>
+  {% endif %}
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Créée le" %}</dt>
+      <dd>{{ step.created_at|date:"j F Y, H:i" }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Phrases changées" %}</dt>
+      <dd>{{ changed_count }}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Avancement" %}</dt>
+      <dd>{% blocktranslate with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}</dd>
+    </div>
+    {% if not is_private %}
+    <div>
+      <dt>{% translate "Licence" %}</dt>
+      <dd><a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noopener">CC BY-SA 4.0</a></dd>
+    </div>
+    {% endif %}
+  </dl>
+  <p class="form-links">
+    {% if previous_number %}<a href="{% url 'translations:step' version.pk previous_number %}">{% translate "Étape précédente" %}</a>{% endif %}
+    {% if next_number %}<a href="{% url 'translations:step' version.pk next_number %}">{% translate "Étape suivante" %}</a>{% endif %}
+    <a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a>
+  </p>
+  {% moderation_links step %}
+
+  <h2>{% translate "Texte et traduction" %}</h2>
+  {% include "translations/bitext_rows.html" %}
+</article>
+{% endblock %}
