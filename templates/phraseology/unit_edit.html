@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% translate "Modifier la fiche" %} · {{ unit.reference_form }} · {{ block.super }}{% endblock %}
 
@@ -22,4 +22,5 @@
     <button type="submit" class="button">{% translate "Enregistrer" %}</button>
   </form>
 </section>
+<script src="{% static 'js/schema.js' %}" defer></script>
 {% endblock %}

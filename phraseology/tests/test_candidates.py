@@ -125,7 +125,10 @@ class CandidatePagesTests(CandidateTestCase):
         self.client.force_login(self.other)
         consilia, capiunt = self.more_words[:2]
         value = f"{consilia.pk},{capiunt.pk}"
-        self.assertContains(self.client.get(url), f'name="attestation" value="{value}"')
+        page = self.client.get(url)
+        self.assertContains(page, f'name="attestation" value="{value}"')
+        # The unit receives the schema of the candidate: there is none to write.
+        self.assertNotContains(page, 'name="schema"')
         data = {"reference_form": "consilium capere", "definition": "décider"}
         response = self.client.post(url, data | {"attestation": [value]})
         unit = Unit.objects.get(created_by=self.other)

@@ -181,6 +181,7 @@ Choix du 14 septembre 2026, à la suite d'un questionnaire de 40 questions sur l
 **Technique**
 
 - La lecture annotée est un second composant JavaScript, à côté de l'éditeur : un fichier servi par le site, sans bibliothèque externe. Sans JavaScript, le texte reste lisible, avec ses soulignements et des liens vers les fiches.
+- Le dessin du schéma est un troisième composant JavaScript (choix du 15 septembre 2026). Dans la création et la modification des fiches et dans la recherche par schéma, on relie des mots au lieu d'écrire le schéma : clic sur le mot qui régit puis sur celui qui en dépend, ou flèche tirée de l'un à l'autre, relation choisie par son nom français. Le lemme de chaque mot est proposé d'après l'analyse du corpus ; le schéma écrit reste visible sur demande et modifiable. Sans JavaScript, le schéma s'écrit à la main.
 
 ## 5. Règles juridiques
 
@@ -197,7 +198,7 @@ Choix du 14 septembre 2026, à la suite d'un questionnaire de 40 questions sur l
 ## 6. Contraintes techniques
 
 - Budget : moins de 20 € par mois (T14).
-- Framework éprouvé et outils automatiques de sécurité (T16) : Django, PostgreSQL, HTMX, deux composants JavaScript : l'éditeur de traduction et la lecture annotée (choix du 14 septembre 2026).
+- Framework éprouvé et outils automatiques de sécurité (T16) : Django, PostgreSQL, HTMX, trois composants JavaScript : l'éditeur de traduction, la lecture annotée (choix du 14 septembre 2026) et le dessin du schéma (choix du 15 septembre 2026).
 - Hébergement : petit serveur virtuel européen, Docker, mises à jour automatiques, sauvegardes quotidiennes copiées hors du serveur. Pendant le développement, tout tourne sur le Mac du porteur.
 - Le traitement du corpus (lemmatisation, syntaxe, candidats) tourne sur le Mac du porteur ; le serveur ne sert que les résultats.
 - Standards : TEI et URN CTS en entrée, Universal Dependencies (CoNLL-U) pour l'analyse, exports ouverts.

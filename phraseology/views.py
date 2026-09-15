@@ -43,6 +43,7 @@ from .forms import (
     AnnotationForm,
     AttestationPlaceForm,
     AttestationResolveForm,
+    CandidateUnitForm,
     ContestForm,
     DoubtForm,
     EquivalentForm,
@@ -1812,7 +1813,7 @@ def candidate_detail(request, pk):
     pending = candidate.status == Candidate.Status.PENDING
     form = None
     if pending and user.is_authenticated and user.is_active:
-        form = UnitCreateForm(request.POST or None, user=user)
+        form = CandidateUnitForm(request.POST or None, user=user)
     evidences, errors = _chosen_attestations(request)
     if request.method == "POST":
         if form is None:

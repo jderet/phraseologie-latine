@@ -24,6 +24,7 @@ from .models import (
     UsageMark,
 )
 from .schema import format_schema, parse_schema
+from .widgets import SchemaWidget
 
 MAX_TAGS = 10
 MAX_TAG_LENGTH = 40
@@ -46,7 +47,7 @@ class UnitCreateForm(ContributionForm):
         fields = ("reference_form", "schema")
         widgets = {
             "reference_form": forms.TextInput(attrs={"lang": "la"}),
-            "schema": forms.TextInput(attrs={"lang": "la", "spellcheck": "false"}),
+            "schema": SchemaWidget(words_from="reference_form", count=True),
         }
 
     def clean_reference_form(self):
@@ -54,6 +55,13 @@ class UnitCreateForm(ContributionForm):
 
     def clean_schema(self):
         return format_schema(parse_schema(self.cleaned_data["schema"]))
+
+
+class CandidateUnitForm(UnitCreateForm):
+    """A unit made from a candidate, which receives the schema of the candidate."""
+
+    class Meta(UnitCreateForm.Meta):
+        fields = ("reference_form",)
 
 
 class UnitForm(ContributionForm):
@@ -88,7 +96,7 @@ class UnitForm(ContributionForm):
         }
         widgets = {
             "reference_form": forms.TextInput(attrs={"lang": "la"}),
-            "schema": forms.TextInput(attrs={"lang": "la", "spellcheck": "false"}),
+            "schema": SchemaWidget(words_from="reference_form", count=True),
             "construction": forms.TextInput(attrs={"lang": "la"}),
         }
 

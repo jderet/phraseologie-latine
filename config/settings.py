@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.forms",
     "accounts",
     "core",
     "corpus",
@@ -70,6 +71,8 @@ TEMPLATES = [
         },
     },
 ]
+# Form widgets are rendered with the templates of the site (the drawing of a schema).
+FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 WSGI_APPLICATION = "config.wsgi.application"
 
