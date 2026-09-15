@@ -384,7 +384,7 @@ class SchemaSearchForm(forms.Form):
             "Le lemme qui régit d’abord : capio -obj|nsubj:pass-> consilium ; "
             "« ; » entre les relations ; * pour une case vide : capio -obj-> *"
         ),
-        widget=forms.TextInput(attrs={"lang": "la"}),
+        widget=SchemaWidget(slot=True),
     )
     scope = forms.ChoiceField(
         label=_("Corpus"),

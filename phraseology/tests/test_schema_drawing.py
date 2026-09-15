@@ -39,6 +39,18 @@ class SchemaDrawingPagesTests(PhraseologyTestCase):
         self.assertDraws(page)
         self.assertContains(page, 'value="capio -obj|nsubj:pass-&gt; consilium"')
 
+    def test_the_schema_search_draws_with_an_open_slot(self):
+        page = self.client.get(reverse("phraseology:schema_search"), {"schema": "capio -obj-> *"})
+        self.assertContains(page, "js/schema.js")
+        self.assertContains(page, 'class="schema-builder" hidden')
+        self.assertContains(page, 'data-words-from=""')
+        self.assertContains(page, 'data-slot="1"')
+        self.assertContains(page, 'data-count=""')
+        self.assertContains(page, "Ajouter « n’importe quel mot »")
+        self.assertContains(page, 'name="schema" value="capio -obj-&gt; *"')
+        # The list of relations is for pages read without script.
+        self.assertContains(page, "<noscript>")
+
     def test_the_drawing_is_translated(self):
         self.client.force_login(self.other)
         page = self.client.get(

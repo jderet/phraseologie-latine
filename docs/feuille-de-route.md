@@ -137,7 +137,7 @@ Demandée par le porteur le 15 septembre 2026 : ne plus écrire le schéma d'une
 
 - [x] Relations en français ; lemmes possibles d'un mot d'après l'analyse du corpus ; vérification d'un schéma et nombre de ses occurrences dans le noyau
 - [x] Dessin du schéma dans la création et la modification des fiches : étiquettes des mots avec leur lemme, liens au clic ou en glissant, relation choisie en français, passif et variantes, schéma écrit dépliable et synchronisé, nombre d'occurrences
-- [ ] Même dessin dans la recherche par schéma, avec la case « n'importe quel mot »
+- [x] Même dessin dans la recherche par schéma, avec la case « n'importe quel mot »
 
 Terminé quand un testeur a créé une fiche et modifié son schéma sans jamais l'écrire, à la souris puis au clavier, et retrouvé la construction dans la recherche par schéma.
 
