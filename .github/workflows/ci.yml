@@ -37,7 +37,7 @@ jobs:
       LEGAL_HOST_ADDRESS: example
       LEGAL_HOST_PHONE: "0"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
