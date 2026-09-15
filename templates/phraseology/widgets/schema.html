@@ -7,6 +7,11 @@
   data-max-relations="{{ builder.max_relations }}"
   data-lemmas-url="{{ builder.lemmas_url }}"
   data-check-url="{{ builder.check_url }}"
+  data-units-url="{{ builder.units_url }}"
+  data-label-regime="{% translate 'Reliez maintenant « %s » à son régime : cliquez sur le nom qu’elle introduit.' %}"
+  data-label-no-unit="{% translate 'Aucune fiche avec un schéma ne porte ce nom.' %}"
+  data-label-inserted="{% translate 'Les liens de « %s » sont ajoutés au schéma.' %}"
+  data-label-insert-conflict="{% translate '« %s » dépend déjà d’un autre mot : cette fiche ne peut pas s’insérer.' %}"
   data-label-written="{% translate 'Voir le schéma écrit' %}"
   data-label-any="{% translate 'n’importe quel mot' %}"
   data-label-lemma-of="{% translate 'Lemme de « %s »' %}"
@@ -42,6 +47,10 @@
   </div>
   <p class="schema-empty note" hidden>{% if builder.words_from %}{% translate "Écrivez d’abord la forme de référence, ou ajoutez un mot." %}{% else %}{% translate "Ajoutez les mots à relier." %}{% endif %}</p>
   <ul class="schema-links" aria-label="{% translate 'Liens du schéma' %}" hidden></ul>
+  <div class="schema-components" hidden>
+    <p class="note">{% translate "Fiches contenues dans ce schéma :" %}</p>
+    <ul class="schema-component-list"></ul>
+  </div>
 
   <div class="schema-panel schema-link-panel" role="group" aria-label="{% translate 'Relation entre deux mots' %}" hidden>
     <p class="schema-sentence">
@@ -56,6 +65,14 @@
         </optgroup>
       </select>
       <strong class="schema-dependent" lang="la"></strong>
+    </p>
+    <p class="schema-case" hidden>
+      <label>{% translate "Cas du régime" %}
+        <select class="schema-case-select">
+          <option value="">{% translate "tous les cas" %}</option>
+          {% for case in builder.cases %}<option value="{{ case.code }}">{{ case.label }}</option>{% endfor %}
+        </select>
+      </label>
     </p>
     <p class="schema-passive" hidden><label><input type="checkbox" class="schema-passive-box" checked> {% translate "trouver aussi le passif" %}</label></p>
     <div class="schema-variants"></div>
@@ -86,6 +103,11 @@
     <button type="button" class="button button-quiet schema-add-word">{% translate "Ajouter" %}</button>
     {% if builder.slot %}<button type="button" class="button button-quiet schema-add-slot">{% translate "Ajouter « n’importe quel mot »" %}</button>{% endif %}
   </p>
+  <p class="schema-insert">
+    <label>{% translate "Insérer une fiche" %} <input type="text" class="schema-insert-input" lang="la" spellcheck="false" autocomplete="off" maxlength="100"></label>
+    <button type="button" class="button button-quiet schema-insert-search">{% translate "Chercher" %}</button>
+  </p>
+  <ul class="schema-insert-results" aria-label="{% translate 'Fiches à insérer' %}" hidden></ul>
   <p class="schema-status" aria-live="polite"></p>
   <p class="schema-problems" aria-live="polite"></p>
   <p class="schema-preview" aria-live="polite"></p>

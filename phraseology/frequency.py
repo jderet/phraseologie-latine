@@ -11,7 +11,7 @@ from django.db.models import Count, Exists, OuterRef, Q
 
 from corpus.models import Author, Token, TokenAnalysis
 
-from .schema import SLOT
+from .schema import SLOT, corpus_edges
 
 # Governing words looked up together when gathering the words of many occurrences.
 CHUNK_SIZE = 5000
@@ -19,9 +19,12 @@ CHUNK_SIZE = 5000
 SLOT_LIMIT = 50000
 
 
-def _lemma(edge):
-    """The condition on the dependent's lemma; an open dependent may have any."""
-    return {} if edge.dependent == SLOT else {"lemma_norm": edge.dependent}
+def _word(lemma, cases):
+    """Conditions on the analysis of a word: its lemma, unless open, and its case if given."""
+    condition = {} if lemma == SLOT else {"lemma_norm": lemma}
+    if lemma in cases:
+        condition["feats__contains"] = f"Case={cases[lemma]}"
+    return condition
 
 
 def _relation_condition(relations):
@@ -34,7 +37,7 @@ def _relation_condition(relations):
     return condition
 
 
-def _dependents(lemma, edges, layer):
+def _dependents(lemma, edges, layer, cases):
     """Conditions on the analysis of a word: it governs the dependents of ``lemma``."""
     conditions = []
     for edge in edges:
@@ -45,18 +48,23 @@ def _dependents(lemma, edges, layer):
             layer=layer,
             head_id=OuterRef("token_id"),
             head_part=OuterRef("part"),
-            **_lemma(edge),
-        ).filter(*_dependents(edge.dependent, edges, layer))
+            **_word(edge.dependent, cases),
+        ).filter(*_dependents(edge.dependent, edges, layer, cases))
         conditions.append(Exists(dependents))
     return conditions
 
 
 def schema_matches(edges, layer, core_only=False):
-    """Analyses of the governing word of every occurrence of a schema, in current editions."""
+    """Analyses of the governing word of every occurrence of a schema, in current editions.
+
+    The governing word is the one of the analysis: the noun of a prepositional phrase at the
+    root of a schema, not its preposition.
+    """
+    edges, cases = corpus_edges(edges)
     root = edges[0].head
     matches = TokenAnalysis.objects.filter(
-        layer=layer, lemma_norm=root, token__edition__is_current=True
-    ).filter(*_dependents(root, edges, layer))
+        layer=layer, token__edition__is_current=True, **_word(root, cases)
+    ).filter(*_dependents(root, edges, layer, cases))
     if core_only:
         matches = matches.filter(token__edition__work__is_core=True)
     return matches
@@ -69,6 +77,7 @@ def occurrence_parts(roots, edges, layer):
     relation of the schema, the first dependent in the text is kept. A few queries serve
     any number of occurrences.
     """
+    edges, cases = corpus_edges(edges)
     roots = list(roots)
     positions = {token_id: position for token_id, _part, position in roots}
     found = [{edges[0].head: (token_id, part)} for token_id, part, _position in roots]
@@ -81,9 +90,9 @@ def occurrence_parts(roots, edges, layer):
                     _relation_condition(edge.relations),
                     layer=layer,
                     head_id__in=heads[start : start + CHUNK_SIZE],
-                    **_lemma(edge),
+                    **_word(edge.dependent, cases),
                 )
-                .filter(*_dependents(edge.dependent, edges, layer))
+                .filter(*_dependents(edge.dependent, edges, layer, cases))
                 .order_by("token__position")
                 .values_list("head_id", "head_part", "token_id", "part", "token__position")
             )

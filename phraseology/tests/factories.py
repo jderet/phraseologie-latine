@@ -74,7 +74,7 @@ def make_layer():
     return AnalysisLayer.objects.create(tool="LatinCy test", tool_version="1.0", is_default=True)
 
 
-def analyze(layer, token, lemma, deprel="ROOT", head=None, upos=""):
+def analyze(layer, token, lemma, deprel="ROOT", head=None, upos="", feats=""):
     return TokenAnalysis.objects.create(
         layer=layer,
         token=token,
@@ -82,6 +82,7 @@ def analyze(layer, token, lemma, deprel="ROOT", head=None, upos=""):
         lemma=lemma,
         lemma_norm=normalize(lemma),
         upos=upos,
+        feats=feats,
         deprel=deprel,
         head=head,
     )

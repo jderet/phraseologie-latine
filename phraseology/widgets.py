@@ -3,7 +3,7 @@
 from django import forms
 from django.urls import reverse
 
-from .schema import MAX_RELATIONS, RELATION_CHOICES
+from .schema import CASE_CHOICES, MAX_RELATIONS, RELATION_CHOICES
 
 
 class SchemaWidget(forms.TextInput):
@@ -36,7 +36,9 @@ class SchemaWidget(forms.TextInput):
             "max_relations": MAX_RELATIONS,
             "lemmas_url": reverse("phraseology:schema_lemmas"),
             "check_url": reverse("phraseology:schema_check"),
+            "units_url": reverse("phraseology:schema_units"),
             "common": [relation for relation in relations if relation["common"]],
             "others": [relation for relation in relations if not relation["common"]],
+            "cases": [{"code": code, "label": str(label)} for code, label in CASE_CHOICES],
         }
         return context

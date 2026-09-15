@@ -8,6 +8,7 @@ urlpatterns = [
     path("recherche/schema/", views.schema_search, name="schema_search"),
     path("recherche/schema/lemmes/", views.schema_help_lemmas, name="schema_lemmas"),
     path("recherche/schema/verifier/", views.schema_help_check, name="schema_check"),
+    path("recherche/schema/fiches/", views.schema_help_units, name="schema_units"),
     path("lecture/mots/<int:pk>/", views.reading_word, name="reading_word"),
     path("lecture/annoter/", views.annotate_selection, name="annotate_selection"),
     path("lecture/annoter/rattacher/", views.annotate_attach, name="annotate_attach"),

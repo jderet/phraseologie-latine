@@ -38,6 +38,7 @@ from .completeness import (
     withdraw_review,
     work_progress,
 )
+from .composition import components, containers, schema_parts
 from .dashboards import annotator_summary, public_figures, reviewer_queue
 from .forms import (
     AnnotationForm,
@@ -86,7 +87,7 @@ from .panel import unit_card, word_analysis, word_attestations
 from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
 from .reading_notes import create_reading_note, word_reading_notes
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
-from .schema_help import check_schema, lemma_choices, written_words
+from .schema_help import check_schema, lemma_choices, unit_schemas, written_words
 from .services import (
     FREQUENCY_SECONDS,
     FrequencyTooLong,
@@ -423,13 +424,18 @@ def unit_detail(request, pk):
     missing = missing_fields(unit)
     public = not unit.is_draft and not unit.is_hidden
     attestations, attestations_more = _attestations_of(user, unit)
+    edges = unit.edges
+    parts, other_components = schema_parts(edges, components(user, edges))
     return render(
         request,
         "phraseology/unit_detail.html",
         {
             "unit": unit,
-            "edges": unit.edges,
-            "schema_lemmas": schema_lemmas(unit.edges),
+            "edges": edges,
+            "schema_parts": parts,
+            "other_components": other_components,
+            "containers": containers(user, unit),
+            "schema_lemmas": schema_lemmas(edges),
             "senses": senses,
             "realizations": _visible_parts(user, unit, unit.realizations.active()),
             "attestations": attestations,
@@ -2064,6 +2070,9 @@ def schema_search(request):
             "part",
         )
         has_slot = any(edge.dependent == SLOT for edge in edges)
+        context["schema_parts"], context["other_components"] = schema_parts(
+            edges, components(request.user, edges)
+        )
         with TimeLimit() as limit:
             page = Paginator(ordered, SCHEMA_RESULTS_PER_PAGE).get_page(request.GET.get("page"))
             roots = [
@@ -2100,8 +2109,15 @@ def schema_help_check(request):
             request.GET.get("schema", ""),
             slot=request.GET.get("case_vide") == "1",
             count=request.GET.get("compter") == "1",
+            user=request.user,
         )
     )
+
+
+@require_GET
+def schema_help_units(request):
+    """Units to insert in the drawing of a schema, found by their reference form."""
+    return JsonResponse({"units": unit_schemas(request.user, request.GET.get("fiche", ""))})
 
 
 # Profiles of collocations

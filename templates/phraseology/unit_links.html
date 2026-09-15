@@ -1,0 +1,1 @@
+{% for component in components %}<a href="{{ component.unit.get_absolute_url }}" lang="la">{{ component.unit.reference_form }}</a> <span class="schema-component-status">{{ component.unit.get_status_display }}</span>{% if not forloop.last %}, {% endif %}{% endfor %}

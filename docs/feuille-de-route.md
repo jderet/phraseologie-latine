@@ -141,6 +141,17 @@ Demandée par le porteur le 15 septembre 2026 : ne plus écrire le schéma d'une
 
 Terminé quand un testeur a créé une fiche et modifié son schéma sans jamais l'écrire, à la souris puis au clavier, et retrouvé la construction dans la recherche par schéma.
 
+## Étape 10 : fiches composées et syntagmes prépositionnels
+
+Demandée par le porteur le 15 septembre 2026 : montrer qu'une fiche en contient une autre (*rēs pūblica* dans *dē rē pūblicā bene merērī*), et noter simplement le syntagme prépositionnel dans le schéma.
+
+- [x] Syntagme prépositionnel, préposition en tête (`sp`, `reg`, cas facultatif) ; forme UD convertie ; recherche dans le corpus en `obl` et `nmod`
+- [x] Composantes repérées d'après les schémas : sur la fiche (« Contient aussi », « Entre dans ») et dans la recherche par schéma
+- [x] Dessin : régime et cas, crochets des fiches contenues, insertion d'une fiche
+- [x] Conversion des schémas existants (`convert_schemas`), une révision par fiche
+
+Terminé quand un testeur a dessiné *dē rē pūblicā bene merērī* sans écrire le schéma, vu *rēs pūblica* comme composante, et retrouvé ses occurrences dans la recherche par schéma.
+
 ## Ouverture publique
 
 - [ ] Conditions de la section 7 du cahier des charges remplies

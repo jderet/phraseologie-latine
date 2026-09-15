@@ -10,7 +10,10 @@
   const RETRY_DELAY = 1000;
   const OBJECT = "obj";
   const PASSIVE = "nsubj:pass";
+  const PHRASE = "sp";
+  const REGIME = "reg";
   const SLOT = "*";
+  const BRACKET_ROW = 24;
   const SVG = "http://www.w3.org/2000/svg";
   const EDGE = /^(\p{L}+)\s*[-—–]\s*([a-zA-Z:|\s]+?)\s*(?:->|→)\s*(\p{L}+|\*)$/u;
 
@@ -87,6 +90,12 @@
     const relationSelect = linkPanel.querySelector(".schema-relation");
     const passiveRow = linkPanel.querySelector(".schema-passive");
     const passiveBox = linkPanel.querySelector(".schema-passive-box");
+    const caseRow = linkPanel.querySelector(".schema-case");
+    const caseSelect = linkPanel.querySelector(".schema-case-select");
+    const componentBox = builder.querySelector(".schema-components");
+    const componentList = builder.querySelector(".schema-component-list");
+    const insertInput = builder.querySelector(".schema-insert-input");
+    const insertResults = builder.querySelector(".schema-insert-results");
     const variants = linkPanel.querySelector(".schema-variants");
     const unlinkButton = linkPanel.querySelector(".schema-unlink");
     const wordPanel = builder.querySelector(".schema-word-panel");
@@ -96,6 +105,8 @@
 
     let words = [];
     let edges = [];
+    // The units the server finds within the schema: their names, statuses, pages and lemmas.
+    let components = [];
     let nextKey = 0;
     const removed = new Set();
     let chosen = null;
@@ -230,7 +241,13 @@
 
     // Relations
 
+    // A regime with its case reads "régime (ablatif)".
     function relationName(code) {
+      const [kind, subtype] = code.split(":");
+      if (kind === REGIME && subtype) {
+        const choice = [...caseSelect.options].find((candidate) => candidate.value === subtype);
+        return `${relationName(REGIME)} (${choice ? choice.textContent : subtype})`;
+      }
       const option = [...relationSelect.options].find((candidate) => candidate.value === code);
       return option ? option.dataset.short : code;
     }
@@ -255,8 +272,10 @@
       return [...variants.querySelectorAll("select")];
     }
 
-    function updatePassive() {
+    // The passive is offered with an object, the case with a regime.
+    function updateChoices() {
       passiveRow.hidden = ![relationSelect, ...variantSelects()].some((select) => select.value === OBJECT);
+      caseRow.hidden = relationSelect.value !== REGIME;
     }
 
     function addVariant(code) {
@@ -266,12 +285,12 @@
       select.setAttribute("aria-label", labels.labelVariant);
       ensureOption(select, code);
       select.value = code;
-      select.addEventListener("change", updatePassive);
+      select.addEventListener("change", updateChoices);
       const remove = button(
         labels.labelRemoveVariant,
         () => {
           row.remove();
-          updatePassive();
+          updateChoices();
         },
         "link-button",
       );
@@ -283,17 +302,25 @@
     function setRelations(relations) {
       variants.replaceChildren();
       const passive = relations.includes(OBJECT) && relations.includes(PASSIVE);
-      const shown = passive ? relations.filter((relation) => relation !== PASSIVE) : relations;
+      let shown = passive ? relations.filter((relation) => relation !== PASSIVE) : relations;
+      const [kind, subtype] = (shown[0] || "").split(":");
+      caseSelect.value = kind === REGIME ? subtype || "" : "";
+      if (kind === REGIME) {
+        shown = [REGIME, ...shown.slice(1)];
+      }
       // A new object also finds the passive, unless the box is unticked.
       passiveBox.checked = relations.length === 0 || passive;
       ensureOption(relationSelect, shown[0] || "");
       relationSelect.value = shown[0] || "";
       shown.slice(1).forEach(addVariant);
-      updatePassive();
+      updateChoices();
     }
 
     function chosenRelations() {
       const values = [relationSelect, ...variantSelects()].map((select) => select.value).filter(Boolean);
+      if (relationSelect.value === REGIME && caseSelect.value) {
+        values[0] = `${REGIME}:${caseSelect.value}`;
+      }
       const relations = [...new Set(values)];
       if (relations.includes(OBJECT) && passiveBox.checked && !relations.includes(PASSIVE)) {
         relations.push(PASSIVE);
@@ -401,8 +428,13 @@
       closePanels();
       render();
       write();
-      say(message);
       focusWord(dependent);
+      // A preposition just linked is chosen, so that the next click links its regime.
+      if (relations.includes(PHRASE) && !edges.some((link) => link.head === dependent)) {
+        choose(dependent);
+        message = [message, labels.labelRegime.replace("%s", name(dependent))].filter(Boolean).join(" ");
+      }
+      say(message);
     }
 
     function swapLink() {
@@ -505,6 +537,62 @@
       return (await getJson(labels.lemmasUrl, { formes: text })).words;
     }
 
+    // Units to insert, found by their reference form.
+    async function searchUnits() {
+      const text = insertInput.value.trim();
+      if (!text) {
+        return;
+      }
+      let found;
+      try {
+        found = (await getJson(labels.unitsUrl, { fiche: text })).units;
+      } catch {
+        say(labels.labelError);
+        return;
+      }
+      insertResults.replaceChildren(
+        ...found.map((unit) => {
+          const item = element("li");
+          const choice = button(unit.reference_form, () => insertUnit(unit), "link-button");
+          choice.lang = "la";
+          item.append(choice, " ", element("span", "schema-component-status", unit.status));
+          return item;
+        }),
+      );
+      insertResults.hidden = found.length === 0;
+      say(found.length ? "" : labels.labelNoUnit);
+      const first = insertResults.querySelector("button");
+      if (first) {
+        first.focus();
+      }
+    }
+
+    // The links of a unit join those drawn, on the words that have their lemmas.
+    function insertUnit(unit) {
+      const triples = currentTriples();
+      for (const edge of unit.edges) {
+        const existing = triples.find((triple) => triple.dependent === edge.dependent);
+        if (!existing) {
+          triples.push({ head: edge.head, dependent: edge.dependent, relations: [...edge.relations] });
+        } else if (existing.head !== edge.head) {
+          say(labels.labelInsertConflict.replace("%s", edge.dependent));
+          return;
+        }
+      }
+      if (triples.length > maxRelations) {
+        say(labels.labelTooMany);
+        return;
+      }
+      attach(triples);
+      insertResults.replaceChildren();
+      insertResults.hidden = true;
+      insertInput.value = "";
+      closePanels();
+      render();
+      write();
+      say(labels.labelInserted.replace("%s", unit.reference_form));
+    }
+
     // The words of the reference form, keeping the lemma chosen for a word still there.
     async function rebuild(triples) {
       const text = source ? source.value : "";
@@ -540,6 +628,7 @@
       problems.textContent = "";
       if (!text.trim()) {
         preview.textContent = "";
+        showComponents([]);
         if (redraw) {
           attach([]);
           render();
@@ -575,13 +664,33 @@
           attach(triples);
           render();
         }
+        showComponents([]);
         return;
       }
       if (redraw) {
         attach(data.edges);
         render();
       }
+      showComponents(data.components || []);
       showPreview(data);
+    }
+
+    function showComponents(found) {
+      components = found;
+      componentList.replaceChildren(
+        ...found.map((component) => {
+          const item = element("li");
+          const link = element("a", "", component.reference_form);
+          link.href = component.url;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.lang = "la";
+          item.append(link, " ", element("span", "schema-component-status", component.status));
+          return item;
+        }),
+      );
+      componentBox.hidden = found.length === 0;
+      drawArcs();
     }
 
     function showPreview(data) {
@@ -679,7 +788,36 @@
       return {
         x: box.left - origin.left + canvas.scrollLeft + box.width / 2,
         y: box.top - origin.top + canvas.scrollTop,
+        bottom: box.bottom - origin.top + canvas.scrollTop,
       };
+    }
+
+    // The words of a unit found within the schema: the linked words that have its lemmas.
+    function componentKeys(component) {
+      return words
+        .filter((word) => !word.slot && isLinked(word.key) && component.lemmas.includes(word.lemma))
+        .map((word) => word.key);
+    }
+
+    // Under the words of each unit found within the schema, a bracket with its name, one row
+    // for each unit, so that units sharing words or with words apart stay readable.
+    function drawBrackets() {
+      components.forEach((component, row) => {
+        const keys = componentKeys(component);
+        if (keys.length < 2) {
+          return;
+        }
+        const points = keys.map(anchor);
+        const left = Math.min(...points.map((point) => point.x));
+        const right = Math.max(...points.map((point) => point.x));
+        const y = Math.max(...points.map((point) => point.bottom)) + 10 + row * BRACKET_ROW;
+        const ticks = points.map((point) => `M ${point.x} ${point.bottom + 3} L ${point.x} ${y}`).join(" ");
+        const group = svgElement("g", { class: "schema-bracket" });
+        const label = svgElement("text", { x: (left + right) / 2, y: y + 13, class: "schema-bracket-label", "text-anchor": "middle" });
+        label.textContent = component.reference_form;
+        group.append(svgElement("path", { d: `${ticks} M ${left} ${y} L ${right} ${y}`, class: "schema-bracket-line" }), label);
+        svg.append(group);
+      });
     }
 
     // Longer links are drawn higher, so that their labels, at the top of the arcs, stay apart.
@@ -707,6 +845,7 @@
       const position = new Map(words.map((word, place) => [word.key, place]));
       const highest = Math.max(0, ...edges.map((edge) => arcHeight(edge, position)));
       canvas.style.paddingTop = `${Math.max(56, highest + 28)}px`;
+      canvas.style.paddingBottom = components.length ? `${components.length * BRACKET_ROW + 14}px` : "";
       svg.replaceChildren(arrowDefinition());
       svg.setAttribute("width", canvas.scrollWidth);
       svg.setAttribute("height", canvas.scrollHeight);
@@ -735,6 +874,7 @@
         group.addEventListener("click", () => openLinkPanel(edge.head, edge.dependent));
         svg.append(group);
       }
+      drawBrackets();
     }
 
     function drawDrag(x, y) {
@@ -858,6 +998,8 @@
         event.preventDefault();
         if (event.target === addInput) {
           addWord();
+        } else if (event.target === insertInput) {
+          searchUnits();
         } else if (event.target === lemmaInput && shownWord) {
           setLemma(shownWord, lemmaInput.value);
         }
@@ -893,7 +1035,7 @@
     linkPanel.querySelector(".schema-swap").addEventListener("click", swapLink);
     unlinkButton.addEventListener("click", unlink);
     linkPanel.querySelector(".schema-add-variant").addEventListener("click", () => addVariant("").focus());
-    relationSelect.addEventListener("change", updatePassive);
+    relationSelect.addEventListener("change", updateChoices);
     builder.querySelectorAll(".schema-cancel").forEach((cancel) =>
       cancel.addEventListener("click", () => {
         const key = pending ? pending.dependent : shownWord;
@@ -906,6 +1048,7 @@
     wordPanel.querySelector(".schema-lemma-set").addEventListener("click", () => setLemma(shownWord, lemmaInput.value));
     wordPanel.querySelector(".schema-word-remove").addEventListener("click", () => removeWord(shownWord));
     builder.querySelector(".schema-add-word").addEventListener("click", addWord);
+    builder.querySelector(".schema-insert-search").addEventListener("click", searchUnits);
     const addSlot = builder.querySelector(".schema-add-slot");
     if (addSlot) {
       addSlot.addEventListener("click", () => {

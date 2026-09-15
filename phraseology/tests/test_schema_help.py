@@ -16,7 +16,10 @@ class RelationChoicesTests(SimpleTestCase):
     def test_every_relation_but_the_root_is_offered_once(self):
         codes = [code for code, _label, _common in RELATION_CHOICES]
         self.assertEqual(len(codes), len(set(codes)))
-        self.assertEqual({code.split(":")[0] for code in codes}, RELATIONS - {"root"})
+        # The preposition is linked by the prepositional phrase and its regime, not by case.
+        self.assertEqual(
+            {code.split(":")[0] for code in codes}, RELATIONS - {"root", "case"} | {"sp", "reg"}
+        )
         self.assertEqual(codes[0], "obj")
 
     def test_written_words(self):
