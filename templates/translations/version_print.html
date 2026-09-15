@@ -28,7 +28,7 @@
     <tbody>
       {% for row in rows %}
       <tr{% if row.segment.starts_paragraph and not forloop.first %} class="paragraph-start"{% endif %}>
-        <td class="export-number">{{ row.segment.order }}</td>
+        <td class="export-number">{{ row.number }}</td>
         <td lang="{{ source.language }}">{{ row.segment.text }}</td>
         <td lang="la" class="latin">{% if row.saved %}{{ row.saved }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}{% for note in row.notes %}<sup><a href="#note-{{ note.note_number }}" id="appel-{{ note.note_number }}">{{ note.note_number }}</a></sup>{% endfor %}</td>
       </tr>

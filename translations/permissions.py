@@ -9,6 +9,11 @@ def can_edit(user, obj):
     return can_view(user, obj) and (is_owner(user, obj) or is_reviewer(user))
 
 
+def can_change_source(user, source):
+    """Whoever added a source text, and reviewers, add, edit, merge or split its sentences."""
+    return user.is_authenticated and user.is_active and can_edit(user, source)
+
+
 def can_translate(user, version):
     """Only its author writes the Latin of a version."""
     return user.is_active and is_owner(user, version) and can_view(user, version)

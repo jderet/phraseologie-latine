@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
@@ -50,7 +51,7 @@ LICENSE_URLS = {
 
 
 class SourceText(ModeratedContent):
-    """A modern text to translate, split into sentences once and for all when it is added."""
+    """A modern text to translate, split into sentences that may later change (``SourceChange``)."""
 
     title = models.CharField(_("titre"), max_length=300)
     author = models.CharField(
@@ -89,6 +90,8 @@ class SourceText(ModeratedContent):
         verbose_name=_("ajouté par"),
     )
     created_at = models.DateTimeField(_("ajouté le"), default=timezone.now, editable=False)
+    # The number of the latest change of its sentences (``SourceChange``); 0 as added.
+    state = models.PositiveIntegerField(_("état des phrases"), default=0, editable=False)
 
     class Meta:
         verbose_name = _("texte source")
@@ -146,8 +149,18 @@ class SourceText(ModeratedContent):
         return LICENSE_URLS.get(self.license, "")
 
 
+class SegmentQuerySet(models.QuerySet):
+    def current(self):
+        """The sentences of the current text, not those a change removed."""
+        return self.filter(removed_in__isnull=True)
+
+
 class Segment(models.Model):
-    """A sentence of a source text; it never changes once the text is added."""
+    """A sentence of a source text, never changed in place.
+
+    A change of the text removes sentences and adds new ones (``SourceChange``); the removed
+    ones stay, so that every step still shows the source text it froze.
+    """
 
     source_text = models.ForeignKey(
         SourceText,
@@ -155,22 +168,108 @@ class Segment(models.Model):
         related_name="segments",
         verbose_name=_("texte source"),
     )
-    order = models.PositiveIntegerField(_("numéro"))
+    # Sorts all the sentences ever in the text, removed ones included.
+    position = models.PositiveIntegerField(_("position"), editable=False)
+    # The number shown in the current text; empty once removed.
+    order = models.PositiveIntegerField(_("numéro"), null=True, blank=True)
     text = models.TextField(_("phrase"))
     starts_paragraph = models.BooleanField(_("début de paragraphe"), default=False)
+    added_in = models.PositiveIntegerField(_("ajoutée au changement"), default=0, editable=False)
+    removed_in = models.PositiveIntegerField(
+        _("retirée au changement"), null=True, blank=True, editable=False
+    )
+
+    objects = SegmentQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("segment")
         verbose_name_plural = _("segments")
-        ordering = ["source_text", "order"]
+        ordering = ["source_text", "position"]
         constraints = [
+            # Deferred: a change renumbers the positions within its transaction.
             models.UniqueConstraint(
-                fields=["source_text", "order"], name="translations_segment_order"
+                fields=["source_text", "position"],
+                name="translations_segment_position",
+                deferrable=models.Deferrable.DEFERRED,
+            ),
+            models.CheckConstraint(
+                condition=Q(removed_in__isnull=True, order__isnull=False)
+                | Q(removed_in__isnull=False, order__isnull=True),
+                name="translations_segment_order_if_current",
             ),
         ]
 
     def __str__(self):
         return self.text
+
+    @cached_property
+    def latest(self):
+        """The sentence of the current text that carries the Latin of this one."""
+        segment = self
+        while segment.removed_in is not None:
+            segment = (
+                Segment.objects.filter(
+                    source_text_id=segment.source_text_id, added_in=segment.removed_in
+                )
+                .order_by("position")
+                .first()
+            )
+        return segment
+
+
+class SourceChange(models.Model):
+    """One change of the sentences of a source text: sentences added, edited, merged or split.
+
+    The sentences it removes and adds are those whose ``removed_in`` or ``added_in`` is its
+    number. The revision is recorded on the source text, whose split text follows.
+    """
+
+    class Kind(models.TextChoices):
+        INSERT = "insert", _("ajout")
+        EDIT = "edit", _("modification")
+        MERGE = "merge", _("fusion")
+        SPLIT = "split", _("scission")
+
+    source_text = models.ForeignKey(
+        SourceText,
+        on_delete=models.PROTECT,
+        related_name="changes",
+        verbose_name=_("texte source"),
+    )
+    number = models.PositiveIntegerField(_("numéro"))
+    kind = models.CharField(_("nature"), max_length=10, choices=Kind.choices)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name=_("auteur"),
+    )
+    # Who adopted the change when someone else proposed it.
+    adopted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("adopté par"),
+    )
+    created_at = models.DateTimeField(_("date"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("changement du texte source")
+        verbose_name_plural = _("changements du texte source")
+        ordering = ["source_text", "number"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source_text", "number"], name="translations_source_change_number"
+            ),
+        ]
+
+    def __str__(self):
+        return gettext("%(text)s, changement %(number)s") % {
+            "text": self.source_text,
+            "number": self.number,
+        }
 
 
 class Style(models.TextChoices):
@@ -318,6 +417,15 @@ class TranslationVersion(ModeratedContent):
         return self.state == self.State.DRAFT
 
 
+class TranslatedQuerySet(models.QuerySet):
+    def current(self):
+        """The working text: the sentences of the current source text.
+
+        Those of removed sentences stay, frozen: their justifications and challenges point to them.
+        """
+        return self.filter(segment__removed_in__isnull=True)
+
+
 class TranslatedSegment(ModeratedContent):
     """The Latin of one sentence in the working text of a version, seen by its author only.
 
@@ -350,10 +458,12 @@ class TranslatedSegment(ModeratedContent):
     )
     updated_at = models.DateTimeField(_("modifié le"), auto_now=True)
 
+    objects = TranslatedQuerySet.as_manager()
+
     class Meta:
         verbose_name = _("phrase traduite")
         verbose_name_plural = _("phrases traduites")
-        ordering = ["version", "segment__order"]
+        ordering = ["version", "segment__position"]
         constraints = [
             models.UniqueConstraint(
                 fields=["version", "segment"], name="translations_one_text_per_segment"
@@ -363,11 +473,11 @@ class TranslatedSegment(ModeratedContent):
     def __str__(self):
         return gettext("%(version)s, phrase %(number)s") % {
             "version": self.version,
-            "number": self.segment.order,
+            "number": self.segment.latest.order,
         }
 
     def get_absolute_url(self):
-        return f"{self.version.get_absolute_url()}#phrase-{self.segment.order}"
+        return f"{self.version.get_absolute_url()}#phrase-{self.segment.latest.order}"
 
 
 class StepQuerySet(models.QuerySet):
@@ -409,6 +519,8 @@ class VersionStep(ModeratedContent):
     during_draft = models.BooleanField(
         _("créée pendant le brouillon"), default=False, editable=False
     )
+    # The state of the source text the step froze with the Latin (``SourceText.state``).
+    source_state = models.PositiveIntegerField(_("état du texte source"), default=0, editable=False)
     created_at = models.DateTimeField(_("créée le"), default=timezone.now, editable=False)
 
     objects = StepQuerySet.as_manager()
@@ -456,7 +568,7 @@ class StepSentence(models.Model):
     class Meta:
         verbose_name = _("phrase d’une étape")
         verbose_name_plural = _("phrases d’une étape")
-        ordering = ["step", "segment__order"]
+        ordering = ["step", "segment__position"]
         constraints = [
             models.UniqueConstraint(
                 fields=["step", "segment"], name="translations_one_text_per_step_segment"
@@ -565,7 +677,7 @@ class ProposedSentence(ModeratedContent):
     class Meta:
         verbose_name = _("phrase proposée")
         verbose_name_plural = _("phrases proposées")
-        ordering = ["proposal", "segment__order"]
+        ordering = ["proposal", "segment__position"]
         constraints = [
             models.UniqueConstraint(
                 fields=["proposal", "segment"], name="translations_one_proposed_text_per_segment"
@@ -576,7 +688,7 @@ class ProposedSentence(ModeratedContent):
         return self.text
 
     def get_absolute_url(self):
-        return f"{self.proposal.get_absolute_url()}#phrase-{self.segment.order}"
+        return f"{self.proposal.get_absolute_url()}#proposee-{self.pk}"
 
     @property
     def is_pending(self):
@@ -598,7 +710,13 @@ def step_visible_to(user, step):
     return version.is_published and (not step.during_draft or version.shows_draft_steps)
 
 
-register(SourceText, owner_field="added_by", text_fields=("title", "author", "text"))
+register(
+    SourceText,
+    owner_field="added_by",
+    text_fields=("title", "author", "text"),
+    # The sentences change only through ``SourceChange``: a revert never desynchronizes them.
+    not_reverted=("text", "state"),
+)
 register(
     TranslationProject,
     owner_field="created_by",
@@ -628,7 +746,7 @@ register(
     text_fields=("message",),
     visible_to=step_visible_to,
     counts_toward_limit=False,
-    not_reverted=("during_draft",),
+    not_reverted=("during_draft", "source_state"),
 )
 register(
     ChangeProposal,

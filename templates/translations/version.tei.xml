@@ -36,13 +36,13 @@
   <text>
     <body>
       <div type="source" xml:lang="{{ source.language }}">
-{% for row in rows %}        <ab n="{{ row.segment.order }}" xml:id="source-{{ row.segment.order }}">{{ row.segment.text }}</ab>
+{% for row in rows %}        <ab n="{{ row.number }}" xml:id="source-{{ row.number }}">{{ row.segment.text }}</ab>
 {% endfor %}      </div>
       <div type="translation" xml:lang="la">
-{% for row in rows %}{% if row.saved %}        <ab n="{{ row.segment.order }}" xml:id="la-{{ row.segment.order }}" corresp="#source-{{ row.segment.order }}">{{ row.saved }}</ab>
+{% for row in rows %}{% if row.saved %}        <ab n="{{ row.number }}" xml:id="la-{{ row.number }}" corresp="#source-{{ row.number }}">{{ row.saved }}</ab>
 {% endif %}{% endfor %}      </div>
       <div type="notes">
-{% for row in rows %}{% for justification in row.justifications %}        <note type="justification" target="#la-{{ row.segment.order }}" n="{{ justification.strength }}">
+{% for row in rows %}{% for justification in row.justifications %}        <note type="justification" target="#la-{{ row.number }}" n="{{ justification.strength }}">
           <quote xml:lang="la">{{ justification.latin_excerpt }}</quote>
           <label>{{ justification.get_strength_display }}</label>{% if justification.comment %}
           <p>{{ justification.comment }}</p>{% endif %}{% for evidence in justification.evidence_list %}

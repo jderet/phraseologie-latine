@@ -155,7 +155,9 @@ class ProposalPagesTests(ProposalTestCase):
         self.assertEqual(self.client.post(decide, {"decision": "maybe"}).status_code, 400)
         response = self.client.post(decide, {"decision": "accept"})
         self.assertRedirects(
-            response, f"{proposal.get_absolute_url()}#phrase-2", fetch_redirect_response=False
+            response,
+            f"{proposal.get_absolute_url()}#proposee-{second.pk}",
+            fetch_redirect_response=False,
         )
         self.assertEqual(self.version.segments.get(segment=self.second).text, "Domi maneamus.")
 

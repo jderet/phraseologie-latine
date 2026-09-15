@@ -119,6 +119,17 @@ Demandée par le porteur le 15 septembre 2026. Détail dans la section 4.1 du [c
 
 Terminé quand un testeur a copié la version d'un autre, lui a proposé des modifications, et que l'auteur en a accepté une partie, visible du public à l'étape suivante.
 
+## Étape 8 : texte source modifiable
+
+Demandée par le porteur le 15 septembre 2026. Détail dans la section 4.1 du [cahier des charges](cahier-des-charges.md).
+
+- [x] Historique du texte source : ajouter, modifier, fusionner ou scinder des phrases sans effacer les anciennes ; le latin suit dans toutes les versions ; chaque étape fige son texte source, et toutes les pages, exports et l'API le lisent à l'état de leur étape ; reprise des textes existants
+- [ ] Pages pour ajouter, modifier, fusionner et scinder des phrases ; phrases touchées signalées dans l'éditeur
+- [ ] Historique des étapes : résumé et détail dépliable ; changements du texte source dans « Créer une étape » et les comparaisons
+- [ ] Propositions de modification du texte source : préparation, envoi, discussion, adoption ou refus en bloc
+
+Terminé quand un testeur a proposé une scission et un ajout, que la personne qui a ajouté le texte les a adoptés, que l'auteur d'une version publiée a vu les phrases signalées puis créé une étape, et que l'historique montre clairement ce que cette étape a changé.
+
 ## Ouverture publique
 
 - [ ] Conditions de la section 7 du cahier des charges remplies

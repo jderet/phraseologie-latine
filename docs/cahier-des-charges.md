@@ -35,6 +35,12 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 ### 4.1 Traduction collaborative
 
 - Un **projet** porte sur un texte source découpé en phrases (Q35).
+- **Le texte source reste modifiable** (choix du 15 septembre 2026) : on ajoute des phrases (au début, à la fin ou entre deux phrases), on modifie une phrase, on fusionne deux phrases ou on en scinde une. Le changement vaut pour tous les projets qui utilisent ce texte.
+  - La personne qui a ajouté le texte et les relecteurs le modifient directement. Tout compte actif peut **proposer** plusieurs changements, avec une explication et une discussion ; ces mêmes personnes les adoptent ou les refusent en bloc. Une proposition ne s'adopte plus si le texte a changé entre-temps.
+  - Une phrase n'est jamais écrasée : l'ancienne reste, pour les étapes qui l'ont figée. Une scission ne change aucun mot ; aucune phrase n'est supprimée.
+  - Dans le texte de travail de chaque version, le latin suit : deux phrases fusionnées mettent leurs latins bout à bout, une phrase scindée garde son latin sur sa première partie, une phrase modifiée garde le sien, une phrase ajoutée n'en a pas. L'éditeur signale les phrases touchées, avec l'ancien texte source, jusqu'à l'étape suivante.
+  - Une étape fige aussi le texte source : le public garde celui de la dernière étape publique, et la prochaine étape de l'auteur intègre le nouveau.
+  - L'historique des étapes résume ce qu'a changé chaque étape (phrases traduites, phrases du texte source) et en déplie le détail mot à mot.
 - Chaque participant rédige **sa propre version** latine et déclare un style (Q36, Q41).
 - Une version reste un **brouillon visible de son seul auteur**, jusqu'à ce que celui-ci la publie (T7). Tout ce qui est publié est public ; il n'y a pas d'espace de groupe privé (Q42).
 - Une **vue de comparaison** aligne toutes les versions publiées, phrase par phrase.

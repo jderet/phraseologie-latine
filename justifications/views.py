@@ -166,7 +166,9 @@ def _own_justification(user, pk):
 @require_http_methods(["GET", "POST"])
 def justification_create(request, version_pk, segment_pk):
     version = _own_version(request.user, version_pk)
-    source_segment = get_object_or_404(version.project.source_text.segments, pk=segment_pk)
+    source_segment = get_object_or_404(
+        version.project.source_text.segments.current(), pk=segment_pk
+    )
     translated = (
         TranslatedSegment.objects.filter(version=version, segment=source_segment)
         .exclude(text="")

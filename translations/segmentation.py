@@ -8,6 +8,9 @@ import re
 import unicodedata
 from dataclasses import dataclass
 
+MAX_SENTENCES = 500
+MAX_SENTENCE_LENGTH = 2000
+
 # Words that end with a period without ending the sentence, compared in lower case.
 # fmt: off
 ABBREVIATIONS = {

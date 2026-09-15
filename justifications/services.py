@@ -13,7 +13,7 @@ from corpus.search import corpus_version
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 from translations.permissions import can_challenge, can_translate
-from translations.steps import public_step, sentence_at
+from translations.steps import public_step, sentence_at, working_translation
 
 from .models import ATTESTED_STRENGTHS, Challenge, Evidence, Justification, Strength
 
@@ -164,7 +164,9 @@ def update_justification(justification, author, hint=None, units=None):
     if author.pk != justification.author_id:
         raise PermissionDenied
     previous = Justification.objects.select_for_update().get(pk=justification.pk)
-    text = justification.translated_segment.text
+    # The Latin as it now reads, even if the source sentence has been edited, split or merged.
+    current = working_translation(justification.translated_segment)
+    text = current.text if current else ""
     justification.latin_start = find_excerpt(text, justification.latin_excerpt, hint)
     check_strength(justification.strength, justification.comment, active_evidences(justification))
     if justification.strength != Strength.NOT_FOUND:

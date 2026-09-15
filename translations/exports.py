@@ -43,11 +43,11 @@ def bilingual_text(version, rows, step=None):
         lines.append(gettext("Origine : %(url)s") % {"url": source.source_url})
     lines.append(gettext("Traduction latine sous licence CC BY-SA 4.0."))
     for row in rows:
-        segment = row["segment"]
+        segment, number = row["segment"], row["number"]
         lines.append("")
-        if segment.starts_paragraph and segment.order > 1:
+        if segment.starts_paragraph and number > 1:
             lines.append("")
         latin = row["saved"] or gettext("[non traduite]")
-        lines.append(f"{segment.order}. {segment.text}")
+        lines.append(f"{number}. {segment.text}")
         lines.append(f"   {latin}")
     return "\n".join(lines) + "\n"

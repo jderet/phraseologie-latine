@@ -1,7 +1,7 @@
 {% load i18n phraseology_tags %}<ol class="bitext">
   {% for row in rows %}
-  <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
-    <span class="bitext-number">{{ row.segment.order }}</span>
+  <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}">
+    <span class="bitext-number">{{ row.number }}</span>
     <p class="bitext-source" lang="{{ source.language }}">{{ row.segment.text }}</p>
     <div class="bitext-latin">
       <p lang="la">{% if row.saved %}{% latin_sentence row.saved row.justifications as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>

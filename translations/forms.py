@@ -12,11 +12,9 @@ from .models import (
     TranslationVersion,
     VersionStep,
 )
-from .segmentation import from_lines
+from .segmentation import MAX_SENTENCE_LENGTH, MAX_SENTENCES, from_lines
 from .services import normalize_sentence
 
-MAX_SENTENCES = 500
-MAX_SENTENCE_LENGTH = 2000
 MAX_LATIN_LENGTH = 4000
 
 

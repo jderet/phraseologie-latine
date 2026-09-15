@@ -38,13 +38,16 @@
   {% endif %}
   <ol class="step-changes">
     {% for item in sentences %}{% with proposed=item.proposed %}
-    <li class="step-change" id="phrase-{{ proposed.segment.order }}">
-      <span class="bitext-number">{{ proposed.segment.order }}</span>
+    <li class="step-change" id="proposee-{{ proposed.pk }}">
+      <span class="bitext-number">{{ item.number }}</span>
       <div>
         <p class="muted" lang="{{ source.language }}">{{ proposed.segment.text }}</p>
         <p class="word-diff" lang="la">{% include "translations/word_diff.html" with chunks=item.chunks %}</p>
         {% if not proposed.text %}<p class="muted">{% translate "(phrase effacée)" %}</p>{% endif %}
         <p class="row-origin"><span class="badge">{{ proposed.get_decision_display }}</span>{% if proposed.decided_at %} {{ proposed.decided_at|date:"j F Y" }}{% endif %}</p>
+        {% if item.source_changed %}
+        <p class="notice">{% translate "La phrase source a changé depuis cette proposition : elle ne peut plus être acceptée telle quelle. Refusez-la, ou recopiez son latin dans votre texte de travail." %}</p>
+        {% endif %}
         {% if item.changed_since %}
         <p class="notice">{% translate "Votre texte de travail a changé depuis cette proposition ; accepter le remplacera :" %} <span lang="la">{{ item.working|default:"—" }}</span></p>
         {% endif %}

@@ -26,8 +26,8 @@
       {% endblocktranslate %}</p>
       <ol class="bitext">
         {% for row in rows %}
-        <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.segment.order }}">
-          <span class="bitext-number">{{ row.segment.order }}</span>
+        <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}">
+          <span class="bitext-number">{{ row.number }}</span>
           <label class="bitext-source" for="s{{ row.segment.pk }}" lang="{{ source.language }}">{{ row.segment.text }}</label>
           <div class="bitext-latin">
             <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false" data-segment="{{ row.segment.pk }}" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
@@ -52,7 +52,7 @@
         <p class="note panel-hint">{% translate "Placez-vous sur une phrase ; sélectionnez des mots latins pour justifier ce choix." %}</p>
         {% for row in rows %}
         <div class="row-panel" data-segment="{{ row.segment.pk }}" hidden>
-          <p class="muted">{% blocktranslate with number=row.segment.order %}Phrase {{ number }}{% endblocktranslate %}</p>
+          <p class="muted">{% blocktranslate with number=row.number %}Phrase {{ number }}{% endblocktranslate %}</p>
           {% if row.justifications %}
           <ul class="row-justifications">
             {% for justification in row.justifications %}{% include "justifications/justification_item.html" %}{% endfor %}

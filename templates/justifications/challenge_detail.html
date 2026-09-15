@@ -5,7 +5,7 @@
 
 {% block content %}
 <article class="page-medium">
-  <p class="eyebrow"><a href="{{ version.get_absolute_url }}#phrase-{{ segment.order }}">{{ version }}</a> · <a href="{% url 'justifications:challenge_list' %}">{% translate "Contestations" %}</a></p>
+  <p class="eyebrow"><a href="{{ version.get_absolute_url }}#phrase-{{ segment.latest.order }}">{{ version }}</a> · <a href="{% url 'justifications:challenge_list' %}">{% translate "Contestations" %}</a></p>
   <h1>{% translate "Contestation" %}</h1>
   <p><span class="badge{% if challenge.is_open %} review-badge{% endif %}">{{ challenge.get_status_display }}</span></p>
   {% if challenge.is_hidden %}

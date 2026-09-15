@@ -58,7 +58,9 @@ from .services import (
     set_reference_version,
     withdraw_proposal,
 )
+from .sources import SourceHistory
 from .steps import (
+    carried,
     latest_step,
     pending_changes,
     public_step,
@@ -107,7 +109,7 @@ def source_list(request):
     texts = (
         SourceText.objects.filter(is_hidden=False)
         .select_related("added_by")
-        .annotate(segment_count=Count("segments"))
+        .annotate(segment_count=Count("segments", filter=Q(segments__removed_in__isnull=True)))
         .order_by("-created_at", "-pk")
     )
     return render(request, "translations/source_list.html", {"page": _paginate(request, texts)})
@@ -120,7 +122,7 @@ def source_detail(request, pk):
         "translations/source_detail.html",
         {
             "source": source,
-            "segments": source.segments.all(),
+            "segments": source.segments.current(),
             "projects": source.projects.filter(is_hidden=False).select_related("created_by"),
             "can_edit": can_edit(request.user, source),
         },
@@ -222,7 +224,7 @@ def project_detail(request, pk):
         {
             "project": project,
             "source": project.source_text,
-            "segment_count": project.source_text.segments.count(),
+            "segment_count": project.source_text.segments.current().count(),
             "published": [version for version in versions if version.is_published],
             "drafts": [version for version in versions if version.is_draft],
             "can_edit": can_edit(request.user, project),
@@ -277,6 +279,7 @@ def project_compare(request, pk):
     """The versions of a project aligned sentence by sentence, the reference version first.
 
     Each version shows its latest public step; the author's own versions, their working text.
+    The Latin of a step is carried to the current source text.
     """
     project = _visible(request.user, TranslationProject.objects.select_related("source_text"), pk)
     versions = sorted(
@@ -289,14 +292,20 @@ def project_compare(request, pk):
     )
     asked = {int(value) for value in request.GET.getlist("v") if value.isdigit()}
     shown = [version for version in versions if version.pk in asked] or versions
-    sentences = {version.pk: shown_sentences(request.user, version)[1] for version in shown}
+    history = SourceHistory(project.source_text)
+    sentences = {}
+    for version in shown:
+        step, found = shown_sentences(request.user, version)
+        if step is not None:
+            found = history.project(carried(found), step.source_state)
+        sentences[version.pk] = found
     rows = []
-    for source_segment in project.source_text.segments.all():
+    for number, source_segment in enumerate(history.segments_at(), start=1):
         cells = []
         for version in shown:
             sentence = sentences[version.pk].get(source_segment.pk)
             cells.append({"version": version, "text": sentence.text if sentence else ""})
-        rows.append({"segment": source_segment, "cells": cells})
+        rows.append({"segment": source_segment, "number": number, "cells": cells})
     return render(
         request,
         "translations/project_compare.html",
@@ -328,9 +337,10 @@ def _own_version(user, pk):
     return version
 
 
-def _justifications_by_segment(user, version, texts, step=None):
+def _justifications_by_segment(user, version, texts, history, state, step=None):
     """Justifications the user may see, read against the Latin shown (``texts`` by segment).
 
+    Each goes to the sentence that carries its Latin at the ``state`` of the source text.
     With a step, only those it or an earlier step brought out.
     """
     grouped = defaultdict(list)
@@ -347,13 +357,15 @@ def _justifications_by_segment(user, version, texts, step=None):
     for justification in queryset:
         translated = justification.translated_segment
         translated.version = version
-        justification.shown_text = texts.get(translated.segment_id, "")
-        if can_view(user, justification):
-            grouped[translated.segment_id].append(justification)
+        segment = history.resolve(translated.segment_id, state)
+        if segment is None or not can_view(user, justification):
+            continue
+        justification.shown_text = texts.get(segment.pk, "")
+        grouped[segment.pk].append(justification)
     return grouped
 
 
-def _challenges_by_segment(user, version):
+def _challenges_by_segment(user, version, history, state):
     grouped = defaultdict(list)
     if version.is_draft:
         return grouped
@@ -362,8 +374,9 @@ def _challenges_by_segment(user, version):
     ).select_related("translated_segment")
     for challenge in queryset:
         challenge.translated_segment.version = version
-        if can_view(user, challenge):
-            grouped[challenge.translated_segment.segment_id].append(challenge)
+        segment = history.resolve(challenge.translated_segment.segment_id, state)
+        if segment is not None and can_view(user, challenge):
+            grouped[segment.pk].append(challenge)
     return grouped
 
 
@@ -371,20 +384,23 @@ def _rows(user, version, step=None):
     """The step shown and each sentence of the source text with its Latin and justifications.
 
     Return (step, rows): the author sees the working text (step None), others the latest
-    public step; a step asked shows its own text.
+    public step; a step asked shows its own text, with the source text it froze.
     """
     step, sentences = shown_sentences(user, version, step)
+    history = SourceHistory(version.project.source_text)
+    state = step.source_state if step else history.state
     texts = {segment_id: sentence.text for segment_id, sentence in sentences.items()}
-    justifications = _justifications_by_segment(user, version, texts, step)
-    challenges = _challenges_by_segment(user, version)
+    justifications = _justifications_by_segment(user, version, texts, history, state, step)
+    challenges = _challenges_by_segment(user, version, history, state)
     translated_ids = dict(version.segments.values_list("segment_id", "pk"))
     rows = []
-    for source_segment in version.project.source_text.segments.all():
+    for number, source_segment in enumerate(history.segments_at(state), start=1):
         sentence = sentences.get(source_segment.pk)
         text = sentence.text if sentence else ""
         rows.append(
             {
                 "segment": source_segment,
+                "number": number,
                 "translated_pk": translated_ids.get(source_segment.pk),
                 "sentence": sentence,
                 "saved": text,
@@ -604,7 +620,9 @@ def version_export_print(request, pk):
 def translation_save(request, pk, segment_pk):
     """Save the Latin of one sentence from the editor; the answer is JSON."""
     version = _own_version(request.user, pk)
-    source_segment = get_object_or_404(version.project.source_text.segments, pk=segment_pk)
+    source_segment = get_object_or_404(
+        version.project.source_text.segments.current(), pk=segment_pk
+    )
     form = TranslationTextForm(request.POST, user=request.user)
     if not form.is_valid():
         errors = [error["message"] for error in form.errors["text"].get_json_data()]
@@ -786,19 +804,26 @@ def step_compare(request, pk):
     else:
         earlier = [step for step in steps if target is None or step.number < target.number]
         base = earlier[-1] if earlier else None
+    if base is not None and target is not None and base.number > target.number:
+        base, target = target, base
 
-    before = _frozen_texts(base)
+    # The Latin of the earlier text is carried to the source text of the later one.
+    history = SourceHistory(version.project.source_text)
+    state = target.source_state if target else history.state
+    before = history.project(_frozen_texts(base), base.source_state, state) if base else {}
     if target is None:
-        after = {item.segment_id: item.text for item in version.segments.all()}
+        after = carried({item.segment_id: item for item in version.segments.current()})
     else:
         after = _frozen_texts(target)
     rows = []
-    for source_segment in version.project.source_text.segments.all():
-        old, new = before.get(source_segment.pk, ""), after.get(source_segment.pk, "")
+    for number, source_segment in enumerate(history.segments_at(state), start=1):
+        old, new = before.get(source_segment.pk), after.get(source_segment.pk)
+        old, new = (old.text if old else ""), (new.text if new else "")
         if old != new:
             rows.append(
                 {
                     "segment": source_segment,
+                    "number": number,
                     "before": old,
                     "after": new,
                     "chunks": word_diff(old, new),
@@ -836,9 +861,15 @@ def proposal_create(request, pk):
     if not can_propose(user, version):
         raise PermissionDenied
     frozen = _frozen_texts(step)
+    history = SourceHistory(version.project.source_text)
     rows = [
-        {"segment": source_segment, "text": frozen.get(source_segment.pk, ""), "errors": None}
-        for source_segment in version.project.source_text.segments.all()
+        {
+            "segment": source_segment,
+            "number": number,
+            "text": frozen[source_segment.pk].text if source_segment.pk in frozen else "",
+            "errors": None,
+        }
+        for number, source_segment in enumerate(history.segments_at(step.source_state), start=1)
     ]
     form = ProposalForm(request.POST or None, user=user)
     if request.method == "POST":
@@ -895,21 +926,26 @@ def proposal_detail(request, pk):
     version = proposal.version
     can_decide = proposal.is_open and can_translate(user, version)
     # Only the author of the version sees their working text, to spot what changed since.
-    working = dict(version.segments.values_list("segment_id", "text")) if can_decide else {}
+    working = (
+        dict(version.segments.current().values_list("segment_id", "text")) if can_decide else {}
+    )
+    numbers = SourceHistory(version.project.source_text).numbers_at(proposal.base_step.source_state)
     sentences = []
     for proposed in proposal.sentences.select_related("segment"):
         proposed.proposal = proposal
         if not can_view(user, proposed):
             continue
         current = working.get(proposed.segment_id, "")
+        undecided = can_decide and proposed.is_pending
+        source_changed = proposed.segment.removed_in is not None
         sentences.append(
             {
                 "proposed": proposed,
+                "number": numbers.get(proposed.segment_id),
                 "chunks": word_diff(proposed.base_text, proposed.text),
                 "working": current,
-                "changed_since": can_decide
-                and proposed.is_pending
-                and current != proposed.base_text,
+                "source_changed": undecided and source_changed,
+                "changed_since": undecided and not source_changed and current != proposed.base_text,
             }
         )
     return render(
@@ -974,7 +1010,7 @@ def proposed_sentence_decide(request, pk):
             )
         else:
             messages.success(request, _("La phrase est refusée."))
-    return redirect(f"{proposal.get_absolute_url()}#phrase-{proposed.segment.order}")
+    return redirect(f"{proposal.get_absolute_url()}#proposee-{proposed.pk}")
 
 
 @login_required
@@ -991,9 +1027,8 @@ def proposal_withdraw(request, pk):
 
 
 def _frozen_texts(step):
-    if step is None:
-        return {}
-    return {segment_id: sentence.text for segment_id, sentence in step_sentences(step).items()}
+    """{segment id: Carried} of the text a step froze; empty for no step."""
+    return carried(step_sentences(step)) if step is not None else {}
 
 
 def _with_version(step, version):

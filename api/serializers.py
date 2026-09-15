@@ -20,6 +20,7 @@ from phraseology.models import (
     UnitFrequency,
 )
 from translations.models import TranslationVersion
+from translations.sources import SourceHistory
 from translations.steps import public_step, step_sentences
 
 LICENSE = "CC BY-SA 4.0"
@@ -260,9 +261,13 @@ def step_data(step, link):
 
 
 def version_data(version, link):
-    """A published version as the public sees it: the text of its latest public step."""
+    """A published version as the public sees it: the text of its latest public step, with the
+    source text that step froze."""
     step = public_step(version)
     sentences = step_sentences(step) if step else {}
+    history = SourceHistory(version.project.source_text)
+    state = step.source_state if step else history.state
+    numbers = history.numbers_at(state)
     justifications = (
         # Those brought out by the public step or an earlier one (none without a public step).
         Justification.objects.filter(
@@ -272,22 +277,24 @@ def version_data(version, link):
         )
         .select_related("translated_segment__segment")
         .prefetch_related("units")
-        .order_by("translated_segment__segment__order", "pk")
+        .order_by("translated_segment__segment__position", "pk")
     )
     return {
         **version_summary(version, link),
         "step": step_data(step, link) if step else None,
         "segments": [
             {
-                "order": segment.order,
+                "order": number,
                 "source": segment.text,
                 "latin": sentences[segment.pk].text if segment.pk in sentences else "",
             }
-            for segment in version.project.source_text.segments.order_by("order")
+            for number, segment in enumerate(history.segments_at(state), start=1)
         ],
         "justifications": [
             {
-                "segment": justification.translated_segment.segment.order,
+                "segment": numbers[
+                    history.resolve(justification.translated_segment.segment_id, state).pk
+                ],
                 "latin_excerpt": justification.latin_excerpt,
                 "strength": justification.strength,
                 "comment": justification.comment,

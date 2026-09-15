@@ -30,7 +30,7 @@
   <h2>{% translate "Justifications qui paraîtront avec cette étape" %}</h2>
   <ul class="item-list">
     {% for justification in waiting %}
-    <li><a class="item-title" href="{{ justification.get_absolute_url }}" lang="la">« {{ justification.latin_excerpt }} »</a> <span class="muted">{% blocktranslate with number=justification.translated_segment.segment.order %}phrase {{ number }}{% endblocktranslate %} · {{ justification.strength }}/5 {{ justification.get_strength_display }}</span></li>
+    <li><a class="item-title" href="{{ justification.get_absolute_url }}" lang="la">« {{ justification.latin_excerpt }} »</a> <span class="muted">{% blocktranslate with number=justification.translated_segment.segment.latest.order %}phrase {{ number }}{% endblocktranslate %} · {{ justification.strength }}/5 {{ justification.get_strength_display }}</span></li>
     {% endfor %}
   </ul>
   {% endif %}
