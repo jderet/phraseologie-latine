@@ -405,7 +405,8 @@ def challenge_create(request, translated_pk):
     justification = None
     if request.GET.get("justification", "").isdigit():
         justification = get_object_or_404(
-            translated.justifications.filter(is_hidden=False), pk=request.GET["justification"]
+            translated.justifications.filter(is_hidden=False, step__isnull=False),
+            pk=request.GET["justification"],
         )
     default_excerpt = request.GET.get("extrait") or (
         justification.latin_excerpt if justification else latin

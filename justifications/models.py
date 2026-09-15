@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from corpus.models import Passage, Token
 from moderation.models import ModeratedContent
 from moderation.registry import can_view, register
-from translations.models import TranslatedSegment, version_visible_to
+from translations.models import TranslatedSegment, is_version_author, version_visible_to
 
 
 def locate_excerpt(text, excerpt, start):
@@ -129,6 +129,16 @@ class Justification(ModeratedContent):
         blank=True,
         related_name="justifications",
         verbose_name=_("fiches phraséologiques citées"),
+    )
+    # The step that brought the justification out: others see it only from then on.
+    step = models.ForeignKey(
+        "translations.VersionStep",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="justifications",
+        verbose_name=_("étape de parution"),
     )
     created_at = models.DateTimeField(_("créée le"), default=timezone.now, editable=False)
 
@@ -278,7 +288,11 @@ class Evidence(ModeratedContent):
 
 
 def justification_visible_to(user, justification):
-    return version_visible_to(user, justification.translated_segment.version)
+    """Others see a justification once a step of the published version has brought it out."""
+    version = justification.translated_segment.version
+    if is_version_author(user, version):
+        return True
+    return version.is_published and justification.step_id is not None
 
 
 register(
@@ -286,6 +300,7 @@ register(
     owner_field="author",
     text_fields=("source_excerpt", "comment"),
     visible_to=justification_visible_to,
+    not_reverted=("step",),
 )
 
 
@@ -389,8 +404,9 @@ class Challenge(ModeratedContent):
 def evidence_visible_to(user, evidence):
     if evidence.neologism_id:
         return can_view(user, evidence.neologism)
-    parent = evidence.justification or evidence.challenge
-    return version_visible_to(user, parent.translated_segment.version)
+    if evidence.justification_id:
+        return justification_visible_to(user, evidence.justification)
+    return version_visible_to(user, evidence.challenge.translated_segment.version)
 
 
 def evidence_owner_id(evidence):

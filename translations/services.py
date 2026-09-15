@@ -19,7 +19,7 @@ from .models import (
     VersionStep,
 )
 from .segmentation import to_lines
-from .steps import pending_changes
+from .steps import pending_changes, waiting_justifications
 
 
 def normalize_sentence(text):
@@ -76,8 +76,12 @@ def save_translation(version, segment, text, author):
 
 
 @transaction.atomic
-def publish_version(version, user):
-    """Make a draft public; a published version never goes back to draft."""
+def publish_version(version, user, message="", show_draft_steps=False):
+    """Make a draft public; a published version never goes back to draft.
+
+    Publishing creates a step, with ``message`` or « Publication ». The author chooses once
+    and for all whether the steps of the draft are shown.
+    """
     version = TranslationVersion.objects.select_for_update().get(pk=version.pk)
     if user.pk != version.author_id:
         raise PermissionDenied
@@ -89,9 +93,11 @@ def publish_version(version, user):
         )
     version.state = TranslationVersion.State.PUBLISHED
     version.published_at = timezone.now()
+    version.shows_draft_steps = show_draft_steps
     revision = save_with_revision(version, user, comment=gettext("Publication"))
     # Publishing always creates a step, the first one the public may see.
-    _record_step(version, user, gettext("Publication"), pending_changes(version))
+    message = normalize_sentence(message) or gettext("Publication")
+    _record_step(version, user, message, pending_changes(version))
     return revision
 
 
@@ -114,6 +120,7 @@ def _record_step(version, author, message, changes):
         )
         for change in changes
     )
+    waiting_justifications(version).update(step=step)
     return step
 
 
@@ -121,7 +128,8 @@ def _record_step(version, author, message, changes):
 def create_step(version, author, message):
     """Freeze the working text of a version with a message, like a Git commit.
 
-    Only the author of the version may; the public then sees this step.
+    Only the author of the version may; the public then sees this step, and the justifications
+    written since the previous one.
     """
     version = TranslationVersion.objects.select_for_update().get(pk=version.pk)
     if author.pk != version.author_id:
@@ -133,7 +141,7 @@ def create_step(version, author, message):
             code="no_message",
         )
     changes = pending_changes(version)
-    if not changes:
+    if not changes and not waiting_justifications(version).exists():
         raise ValidationError(
             gettext("Rien n’a changé depuis la dernière étape."), code="unchanged"
         )

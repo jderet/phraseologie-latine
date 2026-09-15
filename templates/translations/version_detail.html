@@ -14,12 +14,16 @@
   {% if version.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
   {% endif %}
-  {% if is_author and pending_count %}
-  <p class="notice notice-info">{% blocktranslate trimmed count counter=pending_count %}
+  {% if pending_count or waiting_count %}
+  <p class="notice notice-info">{% if pending_count %}{% blocktranslate trimmed count counter=pending_count %}
     Vous voyez votre texte de travail : {{ counter }} phrase a changé depuis la dernière étape.
   {% plural %}
     Vous voyez votre texte de travail : {{ counter }} phrases ont changé depuis la dernière étape.
-  {% endblocktranslate %}{% if version.is_published %} {% translate "Le public ne verra ces changements qu’à la prochaine étape." %}{% endif %} <a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></p>
+  {% endblocktranslate %}{% endif %}{% if waiting_count %} {% blocktranslate trimmed count counter=waiting_count %}
+    {{ counter }} justification paraîtra à la prochaine étape.
+  {% plural %}
+    {{ counter }} justifications paraîtront à la prochaine étape.
+  {% endblocktranslate %}{% endif %}{% if version.is_published %} {% translate "Le public ne verra ces changements qu’à la prochaine étape." %}{% endif %} <a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></p>
   {% endif %}
 
   <dl class="facts">

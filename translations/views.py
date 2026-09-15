@@ -25,6 +25,7 @@ from moderation.services import save_with_revision
 from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
+    PublishForm,
     ReferenceForm,
     SourceTextEditForm,
     SourceTextForm,
@@ -44,7 +45,13 @@ from .services import (
     save_translation,
     set_reference_version,
 )
-from .steps import latest_step, pending_changes, public_step, shown_sentences
+from .steps import (
+    latest_step,
+    pending_changes,
+    public_step,
+    shown_sentences,
+    waiting_justifications,
+)
 
 ITEMS_PER_PAGE = 50
 PANEL_SEARCH_DEFAULTS = {"scope": SCOPE_CORE, "mode1": MODE_FORM, "mode2": MODE_FORM}
@@ -299,8 +306,11 @@ def _own_version(user, pk):
     return version
 
 
-def _justifications_by_segment(user, version, texts):
-    """Justifications the user may see, read against the Latin shown (``texts`` by segment)."""
+def _justifications_by_segment(user, version, texts, step=None):
+    """Justifications the user may see, read against the Latin shown (``texts`` by segment).
+
+    With a step, only those it or an earlier step brought out.
+    """
     grouped = defaultdict(list)
     open_challenges = Challenge.objects.filter(status=Challenge.Status.OPEN, is_hidden=False)
     queryset = (
@@ -310,6 +320,8 @@ def _justifications_by_segment(user, version, texts):
             Prefetch("challenges", queryset=open_challenges, to_attr="open_challenges")
         )
     )
+    if step is not None:
+        queryset = queryset.filter(step__number__lte=step.number)
     for justification in queryset:
         translated = justification.translated_segment
         translated.version = version
@@ -341,7 +353,7 @@ def _rows(user, version, step=None):
     """
     step, sentences = shown_sentences(user, version, step)
     texts = {segment_id: sentence.text for segment_id, sentence in sentences.items()}
-    justifications = _justifications_by_segment(user, version, texts)
+    justifications = _justifications_by_segment(user, version, texts, step)
     challenges = _challenges_by_segment(user, version)
     translated_ids = dict(version.segments.values_list("segment_id", "pk"))
     rows = []
@@ -386,6 +398,7 @@ def version_detail(request, pk):
             "rows": rows,
             "latest_step": latest_step(version) if is_author else step,
             "pending_count": len(pending_changes(version)) if is_author else 0,
+            "waiting_count": waiting_justifications(version).count() if is_author else 0,
             "is_author": is_author,
             "can_translate": can_translate(user, version),
             "is_reference": version.pk == version.project.reference_version_id,
@@ -582,9 +595,16 @@ def version_publish(request, pk):
     if version.is_published:
         messages.info(request, _("Cette version est déjà publiée."))
         return redirect(version)
-    if request.method == "POST":
+    # Bound on every POST: both fields are optional, so the data may be empty.
+    form = PublishForm(request.POST if request.method == "POST" else None, user=request.user)
+    if request.method == "POST" and form.is_valid():
         try:
-            publish_version(version, request.user)
+            publish_version(
+                version,
+                request.user,
+                message=form.cleaned_data["message"],
+                show_draft_steps=form.cleaned_data["show_draft_steps"],
+            )
         except ValidationError as error:
             messages.error(request, error.messages[0])
         else:
@@ -596,6 +616,8 @@ def version_publish(request, pk):
         {
             "version": version,
             "project": version.project,
+            "form": form,
+            "draft_step_count": version.steps.count(),
             **_progress(_rows(request.user, version)[1]),
         },
     )
@@ -672,7 +694,7 @@ def _with_version(step, version):
 def step_create(request, pk):
     """What changed since the latest step, and the form to freeze it with a message."""
     version = _own_version(request.user, pk)
-    form = StepForm(request.POST or None, user=request.user)
+    form = StepForm(request.POST if request.method == "POST" else None, user=request.user)
     if request.method == "POST" and form.is_valid():
         try:
             step = create_step(version, request.user, form.cleaned_data["message"])
@@ -689,6 +711,9 @@ def step_create(request, pk):
             "project": version.project,
             "form": form,
             "changes": pending_changes(version),
+            "waiting": waiting_justifications(version).select_related(
+                "translated_segment__segment"
+            ),
             "latest": latest_step(version),
         },
     )

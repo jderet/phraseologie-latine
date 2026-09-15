@@ -115,6 +115,31 @@ class StepForm(ContributionForm):
         fields = ("message",)
 
 
+class PublishForm(forms.Form):
+    message = forms.CharField(
+        label=_("Message de l’étape"),
+        max_length=300,
+        required=False,
+        help_text=_("Facultatif ; à défaut : « Publication »."),
+    )
+    show_draft_steps = forms.BooleanField(
+        label=_("Montrer les étapes du brouillon"),
+        required=False,
+        help_text=_(
+            "Le public pourra suivre le cheminement de votre traduction. Ce choix est définitif."
+        ),
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_message(self):
+        message = normalize_sentence(self.cleaned_data["message"])
+        check_text_for_links(self.user, message)
+        return message
+
+
 class TranslationTextForm(forms.Form):
     """The Latin of one sentence."""
 

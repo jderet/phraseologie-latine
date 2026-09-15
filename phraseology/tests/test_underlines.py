@@ -4,6 +4,7 @@ from justifications.models import Justification
 from justifications.services import create_justification
 from phraseology.services import propose_unit, update_unit
 from translations.models import TranslatedSegment
+from translations.services import create_step
 from translations.tests.factories import make_project, make_published_version
 
 from .factories import evidence
@@ -63,6 +64,8 @@ class TranslationUnderlineTests(AnalysedCorpusTestCase):
         create_justification(
             justification, self.author, [evidence(*self.words[:2])], units=[self.unit]
         )
+        # Others see the justification once a step has brought it out.
+        create_step(self.version, self.author, "Justification")
         response = self.client.get(self.version.get_absolute_url())
         self.assertContains(response, 's-justified t1" title="consilium capere">')
 

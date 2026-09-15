@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-15 07:47+0200\n"
+"POT-Creation-Date: 2026-09-15 07:55+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -629,7 +629,7 @@ msgid "époque"
 msgstr "period"
 
 #: corpus/models.py:40 corpus/models.py:85 justifications/models.py:96
-#: justifications/models.py:319 moderation/models.py:53
+#: justifications/models.py:334 moderation/models.py:53
 #: moderation/models.py:127 moderation/models.py:175 moderation/models.py:217
 #: translations/models.py:259 translations/models.py:398
 msgid "auteur"
@@ -837,7 +837,7 @@ msgstr "order"
 msgid "référence"
 msgstr "reference"
 
-#: corpus/models.py:171 corpus/models.py:207 justifications/models.py:220
+#: corpus/models.py:171 corpus/models.py:207 justifications/models.py:230
 #: notebook/models.py:29 notebook/models.py:55 notebook/models.py:100
 #: phraseology/models.py:347 phraseology/models.py:905
 #: phraseology/models.py:969 phraseology/models.py:1011
@@ -934,7 +934,7 @@ msgstr "tool version"
 msgid "détails"
 msgstr "details"
 
-#: corpus/models.py:318 justifications/models.py:133 notebook/models.py:59
+#: corpus/models.py:318 justifications/models.py:143 notebook/models.py:59
 #: notebook/models.py:81 phraseology/models.py:88 translations/models.py:403
 msgid "créée le"
 msgstr "created on"
@@ -1039,7 +1039,7 @@ msgstr "rejected"
 msgid "motif"
 msgstr "reason"
 
-#: corpus/models.py:441 justifications/models.py:342 moderation/models.py:132
+#: corpus/models.py:441 justifications/models.py:357 moderation/models.py:132
 #: phraseology/models.py:80 phraseology/models.py:362 phraseology/models.py:517
 #: phraseology/models.py:657 phraseology/models.py:848
 #: phraseology/models.py:911
@@ -1304,7 +1304,7 @@ msgstr "Work"
 msgid "Localisation"
 msgstr "Location"
 
-#: justifications/forms.py:109 justifications/models.py:238
+#: justifications/forms.py:109 justifications/models.py:248
 #: phraseology/models.py:286
 msgid "Paragraphe, page ou entrée : « § 426 », « s. v. consilium »."
 msgstr "Paragraph, page or entry: “§ 426”, “s.v. consilium”."
@@ -1341,7 +1341,7 @@ msgstr "copyright-free"
 msgid "sous droits : cité seulement"
 msgstr "under copyright: cited only"
 
-#: justifications/models.py:52 justifications/models.py:213
+#: justifications/models.py:52 justifications/models.py:223
 #: phraseology/models.py:58
 msgid "type"
 msgstr "type"
@@ -1378,7 +1378,7 @@ msgstr "by analogy"
 msgid "introuvable dans le corpus"
 msgstr "not found in the corpus"
 
-#: justifications/models.py:90 justifications/models.py:305
+#: justifications/models.py:90 justifications/models.py:320
 #: translations/models.py:345
 msgid "phrase traduite"
 msgstr "translated sentence"
@@ -1391,7 +1391,7 @@ msgstr "justified Latin passage"
 msgid "Les mots de votre phrase latine que vous justifiez, tels quels."
 msgstr "The words of your Latin sentence that you justify, exactly as written."
 
-#: justifications/models.py:103 justifications/models.py:326
+#: justifications/models.py:103 justifications/models.py:341
 msgid "position du passage"
 msgstr "position of the passage"
 
@@ -1431,152 +1431,156 @@ msgstr "Recorded when the passage is not found in the corpus (rule 7)."
 msgid "fiches phraséologiques citées"
 msgstr "phraseology entries cited"
 
-#: justifications/models.py:136 justifications/models.py:195
+#: justifications/models.py:141
+msgid "étape de parution"
+msgstr "step of appearance"
+
+#: justifications/models.py:146 justifications/models.py:205
 #: phraseology/models.py:503
 msgid "justification"
 msgstr "justification"
 
-#: justifications/models.py:137
+#: justifications/models.py:147
 #: phraseology/management/commands/delete_examples.py:16
 msgid "justifications"
 msgstr "justifications"
 
-#: justifications/models.py:147 justifications/services.py:91
+#: justifications/models.py:157 justifications/services.py:91
 msgid "Une justification par analogie exige un commentaire."
 msgstr "A justification by analogy requires a comment."
 
-#: justifications/models.py:156
+#: justifications/models.py:166
 #, python-format
 msgid "Justification de « %(excerpt)s »"
 msgstr "Justification of “%(excerpt)s”"
 
-#: justifications/models.py:185
+#: justifications/models.py:195
 msgid "attestation du corpus"
 msgstr "corpus attestation"
 
-#: justifications/models.py:186
+#: justifications/models.py:196
 msgid "règle de grammaire"
 msgstr "grammar rule"
 
-#: justifications/models.py:187
+#: justifications/models.py:197
 msgid "article de dictionnaire"
 msgstr "dictionary entry"
 
-#: justifications/models.py:203 justifications/models.py:360
+#: justifications/models.py:213 justifications/models.py:375
 msgid "contestation"
 msgstr "challenge"
 
-#: justifications/models.py:211 phraseology/models.py:542
+#: justifications/models.py:221 phraseology/models.py:542
 #: phraseology/models.py:560 templates/phraseology/neologism_detail.html:4
 #: templates/phraseology/neologism_detail.html:10
 msgid "néologisme"
 msgstr "neologism"
 
-#: justifications/models.py:224
+#: justifications/models.py:234
 msgid "mots cités"
 msgstr "cited words"
 
-#: justifications/models.py:232 phraseology/models.py:281
+#: justifications/models.py:242 phraseology/models.py:281
 msgid "ouvrage"
 msgstr "work"
 
-#: justifications/models.py:235 phraseology/models.py:284
+#: justifications/models.py:245 phraseology/models.py:284
 msgid "localisation"
 msgstr "location"
 
-#: justifications/models.py:240 notebook/models.py:58 phraseology/models.py:148
+#: justifications/models.py:250 notebook/models.py:58 phraseology/models.py:148
 #: phraseology/models.py:288 phraseology/models.py:377
 #: phraseology/models.py:595 phraseology/models.py:909
 #: phraseology/models.py:1015
 msgid "note"
 msgstr "note"
 
-#: justifications/models.py:247
+#: justifications/models.py:257
 msgid "attestation d’une fiche"
 msgstr "attestation of an entry"
 
-#: justifications/models.py:249 phraseology/models.py:149
+#: justifications/models.py:259 phraseology/models.py:149
 #: phraseology/models.py:242 phraseology/models.py:378
 #: phraseology/models.py:979
 msgid "retirée"
 msgstr "withdrawn"
 
-#: justifications/models.py:250 phraseology/models.py:150
+#: justifications/models.py:260 phraseology/models.py:150
 #: phraseology/models.py:243 phraseology/models.py:385
 msgid "ajoutée le"
 msgstr "added on"
 
-#: justifications/models.py:253
+#: justifications/models.py:263
 msgid "preuve"
 msgstr "evidence"
 
-#: justifications/models.py:254
+#: justifications/models.py:264
 #: phraseology/management/commands/delete_examples.py:17
 msgid "preuves"
 msgstr "evidence"
 
-#: justifications/models.py:296
+#: justifications/models.py:311
 msgid "ouverte"
 msgstr "open"
 
-#: justifications/models.py:297
+#: justifications/models.py:312
 msgid "retenue"
 msgstr "upheld"
 
-#: justifications/models.py:298
+#: justifications/models.py:313
 msgid "écartée"
 msgstr "dismissed"
 
-#: justifications/models.py:299
+#: justifications/models.py:314
 msgid "retirée par son auteur"
 msgstr "withdrawn by its author"
 
-#: justifications/models.py:313
+#: justifications/models.py:328
 msgid "justification contestée"
 msgstr "contested justification"
 
-#: justifications/models.py:322
+#: justifications/models.py:337
 msgid "passage contesté"
 msgstr "contested passage"
 
-#: justifications/models.py:324
+#: justifications/models.py:339
 msgid "Les mots contestés, tels qu’ils sont écrits."
 msgstr "The contested words, exactly as written."
 
-#: justifications/models.py:334
+#: justifications/models.py:349
 msgid "étape contestée"
 msgstr "challenged step"
 
-#: justifications/models.py:337
+#: justifications/models.py:352
 msgid "argument"
 msgstr "argument"
 
-#: justifications/models.py:339
+#: justifications/models.py:354
 msgid ""
 "Pourquoi ce choix vous paraît fautif, et ce que vous proposez à la place."
 msgstr "Why this choice seems wrong to you, and what you suggest instead."
 
-#: justifications/models.py:345
+#: justifications/models.py:360
 msgid "décision motivée"
 msgstr "reasoned decision"
 
-#: justifications/models.py:354
+#: justifications/models.py:369
 msgid "close par"
 msgstr "closed by"
 
-#: justifications/models.py:356
+#: justifications/models.py:371
 msgid "close le"
 msgstr "closed on"
 
-#: justifications/models.py:357
+#: justifications/models.py:372
 msgid "ouverte le"
 msgstr "opened on"
 
-#: justifications/models.py:361
+#: justifications/models.py:376
 msgid "contestations"
 msgstr "challenges"
 
-#: justifications/models.py:372
+#: justifications/models.py:387
 #, python-format
 msgid "Contestation de « %(excerpt)s »"
 msgstr "Challenge of “%(excerpt)s”"
@@ -1634,13 +1638,13 @@ msgid "Enregistrer la justification"
 msgstr "Save the justification"
 
 #: justifications/views.py:287 phraseology/views.py:466
-#: phraseology/views.py:606 phraseology/views.py:1666 translations/views.py:75
-#: translations/views.py:241 translations/views.py:444
+#: phraseology/views.py:606 phraseology/views.py:1666 translations/views.py:82
+#: translations/views.py:248 translations/views.py:459
 msgid "Aucune modification."
 msgstr "No change."
 
 #: justifications/views.py:289 phraseology/views.py:468
-#: phraseology/views.py:608 phraseology/views.py:1668 translations/views.py:77
+#: phraseology/views.py:608 phraseology/views.py:1668 translations/views.py:84
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
@@ -1686,15 +1690,15 @@ msgstr "Add the evidence"
 msgid "La preuve est retirée."
 msgstr "The evidence has been withdrawn."
 
-#: justifications/views.py:438
+#: justifications/views.py:439
 msgid "La contestation est publiée."
 msgstr "The challenge has been published."
 
-#: justifications/views.py:454
+#: justifications/views.py:455
 msgid "Contester un choix de traduction"
 msgstr "Challenge a translation choice"
 
-#: justifications/views.py:456
+#: justifications/views.py:457
 msgid ""
 "Exposez votre argument ; appuyez-le au besoin sur des contre-exemples du "
 "corpus ou sur des ouvrages de référence. L’auteur de la version pourra "
@@ -1704,20 +1708,20 @@ msgstr ""
 "corpus or with reference works. The author of the version will be able to "
 "answer and justify their choice."
 
-#: justifications/views.py:460
+#: justifications/views.py:461
 msgid "Publier la contestation"
 msgstr "Publish the challenge"
 
-#: justifications/views.py:502 phraseology/views.py:549
+#: justifications/views.py:503 phraseology/views.py:549
 #: phraseology/views.py:889
 msgid "Choisissez une décision et motivez-la."
 msgstr "Choose a decision and give your reasons."
 
-#: justifications/views.py:510
+#: justifications/views.py:511
 msgid "La contestation est close."
 msgstr "The challenge has been closed."
 
-#: justifications/views.py:523
+#: justifications/views.py:524
 msgid "La contestation est retirée."
 msgstr "The challenge has been withdrawn."
 
@@ -2436,7 +2440,7 @@ msgstr "late"
 msgid "à éviter"
 msgstr "to avoid"
 
-#: phraseology/models.py:48 templates/translations/version_detail.html:32
+#: phraseology/models.py:48 templates/translations/version_detail.html:36
 #: translations/models.py:246
 msgid "brouillon"
 msgstr "draft"
@@ -3798,7 +3802,7 @@ msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
 #: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:7
-#: templates/base.html:13 translations/views.py:496
+#: templates/base.html:13 translations/views.py:509
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -4249,7 +4253,7 @@ msgstr ""
 msgid "Trois buts liés"
 msgstr "Three connected goals"
 
-#: templates/core/home.html:18 templates/translations/version_detail.html:51
+#: templates/core/home.html:18 templates/translations/version_detail.html:55
 #: templates/translations/version_edit.html:4
 #: templates/translations/version_edit.html:11
 msgid "Traduire"
@@ -7343,7 +7347,7 @@ msgstr "Challenge"
 #: templates/translations/project_compare.html:4
 #: templates/translations/project_compare.html:9
 #: templates/translations/project_detail.html:27
-#: templates/translations/version_detail.html:54
+#: templates/translations/version_detail.html:58
 msgid "Comparer les versions"
 msgstr "Compare the versions"
 
@@ -7357,7 +7361,10 @@ msgid ""
 "Les versions publiées, alignées phrase par phrase, chacune dans sa dernière "
 "étape. La version de référence, choisie par le créateur du projet, vient en "
 "premier."
-msgstr "The published versions, aligned sentence by sentence, each at its latest step. The reference version, chosen by the creator of the project, comes first."
+msgstr ""
+"The published versions, aligned sentence by sentence, each at its latest "
+"step. The reference version, chosen by the creator of the project, comes "
+"first."
 
 #: templates/translations/project_compare.html:20
 msgid "Versions affichées"
@@ -7541,7 +7548,7 @@ msgstr "died in %(year)s"
 
 #: templates/translations/source_detail.html:26
 #: templates/translations/step_detail.html:37
-#: templates/translations/version_detail.html:44
+#: templates/translations/version_detail.html:48
 msgid "Licence"
 msgstr "License"
 
@@ -7593,8 +7600,8 @@ msgstr "No text yet."
 #: templates/translations/step_create.html:4
 #: templates/translations/step_create.html:9
 #: templates/translations/step_list.html:15
-#: templates/translations/version_detail.html:22
-#: templates/translations/version_detail.html:52
+#: templates/translations/version_detail.html:26
+#: templates/translations/version_detail.html:56
 msgid "Créer une étape"
 msgstr "Create a step"
 
@@ -7611,7 +7618,9 @@ msgstr "Version by %(name)s"
 msgid ""
 "Une étape fige le texte de toute la version, avec un message qui dit ce qui "
 "a changé."
-msgstr "A step freezes the text of the whole version, with a message saying what changed."
+msgstr ""
+"A step freezes the text of the whole version, with a message saying what "
+"changed."
 
 #: templates/translations/step_create.html:11
 msgid "Le public verra ce texte."
@@ -7622,36 +7631,45 @@ msgid ""
 "Tant que la version est un brouillon, l’étape reste visible de vous seul."
 msgstr "While the version is a draft, the step stays visible to you only."
 
-#: templates/translations/step_create.html:14
+#: templates/translations/step_create.html:15
 #, python-format
 msgid "Changements depuis l’étape %(number)s"
 msgstr "Changes since step %(number)s"
 
-#: templates/translations/step_create.html:14
+#: templates/translations/step_create.html:15
 msgid "Phrases de la première étape"
 msgstr "Sentences of the first step"
 
-#: templates/translations/step_create.html:20
+#: templates/translations/step_create.html:21
 msgid "(pas de texte)"
 msgstr "(no text)"
 
-#: templates/translations/step_create.html:21
+#: templates/translations/step_create.html:22
 msgid "(phrase effacée)"
 msgstr "(sentence erased)"
 
 #: templates/translations/step_create.html:29
+msgid "Justifications qui paraîtront avec cette étape"
+msgstr "Justifications that will appear with this step"
+
+#: templates/translations/step_create.html:32
+#, python-format
+msgid "phrase %(number)s"
+msgstr "sentence %(number)s"
+
+#: templates/translations/step_create.html:39
 msgid "Créer l’étape"
 msgstr "Create the step"
 
-#: templates/translations/step_create.html:32 translations/services.py:138
+#: templates/translations/step_create.html:42 translations/services.py:146
 msgid "Rien n’a changé depuis la dernière étape."
 msgstr "Nothing has changed since the latest step."
 
-#: templates/translations/step_create.html:34
+#: templates/translations/step_create.html:44
 msgid "Retour à la traduction"
 msgstr "Back to translating"
 
-#: templates/translations/step_create.html:34
+#: templates/translations/step_create.html:44
 #: templates/translations/step_detail.html:45
 #: templates/translations/step_list.html:4
 #: templates/translations/step_list.html:9
@@ -7690,12 +7708,12 @@ msgid "Phrases changées"
 msgstr "Changed sentences"
 
 #: templates/translations/step_detail.html:32
-#: templates/translations/version_detail.html:39
+#: templates/translations/version_detail.html:43
 msgid "Avancement"
 msgstr "Progress"
 
 #: templates/translations/step_detail.html:33
-#: templates/translations/version_detail.html:40
+#: templates/translations/version_detail.html:44
 #: templates/translations/version_edit.html:13
 #: templates/translations/version_item.html:3
 #: templates/translations/version_publish.html:10
@@ -7712,7 +7730,7 @@ msgid "Étape suivante"
 msgstr "Next step"
 
 #: templates/translations/step_detail.html:49
-#: templates/translations/version_detail.html:61
+#: templates/translations/version_detail.html:65
 msgid "Texte et traduction"
 msgstr "Text and translation"
 
@@ -7721,7 +7739,9 @@ msgid ""
 "Chaque étape fige le texte de toute la version, avec un message. Le public "
 "voit la dernière étape publique ; chaque étape reste consultable à son "
 "adresse."
-msgstr "Each step freezes the text of the whole version, with a message. The public sees the latest public step; each step can still be read at its own address."
+msgstr ""
+"Each step freezes the text of the whole version, with a message. The public "
+"sees the latest public step; each step can still be read at its own address."
 
 #: templates/translations/step_list.html:20
 msgid "vue par le public"
@@ -7768,78 +7788,89 @@ msgid ""
 msgid_plural ""
 "Vous voyez votre texte de travail : %(counter)s phrases ont changé depuis la "
 "dernière étape."
-msgstr[0] "You are seeing your working text: %(counter)s sentence has changed since the latest step."
-msgstr[1] "You are seeing your working text: %(counter)s sentences have changed since the latest step."
+msgstr[0] ""
+"You are seeing your working text: %(counter)s sentence has changed since the "
+"latest step."
+msgstr[1] ""
+"You are seeing your working text: %(counter)s sentences have changed since "
+"the latest step."
 
 #: templates/translations/version_detail.html:22
+#, python-format
+msgid "%(counter)s justification paraîtra à la prochaine étape."
+msgid_plural "%(counter)s justifications paraîtront à la prochaine étape."
+msgstr[0] "%(counter)s justification will appear at the next step."
+msgstr[1] "%(counter)s justifications will appear at the next step."
+
+#: templates/translations/version_detail.html:26
 msgid "Le public ne verra ces changements qu’à la prochaine étape."
 msgstr "The public will see these changes only at the next step."
 
-#: templates/translations/version_detail.html:27
+#: templates/translations/version_detail.html:31
 msgid "Style déclaré"
 msgstr "Declared style"
 
-#: templates/translations/version_detail.html:31
+#: templates/translations/version_detail.html:35
 msgid "État"
 msgstr "Status"
 
-#: templates/translations/version_detail.html:32
+#: templates/translations/version_detail.html:36
 #: templates/translations/version_item.html:3
 #, python-format
 msgid "publiée le %(date)s"
 msgstr "published on %(date)s"
 
-#: templates/translations/version_detail.html:35
+#: templates/translations/version_detail.html:39
 msgid "Dernière étape"
 msgstr "Latest step"
 
-#: templates/translations/version_detail.html:36
+#: templates/translations/version_detail.html:40
 #, python-format
 msgid "étape %(number)s, du %(date)s"
 msgstr "step %(number)s, of %(date)s"
 
-#: templates/translations/version_detail.html:36
+#: templates/translations/version_detail.html:40
 msgid "historique des étapes"
 msgstr "history of steps"
 
-#: templates/translations/version_detail.html:36
+#: templates/translations/version_detail.html:40
 msgid "aucune"
 msgstr "none"
 
-#: templates/translations/version_detail.html:53
+#: templates/translations/version_detail.html:57
 msgid "Modifier le style"
 msgstr "Edit the style"
 
-#: templates/translations/version_detail.html:55
-#: templates/translations/version_publish.html:19
+#: templates/translations/version_detail.html:59
+#: templates/translations/version_publish.html:28
 msgid "Publier"
 msgstr "Publish"
 
-#: templates/translations/version_detail.html:58
+#: templates/translations/version_detail.html:62
 msgid "Exporter :"
 msgstr "Export:"
 
-#: templates/translations/version_detail.html:58
+#: templates/translations/version_detail.html:62
 msgid "texte bilingue"
 msgstr "bilingual text"
 
-#: templates/translations/version_detail.html:58
+#: templates/translations/version_detail.html:62
 msgid "version imprimable avec notes (PDF)"
 msgstr "printable version with notes (PDF)"
 
-#: templates/translations/version_detail.html:58
+#: templates/translations/version_detail.html:62
 msgid "mémoire de traduction (TMX)"
 msgstr "translation memory (TMX)"
 
-#: templates/translations/version_detail.html:63
+#: templates/translations/version_detail.html:67
 msgid "Votre texte de travail, tel que vous l’avez enregistré."
 msgstr "Your working text, as you saved it."
 
-#: templates/translations/version_detail.html:65
+#: templates/translations/version_detail.html:69
 msgid "Aucune étape publique pour l’instant."
 msgstr "No public step yet."
 
-#: templates/translations/version_detail.html:67
+#: templates/translations/version_detail.html:71
 msgid ""
 "Dans le latin, un trait pointillé signale une unité connue repérée dans la "
 "phrase, à titre de suggestion ; un double trait, un passage justifié par une "
@@ -7856,7 +7887,9 @@ msgstr "Draft visible to you only."
 msgid ""
 "Version publiée : le public voit la dernière étape. Vos modifications "
 "restent privées jusqu’à la prochaine étape."
-msgstr "Published version: the public sees the latest step. Your changes stay private until the next step."
+msgstr ""
+"Published version: the public sees the latest step. Your changes stay "
+"private until the next step."
 
 #: templates/translations/version_edit.html:17
 msgid "Enregistrement…"
@@ -8027,7 +8060,22 @@ msgid ""
 "voit le texte de cette étape. Vous pourrez toujours modifier votre texte de "
 "travail ; le public verra vos modifications quand vous créerez une nouvelle "
 "étape."
-msgstr "Once published, the version is visible to all, under the CC BY-SA 4.0 license, and can never become a draft again. Publishing creates a step: the public sees the text of that step. You will still be able to edit your working text; the public will see your changes when you create a new step."
+msgstr ""
+"Once published, the version is visible to all, under the CC BY-SA 4.0 "
+"license, and can never become a draft again. Publishing creates a step: the "
+"public sees the text of that step. You will still be able to edit your "
+"working text; the public will see your changes when you create a new step."
+
+#: templates/translations/version_publish.html:21
+#, python-format
+msgid ""
+"Votre brouillon compte %(counter)s étape. Sans votre accord, le public ne "
+"verra que l’étape de la publication."
+msgid_plural ""
+"Votre brouillon compte %(counter)s étapes. Sans votre accord, le public ne "
+"verra que l’étape de la publication."
+msgstr[0] "Your draft has %(counter)s step. Unless you agree, the public will only see the publication step."
+msgstr[1] "Your draft has %(counter)s steps. Unless you agree, the public will only see the publication step."
 
 #: translations/exports.py:22
 #, python-format
@@ -8096,6 +8144,24 @@ msgstr[1] ""
 #, python-format
 msgid "Une phrase compte au plus %(limit)d caractères : vérifiez le découpage."
 msgstr "A sentence has at most %(limit)d characters: check the split."
+
+#: translations/forms.py:120
+msgid "Message de l’étape"
+msgstr "Message of the step"
+
+#: translations/forms.py:123
+msgid "Facultatif ; à défaut : « Publication »."
+msgstr "Optional; by default: “Publication”."
+
+#: translations/forms.py:126
+msgid "Montrer les étapes du brouillon"
+msgstr "Show the draft steps"
+
+#: translations/forms.py:129
+msgid ""
+"Le public pourra suivre le cheminement de votre traduction. Ce choix est "
+"définitif."
+msgstr "The public will be able to follow how your translation took shape. This choice is final."
 
 #: translations/models.py:25
 msgid "français"
@@ -8369,66 +8435,66 @@ msgstr "sentence of a step"
 msgid "phrases d’une étape"
 msgstr "sentences of a step"
 
-#: translations/services.py:88
+#: translations/services.py:92
 msgid "Traduisez au moins une phrase avant de publier."
 msgstr "Translate at least one sentence before publishing."
 
-#: translations/services.py:92 translations/services.py:94
+#: translations/services.py:97 translations/services.py:99
 msgid "Publication"
 msgstr "Publication"
 
-#: translations/services.py:132
+#: translations/services.py:140
 msgid "Écrivez un message : ce qui a changé depuis l’étape précédente."
 msgstr "Write a message: what changed since the previous step."
 
-#: translations/services.py:156
+#: translations/services.py:164
 msgid "La version de référence doit être une version publiée de ce projet."
 msgstr "The reference version must be a published version of this project."
 
-#: translations/services.py:160
+#: translations/services.py:168
 msgid "Choix de la version de référence"
 msgstr "Choice of the reference version"
 
-#: translations/views.py:129
+#: translations/views.py:136
 msgid "Le texte est ajouté."
 msgstr "The text has been added."
 
-#: translations/views.py:179
+#: translations/views.py:186
 msgid "Le projet est créé."
 msgstr "The project has been created."
 
-#: translations/views.py:237
+#: translations/views.py:244
 msgid "Choisissez une version publiée de ce projet."
 msgstr "Choose a published version of this project."
 
-#: translations/views.py:243
+#: translations/views.py:250
 msgid "Le projet n’a plus de version de référence."
 msgstr "The project no longer has a reference version."
 
-#: translations/views.py:245
+#: translations/views.py:252
 msgid "La version de référence est choisie."
 msgstr "The reference version has been chosen."
 
-#: translations/views.py:437
+#: translations/views.py:450
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:448
+#: translations/views.py:461
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:583
+#: translations/views.py:596
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:591
+#: translations/views.py:610
 msgid "La version est publiée."
 msgstr "The version has been published."
 
-#: translations/views.py:682
+#: translations/views.py:703
 #, python-format
 msgid "L’étape %(number)d est créée."
 msgstr "Step %(number)d is created."

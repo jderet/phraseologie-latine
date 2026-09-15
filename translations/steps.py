@@ -6,6 +6,8 @@ the latest step, up to it, that changed the sentence.
 
 from dataclasses import dataclass
 
+from django.apps import apps
+
 from .models import Segment, StepSentence, is_version_author
 
 
@@ -75,6 +77,13 @@ def sentence_at(step, segment_id):
         .first()
     )
     return row.text if row else ""
+
+
+def waiting_justifications(version):
+    """Justifications of the version that no step has brought out yet."""
+    # The justifications application depends on this one: its model is looked up by name.
+    justification = apps.get_model("justifications", "Justification")
+    return justification.objects.filter(translated_segment__version=version, step__isnull=True)
 
 
 def pending_changes(version):

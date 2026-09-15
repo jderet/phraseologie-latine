@@ -16,6 +16,15 @@
   {% endblocktranslate %}</p>
   <form method="post" class="form">
     {% csrf_token %}
+    {{ form.message.as_field_group }}
+    {% if draft_step_count %}
+    <p class="note">{% blocktranslate trimmed count counter=draft_step_count %}
+      Votre brouillon compte {{ counter }} étape. Sans votre accord, le public ne verra que l’étape de la publication.
+    {% plural %}
+      Votre brouillon compte {{ counter }} étapes. Sans votre accord, le public ne verra que l’étape de la publication.
+    {% endblocktranslate %}</p>
+    {{ form.show_draft_steps.as_field_group }}
+    {% endif %}
     <button type="submit" class="button">{% translate "Publier" %}</button>
   </form>
 </section>

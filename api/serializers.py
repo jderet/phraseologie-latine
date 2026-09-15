@@ -259,7 +259,12 @@ def version_data(version, link):
     step = public_step(version)
     sentences = step_sentences(step) if step else {}
     justifications = (
-        Justification.objects.filter(translated_segment__version=version, is_hidden=False)
+        # Those brought out by the public step or an earlier one (none without a public step).
+        Justification.objects.filter(
+            translated_segment__version=version,
+            is_hidden=False,
+            step__number__lte=step.number if step else 0,
+        )
         .select_related("translated_segment__segment")
         .prefetch_related("units")
         .order_by("translated_segment__segment__order", "pk")

@@ -18,7 +18,7 @@ from moderation.services import (
     save_with_revision,
     vote_summary,
 )
-from translations.services import publish_version
+from translations.services import create_step, publish_version
 from translations.tests.factories import make_version, translate
 
 from .test_services import JustificationTestCase
@@ -218,6 +218,8 @@ class ChallengePagesTests(ChallengeTestCase):
 
     def test_a_justification_can_be_contested(self):
         justification = self.justify()
+        # Others see the justification once a step has brought it out.
+        create_step(self.version, self.author, "Justification")
         self.client.force_login(self.other)
         page = self.client.get(justification.get_absolute_url())
         self.assertContains(page, f"?justification={justification.pk}")
