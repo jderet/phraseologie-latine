@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Différences entre étapes" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Différences entre étapes" %}</h1>
+  <p class="lede">{% translate "Les phrases qui ont changé, mot à mot : en barré ce qui a été retiré, en surligné ce qui a été ajouté." %}</p>
+
+  <form method="get" class="filters step-picker">
+    <div class="field">
+      <label for="de">{% translate "De" %}</label>
+      <select id="de" name="de">
+        <option value=""{% if not base %} selected{% endif %}>{% translate "(aucun texte)" %}</option>
+        {% for step in steps %}<option value="{{ step.number }}"{% if base and step.pk == base.pk %} selected{% endif %}>{% blocktranslate with number=step.number %}étape {{ number }}{% endblocktranslate %} : {{ step.message|truncatechars:60 }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="a">{% translate "À" %}</label>
+      <select id="a" name="a">
+        {% for step in steps %}<option value="{{ step.number }}"{% if target and step.pk == target.pk %} selected{% endif %}>{% blocktranslate with number=step.number %}étape {{ number }}{% endblocktranslate %} : {{ step.message|truncatechars:60 }}</option>{% endfor %}
+        {% if is_author %}<option value="{{ working }}"{% if not target %} selected{% endif %}>{% translate "votre texte de travail" %}</option>{% endif %}
+      </select>
+    </div>
+    <button type="submit" class="button button-quiet">{% translate "Comparer" %}</button>
+  </form>
+
+  <h2>{% if base %}<a href="{{ base.get_absolute_url }}">{% blocktranslate with number=base.number %}Étape {{ number }}{% endblocktranslate %}</a>{% else %}{% translate "Aucun texte" %}{% endif %} → {% if target %}<a href="{{ target.get_absolute_url }}">{% blocktranslate with number=target.number %}Étape {{ number }}{% endblocktranslate %}</a>{% else %}{% translate "Votre texte de travail" %}{% endif %}</h2>
+  {% if rows %}
+  <ol class="step-changes">
+    {% for row in rows %}
+    <li class="step-change" id="phrase-{{ row.segment.order }}">
+      <span class="bitext-number">{{ row.segment.order }}</span>
+      <div>
+        <p class="muted" lang="{{ source.language }}">{{ row.segment.text }}</p>
+        <p class="word-diff" lang="la">{% if row.after or row.before %}{% include "translations/word_diff.html" with chunks=row.chunks %}{% endif %}</p>
+        {% if not row.after %}<p class="muted">{% translate "(phrase effacée)" %}</p>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p>{% translate "Aucune différence." %}</p>
+  {% endif %}
+  <p class="form-links"><a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a></p>
+</section>
+{% endblock %}

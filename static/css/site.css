@@ -776,21 +776,30 @@ article > h2 {
   border-top: 1px solid var(--rule);
 }
 
-.step-before,
-.step-after {
+.step-change p {
   margin: 0;
+}
+
+.word-diff {
   font-family: var(--serif);
   font-size: 1.08rem;
 }
 
-.step-changes del {
-  color: var(--ink-2);
+.word-diff del {
+  color: var(--danger);
   text-decoration-color: var(--danger);
 }
 
-.step-changes ins {
+.word-diff ins {
   text-decoration: none;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.row-origin {
+  margin: 2px 0 0;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--ink-2);
 }
 
 .bitext textarea {

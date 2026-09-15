@@ -1,0 +1,1 @@
+{% for chunk in chunks %}{% if chunk.kind == "added" %}<ins>{{ chunk.text }}</ins>{% elif chunk.kind == "removed" %}<del>{{ chunk.text }}</del>{% else %}{{ chunk.text }}{% endif %}{% endfor %}

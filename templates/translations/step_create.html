@@ -18,8 +18,9 @@
     <li class="step-change">
       <span class="bitext-number">{{ change.segment.order }}</span>
       <div>
-        <p class="step-before" lang="la">{% if change.before %}<del>{{ change.before }}</del>{% else %}<span class="muted">{% translate "(pas de texte)" %}</span>{% endif %}</p>
-        <p class="step-after" lang="la">{% if change.after %}<ins>{{ change.after }}</ins>{% else %}<span class="muted">{% translate "(phrase effacée)" %}</span>{% endif %}</p>
+        <p class="muted" lang="{{ project.source_text.language }}">{{ change.segment.text }}</p>
+        <p class="word-diff" lang="la">{% include "translations/word_diff.html" with chunks=change.chunks %}</p>
+        {% if not change.after %}<p class="muted">{% translate "(phrase effacée)" %}</p>{% endif %}
       </div>
     </li>
     {% endfor %}

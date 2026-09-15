@@ -22,6 +22,7 @@ from justifications.models import Challenge, Justification
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
+from .diffs import word_diff
 from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
@@ -50,10 +51,13 @@ from .steps import (
     pending_changes,
     public_step,
     shown_sentences,
+    step_sentences,
     waiting_justifications,
 )
 
 ITEMS_PER_PAGE = 50
+# Value of the comparison parameter that designates the working text of the author.
+WORKING_TEXT = "travail"
 PANEL_SEARCH_DEFAULTS = {"scope": SCOPE_CORE, "mode1": MODE_FORM, "mode2": MODE_FORM}
 
 
@@ -370,9 +374,20 @@ def _rows(user, version, step=None):
                 "errors": None,
                 "justifications": justifications.get(source_segment.pk, []),
                 "challenges": challenges.get(source_segment.pk, []),
+                "origin": _origin(user, version, sentence) if step and sentence else None,
             }
         )
     return step, rows
+
+
+def _origin(user, version, sentence):
+    """The step that last changed a frozen sentence, if the user may see it, and who wrote it."""
+    changed_in = sentence.step
+    changed_in.version = version
+    return {
+        "step": changed_in if can_view(user, changed_in) else None,
+        "written_by": sentence.written_by,
+    }
 
 
 def _progress(rows):
@@ -679,9 +694,80 @@ def step_detail(request, pk, number):
             "next_number": min((n for n in visible if n > step.number), default=None),
             "is_current": current is not None and current.pk == step.pk,
             "is_private": step.during_draft and not version.shows_draft_steps,
+            "show_origin": True,
             **_progress(rows),
         },
     )
+
+
+def step_compare(request, pk):
+    """Word-by-word differences between two steps the user may see.
+
+    By default, between the latest step and the one before it; the author may also compare
+    a step with the working text.
+    """
+    user = request.user
+    version = _version(user, pk)
+    is_author = can_translate(user, version)
+    steps = [
+        step
+        for step in version.steps.order_by("number")
+        if can_view(user, _with_version(step, version))
+    ]
+    if not steps and not is_author:
+        raise Http404
+    by_number = {str(step.number): step for step in steps}
+    wanted = request.GET.get("a", "")
+    if wanted in by_number:
+        target = by_number[wanted]
+    elif (wanted == WORKING_TEXT and is_author) or not steps:
+        target = None
+    else:
+        target = steps[-1]
+    if "de" in request.GET:
+        base = by_number.get(request.GET["de"])
+    else:
+        earlier = [step for step in steps if target is None or step.number < target.number]
+        base = earlier[-1] if earlier else None
+
+    before = _frozen_texts(base)
+    if target is None:
+        after = {item.segment_id: item.text for item in version.segments.all()}
+    else:
+        after = _frozen_texts(target)
+    rows = []
+    for source_segment in version.project.source_text.segments.all():
+        old, new = before.get(source_segment.pk, ""), after.get(source_segment.pk, "")
+        if old != new:
+            rows.append(
+                {
+                    "segment": source_segment,
+                    "before": old,
+                    "after": new,
+                    "chunks": word_diff(old, new),
+                }
+            )
+    return render(
+        request,
+        "translations/step_compare.html",
+        {
+            "version": version,
+            "project": version.project,
+            "source": version.project.source_text,
+            "steps": steps,
+            "base": base,
+            "target": target,
+            "is_author": is_author,
+            "working": WORKING_TEXT,
+            "rows": rows,
+        },
+    )
+
+
+def _frozen_texts(step):
+    if step is None:
+        return {}
+    return {segment_id: sentence.text for segment_id, sentence in step_sentences(step).items()}
 
 
 def _with_version(step, version):
@@ -710,7 +796,14 @@ def step_create(request, pk):
             "version": version,
             "project": version.project,
             "form": form,
-            "changes": pending_changes(version),
+            "changes": [
+                {
+                    "segment": change.segment,
+                    "after": change.after,
+                    "chunks": word_diff(change.before, change.after),
+                }
+                for change in pending_changes(version)
+            ],
             "waiting": waiting_justifications(version).select_related(
                 "translated_segment__segment"
             ),

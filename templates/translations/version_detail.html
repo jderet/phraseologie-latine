@@ -23,7 +23,7 @@
     {{ counter }} justification paraîtra à la prochaine étape.
   {% plural %}
     {{ counter }} justifications paraîtront à la prochaine étape.
-  {% endblocktranslate %}{% endif %}{% if version.is_published %} {% translate "Le public ne verra ces changements qu’à la prochaine étape." %}{% endif %} <a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></p>
+  {% endblocktranslate %}{% endif %}{% if version.is_published %} {% translate "Le public ne verra ces changements qu’à la prochaine étape." %}{% endif %}{% if pending_count %} <a href="{% url 'translations:step_compare' version.pk %}?a=travail">{% translate "Voir les différences" %}</a> ·{% endif %} <a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></p>
   {% endif %}
 
   <dl class="facts">

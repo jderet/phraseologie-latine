@@ -42,6 +42,7 @@
   <p class="form-links">
     {% if previous_number %}<a href="{% url 'translations:step' version.pk previous_number %}">{% translate "Étape précédente" %}</a>{% endif %}
     {% if next_number %}<a href="{% url 'translations:step' version.pk next_number %}">{% translate "Étape suivante" %}</a>{% endif %}
+    <a href="{% url 'translations:step_compare' version.pk %}?a={{ step.number }}">{% translate "Ce qui a changé à cette étape" %}</a>
     <a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a>
   </p>
   {% moderation_links step %}
