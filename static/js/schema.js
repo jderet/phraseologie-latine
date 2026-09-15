@@ -877,10 +877,6 @@
           mode.value = terms[index].mode;
         }
       });
-      const more = searchForm.querySelector(".panel-more");
-      if (more && [...more.querySelectorAll("input[name^='term']")].some((field) => field.value)) {
-        more.open = true;
-      }
     }
 
     // The words of the reference form, keeping the lemma chosen for a word still there. Without

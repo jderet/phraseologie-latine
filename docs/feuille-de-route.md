@@ -169,6 +169,7 @@ Demandée par le porteur le 15 septembre 2026 : dans « Chercher des attestation
 - [x] Recherche par construction : une fiche cherchée par son schéma, combinée aux mots par la distance, ses mots surlignés dans les résultats
 - [x] Constructions cochées en tête des mots, retirées en les décochant, ajoutées par leur nom, sur la page « Recherche » et dans les recherches d'attestations
 - [x] Création d'une fiche et ajout d'une attestation : la recherche part des fiches marquées dans la forme de référence, puis des autres mots de la forme par leur lemme ; pas de champ pour ajouter une construction sur ces pages
+- [x] Mots d'une recherche affichés un à un : le mot suivant apparaît quand on en écrit un ; distance et ordre des mots repliés dans les panneaux
 
 Terminé quand un testeur a écrit `[rēs pūblica;rem pūblicam] administrāre`, vu *rēs pūblica* en tête de la recherche et *administro* comme mot, et trouvé des attestations sans rien taper dans la recherche.
 

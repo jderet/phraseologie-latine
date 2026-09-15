@@ -15,8 +15,6 @@ SCOPE_ALL = "all"
 MODE_FORM = "form"
 MODE_LEMMA = "lemma"
 TERM_NUMBERS = (1, 2, 3, 4, 5)
-# The terms a panel shows at once; the others are folded away.
-PANEL_TERMS = 2
 # Units looked for by their schema in one search (phraseology.search_terms).
 MAX_CONSTRUCTIONS = 3
 
@@ -166,6 +164,9 @@ class SearchForm(forms.Form):
         from phraseology.search_terms import construction_units
 
         self.user = user or AnonymousUser()
+        # An empty word shows its placeholder: the style sheet hides the empty words after it.
+        for number in TERM_NUMBERS:
+            self.fields[f"term{number}"].widget.attrs["placeholder"] = " "
         if not self.is_bound:
             values = self.initial.get("construction") or []
         elif hasattr(self.data, "getlist"):
@@ -253,26 +254,13 @@ class SearchForm(forms.Form):
         """(term, mode) bound fields, in order, for templates."""
         return [(self[f"term{number}"], self[f"mode{number}"]) for number in TERM_NUMBERS]
 
-    def panel_terms(self):
-        """The terms a panel shows at once."""
-        return self.term_fields()[:PANEL_TERMS]
-
-    def folded_terms(self):
-        """The terms a panel folds away."""
-        return self.term_fields()[PANEL_TERMS:]
-
     @property
-    def folded_terms_used(self):
-        """Whether a folded term, the distance or the order was given: the fold then stays open."""
+    def options_used(self):
+        """Whether the distance or the order was changed: their fold then stays open."""
         if not self.is_bound:
             return False
-        names = [f"term{number}" for number in TERM_NUMBERS[PANEL_TERMS:]]
         distance = self.data.get("distance", "").strip()
-        return (
-            any(self.data.get(name, "").strip() for name in names)
-            or "ordered" in self.data
-            or distance not in ("", str(self.DEFAULT_DISTANCE))
-        )
+        return "ordered" in self.data or distance not in ("", str(self.DEFAULT_DISTANCE))
 
     def clean(self):
         data = super().clean()

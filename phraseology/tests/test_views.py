@@ -27,10 +27,14 @@ class ListAndCreationPagesTests(PhraseologyTestCase):
         response = self.client.get(url, {"term1": "cepit"})
         self.assertContains(response, f'value="{self.words[1].pk}" form="unit-form"')
         self.assertContains(response, "cochez celles qui attestent l’unité")
+        # Every word is written in the page; the style sheet shows each once the one before is.
         self.assertContains(response, 'name="term5"')
+        self.assertContains(response, 'placeholder=" "')
         self.assertContains(response, '<details class="panel-more">')
         four = {"term1": "consilium", "term2": "cepit", "term3": "ut", "term4": "abiret"}
         response = self.client.get(url, four)
+        self.assertContains(response, '<details class="panel-more">')
+        response = self.client.get(url, four | {"ordered": "on"})
         self.assertContains(response, '<details class="panel-more" open>')
         every_word = ",".join(str(word.pk) for word in self.words)
         self.assertContains(response, f'value="{every_word}" form="unit-form"')

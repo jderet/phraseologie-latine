@@ -970,6 +970,12 @@ article > h2 {
   margin-top: 12px;
 }
 
+/* A word of a search appears once the word before it is written; a word written stays shown */
+.field:has(input[name^="term"]:placeholder-shown)
+  + .field:has(input[name^="term"]:placeholder-shown) {
+  display: none;
+}
+
 .panel-search input[type="number"] {
   width: 6rem;
   font: inherit;
