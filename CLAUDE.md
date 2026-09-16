@@ -23,6 +23,7 @@ Ces décisions sont prises : les appliquer sans les rediscuter. Si une demande l
 ```bash
 source .venv/bin/activate                  # activer l'environnement Python
 python manage.py runserver                 # site sur http://127.0.0.1:8000
+./lancer-le-site.command [port]             # base, migrations et site sur 8001 (double-clic possible)
 python manage.py test                      # tests
 ruff check . && ruff format --check .      # style et analyse de sécurité statique
 python manage.py makemigrations            # après modification d'un modèle
