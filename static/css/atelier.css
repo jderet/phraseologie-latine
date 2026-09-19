@@ -250,3 +250,31 @@
   padding: 0;
   list-style: none;
 }
+
+/* My workshop */
+
+.desk-section {
+  margin-top: 26px;
+}
+
+.desk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 0 32px;
+}
+
+.desk-versions > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+}
+
+.desk-versions > li > span:first-child {
+  flex: 1 1 16rem;
+}
+
+.desk-progress progress {
+  width: 8rem;
+  accent-color: var(--accent);
+}

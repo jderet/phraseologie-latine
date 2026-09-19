@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n activity_tags %}
+
+{% block title %}{% translate "Mon atelier" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Mon atelier" %}</h1>
+  <p class="lede">{% translate "Ce qui vous attend, vos versions et les nouvelles de ce que vous suivez." %}</p>
+
+  {% if invitations %}
+  <section class="desk-section" aria-labelledby="desk-invitations">
+    <h2 id="desk-invitations">{% translate "Invitations" %}</h2>
+    <ul class="item-list">
+      {% for member in invitations %}
+      <li>
+        <span>{% blocktranslate with name=member.invited_by.public_name project=member.version.project.title %}{{ name }} vous invite à co-écrire sa version de « {{ project }} ».{% endblocktranslate %}</span>
+        <form method="post" action="{% url 'translations:member_answer' member.pk %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="button button-small" name="decision" value="accept">{% translate "Accepter" %}</button>
+          <button type="submit" class="button button-quiet button-small" name="decision" value="decline">{% translate "Refuser" %}</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <div class="desk-grid">
+    <section class="desk-section" aria-labelledby="desk-waiting">
+      <h2 id="desk-waiting">{% translate "À décider" %}</h2>
+      <ul class="item-list">
+        {% for proposal in waiting %}
+        <li><a class="item-title" href="{{ proposal.get_absolute_url }}">{% blocktranslate with name=proposal.author.public_name %}Proposition de {{ name }}{% endblocktranslate %}</a> <span class="muted">{{ proposal.version.project.title }} · {{ proposal.created_at|date:"j F Y" }}</span></li>
+        {% empty %}
+        <li class="muted">{% translate "Aucune proposition n’attend votre décision." %}</li>
+        {% endfor %}
+      </ul>
+      {% if mine %}
+      <h3>{% translate "Vos propositions en cours" %}</h3>
+      <ul class="item-list">
+        {% for proposal in mine %}
+        <li><a class="item-title" href="{{ proposal.get_absolute_url }}">{{ proposal.version.project.title }}</a> <span class="muted">{% blocktranslate with name=proposal.version.author.public_name %}pour la version de {{ name }}{% endblocktranslate %}</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+
+    <section class="desk-section" aria-labelledby="desk-news">
+      <h2 id="desk-news">{% translate "Nouvelles" %}</h2>
+      <ul class="event-list">
+        {% for notification in notifications %}<li class="{% if not notification.read_at %}is-unread{% endif %}">{% event_line notification.event show_project=True %}</li>{% empty %}<li class="muted">{% translate "Aucune notification." %}</li>{% endfor %}
+      </ul>
+      <p><a href="{% url 'activity:notifications' %}">{% translate "Toutes les notifications" %}</a></p>
+    </section>
+  </div>
+
+  <section class="desk-section" aria-labelledby="desk-versions">
+    <h2 id="desk-versions">{% translate "Vos versions" %}</h2>
+    {% if drafts or published %}
+    <ul class="item-list desk-versions">
+      {% for version in drafts %}{% include "activity/workshop_version.html" %}{% endfor %}
+      {% for version in published %}{% include "activity/workshop_version.html" %}{% endfor %}
+    </ul>
+    {% else %}
+    <p>{% translate "Vous n’avez pas encore de version." %} <a href="{% url 'translations:project_list' %}">{% translate "Choisir un projet" %}</a></p>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

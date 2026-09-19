@@ -1,0 +1,5 @@
+{% load i18n %}<li>
+  <span><a class="item-title" href="{{ version.get_absolute_url }}">{{ version.project.title }}</a> <span class="badge{% if version.is_published %} state-open{% endif %}">{{ version.get_state_display }}</span>{% if version.author_id != user.pk %} <span class="muted">{% blocktranslate with name=version.author.public_name %}co-auteur, version de {{ name }}{% endblocktranslate %}</span>{% endif %}</span>
+  <span class="desk-progress"><progress max="{{ version.progress.total }}" value="{{ version.progress.done }}">{{ version.progress.percent }} %</progress> <span class="muted">{% blocktranslate with done=version.progress.done total=version.progress.total %}{{ done }} sur {{ total }}{% endblocktranslate %}</span></span>
+  <a class="button button-small" href="{% url 'translations:version_edit' version.pk %}">{% translate "Traduire" %}</a>
+</li>

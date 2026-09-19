@@ -202,7 +202,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Étoiles sur les versions publiées, tri des projets et des versions
 - [x] Fil d'activité d'un projet et d'un contributeur
 - [x] Profil du contributeur : contributions et calendrier d'activité
-- [ ] Page « Mon atelier »
+- [x] Page « Mon atelier »
 - [ ] Sujets d'un projet : étiquettes, ouverts ou fermés, discussion, références #n
 
 ## Étape 15 : l'éditeur professionnel

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 13:48+0200\n"
+"POT-Creation-Date: 2026-09-19 13:49+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -358,25 +358,25 @@ msgstr "star"
 msgid "étoiles"
 msgstr "stars"
 
-#: activity/views.py:55
+#: activity/views.py:56
 msgid "Ce contenu n’est plus accessible."
 msgstr "This content is no longer available."
 
-#: activity/views.py:64
+#: activity/views.py:65
 msgid "Toutes les notifications sont lues."
 msgstr "All notifications are read."
 
-#: activity/views.py:81
+#: activity/views.py:82
 msgid "Vous ne suivez plus ce contenu."
 msgstr "You no longer follow this content."
 
-#: activity/views.py:85
+#: activity/views.py:86
 msgid ""
 "Vous suivez ce contenu : ce qui lui arrive entre dans vos notifications."
 msgstr ""
 "You follow this content: what happens to it goes into your notifications."
 
-#: activity/views.py:100
+#: activity/views.py:101
 msgid "Seule une version publiée reçoit des étoiles."
 msgstr "Only a published version can be starred."
 
@@ -4507,7 +4507,7 @@ msgid "Indiquez l’expression cherchée."
 msgstr "Give the expression searched for."
 
 #: templates/accounts/account.html:4 templates/accounts/account.html:8
-#: templates/base.html:44 templates/notebook/notebook.html:8
+#: templates/base.html:45 templates/notebook/notebook.html:8
 #: templates/phraseology/annotator.html:8
 msgid "Mon compte"
 msgstr "My account"
@@ -4746,7 +4746,7 @@ msgstr "Name"
 msgid "État"
 msgstr "Status"
 
-#: templates/accounts/dashboard.html:70 templates/base.html:51
+#: templates/accounts/dashboard.html:70 templates/base.html:52
 msgid "Inscription"
 msgstr "Sign up"
 
@@ -4899,7 +4899,7 @@ msgstr ""
 "message: your password stays the same."
 
 #: templates/accounts/login.html:4 templates/accounts/login.html:8
-#: templates/base.html:50
+#: templates/base.html:51
 msgid "Connexion"
 msgstr "Log in"
 
@@ -5054,7 +5054,7 @@ msgid "Suivre"
 msgstr "Follow"
 
 #: templates/activity/notifications.html:4
-#: templates/activity/notifications.html:8 templates/base.html:41
+#: templates/activity/notifications.html:8 templates/base.html:42
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -5092,7 +5092,7 @@ msgstr "see"
 msgid "voir et marquer comme lue"
 msgstr "see and mark as read"
 
-#: templates/activity/notifications.html:29
+#: templates/activity/notifications.html:29 templates/activity/workshop.html:52
 msgid "Aucune notification."
 msgstr "No notification."
 
@@ -5170,7 +5170,103 @@ msgstr "Starred"
 msgid "Étoiler"
 msgstr "Star"
 
-#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:82
+#: templates/activity/workshop.html:4 templates/activity/workshop.html:8
+#: templates/base.html:41
+msgid "Mon atelier"
+msgstr "My workshop"
+
+#: templates/activity/workshop.html:9
+msgid ""
+"Ce qui vous attend, vos versions et les nouvelles de ce que vous suivez."
+msgstr "What awaits you, your versions and news of what you follow."
+
+#: templates/activity/workshop.html:13
+msgid "Invitations"
+msgstr "Invitations"
+
+#: templates/activity/workshop.html:17
+#, python-format
+msgid "%(name)s vous invite à co-écrire sa version de « %(project)s »."
+msgstr "%(name)s invites you to co-write their version of “%(project)s”."
+
+#: templates/activity/workshop.html:20
+#: templates/translations/proposal_detail.html:58
+#: templates/translations/version_members.html:21
+msgid "Accepter"
+msgstr "Accept"
+
+#: templates/activity/workshop.html:21
+#: templates/translations/proposal_detail.html:59
+#: templates/translations/version_members.html:22
+msgid "Refuser"
+msgstr "Refuse"
+
+#: templates/activity/workshop.html:31
+msgid "À décider"
+msgstr "To decide"
+
+#: templates/activity/workshop.html:34
+#: templates/translations/project_proposals.html:18
+#: templates/translations/proposal_detail.html:9
+#: templates/translations/proposal_list.html:20
+#: templates/translations/source_proposal_detail.html:9
+#: templates/translations/source_proposal_list.html:17
+#, python-format
+msgid "Proposition de %(name)s"
+msgstr "Proposal by %(name)s"
+
+#: templates/activity/workshop.html:36
+msgid "Aucune proposition n’attend votre décision."
+msgstr "No proposal awaits your decision."
+
+#: templates/activity/workshop.html:40
+msgid "Vos propositions en cours"
+msgstr "Your open proposals"
+
+#: templates/activity/workshop.html:43
+#: templates/translations/project_proposals.html:19
+#, python-format
+msgid "pour la version de %(name)s"
+msgstr "for the version of %(name)s"
+
+#: templates/activity/workshop.html:50
+msgid "Nouvelles"
+msgstr "News"
+
+#: templates/activity/workshop.html:54
+msgid "Toutes les notifications"
+msgstr "All notifications"
+
+#: templates/activity/workshop.html:59
+msgid "Vos versions"
+msgstr "Your versions"
+
+#: templates/activity/workshop.html:66
+msgid "Vous n’avez pas encore de version."
+msgstr "You have no version yet."
+
+#: templates/activity/workshop.html:66
+msgid "Choisir un projet"
+msgstr "Choose a project"
+
+#: templates/activity/workshop_version.html:2
+#, python-format
+msgid "co-auteur, version de %(name)s"
+msgstr "co-author, version of %(name)s"
+
+#: templates/activity/workshop_version.html:3
+#, python-format
+msgid "%(done)s sur %(total)s"
+msgstr "%(done)s of %(total)s"
+
+#: templates/activity/workshop_version.html:4 templates/core/home.html:18
+#: templates/translations/version_detail.html:69
+#: templates/translations/version_edit.html:4
+#: templates/translations/version_edit.html:11
+msgid "Traduire"
+msgstr "Translate"
+
+#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:83
 msgid "Données ouvertes"
 msgstr "Open data"
 
@@ -5337,55 +5433,55 @@ msgstr "Review"
 msgid "Signalements"
 msgstr "Reports"
 
-#: templates/base.html:41
+#: templates/base.html:42
 #, python-format
 msgid "%(counter)s non lue"
 msgid_plural "%(counter)s non lues"
 msgstr[0] "%(counter)s unread"
 msgstr[1] "%(counter)s unread"
 
-#: templates/base.html:42 templates/phraseology/annotator.html:4
+#: templates/base.html:43 templates/phraseology/annotator.html:4
 #: templates/phraseology/annotator.html:9
 msgid "Mes annotations"
 msgstr "My annotations"
 
-#: templates/base.html:43 templates/notebook/highlight_panel.html:2
+#: templates/base.html:44 templates/notebook/highlight_panel.html:2
 #: templates/notebook/list_panel.html:2 templates/notebook/note_panel.html:2
 #: templates/notebook/notebook.html:4 templates/notebook/notebook.html:9
 #: templates/notebook/panel_page.html:4
 msgid "Mon carnet"
 msgstr "My notebook"
 
-#: templates/base.html:47
+#: templates/base.html:48
 msgid "Déconnexion"
 msgstr "Log out"
 
-#: templates/base.html:57 templates/translations/source_detail.html:23
+#: templates/base.html:58 templates/translations/source_detail.html:23
 msgid "Langue"
 msgstr "Language"
 
-#: templates/base.html:64
+#: templates/base.html:65
 msgid "Changer"
 msgstr "Change"
 
-#: templates/base.html:82
+#: templates/base.html:83
 msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
 msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
 
-#: templates/base.html:82
+#: templates/base.html:83
 msgid "Code source"
 msgstr "Source code"
 
-#: templates/base.html:83 templates/core/legal_notice.html:4
+#: templates/base.html:84 templates/core/legal_notice.html:4
 #: templates/core/legal_notice.html:9
 msgid "Mentions légales"
 msgstr "Legal notice"
 
-#: templates/base.html:83
+#: templates/base.html:84
 msgid "Confidentialité"
 msgstr "Privacy"
 
-#: templates/base.html:83 templates/core/terms.html:4
+#: templates/base.html:84 templates/core/terms.html:4
 #: templates/core/terms.html:9
 msgid "Conditions d’utilisation"
 msgstr "Terms of use"
@@ -5488,12 +5584,6 @@ msgstr ""
 #: templates/core/home.html:15
 msgid "Trois buts liés"
 msgstr "Three connected goals"
-
-#: templates/core/home.html:18 templates/translations/version_detail.html:69
-#: templates/translations/version_edit.html:4
-#: templates/translations/version_edit.html:11
-msgid "Traduire"
-msgstr "Translate"
 
 #: templates/core/home.html:19
 msgid ""
@@ -9391,20 +9481,6 @@ msgstr ""
 "Change proposals made to the published versions of this project. The author "
 "of each version accepts or refuses each proposed sentence."
 
-#: templates/translations/project_proposals.html:18
-#: templates/translations/proposal_detail.html:9
-#: templates/translations/proposal_list.html:20
-#: templates/translations/source_proposal_detail.html:9
-#: templates/translations/source_proposal_list.html:17
-#, python-format
-msgid "Proposition de %(name)s"
-msgstr "Proposal by %(name)s"
-
-#: templates/translations/project_proposals.html:19
-#, python-format
-msgid "pour la version de %(name)s"
-msgstr "for the version of %(name)s"
-
 #: templates/translations/project_proposals.html:22
 #: templates/translations/proposal_list.html:24
 #: templates/translations/source_proposal_list.html:21
@@ -9509,16 +9585,6 @@ msgid ""
 "remplacera :"
 msgstr ""
 "Your working text has changed since this proposal; accepting will replace it:"
-
-#: templates/translations/proposal_detail.html:58
-#: templates/translations/version_members.html:21
-msgid "Accepter"
-msgstr "Accept"
-
-#: templates/translations/proposal_detail.html:59
-#: templates/translations/version_members.html:22
-msgid "Refuser"
-msgstr "Refuse"
 
 #: templates/translations/proposal_detail.html:70
 #: templates/translations/source_proposal_detail.html:74
