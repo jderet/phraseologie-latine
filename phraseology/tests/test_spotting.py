@@ -9,7 +9,7 @@ from phraseology.spotting import closest_positions, spot_units
 from translations.services import save_translation
 from translations.tests.factories import make_project, make_source_text, make_version
 
-from .factories import make_unit, set_status
+from .factories import make_abstract_word, make_unit, set_status
 from .test_frequency import AnalysedCorpusTestCase
 
 
@@ -48,6 +48,25 @@ class SpottingTests(SpottingTestCase):
         update_unit(self.unit, self.author)
         self.assertEqual(self.forms("bonus"), set())
         self.assertEqual(self.spotted("Consilium cepit."), [self.unit])
+
+    def test_the_forms_of_an_abstract_word_stand_for_it(self):
+        make_abstract_word(self.author, "decisio", [{"lemmas": ["consilium", "ratio"]}])
+        self.unit.schema = "capio -obj-> {decisio}"
+        update_unit(self.unit, self.author)
+        self.assertEqual(self.forms("{decisio}"), {"consilium", "consilia", "ratio"})
+        self.assertEqual(self.spotted("Consilia capiunt."), [self.unit])
+        self.assertEqual(self.spotted("Capiunt."), [])
+
+    def test_an_abstract_word_known_by_more_than_its_lemmas_is_not_needed(self):
+        make_abstract_word(self.author, "res", [{"lemmas": ["consilium"]}, {"upos": ["NOUN"]}])
+        self.unit.schema = "capio -obj-> {res}"
+        update_unit(self.unit, self.author)
+        self.assertEqual(self.forms("{res}"), set())
+        self.assertEqual(self.spotted("Capiunt."), [self.unit])
+
+    def test_a_unit_without_schema_does_not_look_for_its_abstract_word(self):
+        unit = make_unit(self.author, self.more_words[:2], reference_form="quid {res} multa")
+        self.assertEqual(self.spotted("Quid multa? Venit."), [unit])
 
     def test_drafts_are_found_by_their_creator_only(self):
         self.assertEqual(self.spotted("Consilium cepit.", self.other), [])

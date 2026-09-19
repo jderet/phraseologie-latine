@@ -17,8 +17,10 @@ from corpus.models import Token
 from corpus.search import default_layer, quotation
 from corpus.text import normalize, tokenize
 
-from .models import Attestation, Unit, UnitForm
-from .schema import required_edges, schema_lemmas
+from .abstract import WRITTEN as ABSTRACT
+from .abstract import word_lemmas
+from .models import AbstractWord, Attestation, Unit, UnitForm
+from .schema import required_edges, schema_abstracts, schema_lemmas
 
 # The words of a unit may lie this many words apart, for each word beyond the first.
 SPAN_PER_WORD = 5
@@ -26,6 +28,8 @@ MAX_SPOTS = 10
 ATTESTATIONS_SHOWN = 3
 # Positions tried for each lemma, in a sentence where it occurs many times.
 MAX_CHOICES = 12
+# The forms of an abstract word stored to recognize a unit, at most.
+MAX_ABSTRACT_FORMS = 500
 STATUS_ORDER = {
     Unit.Status.VALIDATED: 0,
     Unit.Status.PROPOSED: 1,
@@ -47,18 +51,44 @@ def lemma_forms(lemma, layer):
     return {norm for norm in norms if norm.isalpha() and len(norm) > 1} | {lemma}
 
 
+def abstract_forms(name, layer):
+    """The forms of the words of an abstract word, when its lemmas are all it takes and its
+    forms are not too many; otherwise None, and the word is not needed to recognize a unit."""
+    word = AbstractWord.objects.filter(name=name, is_hidden=False).first()
+    lemmas = word_lemmas(word) if word is not None else None
+    if lemmas is None:
+        return None
+    norms = set()
+    for lemma in lemmas:
+        norms |= lemma_forms(lemma, layer)
+        if len(norms) > MAX_ABSTRACT_FORMS:
+            return None
+    return norms
+
+
 def refresh_unit_forms(unit):
-    """Store the forms that recognize a unit: of its lemmas, or of its reference form."""
+    """Store the forms that recognize a unit: of its lemmas and abstract words, or of its
+    reference form.
+
+    The forms of an abstract word are stored under its name, {liquide}: any of them stands for
+    it.
+    """
     UnitForm.objects.filter(unit=unit).delete()
     layer = default_layer()
     rows = []
     if unit.schema and layer is not None:
         # The words of an optional relation are not needed to recognize the unit.
-        for lemma in schema_lemmas(required_edges(unit.edges)):
+        edges = required_edges(unit.edges)
+        for lemma in schema_lemmas(edges):
             norms = lemma_forms(lemma, layer)
             rows += [UnitForm(unit=unit, lemma=lemma, norm=norm) for norm in sorted(norms)]
+        for name in schema_abstracts(edges):
+            norms = abstract_forms(name, layer) or ()
+            rows += [UnitForm(unit=unit, lemma=f"{{{name}}}", norm=norm) for norm in sorted(norms)]
     else:
-        words = dict.fromkeys(normalize(token.form) for token in tokenize(unit.reference_form))
+        # An abstract word of the reference form is no word to look for.
+        form = ABSTRACT.sub(" ", unit.reference_form)
+        words = dict.fromkeys(normalize(token.form) for token in tokenize(form))
         rows = [UnitForm(unit=unit, lemma=f"={word}", norm=word) for word in words]
     UnitForm.objects.bulk_create(rows)
     return len(rows)
