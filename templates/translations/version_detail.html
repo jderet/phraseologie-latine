@@ -53,6 +53,12 @@
       <dt>{% translate "Dernière étape" %}</dt>
       <dd>{% if latest_step %}<a href="{{ latest_step.get_absolute_url }}">{% blocktranslate with number=latest_step.number date=latest_step.created_at|date:"j F Y" %}étape {{ number }}, du {{ date }}{% endblocktranslate %}</a> : {{ latest_step.message }} · <a href="{% url 'translations:step_list' version.pk %}">{% translate "historique des étapes" %}</a>{% else %}{% translate "aucune" %}{% endif %}</dd>
     </div>
+    {% if editions %}
+    <div>
+      <dt>{% translate "Éditions" %}</dt>
+      <dd>{% for edition in editions %}<a href="{{ edition.get_absolute_url }}"><span class="badge edition-badge">{{ edition.label }}</span></a> <span class="muted">{% blocktranslate with number=edition.number %}étape {{ number }}{% endblocktranslate %}</span>{% if not forloop.last %} · {% endif %}{% endfor %}</dd>
+    </div>
+    {% endif %}
     <div>
       <dt>{% translate "Avancement" %}</dt>
       <dd>{% blocktranslate with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}</dd>

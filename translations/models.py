@@ -660,6 +660,13 @@ class VersionStep(ModeratedContent):
     during_draft = models.BooleanField(
         _("créée pendant le brouillon"), default=False, editable=False
     )
+    # A name given afterwards to a step worth citing, like a release: « Édition 1 ».
+    label = models.CharField(
+        _("étiquette"),
+        max_length=80,
+        blank=True,
+        help_text=_("Par exemple : « Édition 1 », « Relue par le comité »."),
+    )
     # The state of the source text the step froze with the Latin (``SourceText.state``).
     source_state = models.PositiveIntegerField(_("état du texte source"), default=0, editable=False)
     created_at = models.DateTimeField(_("créée le"), default=timezone.now, editable=False)
@@ -1279,7 +1286,7 @@ register(
 register(
     VersionStep,
     owner_field="version.author",
-    text_fields=("message",),
+    text_fields=("message", "label"),
     visible_to=step_visible_to,
     counts_toward_limit=False,
     not_reverted=("during_draft", "source_state"),

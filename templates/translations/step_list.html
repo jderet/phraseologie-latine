@@ -17,7 +17,7 @@
   <ol class="item-list">
     {% for entry in entries %}{% with step=entry.step comparison=entry.comparison %}
     <li>
-      <span><a class="item-title" href="{{ step.get_absolute_url }}">{% blocktranslate with number=step.number %}Étape {{ number }}{% endblocktranslate %}</a> {{ step.message }}{% if step.pk == current_id %} <span class="badge">{% translate "vue par le public" %}</span>{% endif %}</span>
+      <span><a class="item-title" href="{{ step.get_absolute_url }}">{% blocktranslate with number=step.number %}Étape {{ number }}{% endblocktranslate %}</a> {% if step.label %}<span class="badge edition-badge">{{ step.label }}</span> {% endif %}{{ step.message }}{% if step.pk == current_id %} <span class="badge">{% translate "vue par le public" %}</span>{% endif %}</span>
       <span class="muted">{{ step.created_at|date:"j F Y, H:i" }}{% if step.during_draft %} · {% translate "pendant le brouillon" %}{% if not version.shows_draft_steps %}, {% translate "visible de vous seul" %}{% endif %}{% endif %}{% if step.is_hidden %} · {% translate "masquée" %}{% endif %}</span>
       <span class="step-summary">{{ comparison.latin_summary|capfirst }}{% if comparison.source_changes %} · {% translate "texte source :" %} {{ comparison.source_summary }}{% endif %}</span>
       {% if comparison.sentences or comparison.source_changes %}

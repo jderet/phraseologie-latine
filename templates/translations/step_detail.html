@@ -7,6 +7,7 @@
 <article>
   <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
   <h1>{% blocktranslate with number=step.number %}Étape {{ number }}{% endblocktranslate %}</h1>
+  {% if step.label %}<p><span class="badge edition-badge">{{ step.label }}</span></p>{% endif %}
   <p class="lede">{{ step.message }}</p>
   {% if step.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
@@ -39,6 +40,17 @@
     </div>
     {% endif %}
   </dl>
+  <p class="export-links">{% translate "Exporter cette étape :" %} <a href="{% url 'translations:version_export_text' version.pk %}?etape={{ step.number }}">{% translate "texte bilingue" %}</a> · <a href="{% url 'translations:version_export_print' version.pk %}?etape={{ step.number }}">{% translate "version imprimable avec notes (PDF)" %}</a> · <a href="{% url 'translations:version_export_tei' version.pk %}?etape={{ step.number }}">TEI</a> · <a href="{% url 'translations:version_export_tmx' version.pk %}?etape={{ step.number }}">TMX</a></p>
+  {% if can_label %}
+  <details class="step-tools">
+    <summary>{% translate "Étiqueter cette étape" %}</summary>
+    <form method="post" action="{% url 'translations:step_label' version.pk step.number %}" class="form">
+      {% csrf_token %}
+      {{ label_form.as_div }}
+      <button type="submit" class="button button-small">{% translate "Enregistrer l’étiquette" %}</button>
+    </form>
+  </details>
+  {% endif %}
   <p class="form-links">
     {% if previous_number %}<a href="{% url 'translations:step' version.pk previous_number %}">{% translate "Étape précédente" %}</a>{% endif %}
     {% if next_number %}<a href="{% url 'translations:step' version.pk next_number %}">{% translate "Étape suivante" %}</a>{% endif %}

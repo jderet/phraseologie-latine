@@ -970,3 +970,21 @@ mark.term {
 .reviews {
   margin-top: 28px;
 }
+
+/* Labelled steps (editions) */
+
+.edition-badge {
+  background: var(--gold-soft);
+  color: var(--amber);
+}
+
+.step-tools {
+  margin: 10px 0 18px;
+}
+
+.step-tools > summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--accent);
+}

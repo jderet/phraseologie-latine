@@ -115,6 +115,14 @@ class VersionForm(ContributionForm):
         fields = ("style", "style_note")
 
 
+class StepLabelForm(ContributionForm):
+    link_fields = ("label",)
+
+    class Meta:
+        model = VersionStep
+        fields = ("label",)
+
+
 class StepForm(ContributionForm):
     link_fields = ("message",)
 

@@ -4,15 +4,16 @@ review proposals, label and restore steps, the network of copies, who wrote what
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import check_text_for_links
 from moderation.registry import can_view
+from moderation.services import save_with_revision
 
-from .forms import ProposalForm, ProposalReviewForm
+from .forms import ProposalForm, ProposalReviewForm, StepLabelForm
 from .models import ChangeProposal  # noqa: F401 - the form builds one
 from .permissions import can_propose
 from .services import create_proposal, review_proposal
@@ -127,3 +128,21 @@ def proposal_review(request, pk):
         if saved:
             messages.success(request, _("Votre relecture est publiée."))
     return redirect(f"{proposal.get_absolute_url()}#relectures")
+
+
+@login_required
+@require_POST
+def step_label(request, pk, number):
+    """Name a step, like a release; an empty name takes the label away."""
+    version = _own_version(request.user, pk)
+    step = get_object_or_404(version.steps, number=number)
+    step.version = version
+    form = StepLabelForm(request.POST, instance=step, user=request.user)
+    if form.is_valid():
+        revision = save_with_revision(form.save(commit=False), request.user)
+        messages.success(
+            request, _("L’étiquette est enregistrée.") if revision else _("Aucune modification.")
+        )
+    else:
+        messages.error(request, " ".join(form.errors.get("label", [])))
+    return redirect(step)

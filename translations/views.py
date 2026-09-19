@@ -44,6 +44,7 @@ from .forms import (
     SourceTextEditForm,
     SourceTextForm,
     StepForm,
+    StepLabelForm,
     TranslationTextForm,
     VersionForm,
 )
@@ -953,6 +954,11 @@ def version_detail(request, pk):
             "can_translate": can_translate(user, version),
             "can_manage": can_manage(user, version),
             "can_comment_sentences": step is not None and can_comment_sentence(user, version),
+            "editions": [
+                edition
+                for edition in version.steps.exclude(label="").order_by("-number")
+                if can_view(user, _with_version(edition, version))
+            ],
             "members": active_members(version),
             "is_reference": version.pk == version.project.reference_version_id,
             "can_challenge": step is not None and can_challenge(user, version),
@@ -1058,17 +1064,29 @@ def _download(content, version, extension, content_type):
     return response
 
 
+def _export_step(request, version):
+    """The step asked by ``?etape=N`` if the user may see it; None for the default text."""
+    number = request.GET.get("etape", "")
+    if not number.isdigit():
+        return None
+    step = get_object_or_404(version.steps, number=int(number))
+    step.version = version
+    if not can_view(request.user, step):
+        raise Http404
+    return step
+
+
 def version_export_text(request, pk):
     """The source text and the Latin of a version, sentence by sentence, as a text file."""
     version = _version(request.user, pk)
-    step, rows = _rows(request.user, version)
+    step, rows = _rows(request.user, version, _export_step(request, version))
     content = bilingual_text(version, rows, step)
     return _download(content, version, "txt", "text/plain; charset=utf-8")
 
 
 def _export_context(request, version):
     """What the TEI and TMX exports show: the rows and, for TEI, the visible evidence."""
-    step, rows = _rows(request.user, version)
+    step, rows = _rows(request.user, version, _export_step(request, version))
     for row in rows:
         for justification in row["justifications"]:
             justification.evidence_list = visible_evidences(
@@ -1105,7 +1123,7 @@ def version_export_tmx(request, pk):
 def version_export_print(request, pk):
     """A printable page with the justifications as notes; the browser saves it as PDF."""
     version = _version(request.user, pk)
-    step, rows = _rows(request.user, version)
+    step, rows = _rows(request.user, version, _export_step(request, version))
     notes = []
     corpus_sources = set()
     for row in rows:
@@ -1273,6 +1291,8 @@ def step_detail(request, pk, number):
             "is_private": step.during_draft and not version.shows_draft_steps,
             "show_origin": True,
             "can_copy": can_copy(user, step),
+            "can_label": can_translate(user, version),
+            "label_form": StepLabelForm(instance=step, user=user),
             **_progress(rows),
         },
     )

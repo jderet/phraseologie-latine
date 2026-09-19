@@ -154,6 +154,11 @@ urlpatterns = [
     path("versions/<int:pk>/etapes/comparer/", views.step_compare, name="step_compare"),
     path("versions/<int:pk>/etapes/<int:number>/", views.step_detail, name="step"),
     path("versions/<int:pk>/etapes/<int:number>/copier/", views.version_copy, name="version_copy"),
+    path(
+        "versions/<int:pk>/etapes/<int:number>/etiquette/",
+        collab_views.step_label,
+        name="step_label",
+    ),
     path("versions/<int:pk>/proposer/", views.proposal_create, name="proposal_create"),
     path("versions/<int:pk>/propositions/", views.proposal_list, name="proposal_list"),
     path("propositions/<int:pk>/", views.proposal_detail, name="proposal"),
