@@ -7,6 +7,7 @@ from accounts.limits import check_text_for_links
 
 from .models import (
     ChangeProposal,
+    GlossaryEntry,
     SourceProposal,
     SourceText,
     Topic,
@@ -325,3 +326,56 @@ class TopicForm(ContributionForm):
         topic.labels = self.cleaned_data["labels"]
         topic.segment = self.cleaned_data["sentence"]
         return topic
+
+
+class GlossaryEntryForm(ContributionForm):
+    link_fields = ("source_term", "latin_term", "note")
+
+    unit_number = forms.IntegerField(
+        label=_("Fiche phraséologique (numéro)"),
+        required=False,
+        min_value=1,
+        help_text=_("Facultatif : le numéro de la fiche, par exemple 12 pour …/fiches/12/."),
+    )
+    neologism_number = forms.IntegerField(
+        label=_("Néologisme (numéro)"),
+        required=False,
+        min_value=1,
+        help_text=_("Facultatif : le numéro de la page du néologisme."),
+    )
+
+    class Meta:
+        model = GlossaryEntry
+        fields = ("source_term", "latin_term", "note")
+        widgets = {"note": forms.Textarea(attrs={"rows": 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initial.setdefault("unit_number", self.instance.unit_id)
+        self.initial.setdefault("neologism_number", self.instance.neologism_id)
+
+    def _visible(self, model, number):
+        from moderation.registry import can_view
+
+        if number is None:
+            return None
+        obj = model.objects.filter(pk=number).first()
+        if obj is None or not can_view(self.user, obj):
+            raise ValidationError(_("Aucune page accessible ne porte ce numéro."))
+        return obj
+
+    def clean_unit_number(self):
+        from phraseology.models import Unit
+
+        return self._visible(Unit, self.cleaned_data["unit_number"])
+
+    def clean_neologism_number(self):
+        from phraseology.models import Neologism
+
+        return self._visible(Neologism, self.cleaned_data["neologism_number"])
+
+    def save(self, commit=True):
+        entry = super().save(commit=False)
+        entry.unit = self.cleaned_data["unit_number"]
+        entry.neologism = self.cleaned_data["neologism_number"]
+        return entry

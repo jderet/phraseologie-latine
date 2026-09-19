@@ -13,11 +13,19 @@ from activity.feeds import project_feed
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
+from . import glossary as glossary_services
 from . import members as member_services
 from . import topics as topic_services
 from .concordance import LATIN, SOURCE, highlight, search
-from .forms import InviteForm, TopicForm
-from .models import Topic, TranslationProject, TranslationVersion, VersionMember, is_version_writer
+from .forms import GlossaryEntryForm, InviteForm, TopicForm
+from .models import (
+    GlossaryEntry,
+    Topic,
+    TranslationProject,
+    TranslationVersion,
+    VersionMember,
+    is_version_writer,
+)
 from .permissions import can_edit, can_manage
 from .sources import SourceHistory
 from .templatetags.workshop_tags import FIRST_STEPS_COOKIE
@@ -321,3 +329,95 @@ def concordance(request):
     if request.GET.get("fragment"):
         return render(request, "translations/concordance_results.html", context)
     return render(request, "translations/concordance.html", context)
+
+
+# Glossary of a project
+
+
+@require_http_methods(["GET", "POST"])
+def glossary(request, pk):
+    """The terms of a project: adopted, then proposed; the form to propose one."""
+    user = request.user
+    project = _project(user, pk)
+    can_propose = glossary_services.can_propose_term(user, project)
+    form = GlossaryEntryForm(request.POST or None, user=user) if can_propose else None
+    if request.method == "POST":
+        if form is None:
+            raise Http404
+        if form.is_valid():
+            entry = form.save()
+            entry.project = project
+            entry, saved = _contribute(request, glossary_services.propose_term, entry, user)
+            if saved:
+                if entry.is_adopted:
+                    messages.success(request, _("Le terme entre dans le glossaire."))
+                else:
+                    messages.success(
+                        request,
+                        _("Le terme est proposé : le créateur du projet ou un relecteur décide."),
+                    )
+                return redirect("translations:glossary", project.pk)
+    statuses = [GlossaryEntry.Status.ADOPTED, GlossaryEntry.Status.PROPOSED]
+    if request.GET.get("ecartes"):
+        statuses.append(GlossaryEntry.Status.REJECTED)
+    entries = glossary_services.visible_terms(user, project, statuses)
+    entries.sort(key=lambda entry: (not entry.is_adopted, entry.source_term.casefold()))
+    for entry in entries:
+        entry.can_change = glossary_services.can_change_term(user, entry)
+    return render(
+        request,
+        "translations/glossary.html",
+        {
+            "project": project,
+            "entries": entries,
+            "form": form,
+            "can_decide": glossary_services.can_decide_term(user, project),
+            "show_rejected": bool(request.GET.get("ecartes")),
+        },
+    )
+
+
+def _entry(user, project, entry_pk):
+    entry = get_object_or_404(project.glossary.all(), pk=entry_pk)
+    entry.project = project
+    if not can_view(user, entry):
+        raise Http404
+    return entry
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def glossary_edit(request, pk, entry_pk):
+    project = _project(request.user, pk)
+    entry = _entry(request.user, project, entry_pk)
+    if not glossary_services.can_change_term(request.user, entry):
+        raise PermissionDenied
+    form = GlossaryEntryForm(request.POST or None, instance=entry, user=request.user)
+    if request.method == "POST" and form.is_valid():
+        revision, saved = _contribute(request, save_with_revision, form.save(), request.user)
+        if saved:
+            messages.success(
+                request, _("Le terme est modifié.") if revision else _("Aucune modification.")
+            )
+            return redirect(entry)
+    return render(
+        request,
+        "translations/glossary_form.html",
+        {"project": project, "entry": entry, "form": form},
+    )
+
+
+@login_required
+@require_POST
+def glossary_decide(request, pk, entry_pk):
+    project = _project(request.user, pk)
+    entry = _entry(request.user, project, entry_pk)
+    decision = request.POST.get("decision")
+    if decision not in ("adopt", "reject"):
+        return HttpResponseBadRequest()
+    glossary_services.decide_term(entry, request.user, adopt=decision == "adopt")
+    if decision == "adopt":
+        messages.success(request, _("Le terme est adopté."))
+    else:
+        messages.success(request, _("Le terme est écarté."))
+    return redirect(entry)

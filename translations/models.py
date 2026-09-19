@@ -971,6 +971,82 @@ class Topic(ModeratedContent):
         return [(code, names[code]) for code in self.labels if code in names]
 
 
+class GlossaryEntry(ModeratedContent):
+    """A term of the glossary of a project: how a source word is rendered in Latin throughout,
+    as in the termbases of translation software. Any active account proposes a term; the
+    creator of the project or a reviewer adopts or rejects it."""
+
+    class Status(models.TextChoices):
+        PROPOSED = "proposed", _("proposé")
+        ADOPTED = "adopted", _("adopté")
+        REJECTED = "rejected", _("écarté")
+
+    project = models.ForeignKey(
+        TranslationProject,
+        on_delete=models.PROTECT,
+        related_name="glossary",
+        verbose_name=_("projet"),
+    )
+    source_term = models.CharField(_("terme source"), max_length=200)
+    latin_term = models.CharField(_("latin"), max_length=200)
+    note = models.TextField(_("note"), max_length=1000, blank=True)
+    unit = models.ForeignKey(
+        "phraseology.Unit",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="glossary_entries",
+        verbose_name=_("fiche phraséologique"),
+    )
+    neologism = models.ForeignKey(
+        "phraseology.Neologism",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="glossary_entries",
+        verbose_name=_("néologisme"),
+    )
+    status = models.CharField(
+        _("statut"),
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PROPOSED,
+        editable=False,
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        editable=False,
+        verbose_name=_("proposé par"),
+    )
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        editable=False,
+        verbose_name=_("décidé par"),
+    )
+    created_at = models.DateTimeField(_("proposé le"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("terme du glossaire")
+        verbose_name_plural = _("termes du glossaire")
+        ordering = ["project", "source_term", "pk"]
+
+    def __str__(self):
+        return f"{self.source_term} → {self.latin_term}"
+
+    def get_absolute_url(self):
+        return f"{reverse('translations:glossary', args=[self.project_id])}#terme-{self.pk}"
+
+    @property
+    def is_adopted(self):
+        return self.status == self.Status.ADOPTED
+
+
 def version_visible_to(user, version):
     return version.is_published or is_version_writer(user, version)
 
@@ -1104,4 +1180,11 @@ register(
     not_reverted=("status", "closed_at", "closed_by"),
     discussion=lambda user, topic: True,
     votes=lambda user, topic: topic.is_open,
+)
+register(
+    GlossaryEntry,
+    owner_field="author",
+    text_fields=("source_term", "latin_term", "note"),
+    visible_to=lambda user, entry: can_view(user, entry.project),
+    not_reverted=("status", "decided_by"),
 )

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags workshop_tags %}
+
+{% block title %}{% translate "Glossaire" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <h1>{{ project.title }}</h1>
+  {% project_tabs project "glossary" %}
+  <p class="note">{% blocktranslate trimmed %}
+    Les termes à rendre de la même façon dans tout le texte. Les termes adoptés sont surlignés
+    dans l’éditeur, et le contrôle qualité signale une phrase qui ne les emploie pas. Chaque
+    version reste libre de s’en écarter.
+  {% endblocktranslate %}</p>
+  <div class="table-scroll">
+    <table class="glossary-table">
+      <thead><tr><th scope="col">{% translate "Terme source" %}</th><th scope="col">{% translate "Latin" %}</th><th scope="col">{% translate "Note" %}</th><th scope="col">{% translate "Statut" %}</th></tr></thead>
+      <tbody>
+        {% for entry in entries %}
+        <tr id="terme-{{ entry.pk }}"{% if not entry.is_adopted %} class="is-proposed"{% endif %}>
+          <td>{{ entry.source_term }}</td>
+          <td lang="la">{{ entry.latin_term }}{% if entry.unit %}<br><a class="small-link" href="{{ entry.unit.get_absolute_url }}">{% translate "fiche" %} : {{ entry.unit.reference_form }}</a>{% endif %}{% if entry.neologism %}<br><a class="small-link" href="{{ entry.neologism.get_absolute_url }}">{% translate "néologisme" %} : {{ entry.neologism.form }}</a>{% endif %}</td>
+          <td>{{ entry.note|linebreaksbr }}</td>
+          <td>
+            <span class="badge{% if entry.is_adopted %} state-open{% endif %}">{{ entry.get_status_display }}</span>
+            {% if can_decide %}
+            <form method="post" action="{% url 'translations:glossary_decide' project.pk entry.pk %}" class="inline-form">
+              {% csrf_token %}
+              {% if entry.status != "adopted" %}<button type="submit" class="link-button" name="decision" value="adopt">{% translate "Adopter" %}</button>{% endif %}
+              {% if entry.status != "rejected" %}<button type="submit" class="link-button" name="decision" value="reject">{% translate "Écarter" %}</button>{% endif %}
+            </form>
+            {% endif %}
+            {% if entry.can_change %}<a class="small-link" href="{% url 'translations:glossary_edit' project.pk entry.pk %}">{% translate "Modifier" %}</a>{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">{% translate "Le glossaire est vide pour l’instant." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="note">{% if show_rejected %}<a href="{% url 'translations:glossary' project.pk %}">{% translate "Masquer les termes écartés" %}</a>{% else %}<a href="?ecartes=1">{% translate "Montrer les termes écartés" %}</a>{% endif %}</p>
+  {% if form %}
+  <h2>{% if can_decide %}{% translate "Ajouter un terme" %}{% else %}{% translate "Proposer un terme" %}{% endif %}</h2>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% if can_decide %}{% translate "Ajouter" %}{% else %}{% translate "Proposer" %}{% endif %}</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

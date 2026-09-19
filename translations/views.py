@@ -45,6 +45,7 @@ from .forms import (
     TranslationTextForm,
     VersionForm,
 )
+from .glossary import find_terms, marked_text, visible_terms
 from .members import active_members
 from .models import (
     ChangeProposal,
@@ -980,8 +981,11 @@ def version_create(request, project_pk):
 def version_edit(request, pk):
     version = _own_version(request.user, pk)
     _step, rows = _rows(request.user, version)
+    terms = visible_terms(request.user, version.project)
     for row in rows:
         row["data"] = row_data(row)
+        if terms and find_terms(row["segment"].text, terms):
+            row["source_marked"] = marked_text(row["segment"].text, terms)
     if request.method == "POST":
         changes = []
         for row in rows:

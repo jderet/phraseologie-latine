@@ -740,3 +740,40 @@ kbd {
   padding: 0;
   margin: 0;
 }
+
+/* Glossary */
+
+mark.term {
+  padding: 0 1px;
+  border-bottom: 2px dotted var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: inherit;
+  cursor: copy;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.glossary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.glossary-table th,
+.glossary-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.glossary-table tr.is-proposed td {
+  color: var(--ink-2);
+}
+
+.glossary-table :target td,
+.glossary-table tr:target td {
+  background: var(--gold-soft);
+}

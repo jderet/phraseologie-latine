@@ -9,8 +9,9 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import TranslationTextForm
+from .glossary import can_propose_term, find_terms, visible_terms
 from .memory import MIN_SCORE, other_versions, similar_sentences
-from .models import TranslatedSegment
+from .models import GlossaryEntry, TranslatedSegment
 from .services import save_translation, set_sentence_status
 from .views import _own_version
 
@@ -69,5 +70,32 @@ def memory_panel(request, pk, segment_pk):
             "others": other_versions(request.user, version, segment),
             "matches": similar_sentences(request.user, version, segment),
             "min_score": MIN_SCORE,
+        },
+    )
+
+
+@login_required
+@require_GET
+def glossary_panel(request, pk, segment_pk):
+    """Terms of the glossary found in the sentence: adopted ones, then proposed ones."""
+    version = _own_version(request.user, pk)
+    segment = get_object_or_404(version.project.source_text.segments.current(), pk=segment_pk)
+    terms = visible_terms(
+        request.user,
+        version.project,
+        (GlossaryEntry.Status.ADOPTED, GlossaryEntry.Status.PROPOSED),
+    )
+    found = []
+    for item in find_terms(segment.text, terms):
+        if item.entry not in found:
+            found.append(item.entry)
+    return render(
+        request,
+        "translations/panel_glossary.html",
+        {
+            "version": version,
+            "project": version.project,
+            "entries": found,
+            "can_propose": can_propose_term(request.user, version.project),
         },
     )

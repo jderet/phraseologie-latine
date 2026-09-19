@@ -1,0 +1,10 @@
+{% load i18n %}{% for entry in entries %}
+<div class="memory-item">
+  <p><strong>{{ entry.source_term }}</strong> → <span class="memory-latin" lang="la">{{ entry.latin_term }}</span>{% if not entry.is_adopted %} <span class="badge">{{ entry.get_status_display }}</span>{% endif %}</p>
+  {% if entry.note %}<p class="muted">{{ entry.note }}</p>{% endif %}
+  <p class="memory-actions"><button type="button" class="link-button" data-use-latin="{{ entry.latin_term }}" data-mode="insert">{% translate "Insérer à la sélection" %}</button>{% if entry.unit %} · <a href="{{ entry.unit.get_absolute_url }}" target="_blank">{% translate "fiche" %}</a>{% endif %}</p>
+</div>
+{% empty %}
+<p class="note">{% translate "Aucun terme du glossaire dans cette phrase." %}</p>
+{% endfor %}
+<p class="note"><a href="{% url 'translations:glossary' project.pk %}" target="_blank">{% if can_propose %}{% translate "Voir le glossaire ou proposer un terme" %}{% else %}{% translate "Voir le glossaire" %}{% endif %}</a></p>

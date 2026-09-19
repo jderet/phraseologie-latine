@@ -258,17 +258,23 @@
   });
   document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-use-latin]");
-    if (!button || !activeField) {
+    // A term marked in a source sentence goes to the Latin of that sentence.
+    const row = button && button.closest(".bitext-row");
+    const field = row ? row.querySelector("textarea[data-save-url]") : activeField;
+    if (!button || !field) {
       return;
     }
+    event.preventDefault();
     const text = button.dataset.useLatin;
     if (button.dataset.mode === "replace") {
-      activeField.setRangeText(text, 0, activeField.value.length, "end");
+      field.setRangeText(text, 0, field.value.length, "end");
     } else {
-      activeField.setRangeText(text, activeField.selectionStart, activeField.selectionEnd, "end");
+      const before = field.value.slice(0, field.selectionStart);
+      const spaced = before && !/\s$/.test(before) ? ` ${text}` : text;
+      field.setRangeText(spaced, field.selectionStart, field.selectionEnd, "end");
     }
-    activeField.dispatchEvent(new Event("input", { bubbles: true }));
-    activeField.focus();
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.focus();
   });
 
   // Tabs of the side panel: one section at a time, the choice kept for the next visit.
