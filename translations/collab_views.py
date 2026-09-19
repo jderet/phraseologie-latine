@@ -7,16 +7,17 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
+from accounts.limits import check_text_for_links
 from moderation.registry import can_view
 
-from .forms import ProposalForm
+from .forms import ProposalForm, ProposalReviewForm
 from .models import ChangeProposal  # noqa: F401 - the form builds one
 from .permissions import can_propose
-from .services import create_proposal
+from .services import create_proposal, review_proposal
 from .sync import differences_with_original, take_upstream, upstream_changes
-from .views import _contribute, _own_version
+from .views import _contribute, _own_version, _proposal
 
 
 @login_required
@@ -99,3 +100,30 @@ def propose_to_original(request, pk):
             "form": form,
         },
     )
+
+
+@login_required
+@require_POST
+def proposal_review(request, pk):
+    """Approve a proposal, request changes or comment on it."""
+    proposal = _proposal(request.user, pk)
+    form = ProposalReviewForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Choisissez un avis."))
+        return redirect(proposal)
+    try:
+        check_text_for_links(request.user, form.cleaned_data["text"])
+        _review, saved = _contribute(
+            request,
+            review_proposal,
+            proposal,
+            request.user,
+            form.cleaned_data["verdict"],
+            form.cleaned_data["text"],
+        )
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        if saved:
+            messages.success(request, _("Votre relecture est publiée."))
+    return redirect(f"{proposal.get_absolute_url()}#relectures")

@@ -15,6 +15,7 @@ from moderation.services import save_with_revision
 
 from .models import (
     ChangeProposal,
+    ProposalReview,
     ProposedSentence,
     Segment,
     SourceChange,
@@ -799,3 +800,34 @@ def set_reference_version(project, version, user):
         )
     project.reference_version = version
     return save_with_revision(project, user, comment=gettext("Choix de la version de référence"))
+
+
+@transaction.atomic
+def review_proposal(proposal, reviewer, verdict, text=""):
+    """Approve a proposal, request changes or comment; the writers of the version still decide
+    on each sentence. The author of the proposal does not review it."""
+    if (
+        not reviewer.is_authenticated
+        or not reviewer.is_active
+        or reviewer.pk == proposal.author_id
+        or not proposal.is_open
+    ):
+        raise PermissionDenied
+    if verdict not in ProposalReview.Verdict.values:
+        raise ValueError("Unknown verdict.")
+    text = (text or "").strip()
+    if verdict != ProposalReview.Verdict.APPROVE and not text:
+        raise ValidationError(
+            gettext("Dites ce qu’il faudrait changer, ou ce que vous remarquez."), code="empty"
+        )
+    review = ProposalReview(proposal=proposal, reviewer=reviewer, verdict=verdict, text=text)
+    save_with_revision(review, reviewer)
+    auto_follow(reviewer, proposal)
+    record(
+        reviewer,
+        Verb.PROPOSAL_REVIEWED,
+        review,
+        recipients={proposal.author_id} | version_writer_ids(proposal.version),
+        mention_text=text,
+    )
+    return review

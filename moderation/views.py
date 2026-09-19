@@ -149,7 +149,9 @@ def comment(request, app_label, model_name, pk):
             messages.error(request, error.messages[0])
         else:
             messages.success(request, _("Votre message est publié."))
-    return redirect(f"{_object_url(obj)}#discussion")
+    # A content discussed inside a page (a proposed sentence) gives its own place.
+    discussion_url = getattr(obj, "get_discussion_url", None)
+    return redirect(discussion_url() if discussion_url else f"{_object_url(obj)}#discussion")
 
 
 @login_required

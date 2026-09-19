@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n activity_tags moderation_tags %}
+{% load i18n activity_tags moderation_tags workshop_tags %}
 
 {% block title %}{{ proposal }} · {{ block.super }}{% endblock %}
 
@@ -59,6 +59,7 @@
           <button type="submit" name="decision" value="refuse" class="button button-quiet">{% translate "Refuser" %}</button>
         </form>
         {% endif %}
+        {% sentence_thread proposed %}
       </div>
     </li>
     {% endwith %}{% endfor %}
@@ -70,6 +71,28 @@
     <button type="submit" class="button button-quiet">{% translate "Retirer ma proposition" %}</button>
   </form>
   {% endif %}
+
+  <section class="reviews" id="relectures" aria-labelledby="reviews-title">
+    <h2 id="reviews-title">{% translate "Relectures" %}</h2>
+    <ol class="sentence-comments">
+      {% for review in reviews %}
+      <li class="sentence-comment review-{{ review.verdict }}" id="relecture-{{ review.pk }}">
+        <p class="comment-meta muted"><a href="{{ review.reviewer.get_absolute_url }}">{{ review.reviewer.public_name }}</a> <strong>{{ review.get_verdict_display }}</strong> · {{ review.created_at|date:"j F Y, H:i" }}</p>
+        {% if review.text %}<p>{{ review.text|linebreaksbr }}</p>{% endif %}
+      </li>
+      {% empty %}
+      <li class="note">{% translate "Aucune relecture pour l’instant." %}</li>
+      {% endfor %}
+    </ol>
+    {% if can_review %}
+    <form method="post" action="{% url 'translations:proposal_review' proposal.pk %}" class="form review-form">
+      {% csrf_token %}
+      {{ review_form.as_div }}
+      <button type="submit" class="button">{% translate "Publier ma relecture" %}</button>
+    </form>
+    <p class="note">{% translate "Votre avis éclaire les auteurs de la version, qui décident seuls de chaque phrase." %}</p>
+    {% endif %}
+  </section>
 
   {% translate "La discussion est close." as closed_message %}
   {% discussion proposal closed_message %}

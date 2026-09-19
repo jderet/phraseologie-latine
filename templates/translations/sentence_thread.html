@@ -1,0 +1,18 @@
+{% load i18n %}{% if comments or can_comment %}<details class="sentence-thread"{% if comments %} open{% endif %}>
+  <summary>{% blocktranslate count counter=comments|length %}{{ counter }} message sur cette phrase{% plural %}{{ counter }} messages sur cette phrase{% endblocktranslate %}</summary>
+  <ol class="sentence-comments">
+    {% for comment in comments %}
+    <li class="sentence-comment" id="message-{{ comment.pk }}">
+      <p class="comment-meta muted"><a href="{{ comment.author.get_absolute_url }}">{{ comment.author.public_name }}</a> · {{ comment.created_at|date:"j F Y, H:i" }}</p>
+      <p>{{ comment.text|linebreaksbr }}</p>
+    </li>
+    {% endfor %}
+  </ol>
+  {% if can_comment %}
+  <form method="post" action="{{ post_url }}" class="form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="button button-small">{% translate "Répondre sur cette phrase" %}</button>
+  </form>
+  {% endif %}
+</details>{% endif %}

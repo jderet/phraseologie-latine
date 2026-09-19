@@ -831,6 +831,9 @@ class ProposedSentence(ModeratedContent):
     def get_absolute_url(self):
         return f"{self.proposal.get_absolute_url()}#proposee-{self.pk}"
 
+    def get_discussion_url(self):
+        return self.get_absolute_url()
+
     @property
     def is_pending(self):
         return self.decision == self.Decision.PENDING
@@ -1143,6 +1146,48 @@ class IgnoredAlert(models.Model):
         return f"{self.code} · {self.segment_id}"
 
 
+class ProposalReview(ModeratedContent):
+    """A review of a change proposal, as on GitHub: approve, request changes or comment.
+
+    Indicative: the writers of the version still decide on each sentence."""
+
+    class Verdict(models.TextChoices):
+        APPROVE = "approve", _("approuve")
+        CHANGES = "changes", _("demande des changements")
+        COMMENT = "comment", _("commente")
+
+    proposal = models.ForeignKey(
+        ChangeProposal,
+        on_delete=models.PROTECT,
+        related_name="reviews",
+        verbose_name=_("proposition"),
+    )
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        editable=False,
+        verbose_name=_("relecteur"),
+    )
+    verdict = models.CharField(_("avis"), max_length=10, choices=Verdict.choices)
+    text = models.TextField(_("commentaire"), max_length=3000, blank=True)
+    created_at = models.DateTimeField(_("date"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("relecture d’une proposition")
+        verbose_name_plural = _("relectures des propositions")
+        ordering = ["proposal", "created_at", "pk"]
+
+    def __str__(self):
+        return gettext("%(name)s %(verdict)s") % {
+            "name": self.reviewer.public_name,
+            "verdict": self.get_verdict_display(),
+        }
+
+    def get_absolute_url(self):
+        return f"{self.proposal.get_absolute_url()}#relecture-{self.pk}"
+
+
 def version_visible_to(user, version):
     return version.is_published or is_version_writer(user, version)
 
@@ -1255,6 +1300,8 @@ register(
     visible_to=lambda user, proposed: version_visible_to(user, proposed.proposal.version),
     counts_toward_limit=False,
     not_reverted=("decision", "decided_at"),
+    # Each proposed sentence has its own thread, like the comments of a line in a review.
+    discussion=lambda user, proposed: proposed.proposal.is_open,
 )
 register(
     VersionMember,
@@ -1290,4 +1337,10 @@ register(
     text_fields=("text",),
     visible_to=lambda user, comment: version_visible_to(user, comment.version),
     not_reverted=("is_resolved", "resolved_by"),
+)
+register(
+    ProposalReview,
+    owner_field="reviewer",
+    text_fields=("text",),
+    visible_to=lambda user, review: version_visible_to(user, review.proposal.version),
 )

@@ -33,6 +33,7 @@ from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
     ProposalForm,
+    ProposalReviewForm,
     PublishForm,
     ReferenceForm,
     SentenceEditForm,
@@ -1476,6 +1477,16 @@ def proposal_detail(request, pk):
             "sentences": sentences,
             "can_decide": can_decide,
             "can_withdraw": proposal.is_open and user.pk == proposal.author_id,
+            "reviews": [
+                review
+                for review in proposal.reviews.select_related("reviewer")
+                if can_view(user, _with_proposal(review, proposal))
+            ],
+            "can_review": proposal.is_open
+            and user.is_authenticated
+            and user.is_active
+            and user.pk != proposal.author_id,
+            "review_form": ProposalReviewForm(),
         },
     )
 
@@ -1541,6 +1552,11 @@ def proposal_withdraw(request, pk):
     else:
         messages.success(request, _("La proposition est retirée."))
     return redirect(proposal)
+
+
+def _with_proposal(review, proposal):
+    review.proposal = proposal
+    return review
 
 
 def _frozen_texts(step):

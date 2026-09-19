@@ -30,3 +30,21 @@ def first_steps(context, where):
         "next": request.get_full_path() if request is not None else "/",
         "csrf_token": context.get("csrf_token"),
     }
+
+
+@register.inclusion_tag("translations/sentence_thread.html", takes_context=True)
+def sentence_thread(context, proposed):
+    """The messages about one proposed sentence, and the form to post one."""
+    from moderation.forms import CommentForm
+    from moderation.registry import comment_url
+    from moderation.services import can_comment, comments_for
+
+    user = context.get("user")
+    return {
+        "proposed": proposed,
+        "comments": comments_for(user, proposed),
+        "can_comment": can_comment(user, proposed),
+        "post_url": comment_url(proposed),
+        "form": CommentForm(),
+        "csrf_token": context.get("csrf_token"),
+    }

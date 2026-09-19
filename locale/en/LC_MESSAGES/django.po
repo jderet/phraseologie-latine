@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 15:00+0200\n"
+"POT-Creation-Date: 2026-09-19 15:04+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -180,7 +180,7 @@ msgstr "Anonymous contributor"
 msgid "contributeur"
 msgstr "contributor"
 
-#: accounts/roles.py:20
+#: accounts/roles.py:20 translations/models.py:1170
 msgid "relecteur"
 msgstr "reviewer"
 
@@ -228,138 +228,142 @@ msgid "a retiré une proposition"
 msgstr "withdrew a proposal"
 
 #: activity/models.py:22
+msgid "a relu une proposition"
+msgstr "reviewed a proposal"
+
+#: activity/models.py:23
 msgid "a écrit un message"
 msgstr "wrote a message"
 
-#: activity/models.py:23
+#: activity/models.py:24
 msgid "vous a mentionné"
 msgstr "mentioned you"
 
-#: activity/models.py:24
+#: activity/models.py:25
 msgid "a contesté un choix"
 msgstr "contested a choice"
 
-#: activity/models.py:25
+#: activity/models.py:26
 msgid "a proposé de modifier un texte source"
 msgstr "proposed to change a source text"
 
-#: activity/models.py:26
+#: activity/models.py:27
 msgid "a examiné une proposition sur un texte"
 msgstr "reviewed a proposal on a text"
 
-#: activity/models.py:27
+#: activity/models.py:28
 msgid "vous invite comme co-auteur"
 msgstr "invites you as a co-author"
 
-#: activity/models.py:28
+#: activity/models.py:29
 msgid "est devenu co-auteur"
 msgstr "became a co-author"
 
-#: activity/models.py:29
+#: activity/models.py:30
 msgid "a refusé l’invitation"
 msgstr "declined the invitation"
 
-#: activity/models.py:30
+#: activity/models.py:31
 msgid "a ouvert un sujet"
 msgstr "opened a topic"
 
-#: activity/models.py:31
+#: activity/models.py:32
 msgid "a fermé un sujet"
 msgstr "closed a topic"
 
-#: activity/models.py:32
+#: activity/models.py:33
 msgid "a rouvert un sujet"
 msgstr "reopened a topic"
 
-#: activity/models.py:33
+#: activity/models.py:34
 msgid "a commenté une phrase"
 msgstr "commented on a sentence"
 
-#: activity/models.py:43 corpus/models.py:40 corpus/models.py:85
+#: activity/models.py:44 corpus/models.py:40 corpus/models.py:85
 #: justifications/models.py:96 justifications/models.py:334
 #: moderation/models.py:53 moderation/models.py:127 moderation/models.py:175
 #: moderation/models.py:217 templates/translations/version_members.html:29
 #: translations/models.py:252 translations/models.py:314
 #: translations/models.py:480 translations/models.py:658
-#: translations/models.py:751 translations/models.py:944
-#: translations/models.py:1081
+#: translations/models.py:751 translations/models.py:947
+#: translations/models.py:1084
 msgid "auteur"
 msgstr "author"
 
-#: activity/models.py:45 moderation/models.py:56
+#: activity/models.py:46 moderation/models.py:56
 msgid "action"
 msgstr "action"
 
-#: activity/models.py:56 translations/models.py:474 translations/models.py:921
-#: translations/models.py:998
+#: activity/models.py:57 translations/models.py:474 translations/models.py:924
+#: translations/models.py:1001
 msgid "projet"
 msgstr "project"
 
-#: activity/models.py:59
+#: activity/models.py:60
 msgid "public"
 msgstr "public"
 
-#: activity/models.py:60 activity/models.py:126 activity/models.py:159
+#: activity/models.py:61 activity/models.py:127 activity/models.py:160
 #: moderation/models.py:55 moderation/models.py:134 moderation/models.py:178
 #: moderation/models.py:220 translations/models.py:271
-#: translations/models.py:1130
+#: translations/models.py:1133 translations/models.py:1174
 msgid "date"
 msgstr "date"
 
-#: activity/models.py:63 activity/models.py:85
+#: activity/models.py:64 activity/models.py:86
 msgid "événement"
 msgstr "event"
 
-#: activity/models.py:64
+#: activity/models.py:65
 msgid "événements"
 msgstr "events"
 
-#: activity/models.py:82
+#: activity/models.py:83
 msgid "destinataire"
 msgstr "recipient"
 
-#: activity/models.py:87
+#: activity/models.py:88
 msgid "lue le"
 msgstr "read on"
 
-#: activity/models.py:90
+#: activity/models.py:91
 msgid "notification"
 msgstr "notification"
 
-#: activity/models.py:91
+#: activity/models.py:92
 msgid "notifications"
 msgstr "notifications"
 
-#: activity/models.py:120 activity/models.py:151
+#: activity/models.py:121 activity/models.py:152
 msgid "personne"
 msgstr "person"
 
-#: activity/models.py:125
+#: activity/models.py:126
 msgid "suivi"
 msgstr "followed"
 
-#: activity/models.py:129
+#: activity/models.py:130
 msgid "abonnement"
 msgstr "subscription"
 
-#: activity/models.py:130
+#: activity/models.py:131
 msgid "abonnements"
 msgstr "subscriptions"
 
-#: activity/models.py:157 core/models.py:16 templates/corpus/passage.html:47
+#: activity/models.py:158 core/models.py:16 templates/corpus/passage.html:47
 #: templates/corpus/reading.html:189 templates/corpus/work.html:56
 #: translations/models.py:523 translations/models.py:577
 #: translations/models.py:645 translations/models.py:738
-#: translations/models.py:856 translations/models.py:1068
-#: translations/models.py:1117
+#: translations/models.py:859 translations/models.py:1071
+#: translations/models.py:1120
 msgid "version"
 msgstr "version"
 
-#: activity/models.py:162
+#: activity/models.py:163
 msgid "étoile"
 msgstr "star"
 
-#: activity/models.py:163 templates/activity/star_button.html:4
+#: activity/models.py:164 templates/activity/star_button.html:4
 msgid "étoiles"
 msgstr "stars"
 
@@ -395,7 +399,7 @@ msgid "Export écrit : %(path)s"
 msgstr "Export written: %(path)s"
 
 #: core/models.py:18 corpus/models.py:168 corpus/models.py:295
-#: translations/models.py:926
+#: translations/models.py:929
 msgid "texte"
 msgstr "text"
 
@@ -977,7 +981,7 @@ msgstr "CTS URN"
 
 #: corpus/models.py:88 corpus/models.py:167 justifications/models.py:51
 #: translations/models.py:57 translations/models.py:408
-#: translations/models.py:924
+#: translations/models.py:927
 msgid "titre"
 msgstr "title"
 
@@ -1278,8 +1282,8 @@ msgstr "reason"
 #: phraseology/models.py:611 phraseology/models.py:751
 #: phraseology/models.py:942 phraseology/models.py:1005
 #: translations/models.py:329 translations/models.py:598
-#: translations/models.py:759 translations/models.py:872
-#: translations/models.py:947 translations/models.py:1020
+#: translations/models.py:759 translations/models.py:875
+#: translations/models.py:950 translations/models.py:1023
 msgid "statut"
 msgstr "status"
 
@@ -1650,7 +1654,7 @@ msgid "De la plus forte (1) à la plus faible (5)."
 msgstr "From the strongest (1) to the weakest (5)."
 
 #: justifications/models.py:116 moderation/models.py:59
-#: translations/models.py:1083
+#: translations/models.py:1086 translations/models.py:1173
 msgid "commentaire"
 msgstr "comment"
 
@@ -1712,7 +1716,7 @@ msgstr "challenge"
 #: justifications/models.py:221 phraseology/models.py:564
 #: phraseology/models.py:654 templates/phraseology/neologism_detail.html:4
 #: templates/phraseology/neologism_detail.html:10
-#: templates/translations/glossary.html:23 translations/models.py:1017
+#: templates/translations/glossary.html:23 translations/models.py:1020
 msgid "néologisme"
 msgstr "neologism"
 
@@ -1731,7 +1735,7 @@ msgstr "location"
 #: justifications/models.py:250 notebook/models.py:58 phraseology/models.py:166
 #: phraseology/models.py:306 phraseology/models.py:395
 #: phraseology/models.py:689 phraseology/models.py:1003
-#: phraseology/models.py:1109 translations/models.py:1002
+#: phraseology/models.py:1109 translations/models.py:1005
 msgid "note"
 msgstr "note"
 
@@ -1882,15 +1886,15 @@ msgstr "Save the justification"
 
 #: justifications/views.py:289 phraseology/views.py:514
 #: phraseology/views.py:660 phraseology/views.py:1722 phraseology/views.py:1918
-#: translations/views.py:138 translations/views.py:731
-#: translations/views.py:1025 translations/workshop_views.py:290
+#: translations/views.py:139 translations/views.py:732
+#: translations/views.py:1026 translations/workshop_views.py:290
 #: translations/workshop_views.py:400
 msgid "Aucune modification."
 msgstr "No change."
 
 #: justifications/views.py:291 phraseology/views.py:516
 #: phraseology/views.py:662 phraseology/views.py:1724 phraseology/views.py:1920
-#: translations/views.py:140
+#: translations/views.py:141
 msgid "Les modifications sont enregistrées."
 msgstr "The changes have been saved."
 
@@ -2074,7 +2078,7 @@ msgid "autre motif"
 msgstr "other reason"
 
 #: moderation/models.py:114 phraseology/models.py:933
-#: translations/models.py:907
+#: translations/models.py:910
 msgid "ouvert"
 msgstr "open"
 
@@ -2131,7 +2135,7 @@ msgstr "for"
 msgid "contre"
 msgstr "against"
 
-#: moderation/models.py:219
+#: moderation/models.py:219 translations/models.py:1172
 msgid "avis"
 msgstr "opinion"
 
@@ -2184,11 +2188,11 @@ msgstr "Write a message of at most 5,000 characters."
 msgid "Votre message est publié."
 msgstr "Your message has been published."
 
-#: moderation/views.py:164
+#: moderation/views.py:166
 msgid "Votre avis est retiré."
 msgstr "Your opinion has been withdrawn."
 
-#: moderation/views.py:166
+#: moderation/views.py:168
 msgid "Votre avis est enregistré."
 msgstr "Your opinion has been recorded."
 
@@ -2625,7 +2629,7 @@ msgid "Marques d’usage"
 msgstr "Usage labels"
 
 #: phraseology/forms.py:136 templates/phraseology/unit_detail.html:81
-#: translations/forms.py:289
+#: translations/forms.py:290
 msgid "Étiquettes"
 msgstr "Tags"
 
@@ -2998,7 +3002,7 @@ msgstr ""
 "noun collocation. “Construction with an open slot” means a construction one "
 "place of which stays open to almost any word."
 
-#: phraseology/models.py:74 translations/models.py:930
+#: phraseology/models.py:74 translations/models.py:933
 msgid "étiquettes"
 msgstr "tags"
 
@@ -3111,7 +3115,7 @@ msgstr "usage note"
 
 #: phraseology/models.py:195 phraseology/models.py:220
 #: phraseology/models.py:307 phraseology/models.py:658
-#: translations/models.py:850
+#: translations/models.py:853
 msgid "retiré"
 msgstr "withdrawn"
 
@@ -3315,7 +3319,7 @@ msgid "emprunt"
 msgstr "borrowing"
 
 #: phraseology/models.py:514 phraseology/models.py:584
-#: translations/models.py:990
+#: translations/models.py:993
 msgid "proposé"
 msgstr "proposed"
 
@@ -3358,12 +3362,12 @@ msgstr ""
 "Optional: the entry or the page, cited without extract (“s. v. birota”)."
 
 #: phraseology/models.py:549 phraseology/models.py:621
-#: translations/models.py:1031
+#: translations/models.py:1034
 msgid "proposé par"
 msgstr "proposed by"
 
 #: phraseology/models.py:551 phraseology/models.py:623
-#: translations/models.py:1042
+#: translations/models.py:1045
 msgid "proposé le"
 msgstr "proposed on"
 
@@ -3474,7 +3478,7 @@ msgstr "attributive adjective"
 msgid "complément du nom"
 msgstr "noun modifier"
 
-#: phraseology/models.py:732 phraseology/panel.py:40 translations/models.py:962
+#: phraseology/models.py:732 phraseology/panel.py:40 translations/models.py:965
 msgid "sujet"
 msgstr "subject"
 
@@ -3494,7 +3498,7 @@ msgstr "association score"
 msgid "extrait le"
 msgstr "extracted on"
 
-#: phraseology/models.py:767 translations/models.py:1040
+#: phraseology/models.py:767 translations/models.py:1043
 msgid "décidé par"
 msgstr "decided by"
 
@@ -4762,7 +4766,7 @@ msgstr "Name or e-mail address"
 #: templates/phraseology/widgets/schema.html:144
 #: templates/translations/concordance.html:13
 #: templates/translations/version_edit.html:103
-#: templates/translations/version_edit.html:112 translations/forms.py:394
+#: templates/translations/version_edit.html:112 translations/forms.py:395
 msgid "Chercher"
 msgstr "Search"
 
@@ -4907,7 +4911,7 @@ msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
 #: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:7
-#: templates/base.html:15 translations/views.py:1086
+#: templates/base.html:15 translations/views.py:1087
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -6837,7 +6841,7 @@ msgstr ""
 "displayed."
 
 #: templates/justifications/challenge_detail.html:64
-#: templates/translations/proposal_detail.html:74
+#: templates/translations/proposal_detail.html:97
 #: templates/translations/source_proposal_detail.html:80
 msgid "La discussion est close."
 msgstr "The discussion is closed."
@@ -6910,7 +6914,7 @@ msgid "corpus interrogé : version %(label)s"
 msgstr "searched corpus: version %(label)s"
 
 #: templates/justifications/justification_detail.html:42
-#: translations/forms.py:386
+#: translations/forms.py:387 translations/forms.py:412
 msgid "Commentaire"
 msgstr "Comment"
 
@@ -10029,7 +10033,7 @@ msgstr "Closed on"
 
 #: templates/translations/proposal_detail.html:33
 #: templates/translations/source_proposal_detail.html:41
-#: translations/forms.py:252
+#: translations/forms.py:253
 msgid "Explication"
 msgstr "Explanation"
 
@@ -10063,10 +10067,30 @@ msgid ""
 msgstr ""
 "Your working text has changed since this proposal; accepting will replace it:"
 
-#: templates/translations/proposal_detail.html:70
+#: templates/translations/proposal_detail.html:71
 #: templates/translations/source_proposal_detail.html:74
 msgid "Retirer ma proposition"
 msgstr "Withdraw my proposal"
+
+#: templates/translations/proposal_detail.html:76
+msgid "Relectures"
+msgstr "Reviews"
+
+#: templates/translations/proposal_detail.html:84
+msgid "Aucune relecture pour l’instant."
+msgstr "No review yet."
+
+#: templates/translations/proposal_detail.html:91
+msgid "Publier ma relecture"
+msgstr "Publish my review"
+
+#: templates/translations/proposal_detail.html:93
+msgid ""
+"Votre avis éclaire les auteurs de la version, qui décident seuls de chaque "
+"phrase."
+msgstr ""
+"Your opinion informs the authors of the version, who alone decide on each "
+"sentence."
 
 #: templates/translations/proposal_list.html:4
 #: templates/translations/proposal_list.html:9
@@ -10172,6 +10196,17 @@ msgstr "Reopen"
 msgid "Marquer comme résolu"
 msgstr "Mark as resolved"
 
+#: templates/translations/sentence_thread.html:2
+#, python-format
+msgid "%(counter)s message sur cette phrase"
+msgid_plural "%(counter)s messages sur cette phrase"
+msgstr[0] "%(counter)s message on this sentence"
+msgstr[1] "%(counter)s messages on this sentence"
+
+#: templates/translations/sentence_thread.html:15
+msgid "Répondre sur cette phrase"
+msgstr "Reply on this sentence"
+
 #: templates/translations/source_changed.html:1
 msgid "Texte source changé depuis la dernière étape. Avant :"
 msgstr "Source text changed since the latest step. Before:"
@@ -10244,7 +10279,7 @@ msgstr ""
 msgid "Enregistrer le texte"
 msgstr "Save the text"
 
-#: templates/translations/source_create.html:28 translations/views.py:465
+#: templates/translations/source_create.html:28 translations/views.py:466
 msgid "Découper en phrases"
 msgstr "Split into sentences"
 
@@ -10445,7 +10480,7 @@ msgstr "No change yet."
 msgid "Abandonner la proposition"
 msgstr "Abandon the proposal"
 
-#: templates/translations/source_sentences.html:57 translations/views.py:454
+#: templates/translations/source_sentences.html:57 translations/views.py:455
 msgid "Ajouter des phrases au début"
 msgstr "Add sentences at the beginning"
 
@@ -10572,7 +10607,7 @@ msgstr "sentence %(number)s"
 msgid "Créer l’étape"
 msgstr "Create the step"
 
-#: templates/translations/step_create.html:33 translations/services.py:777
+#: templates/translations/step_create.html:33 translations/services.py:778
 msgid "Rien n’a changé depuis la dernière étape."
 msgstr "Nothing has changed since the latest step."
 
@@ -10827,7 +10862,7 @@ msgstr "No comment yet."
 msgid "Commenter une phrase"
 msgstr "Comment on a sentence"
 
-#: templates/translations/version_comments.html:27 translations/forms.py:186
+#: templates/translations/version_comments.html:27 translations/forms.py:187
 msgid "Phrase"
 msgstr "Sentence"
 
@@ -11317,24 +11352,32 @@ msgid ""
 msgstr ""
 "Number of sentence saves per day, visible to the authors of the version only."
 
-#: translations/collab_views.py:28 translations/collab_views.py:65
+#: translations/collab_views.py:29 translations/collab_views.py:66
 msgid "Cette version n’est pas une copie."
 msgstr "This version is not a copy."
 
-#: translations/collab_views.py:37
+#: translations/collab_views.py:38
 #, python-format
 msgid "%(count)d phrase reprise de l’originale."
 msgid_plural "%(count)d phrases reprises de l’originale."
 msgstr[0] "%(count)d sentence taken from the original."
 msgstr[1] "%(count)d sentences taken from the original."
 
-#: translations/collab_views.py:69
+#: translations/collab_views.py:70
 msgid "Vous ne pouvez pas proposer de modifications à l’originale."
 msgstr "You cannot propose changes to the original."
 
-#: translations/collab_views.py:87
+#: translations/collab_views.py:88
 msgid "La proposition est envoyée à l’auteur de l’originale."
 msgstr "The proposal is sent to the author of the original."
+
+#: translations/collab_views.py:112
+msgid "Choisissez un avis."
+msgstr "Choose an opinion."
+
+#: translations/collab_views.py:128
+msgid "Votre relecture est publiée."
+msgstr "Your review is published."
 
 #: translations/comments.py:36 translations/editor_views.py:156
 msgid "Écrivez un commentaire."
@@ -11440,7 +11483,7 @@ msgstr "Latin translation under the CC BY-SA 4.0 license."
 msgid "[non traduite]"
 msgstr "[not translated]"
 
-#: translations/forms.py:56
+#: translations/forms.py:57
 msgid ""
 "Je déclare que ce texte est dans le domaine public ou publié sous la licence "
 "indiquée."
@@ -11448,11 +11491,11 @@ msgstr ""
 "I declare that this text is in the public domain or published under the "
 "stated license."
 
-#: translations/forms.py:62
+#: translations/forms.py:63
 msgid "Texte"
 msgstr "Text"
 
-#: translations/forms.py:65
+#: translations/forms.py:66
 msgid ""
 "Collez le texte : il sera découpé en phrases, que vous vérifierez avant "
 "d’enregistrer. Les appels de note de Wikipédia ([1], [réf. nécessaire]) sont "
@@ -11461,11 +11504,11 @@ msgstr ""
 "Paste the text: it will be split into sentences, which you will check before "
 "saving. Wikipedia note calls ([1], [citation needed]) are removed."
 
-#: translations/forms.py:76 translations/forms.py:222
+#: translations/forms.py:77 translations/forms.py:223
 msgid "Le texte est vide."
 msgstr "The text is empty."
 
-#: translations/forms.py:80
+#: translations/forms.py:81
 #, python-format
 msgid ""
 "Un texte compte au plus %(limit)d phrase : découpez-le en plusieurs textes."
@@ -11475,24 +11518,24 @@ msgstr[0] "A text has at most %(limit)d sentence: split it into several texts."
 msgstr[1] ""
 "A text has at most %(limit)d sentences: split it into several texts."
 
-#: translations/forms.py:89 translations/forms.py:225
+#: translations/forms.py:90 translations/forms.py:226
 #, python-format
 msgid "Une phrase compte au plus %(limit)d caractères : vérifiez le découpage."
 msgstr "A sentence has at most %(limit)d characters: check the split."
 
-#: translations/forms.py:136
+#: translations/forms.py:137
 msgid "Message de l’étape"
 msgstr "Message of the step"
 
-#: translations/forms.py:139
+#: translations/forms.py:140
 msgid "Facultatif ; à défaut : « Publication »."
 msgstr "Optional; by default: “Publication”."
 
-#: translations/forms.py:142
+#: translations/forms.py:143
 msgid "Montrer les étapes du brouillon"
 msgstr "Show the draft steps"
 
-#: translations/forms.py:145
+#: translations/forms.py:146
 msgid ""
 "Le public pourra suivre le cheminement de votre traduction. Ce choix est "
 "définitif."
@@ -11500,98 +11543,106 @@ msgstr ""
 "The public will be able to follow how your translation took shape. This "
 "choice is final."
 
-#: translations/forms.py:190
+#: translations/forms.py:191
 msgid "Commence un paragraphe"
 msgstr "Starts a paragraph"
 
-#: translations/forms.py:195 translations/sources.py:80
+#: translations/forms.py:196 translations/sources.py:80
 msgid "Une phrase ne peut pas être vide."
 msgstr "A sentence cannot be empty."
 
-#: translations/forms.py:202
+#: translations/forms.py:203
 msgid "Parties"
 msgstr "Parts"
 
-#: translations/forms.py:203
+#: translations/forms.py:204
 msgid ""
 "Allez à la ligne là où la phrase doit être coupée : une partie par ligne."
 msgstr "Start a new line where the sentence is to be cut: one part per line."
 
-#: translations/forms.py:213
+#: translations/forms.py:214
 msgid "Texte à ajouter"
 msgstr "Text to add"
 
-#: translations/forms.py:215
+#: translations/forms.py:216
 msgid "La première phrase commence un paragraphe"
 msgstr "The first sentence starts a paragraph"
 
-#: translations/forms.py:256 translations/models.py:321
+#: translations/forms.py:257 translations/models.py:321
 msgid ""
 "Pourquoi ces changements : fautes corrigées, phrases oubliées, découpage "
 "revu."
 msgstr ""
 "Why these changes: corrected mistakes, forgotten sentences, revised division."
 
-#: translations/forms.py:279
+#: translations/forms.py:280
 msgid "Nom affiché ou numéro de profil"
 msgstr "Displayed name or profile number"
 
-#: translations/forms.py:281
+#: translations/forms.py:282
 msgid ""
 "La personne invitée accepte ou refuse ; elle voit alors votre brouillon."
 msgstr "The person invited accepts or declines; they then see your draft."
 
-#: translations/forms.py:295
+#: translations/forms.py:296
 msgid "Phrase concernée"
 msgstr "Sentence concerned"
 
-#: translations/forms.py:298
+#: translations/forms.py:299
 msgid "Facultatif : son numéro dans le texte source."
 msgstr "Optional: its number in the source text."
 
-#: translations/forms.py:321
+#: translations/forms.py:322
 msgid "Le texte n’a pas de phrase de ce numéro."
 msgstr "The text has no sentence with this number."
 
-#: translations/forms.py:335
+#: translations/forms.py:336
 msgid "Fiche phraséologique (numéro)"
 msgstr "Phraseological entry (number)"
 
-#: translations/forms.py:338
+#: translations/forms.py:339
 msgid "Facultatif : le numéro de la fiche, par exemple 12 pour …/fiches/12/."
 msgstr "Optional: the number of the entry, for instance 12 for …/fiches/12/."
 
-#: translations/forms.py:341
+#: translations/forms.py:342
 msgid "Néologisme (numéro)"
 msgstr "Neologism (number)"
 
-#: translations/forms.py:344
+#: translations/forms.py:345
 msgid "Facultatif : le numéro de la page du néologisme."
 msgstr "Optional: the number of the page of the neologism."
 
-#: translations/forms.py:364
+#: translations/forms.py:365
 msgid "Aucune page accessible ne porte ce numéro."
 msgstr "No accessible page has this number."
 
-#: translations/forms.py:389
+#: translations/forms.py:390
 msgid "@Nom prévient quelqu’un."
 msgstr "@Name notifies someone."
 
-#: translations/forms.py:395
+#: translations/forms.py:396
 msgid "Remplacer par"
 msgstr "Replace with"
 
-#: translations/forms.py:396
+#: translations/forms.py:397
 msgid "Mot entier"
 msgstr "Whole word"
 
-#: translations/forms.py:397
+#: translations/forms.py:398
 msgid "Respecter les majuscules"
 msgstr "Match case"
 
-#: translations/forms.py:399
+#: translations/forms.py:400
 msgid "Ignorer les macrons (a trouve aussi ā)"
 msgstr "Ignore macrons (a also finds ā)"
+
+#: translations/forms.py:406
+msgid "Votre avis"
+msgstr "Your opinion"
+
+#: translations/forms.py:416
+msgid "Obligatoire, sauf pour approuver."
+msgstr "Required, except to approve."
 
 #: translations/glossary.py:68
 msgid "Terme adopté"
@@ -11726,7 +11777,7 @@ msgstr "state of the sentences"
 
 #: translations/models.py:98 translations/models.py:170
 #: translations/models.py:244 translations/models.py:308
-#: translations/models.py:406 translations/models.py:914
+#: translations/models.py:406 translations/models.py:917
 msgid "texte source"
 msgstr "source text"
 
@@ -11765,7 +11816,7 @@ msgid "position"
 msgstr "position"
 
 #: translations/models.py:175 translations/models.py:246
-#: translations/models.py:647 translations/models.py:923
+#: translations/models.py:647 translations/models.py:926
 msgid "numéro"
 msgstr "number"
 
@@ -11806,6 +11857,7 @@ msgid "adopté par"
 msgstr "adopted by"
 
 #: translations/models.py:269 translations/models.py:802
+#: translations/models.py:1163
 msgid "proposition"
 msgstr "proposal"
 
@@ -11977,13 +12029,13 @@ msgid "%(project)s, version de %(author)s"
 msgstr "%(project)s, version by %(author)s"
 
 #: translations/models.py:583 translations/models.py:697
-#: translations/models.py:805 translations/models.py:1074
-#: translations/models.py:1120
+#: translations/models.py:805 translations/models.py:1077
+#: translations/models.py:1123
 msgid "phrase source"
 msgstr "source sentence"
 
 #: translations/models.py:585 translations/models.py:699
-#: translations/models.py:1001
+#: translations/models.py:1004
 msgid "latin"
 msgstr "Latin"
 
@@ -12080,155 +12132,180 @@ msgstr "proposed sentence"
 msgid "phrases proposées"
 msgstr "proposed sentences"
 
-#: translations/models.py:847
+#: translations/models.py:850
 msgid "invité"
 msgstr "invited"
 
-#: translations/models.py:848 translations/models.py:862
+#: translations/models.py:851 translations/models.py:865
 msgid "co-auteur"
 msgstr "co-author"
 
-#: translations/models.py:849
+#: translations/models.py:852
 msgid "invitation refusée"
 msgstr "invitation declined"
 
-#: translations/models.py:869
+#: translations/models.py:872
 msgid "invité par"
 msgstr "invited by"
 
-#: translations/models.py:874
+#: translations/models.py:877
 msgid "invité le"
 msgstr "invited on"
 
-#: translations/models.py:875
+#: translations/models.py:878
 msgid "réponse le"
 msgstr "answered on"
 
-#: translations/models.py:878
+#: translations/models.py:881
 msgid "co-auteur d’une version"
 msgstr "co-author of a version"
 
-#: translations/models.py:879
+#: translations/models.py:882
 msgid "co-auteurs d’une version"
 msgstr "co-authors of a version"
 
-#: translations/models.py:886
+#: translations/models.py:889
 #, python-format
 msgid "%(name)s, co-auteur de %(version)s"
 msgstr "%(name)s, co-author of %(version)s"
 
-#: translations/models.py:908
+#: translations/models.py:911
 msgid "fermé"
 msgstr "closed"
 
-#: translations/models.py:911
+#: translations/models.py:914
 msgid "question"
 msgstr "question"
 
-#: translations/models.py:912
+#: translations/models.py:915
 msgid "erreur"
 msgstr "error"
 
-#: translations/models.py:913
+#: translations/models.py:916
 msgid "style"
 msgstr "style"
 
-#: translations/models.py:915
+#: translations/models.py:918
 msgid "idée"
 msgstr "idea"
 
-#: translations/models.py:928
+#: translations/models.py:931
 msgid "Écrivez #3 pour renvoyer au sujet n° 3, @Nom pour prévenir quelqu’un."
 msgstr "Write #3 to refer to topic no. 3, @Name to notify someone."
 
-#: translations/models.py:937
+#: translations/models.py:940
 msgid "phrase concernée"
 msgstr "sentence concerned"
 
-#: translations/models.py:949
+#: translations/models.py:952
 msgid "ouvert le"
 msgstr "opened on"
 
-#: translations/models.py:950
+#: translations/models.py:953
 msgid "fermé le"
 msgstr "closed on"
 
-#: translations/models.py:958
+#: translations/models.py:961
 msgid "fermé par"
 msgstr "closed by"
 
-#: translations/models.py:963
+#: translations/models.py:966
 msgid "sujets"
 msgstr "topics"
 
-#: translations/models.py:991
+#: translations/models.py:994
 msgid "adopté"
 msgstr "adopted"
 
-#: translations/models.py:992
+#: translations/models.py:995
 msgid "écarté"
 msgstr "rejected"
 
-#: translations/models.py:1000
+#: translations/models.py:1003
 msgid "terme source"
 msgstr "source term"
 
-#: translations/models.py:1009
+#: translations/models.py:1012
 msgid "fiche phraséologique"
 msgstr "phraseological entry"
 
-#: translations/models.py:1045
+#: translations/models.py:1048
 msgid "terme du glossaire"
 msgstr "glossary term"
 
-#: translations/models.py:1046
+#: translations/models.py:1049
 msgid "termes du glossaire"
 msgstr "glossary terms"
 
-#: translations/models.py:1084
+#: translations/models.py:1087
 msgid "résolu"
 msgstr "resolved"
 
-#: translations/models.py:1092
+#: translations/models.py:1095
 msgid "résolu par"
 msgstr "resolved by"
 
-#: translations/models.py:1094
+#: translations/models.py:1097
 msgid "écrit le"
 msgstr "written on"
 
-#: translations/models.py:1097
+#: translations/models.py:1100
 msgid "commentaire d’une phrase"
 msgstr "sentence comment"
 
-#: translations/models.py:1098
+#: translations/models.py:1101
 msgid "commentaires des phrases"
 msgstr "sentence comments"
 
-#: translations/models.py:1102
+#: translations/models.py:1105
 #, python-format
 msgid "Commentaire de %(name)s"
 msgstr "Comment by %(name)s"
 
-#: translations/models.py:1122
+#: translations/models.py:1125
 msgid "vérification"
 msgstr "check"
 
-#: translations/models.py:1123
+#: translations/models.py:1126
 msgid "empreinte du latin"
 msgstr "fingerprint of the Latin"
 
-#: translations/models.py:1128
+#: translations/models.py:1131
 msgid "ignorée par"
 msgstr "ignored by"
 
-#: translations/models.py:1133
+#: translations/models.py:1136
 msgid "alerte ignorée"
 msgstr "ignored alert"
 
-#: translations/models.py:1134
+#: translations/models.py:1137
 msgid "alertes ignorées"
 msgstr "ignored alerts"
+
+#: translations/models.py:1155
+msgid "approuve"
+msgstr "approves"
+
+#: translations/models.py:1156
+msgid "demande des changements"
+msgstr "requests changes"
+
+#: translations/models.py:1157
+msgid "commente"
+msgstr "comments"
+
+#: translations/models.py:1177
+msgid "relecture d’une proposition"
+msgstr "review of a proposal"
+
+#: translations/models.py:1178
+msgid "relectures des propositions"
+msgstr "reviews of proposals"
+
+#: translations/models.py:1182
+#, python-format
+msgid "%(name)s %(verdict)s"
+msgstr "%(name)s %(verdict)s"
 
 #: translations/qa.py:29
 msgid "latin identique à la phrase source"
@@ -12270,55 +12347,55 @@ msgstr "source text changed since the last step"
 msgid "longueur inhabituelle"
 msgstr "unusual length"
 
-#: translations/services.py:132
+#: translations/services.py:133
 #, python-format
 msgid "Un texte compte au plus %(limit)d phrase."
 msgid_plural "Un texte compte au plus %(limit)d phrases."
 msgstr[0] "A text holds at most %(limit)d sentence."
 msgstr[1] "A text holds at most %(limit)d sentences."
 
-#: translations/services.py:141
+#: translations/services.py:142
 #, python-format
 msgid "Une phrase compte au plus %(limit)d caractères."
 msgstr "A sentence has at most %(limit)d characters."
 
-#: translations/services.py:154
+#: translations/services.py:155
 #, python-format
 msgid "%(count)d phrase ajoutée au début"
 msgid_plural "%(count)d phrases ajoutées au début"
 msgstr[0] "%(count)d sentence added at the beginning"
 msgstr[1] "%(count)d sentences added at the beginning"
 
-#: translations/services.py:160
+#: translations/services.py:161
 #, python-format
 msgid "%(count)d phrase ajoutée à la fin"
 msgid_plural "%(count)d phrases ajoutées à la fin"
 msgstr[0] "%(count)d sentence added at the end"
 msgstr[1] "%(count)d sentences added at the end"
 
-#: translations/services.py:164
+#: translations/services.py:165
 #, python-format
 msgid "%(count)d phrase ajoutée après la phrase %(number)d"
 msgid_plural "%(count)d phrases ajoutées après la phrase %(number)d"
 msgstr[0] "%(count)d sentence added after sentence %(number)d"
 msgstr[1] "%(count)d sentences added after sentence %(number)d"
 
-#: translations/services.py:171 translations/sources.py:206
+#: translations/services.py:172 translations/sources.py:206
 #, python-format
 msgid "Phrase %(number)d modifiée"
 msgstr "Sentence %(number)d edited"
 
-#: translations/services.py:173 translations/sources.py:208
+#: translations/services.py:174 translations/sources.py:208
 #, python-format
 msgid "Phrases %(number)d et %(next)d fusionnées"
 msgstr "Sentences %(number)d and %(next)d merged"
 
-#: translations/services.py:177 translations/sources.py:212
+#: translations/services.py:178 translations/sources.py:212
 #, python-format
 msgid "Phrase %(number)d scindée en %(count)d"
 msgstr "Sentence %(number)d split into %(count)d"
 
-#: translations/services.py:202
+#: translations/services.py:203
 msgid ""
 "Le texte a changé pendant que vous le modifiiez : vérifiez la phrase, puis "
 "recommencez."
@@ -12326,12 +12403,12 @@ msgstr ""
 "The text changed while you were editing it: check the sentence, then try "
 "again."
 
-#: translations/services.py:214 translations/services.py:604
-#: translations/services.py:637
+#: translations/services.py:215 translations/services.py:605
+#: translations/services.py:638
 msgid "Cette proposition est close."
 msgstr "This proposal is closed."
 
-#: translations/services.py:220
+#: translations/services.py:221
 msgid ""
 "Le texte a changé depuis le début de cette proposition : son auteur doit la "
 "reprendre sur le texte actuel."
@@ -12339,39 +12416,39 @@ msgstr ""
 "The text has changed since this proposal began: its author must carry it "
 "over to the current text."
 
-#: translations/services.py:266
+#: translations/services.py:267
 msgid "Il n’y a aucun changement à annuler."
 msgstr "There is no change to undo."
 
-#: translations/services.py:268
+#: translations/services.py:269
 msgid "Dernier changement annulé"
 msgstr "Last change undone"
 
-#: translations/services.py:282
+#: translations/services.py:283
 msgid "Ajoutez au moins un changement avant d’envoyer la proposition."
 msgstr "Add at least one change before sending the proposal."
 
-#: translations/services.py:289
+#: translations/services.py:290
 msgid "Expliquez ces changements."
 msgstr "Explain these changes."
 
-#: translations/services.py:292
+#: translations/services.py:293
 msgid "Proposition envoyée"
 msgstr "Proposal sent"
 
-#: translations/services.py:323
+#: translations/services.py:324
 msgid "Proposition adoptée"
 msgstr "Proposal adopted"
 
-#: translations/services.py:335
+#: translations/services.py:336
 msgid "Proposition refusée"
 msgstr "Proposal refused"
 
-#: translations/services.py:358 translations/services.py:640
+#: translations/services.py:359 translations/services.py:641
 msgid "Proposition retirée"
 msgstr "Proposal withdrawn"
 
-#: translations/services.py:375
+#: translations/services.py:376
 msgid ""
 "Cette proposition ne s’applique plus au texte actuel : une phrase qu’elle "
 "change a changé entre-temps. Annulez ce changement, ou retirez la "
@@ -12380,27 +12457,27 @@ msgstr ""
 "This proposal no longer applies to the current text: a sentence it changes "
 "has changed in the meantime. Undo this change, or withdraw the proposal."
 
-#: translations/services.py:383
+#: translations/services.py:384
 msgid "Proposition reprise sur le texte actuel"
 msgstr "Proposal carried over to the current text"
 
-#: translations/services.py:473
+#: translations/services.py:474
 msgid "Texte source changé"
 msgstr "Source text changed"
 
-#: translations/services.py:541
+#: translations/services.py:542
 msgid "Traduisez d’abord cette phrase."
 msgstr "Translate this sentence first."
 
-#: translations/services.py:572
+#: translations/services.py:573
 msgid "Changez au moins une phrase avant d’envoyer la proposition."
 msgstr "Change at least one sentence before sending the proposal."
 
-#: translations/services.py:607
+#: translations/services.py:608
 msgid "Cette phrase a déjà été examinée."
 msgstr "This sentence has already been decided on."
 
-#: translations/services.py:611
+#: translations/services.py:612
 msgid ""
 "La phrase source a changé depuis cette proposition : refusez cette phrase, "
 "ou recopiez son latin dans votre texte de travail."
@@ -12408,34 +12485,38 @@ msgstr ""
 "The source sentence has changed since this proposal: refuse this sentence, "
 "or copy its Latin into your working text."
 
-#: translations/services.py:626
+#: translations/services.py:627
 msgid "Proposition close"
 msgstr "Proposal closed"
 
-#: translations/services.py:681
+#: translations/services.py:682
 #, python-format
 msgid "Copie de la version de %(author)s, étape %(number)d"
 msgstr "Copy of the version by %(author)s, step %(number)d"
 
-#: translations/services.py:703
+#: translations/services.py:704
 msgid "Traduisez au moins une phrase avant de publier."
 msgstr "Translate at least one sentence before publishing."
 
-#: translations/services.py:708 translations/services.py:710
+#: translations/services.py:709 translations/services.py:711
 msgid "Publication"
 msgstr "Publication"
 
-#: translations/services.py:765
+#: translations/services.py:766
 msgid "Écrivez un message : ce qui a changé depuis l’étape précédente."
 msgstr "Write a message: what changed since the previous step."
 
-#: translations/services.py:797
+#: translations/services.py:798
 msgid "La version de référence doit être une version publiée de ce projet."
 msgstr "The reference version must be a published version of this project."
 
-#: translations/services.py:801
+#: translations/services.py:802
 msgid "Choix de la version de référence"
 msgstr "Choice of the reference version"
+
+#: translations/services.py:821
+msgid "Dites ce qu’il faudrait changer, ou ce que vous remarquez."
+msgstr "Say what should change, or what you notice."
 
 #: translations/sources.py:65
 msgid "Ajoutez au moins une phrase."
@@ -12530,26 +12611,26 @@ msgstr "Topic reopened"
 msgid "Sujet fermé"
 msgstr "Topic closed"
 
-#: translations/views.py:194
+#: translations/views.py:195
 msgid "Le texte est ajouté."
 msgstr "The text has been added."
 
-#: translations/views.py:327
+#: translations/views.py:328
 msgid ""
 "Le changement est ajouté à votre proposition. Envoyez-la quand elle est "
 "prête."
 msgstr "The change is added to your proposal. Send it when it is ready."
 
-#: translations/views.py:332
+#: translations/views.py:333
 msgid "Le texte est modifié. Chaque version l’intégrera à sa prochaine étape."
 msgstr "The text is changed. Each version will include it at its next step."
 
-#: translations/views.py:371
+#: translations/views.py:372
 #, python-format
 msgid "Modifier la phrase %(number)d"
 msgstr "Edit sentence %(number)d"
 
-#: translations/views.py:373
+#: translations/views.py:374
 msgid ""
 "La phrase est remplacée ; l’ancienne reste dans les étapes qui l’ont figée. "
 "Le latin déjà écrit reste attaché à la phrase."
@@ -12557,16 +12638,16 @@ msgstr ""
 "The sentence is replaced; the former one remains in the steps that froze it. "
 "The Latin already written stays with the sentence."
 
-#: translations/views.py:377
+#: translations/views.py:378
 msgid "Enregistrer la phrase"
 msgstr "Save the sentence"
 
-#: translations/views.py:401
+#: translations/views.py:402
 #, python-format
 msgid "Scinder la phrase %(number)d"
 msgstr "Split sentence %(number)d"
 
-#: translations/views.py:403
+#: translations/views.py:404
 msgid ""
 "Allez à la ligne là où la phrase doit être coupée. Les mots ne changent "
 "pas ; le latin déjà écrit reste sur la première partie."
@@ -12574,16 +12655,16 @@ msgstr ""
 "Start a new line where the sentence is to be cut. The words do not change; "
 "the Latin already written stays on the first part."
 
-#: translations/views.py:407
+#: translations/views.py:408
 msgid "Scinder la phrase"
 msgstr "Split the sentence"
 
-#: translations/views.py:429
+#: translations/views.py:430
 #, python-format
 msgid "Fusionner les phrases %(number)d et %(next)d"
 msgstr "Merge sentences %(number)d and %(next)d"
 
-#: translations/views.py:432
+#: translations/views.py:433
 msgid ""
 "Les deux phrases n’en font plus qu’une. Dans chaque version, leurs latins "
 "sont mis bout à bout."
@@ -12591,20 +12672,20 @@ msgstr ""
 "The two sentences become one. In each version, their Latin is joined end to "
 "end."
 
-#: translations/views.py:436
+#: translations/views.py:437
 msgid "Fusionner"
 msgstr "Merge"
 
-#: translations/views.py:456
+#: translations/views.py:457
 msgid "Ajouter des phrases à la fin"
 msgstr "Add sentences at the end"
 
-#: translations/views.py:458
+#: translations/views.py:459
 #, python-format
 msgid "Ajouter des phrases après la phrase %(number)d"
 msgstr "Add sentences after sentence %(number)d"
 
-#: translations/views.py:463
+#: translations/views.py:464
 msgid ""
 "Collez le texte : il sera découpé en phrases, que vous vérifierez avant "
 "d’enregistrer."
@@ -12612,89 +12693,89 @@ msgstr ""
 "Paste the text: it will be split into sentences, which you will check before "
 "saving."
 
-#: translations/views.py:474
+#: translations/views.py:475
 msgid ""
 "Vérifiez le découpage : une phrase par ligne, une ligne vide entre deux "
 "paragraphes."
 msgstr ""
 "Check the split: one sentence per line, a blank line between two paragraphs."
 
-#: translations/views.py:476
+#: translations/views.py:477
 msgid "Ajouter les phrases"
 msgstr "Add the sentences"
 
-#: translations/views.py:570 translations/views.py:1413
+#: translations/views.py:571 translations/views.py:1414
 msgid "La proposition est envoyée."
 msgstr "The proposal is sent."
 
-#: translations/views.py:580
+#: translations/views.py:581
 msgid "La proposition est adoptée : le texte est modifié."
 msgstr "The proposal is adopted: the text is changed."
 
-#: translations/views.py:581
+#: translations/views.py:582
 msgid "La proposition est refusée."
 msgstr "The proposal is refused."
 
-#: translations/views.py:582 translations/views.py:1542
+#: translations/views.py:583 translations/views.py:1553
 msgid "La proposition est retirée."
 msgstr "The proposal is withdrawn."
 
-#: translations/views.py:583
+#: translations/views.py:584
 msgid "La proposition est reprise sur le texte actuel."
 msgstr "The proposal is carried over to the current text."
 
-#: translations/views.py:584
+#: translations/views.py:585
 msgid "Le dernier changement est annulé."
 msgstr "The last change is undone."
 
-#: translations/views.py:657
+#: translations/views.py:658
 msgid "Le projet est créé."
 msgstr "The project has been created."
 
-#: translations/views.py:727
+#: translations/views.py:728
 msgid "Choisissez une version publiée de ce projet."
 msgstr "Choose a published version of this project."
 
-#: translations/views.py:733
+#: translations/views.py:734
 msgid "Le projet n’a plus de version de référence."
 msgstr "The project no longer has a reference version."
 
-#: translations/views.py:735
+#: translations/views.py:736
 msgid "La version de référence est choisie."
 msgstr "The reference version has been chosen."
 
-#: translations/views.py:1016
+#: translations/views.py:1017
 #, python-format
 msgid "%(count)d phrase enregistrée."
 msgid_plural "%(count)d phrases enregistrées."
 msgstr[0] "%(count)d sentence saved."
 msgstr[1] "%(count)d sentences saved."
 
-#: translations/views.py:1027
+#: translations/views.py:1028
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:1177
+#: translations/views.py:1178
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:1192
+#: translations/views.py:1193
 msgid "La version est publiée."
 msgstr "The version has been published."
 
-#: translations/views.py:1300
+#: translations/views.py:1301
 msgid "La copie est créée : c’est votre brouillon, visible de vous seul."
 msgstr "The copy is created: it is your draft, visible to you only."
 
-#: translations/views.py:1526
+#: translations/views.py:1537
 msgid "La phrase est acceptée : elle entre dans votre texte de travail."
 msgstr "The sentence is accepted: it enters your working text."
 
-#: translations/views.py:1529
+#: translations/views.py:1540
 msgid "La phrase est refusée."
 msgstr "The sentence is refused."
 
-#: translations/views.py:1576
+#: translations/views.py:1592
 #, python-format
 msgid "L’étape %(number)d est créée."
 msgstr "Step %(number)d is created."

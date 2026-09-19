@@ -19,6 +19,7 @@ class Verb(models.TextChoices):
     PROPOSAL_OPENED = "proposal_opened", _("a proposé des modifications")
     PROPOSAL_CLOSED = "proposal_closed", _("a examiné une proposition")
     PROPOSAL_WITHDRAWN = "proposal_withdrawn", _("a retiré une proposition")
+    PROPOSAL_REVIEWED = "proposal_reviewed", _("a relu une proposition")
     COMMENT_POSTED = "comment_posted", _("a écrit un message")
     MENTIONED = "mentioned", _("vous a mentionné")
     CHALLENGE_OPENED = "challenge_opened", _("a contesté un choix")

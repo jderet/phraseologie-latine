@@ -158,6 +158,7 @@ urlpatterns = [
     path("versions/<int:pk>/propositions/", views.proposal_list, name="proposal_list"),
     path("propositions/<int:pk>/", views.proposal_detail, name="proposal"),
     path("propositions/<int:pk>/retirer/", views.proposal_withdraw, name="proposal_withdraw"),
+    path("propositions/<int:pk>/relire/", collab_views.proposal_review, name="proposal_review"),
     path(
         "propositions/phrases/<int:pk>/decider/",
         views.proposed_sentence_decide,

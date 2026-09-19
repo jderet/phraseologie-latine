@@ -8,6 +8,7 @@ from accounts.limits import check_text_for_links
 from .models import (
     ChangeProposal,
     GlossaryEntry,
+    ProposalReview,
     SourceProposal,
     SourceText,
     Topic,
@@ -397,4 +398,20 @@ class ReplaceForm(forms.Form):
     match_case = forms.BooleanField(label=_("Respecter les majuscules"), required=False)
     ignore_macrons = forms.BooleanField(
         label=_("Ignorer les macrons (a trouve aussi ā)"), required=False, initial=True
+    )
+
+
+class ProposalReviewForm(forms.Form):
+    verdict = forms.ChoiceField(
+        label=_("Votre avis"),
+        choices=ProposalReview.Verdict.choices,
+        widget=forms.RadioSelect,
+        initial=ProposalReview.Verdict.COMMENT,
+    )
+    text = forms.CharField(
+        label=_("Commentaire"),
+        max_length=3000,
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("Obligatoire, sauf pour approuver."),
     )
