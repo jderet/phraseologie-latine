@@ -9,7 +9,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from moderation.models import ModeratedContent
-from moderation.registry import register
+from moderation.registry import can_view, register
 
 # A work enters the public domain on the 1 January following the 70th year after its
 # author's death.
@@ -870,6 +870,91 @@ class VersionMember(ModeratedContent):
         return self.status == self.Status.ACTIVE
 
 
+class Topic(ModeratedContent):
+    """A subject opened on a project, like an issue: a question, an error, a point of style.
+
+    Numbered within its project (« #3 »), labelled, open or closed, discussed and supported by
+    indicative votes.
+    """
+
+    class Status(models.TextChoices):
+        OPEN = "open", _("ouvert")
+        CLOSED = "closed", _("fermé")
+
+    class Label(models.TextChoices):
+        QUESTION = "question", _("question")
+        ERROR = "error", _("erreur")
+        STYLE = "style", _("style")
+        SOURCE = "source", _("texte source")
+        IDEA = "idea", _("idée")
+
+    project = models.ForeignKey(
+        TranslationProject,
+        on_delete=models.PROTECT,
+        related_name="topics",
+        verbose_name=_("projet"),
+    )
+    number = models.PositiveIntegerField(_("numéro"), editable=False)
+    title = models.CharField(_("titre"), max_length=200)
+    body = models.TextField(
+        _("texte"),
+        max_length=5000,
+        help_text=_("Écrivez #3 pour renvoyer au sujet n° 3, @Nom pour prévenir quelqu’un."),
+    )
+    labels = models.JSONField(_("étiquettes"), default=list, blank=True)
+    segment = models.ForeignKey(
+        Segment,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="topics",
+        verbose_name=_("phrase concernée"),
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="topics",
+        editable=False,
+        verbose_name=_("auteur"),
+    )
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.OPEN, editable=False
+    )
+    created_at = models.DateTimeField(_("ouvert le"), default=timezone.now, editable=False)
+    closed_at = models.DateTimeField(_("fermé le"), null=True, blank=True, editable=False)
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        editable=False,
+        verbose_name=_("fermé par"),
+    )
+
+    class Meta:
+        verbose_name = _("sujet")
+        verbose_name_plural = _("sujets")
+        ordering = ["project", "-number"]
+        constraints = [
+            models.UniqueConstraint(fields=["project", "number"], name="translations_topic_number"),
+        ]
+
+    def __str__(self):
+        return f"#{self.number} {self.title}"
+
+    def get_absolute_url(self):
+        return reverse("translations:topic", args=[self.project_id, self.number])
+
+    @property
+    def is_open(self):
+        return self.status == self.Status.OPEN
+
+    def label_names(self):
+        names = dict(self.Label.choices)
+        return [(code, names[code]) for code in self.labels if code in names]
+
+
 def version_visible_to(user, version):
     return version.is_published or is_version_writer(user, version)
 
@@ -994,4 +1079,13 @@ register(
         or (member.is_active and version_visible_to(user, member.version))
     ),
     not_reverted=("status", "decided_at"),
+)
+register(
+    Topic,
+    owner_field="author",
+    text_fields=("title", "body"),
+    visible_to=lambda user, topic: can_view(user, topic.project),
+    not_reverted=("status", "closed_at", "closed_by"),
+    discussion=lambda user, topic: True,
+    votes=lambda user, topic: topic.is_open,
 )

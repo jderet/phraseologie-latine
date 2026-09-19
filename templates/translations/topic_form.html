@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if topic %}{% translate "Modifier le sujet" %}{% else %}{% translate "Ouvrir un sujet" %}{% endif %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <p class="eyebrow"><a href="{% url 'translations:topic_list' project.pk %}">{{ project.title }} · {% translate "Sujets" %}</a></p>
+  <h1>{% if topic %}{% translate "Modifier le sujet" %}{% else %}{% translate "Ouvrir un sujet" %}{% endif %}</h1>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% if topic %}{% translate "Enregistrer" %}{% else %}{% translate "Ouvrir le sujet" %}{% endif %}</button>
+  </form>
+</section>
+{% endblock %}

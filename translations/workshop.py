@@ -2,7 +2,7 @@
 
 from moderation.registry import can_view
 
-from .models import ChangeProposal, TranslationVersion
+from .models import ChangeProposal, Topic, TranslationVersion
 
 
 def visible_proposals(user, project):
@@ -24,4 +24,5 @@ def project_counts(user, project):
         status=ChangeProposal.Status.OPEN,
         is_hidden=False,
     ).count()
-    return {"proposals": open_proposals}
+    open_topics = project.topics.filter(status=Topic.Status.OPEN, is_hidden=False).count()
+    return {"proposals": open_proposals, "topics": open_topics}

@@ -2,7 +2,7 @@
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -11,11 +11,14 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from activity.feeds import project_feed
 from moderation.registry import can_view
+from moderation.services import save_with_revision
 
 from . import members as member_services
-from .forms import InviteForm
-from .models import TranslationProject, TranslationVersion, VersionMember, is_version_writer
-from .permissions import can_manage
+from . import topics as topic_services
+from .forms import InviteForm, TopicForm
+from .models import Topic, TranslationProject, TranslationVersion, VersionMember, is_version_writer
+from .permissions import can_edit, can_manage
+from .sources import SourceHistory
 from .templatetags.workshop_tags import FIRST_STEPS_COOKIE
 from .views import _contribute, _paginate, _visible
 from .workshop import visible_proposals
@@ -164,3 +167,133 @@ def member_remove(request, pk):
             return redirect("translations:project", member.version.project_id)
         messages.success(request, _("La personne n’est plus co-autrice de cette version."))
     return redirect("translations:version_members", member.version_id)
+
+
+# Topics
+
+
+def _project(user, pk):
+    return _visible(
+        user, TranslationProject.objects.select_related("source_text", "created_by"), pk
+    )
+
+
+def _topic(user, project, number):
+    topic = get_object_or_404(
+        project.topics.select_related("author", "closed_by", "segment"), number=number
+    )
+    topic.project = project
+    if not can_view(user, topic):
+        raise Http404
+    return topic
+
+
+TOPIC_STATES = {"ouverts": Topic.Status.OPEN, "fermes": Topic.Status.CLOSED}
+
+
+def topic_list(request, pk):
+    """The subjects of a project, open ones by default, filtered by label."""
+    project = _project(request.user, pk)
+    state = request.GET.get("etat") if request.GET.get("etat") in TOPIC_STATES else "ouverts"
+    label = request.GET.get("etiquette") if request.GET.get("etiquette") in Topic.Label else ""
+    queryset = project.topics.filter(status=TOPIC_STATES[state]).select_related("author")
+    if label:
+        queryset = queryset.filter(labels__contains=[label])
+    topics = []
+    for topic in queryset.order_by("-number"):
+        topic.project = project
+        if can_view(request.user, topic):
+            topics.append(topic)
+    counts = {
+        name: project.topics.filter(status=status, is_hidden=False).count()
+        for name, status in TOPIC_STATES.items()
+    }
+    return render(
+        request,
+        "translations/topic_list.html",
+        {
+            "project": project,
+            "page": _paginate(request, topics),
+            "state": state,
+            "label": label,
+            "labels": Topic.Label.choices,
+            "state_counts": counts,
+            "can_open": topic_services.can_open_topic(request.user, project),
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def topic_create(request, pk):
+    project = _project(request.user, pk)
+    if not topic_services.can_open_topic(request.user, project):
+        raise Http404
+    initial = {}
+    if request.GET.get("phrase", "").isdigit():
+        initial["sentence"] = int(request.GET["phrase"])
+    form = TopicForm(request.POST or None, user=request.user, project=project, initial=initial)
+    if request.method == "POST" and form.is_valid():
+        topic = form.save()
+        topic.project = project
+        topic, saved = _contribute(request, topic_services.open_topic, topic, request.user)
+        if saved:
+            messages.success(request, _("Le sujet est ouvert."))
+            return redirect(topic)
+    return render(request, "translations/topic_form.html", {"project": project, "form": form})
+
+
+def topic_detail(request, pk, number):
+    project = _project(request.user, pk)
+    topic = _topic(request.user, project, number)
+    sentence_number = None
+    if topic.segment_id:
+        numbers = SourceHistory(project.source_text).numbers_at()
+        sentence_number = numbers.get(topic.segment.latest.pk)
+    return render(
+        request,
+        "translations/topic_detail.html",
+        {
+            "project": project,
+            "topic": topic,
+            "body": topic_services.linked_text(request.user, topic.body, project),
+            "sentence_number": sentence_number,
+            "can_close": topic_services.can_close_topic(request.user, topic),
+            "can_edit": can_edit(request.user, topic),
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def topic_edit(request, pk, number):
+    project = _project(request.user, pk)
+    topic = _topic(request.user, project, number)
+    if not can_edit(request.user, topic):
+        raise PermissionDenied
+    form = TopicForm(request.POST or None, instance=topic, user=request.user, project=project)
+    if request.method == "POST" and form.is_valid():
+        topic = form.save()
+        topic.labels = topic_services.clean_labels(topic.labels)
+        revision, saved = _contribute(request, save_with_revision, topic, request.user)
+        if saved:
+            messages.success(
+                request, _("Le sujet est modifié.") if revision else _("Aucune modification.")
+            )
+            return redirect(topic)
+    return render(
+        request,
+        "translations/topic_form.html",
+        {"project": project, "form": form, "topic": topic},
+    )
+
+
+@login_required
+@require_POST
+def topic_status(request, pk, number):
+    project = _project(request.user, pk)
+    topic = _topic(request.user, project, number)
+    open_ = request.POST.get("etat") == "ouvrir"
+    topic_services.set_topic_status(topic, request.user, open_)
+    messages.success(request, _("Le sujet est rouvert.") if open_ else _("Le sujet est fermé."))
+    return redirect(topic)

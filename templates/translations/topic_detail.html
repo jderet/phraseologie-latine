@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load i18n activity_tags moderation_tags workshop_tags %}
+
+{% block title %}#{{ topic.number }} {{ topic.title }} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <h1>{{ project.title }}</h1>
+  {% project_tabs project "topics" %}
+  <h2 class="topic-title">{{ topic.title }} <span class="muted">#{{ topic.number }}</span></h2>
+  <div class="page-actions">
+    <span class="badge{% if topic.is_open %} state-open{% endif %}">{{ topic.get_status_display }}</span>
+    {% for code, name in topic.label_names %}<span class="topic-label label-{{ code }}">{{ name }}</span>{% endfor %}
+    {% follow_button topic %}
+  </div>
+  {% if topic.is_hidden %}<p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>{% endif %}
+  <p class="muted">{% blocktranslate with name=topic.author.public_name date=topic.created_at|date:"j F Y" %}Ouvert par {{ name }} le {{ date }}{% endblocktranslate %}{% if topic.closed_by %} · {% blocktranslate with name=topic.closed_by.public_name date=topic.closed_at|date:"j F Y" %}fermé par {{ name }} le {{ date }}{% endblocktranslate %}{% endif %}</p>
+  {% if topic.segment %}
+  <blockquote class="topic-sentence"><a href="{% url 'translations:project_compare' project.pk %}#phrase-{{ sentence_number }}">{% if sentence_number %}{% blocktranslate with number=sentence_number %}Phrase {{ number }}{% endblocktranslate %}{% else %}{% translate "Phrase retirée du texte" %}{% endif %}</a> : {{ topic.segment.text }}</blockquote>
+  {% endif %}
+  <div class="topic-body">{{ body }}</div>
+  <p class="form-links">
+    {% if can_edit %}<a href="{% url 'translations:topic_edit' project.pk topic.number %}">{% translate "Modifier" %}</a>{% endif %}
+    {% if can_close %}
+    <form method="post" action="{% url 'translations:topic_status' project.pk topic.number %}" class="inline-form">
+      {% csrf_token %}
+      {% if topic.is_open %}<button type="submit" class="button button-quiet" name="etat" value="fermer">{% translate "Fermer le sujet" %}</button>{% else %}<button type="submit" class="button button-quiet" name="etat" value="ouvrir">{% translate "Rouvrir le sujet" %}</button>{% endif %}
+    </form>
+    {% endif %}
+  </p>
+  {% moderation_links topic %}
+  {% translate "Important" as for_label %}{% translate "Sans objet" as against_label %}{% translate "Un avis indicatif : ce sujet mérite-t-il d’être traité ?" as votes_note %}
+  {% votes topic for_label against_label votes_note %}
+  {% discussion topic %}
+</article>
+{% endblock %}

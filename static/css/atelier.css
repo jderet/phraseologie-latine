@@ -278,3 +278,75 @@
   width: 8rem;
   accent-color: var(--accent);
 }
+
+/* Topics of a project */
+
+.topic-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.topic-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  align-items: baseline;
+  margin: 10px 0;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+}
+
+.topic-filters a[aria-current="page"] {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.topic-label-filter {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.topic-label {
+  display: inline-block;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid var(--rule-strong);
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.topic-label.label-error { border-color: var(--danger); color: var(--danger); }
+.topic-label.label-question { border-color: var(--accent); color: var(--accent); }
+.topic-label.label-style { border-color: var(--gold); color: var(--amber); }
+.topic-label[aria-current="page"] { background: var(--accent-soft); }
+
+.topic-state {
+  color: var(--ink-3);
+}
+
+.topic-state.is-open {
+  color: var(--accent);
+}
+
+.topic-title {
+  margin-bottom: 6px;
+}
+
+.topic-sentence {
+  margin: 12px 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--rule-strong);
+  background: var(--surface);
+}
+
+.topic-body {
+  margin: 14px 0;
+  line-height: 1.55;
+}

@@ -111,6 +111,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | étape, phrase d'une étape | `VersionStep`, `StepSentence` |
 | version copiée | `TranslationVersion.copied_from` |
 | co-auteur d'une version | `VersionMember` |
+| sujet d'un projet | `Topic` |
 | proposition de modifications, phrase proposée | `ChangeProposal`, `ProposedSentence` |
 | style déclaré | `style` |
 | justification, preuve | `Justification`, `Evidence` |

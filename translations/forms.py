@@ -9,6 +9,7 @@ from .models import (
     ChangeProposal,
     SourceProposal,
     SourceText,
+    Topic,
     TranslationProject,
     TranslationVersion,
     VersionStep,
@@ -278,3 +279,49 @@ class InviteForm(forms.Form):
         max_length=80,
         help_text=_("La personne invitée accepte ou refuse ; elle voit alors votre brouillon."),
     )
+
+
+class TopicForm(ContributionForm):
+    link_fields = ("title", "body")
+
+    labels = forms.MultipleChoiceField(
+        label=_("Étiquettes"),
+        choices=Topic.Label.choices,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+    sentence = forms.IntegerField(
+        label=_("Phrase concernée"),
+        required=False,
+        min_value=1,
+        help_text=_("Facultatif : son numéro dans le texte source."),
+    )
+
+    class Meta:
+        model = Topic
+        fields = ("title", "body")
+        widgets = {"body": forms.Textarea(attrs={"rows": 6})}
+
+    def __init__(self, *args, project, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.segments = list(project.source_text.segments.current())
+        self.fields["sentence"].max_value = len(self.segments)
+        if self.instance.pk:
+            self.initial["labels"] = self.instance.labels
+            if self.instance.segment_id:
+                numbers = {segment.pk: number for number, segment in enumerate(self.segments, 1)}
+                self.initial["sentence"] = numbers.get(self.instance.segment_id)
+
+    def clean_sentence(self):
+        number = self.cleaned_data["sentence"]
+        if number is None:
+            return None
+        if number > len(self.segments):
+            raise ValidationError(_("Le texte n’a pas de phrase de ce numéro."))
+        return self.segments[number - 1]
+
+    def save(self, commit=True):
+        topic = super().save(commit=False)
+        topic.labels = self.cleaned_data["labels"]
+        topic.segment = self.cleaned_data["sentence"]
+        return topic

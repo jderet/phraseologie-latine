@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n workshop_tags %}
+
+{% block title %}{% translate "Sujets" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <h1>{{ project.title }}</h1>
+  {% project_tabs project "topics" %}
+  <div class="topic-tools">
+    <p class="note">{% translate "Questions, erreurs repérées, points de style ou idées : chaque sujet se discute et se ferme quand il est réglé." %}</p>
+    {% if can_open %}<a class="button" href="{% url 'translations:topic_create' project.pk %}">{% translate "Ouvrir un sujet" %}</a>{% endif %}
+  </div>
+  <div class="topic-filters">
+    <a href="?etat=ouverts{% if label %}&amp;etiquette={{ label }}{% endif %}"{% if state == "ouverts" %} aria-current="page"{% endif %}>{% blocktranslate count counter=state_counts.ouverts %}{{ counter }} ouvert{% plural %}{{ counter }} ouverts{% endblocktranslate %}</a>
+    <a href="?etat=fermes{% if label %}&amp;etiquette={{ label }}{% endif %}"{% if state == "fermes" %} aria-current="page"{% endif %}>{% blocktranslate count counter=state_counts.fermes %}{{ counter }} fermé{% plural %}{{ counter }} fermés{% endblocktranslate %}</a>
+    <span class="topic-label-filter">{% translate "Étiquette :" %}
+      <a href="?etat={{ state }}"{% if not label %} aria-current="page"{% endif %}>{% translate "toutes" %}</a>
+      {% for code, name in labels %}<a class="topic-label label-{{ code }}" href="?etat={{ state }}&amp;etiquette={{ code }}"{% if label == code %} aria-current="page"{% endif %}>{{ name }}</a>{% endfor %}
+    </span>
+  </div>
+  <ul class="item-list topic-list">
+    {% for topic in page %}
+    <li>
+      <span><span class="topic-state{% if topic.is_open %} is-open{% endif %}" aria-hidden="true">{% if topic.is_open %}●{% else %}✓{% endif %}</span> <a class="item-title" href="{{ topic.get_absolute_url }}">{{ topic.title }}</a> {% for code, name in topic.label_names %}<span class="topic-label label-{{ code }}">{{ name }}</span> {% endfor %}</span>
+      <span class="muted">#{{ topic.number }} · {% blocktranslate with name=topic.author.public_name date=topic.created_at|date:"j F Y" %}ouvert par {{ name }} le {{ date }}{% endblocktranslate %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucun sujet ici." %}</li>
+    {% endfor %}
+  </ul>
+  {% include "translations/pager.html" %}
+</section>
+{% endblock %}
