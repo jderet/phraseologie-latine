@@ -28,6 +28,12 @@ def panel_tabs(version):
     """The tabs of the side panel, in order; the first is open by default."""
     return [
         PanelTab("justifications", _("Justifications")),
+        PanelTab(
+            "memory",
+            _("Mémoire"),
+            _("Le latin déjà écrit pour cette phrase et pour des phrases ressemblantes."),
+            _fragment("translations:editor_memory", version),
+        ),
         PanelTab("corpus", _("Corpus")),
     ]
 

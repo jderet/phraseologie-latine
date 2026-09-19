@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
@@ -185,6 +186,12 @@ class Segment(models.Model):
         verbose_name = _("segment")
         verbose_name_plural = _("segments")
         ordering = ["source_text", "position"]
+        # Similar sentences for the translation memory, by trigrams (pg_trgm).
+        indexes = [
+            GinIndex(
+                name="translations_segment_trigrams", fields=["text"], opclasses=["gin_trgm_ops"]
+            )
+        ]
         constraints = [
             # Deferred: a change renumbers the positions within its transaction.
             models.UniqueConstraint(

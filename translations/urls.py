@@ -86,6 +86,11 @@ urlpatterns = [
         editor_views.sentence_status,
         name="sentence_status",
     ),
+    path(
+        "versions/<int:pk>/phrases/<int:segment_pk>/memoire/",
+        editor_views.memory_panel,
+        name="editor_memory",
+    ),
     path("versions/<int:pk>/etapes/", views.step_list, name="step_list"),
     path("versions/<int:pk>/etapes/nouvelle/", views.step_create, name="step_create"),
     path("versions/<int:pk>/etapes/comparer/", views.step_compare, name="step_compare"),

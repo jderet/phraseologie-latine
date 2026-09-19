@@ -1,0 +1,28 @@
+{% load i18n %}<section class="memory-section">
+  <h3 class="panel-subheading">{% translate "Dans les autres versions" %}</h3>
+  {% for item in others %}
+  <div class="memory-item">
+    <p class="memory-latin" lang="la">{{ item.text }}</p>
+    <p class="memory-meta muted"><a href="{{ item.version.get_absolute_url }}">{{ item.version.author.public_name }}</a> · {{ item.version.get_style_display }}{% if item.version.pk == version.project.reference_version_id %} · {% translate "référence" %}{% endif %}{% if item.version.is_draft %} · {% translate "brouillon" %}{% endif %}</p>
+    <p class="memory-actions"><button type="button" class="link-button" data-use-latin="{{ item.text }}" data-mode="replace">{% translate "Reprendre" %}</button> · <button type="button" class="link-button" data-use-latin="{{ item.text }}" data-mode="insert">{% translate "Insérer à la sélection" %}</button></p>
+  </div>
+  {% empty %}
+  <p class="note">{% translate "Aucune autre version n’a encore traduit cette phrase." %}</p>
+  {% endfor %}
+</section>
+<section class="memory-section">
+  <h3 class="panel-subheading">{% translate "Phrases ressemblantes" %}</h3>
+  {% for match in matches %}
+  <div class="memory-item">
+    <p class="memory-score"><span class="score-badge{% if match.score >= 90 %} is-high{% endif %}">{{ match.score }} %</span> <span class="word-diff memory-source">{% include "translations/word_diff.html" with chunks=match.chunks %}</span></p>
+    {% for item in match.translations %}
+    <p class="memory-latin" lang="la">{{ item.text }}</p>
+    <p class="memory-meta muted">{{ item.version.project.title }} · {{ item.version.author.public_name }}</p>
+    <p class="memory-actions"><button type="button" class="link-button" data-use-latin="{{ item.text }}" data-mode="replace">{% translate "Reprendre" %}</button> · <button type="button" class="link-button" data-use-latin="{{ item.text }}" data-mode="insert">{% translate "Insérer à la sélection" %}</button></p>
+    {% endfor %}
+  </div>
+  {% empty %}
+  <p class="note">{% blocktranslate with score=min_score %}Aucune phrase traduite ne ressemble à celle-ci à {{ score }} % au moins.{% endblocktranslate %}</p>
+  {% endfor %}
+  <p class="note">{% translate "Les mots barrés sont dans la phrase trouvée, les mots soulignés dans la vôtre. Rien n’est inséré sans votre clic." %}</p>
+</section>

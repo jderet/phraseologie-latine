@@ -633,3 +633,61 @@ kbd {
   font: 0.8rem var(--sans);
   text-align: center;
 }
+
+/* Editor: translation memory */
+
+.panel-subheading {
+  margin: 4px 0 2px;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.memory-section {
+  display: grid;
+  gap: 6px;
+}
+
+.memory-item {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--ground);
+}
+
+.memory-item p {
+  margin: 0;
+}
+
+.memory-latin {
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+
+.memory-meta,
+.memory-actions {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+}
+
+.memory-source {
+  font-size: 0.92rem;
+}
+
+.score-badge {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--gold-soft);
+  color: var(--amber);
+  font: 600 0.78rem var(--sans);
+}
+
+.score-badge.is-high {
+  background: var(--accent-soft);
+  color: var(--accent);
+}

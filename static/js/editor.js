@@ -250,6 +250,27 @@
     markStatus(field, button.dataset.setStatus);
   });
 
+  // Latin taken from the panel (memory, glossary): the whole sentence, or the selection.
+  document.addEventListener("mousedown", (event) => {
+    if (event.target.closest("[data-use-latin]")) {
+      event.preventDefault();
+    }
+  });
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-use-latin]");
+    if (!button || !activeField) {
+      return;
+    }
+    const text = button.dataset.useLatin;
+    if (button.dataset.mode === "replace") {
+      activeField.setRangeText(text, 0, activeField.value.length, "end");
+    } else {
+      activeField.setRangeText(text, activeField.selectionStart, activeField.selectionEnd, "end");
+    }
+    activeField.dispatchEvent(new Event("input", { bubbles: true }));
+    activeField.focus();
+  });
+
   // Tabs of the side panel: one section at a time, the choice kept for the next visit.
   const tabList = document.querySelector(".panel-tabs");
   const tabButtons = tabList ? [...tabList.querySelectorAll("[role=tab]")] : [];

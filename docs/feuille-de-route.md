@@ -211,8 +211,8 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Statut de chaque phrase (à traduire, brouillon, traduite, relue) et progression en couleurs
 - [x] Filtres des phrases et recherche dans l'éditeur
 - [x] Raccourcis clavier et leur aide
-- [ ] Mémoire de traduction : phrases ressemblantes déjà traduites
-- [ ] Autres versions de la même phrase
+- [x] Mémoire de traduction : phrases ressemblantes déjà traduites
+- [x] Autres versions de la même phrase
 - [ ] Concordance dans les traductions publiées
 - [ ] Glossaire du projet, surligné dans l'éditeur
 - [ ] Commentaires par phrase, résolus ou non

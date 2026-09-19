@@ -4,11 +4,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from .forms import TranslationTextForm
+from .memory import MIN_SCORE, other_versions, similar_sentences
 from .models import TranslatedSegment
 from .services import save_translation, set_sentence_status
 from .views import _own_version
@@ -50,3 +51,23 @@ def sentence_status(request, pk, segment_pk):
     if _wants_json(request):
         return JsonResponse({"status": status})
     return redirect(_editor_url(version, segment))
+
+
+@login_required
+@require_GET
+def memory_panel(request, pk, segment_pk):
+    """The Latin already written for this sentence in the other versions of the project, then
+    for similar sentences: a fragment of the side panel of the editor."""
+    version = _own_version(request.user, pk)
+    segment = get_object_or_404(version.project.source_text.segments.current(), pk=segment_pk)
+    return render(
+        request,
+        "translations/panel_memory.html",
+        {
+            "version": version,
+            "segment": segment,
+            "others": other_versions(request.user, version, segment),
+            "matches": similar_sentences(request.user, version, segment),
+            "min_score": MIN_SCORE,
+        },
+    )
