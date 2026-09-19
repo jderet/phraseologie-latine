@@ -6,11 +6,11 @@ from corpus.corrections import propose_correction, review_correction
 from corpus.models import AnalysisCorrection
 from moderation.services import hide_content
 from notebook.services import add_private_note
-from phraseology.models import NegativeSearch
+from phraseology.models import NegativeSearch, Unit
 from phraseology.reading_notes import create_reading_note
 from phraseology.services import propose_unit
 from phraseology.sightings import create_sighting
-from phraseology.tests.factories import make_unit
+from phraseology.tests.factories import OWNER, make_abstract_word, make_unit
 from phraseology.tests.test_neologisms import NeologismTestCase
 from translations.tests.factories import (
     make_project,
@@ -52,6 +52,7 @@ class ApiTests(ApiTestCase):
             {
                 "units",
                 "neologisms",
+                "abstract_words",
                 "versions",
                 "negative_searches",
                 "sightings",
@@ -60,6 +61,21 @@ class ApiTests(ApiTestCase):
             },
         )
         self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+
+    def test_abstract_words(self):
+        word = make_abstract_word(self.author, rules=OWNER, name="possesseur")
+        hidden = make_abstract_word(self.author, name="occultum")
+        hide_content(hidden, self.reviewer)
+        _response, data = self.get("abstract_words")
+        self.assertEqual([result["name"] for result in data["results"]], ["possesseur"])
+        _response, found = self.get("abstract_word", word.pk)
+        self.assertEqual(found["rules"][0]["feats"], ["Case=Gen"])
+        self.assertEqual(found["rules"][0]["label"], "nom commun, nom propre ou pronom, génitif")
+        Unit.objects.filter(pk=self.unit.pk).update(
+            schema="capio -obj-> consilium; consilium -(nmod)-> {possesseur}"
+        )
+        _response, unit = self.get("unit", self.unit.pk)
+        self.assertEqual(unit["abstract_words"], ["possesseur"])
 
     def test_units_without_drafts(self):
         _response, data = self.get("units")

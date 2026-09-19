@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 09:43+0200\n"
+"POT-Creation-Date: 2026-09-19 09:53+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -2390,7 +2390,7 @@ msgstr "Nouns it modifies"
 msgid "Ce passage est déjà déclaré entièrement relu."
 msgstr "This passage is already declared fully reviewed."
 
-#: phraseology/examples.py:344
+#: phraseology/examples.py:378
 msgid "Commande réservée à la machine de développement (DJANGO_DEBUG=True)."
 msgstr "Command reserved for the development machine (DJANGO_DEBUG=True)."
 
@@ -2609,24 +2609,24 @@ msgid_plural "%(count)d schémas convertis."
 msgstr[0] "%(count)d schema converted."
 msgstr[1] "%(count)d schemas converted."
 
-#: phraseology/management/commands/create_examples.py:25
+#: phraseology/management/commands/create_examples.py:26
 msgid "Les fiches d’exemple demandent un corpus analysé."
 msgstr "The example entries need an analysed corpus."
 
-#: phraseology/management/commands/create_examples.py:29
+#: phraseology/management/commands/create_examples.py:30
 msgid "Les fiches d’exemple partent du De officiis, qui n’est pas importé."
 msgstr "The example entries start from De officiis, which is not imported."
 
-#: phraseology/management/commands/create_examples.py:33
+#: phraseology/management/commands/create_examples.py:34
 msgid "Les fiches d’exemple existent déjà : lancez d’abord delete_examples."
 msgstr "The example entries already exist: run delete_examples first."
 
-#: phraseology/management/commands/create_examples.py:43
+#: phraseology/management/commands/create_examples.py:45
 #, python-format
 msgid "%(unit)s : introuvable dans le corpus, fiche non créée."
 msgstr "%(unit)s: not found in the corpus, entry not created."
 
-#: phraseology/management/commands/create_examples.py:51
+#: phraseology/management/commands/create_examples.py:53
 #, python-format
 msgid ""
 "%(unit)s (%(status)s) : attestations validées %(validated)d, proposées "
@@ -2635,7 +2635,7 @@ msgstr ""
 "%(unit)s (%(status)s): attestations validated %(validated)d, proposed "
 "%(proposed)d, found automatically %(automatic)d."
 
-#: phraseology/management/commands/create_examples.py:63
+#: phraseology/management/commands/create_examples.py:65
 #, python-format
 msgid "%(count)d fiche d’exemple créée."
 msgid_plural "%(count)d fiches d’exemple créées."
@@ -2652,7 +2652,11 @@ msgstr "sightings"
 msgid "relations entre unités"
 msgstr "relations between units"
 
-#: phraseology/management/commands/delete_examples.py:24
+#: phraseology/management/commands/delete_examples.py:20
+msgid "fiches qui emploient un mot abstrait d’exemple"
+msgstr "entries that use an example abstract word"
+
+#: phraseology/management/commands/delete_examples.py:25
 #, python-format
 msgid ""
 "D’autres contenus renvoient aux fiches d’exemple (%(links)s) : retirez ces "
@@ -2661,16 +2665,16 @@ msgstr ""
 "Other contents point to the example entries (%(links)s): remove these links "
 "before deleting them."
 
-#: phraseology/management/commands/delete_examples.py:32
+#: phraseology/management/commands/delete_examples.py:33
 #, python-format
 msgid ""
 "Effacé : fiches d’exemple %(units)d, attestations %(attestations)d, autres "
-"éléments %(parts)d, comptes d’exemple %(accounts)d ; candidats remis à "
-"examiner %(candidates)d."
+"éléments %(parts)d, mots abstraits %(abstract_words)d, comptes d’exemple "
+"%(accounts)d ; candidats remis à examiner %(candidates)d."
 msgstr ""
-"Deleted: example entries %(units)d, attestations %(attestations)d, other "
-"items %(parts)d, example accounts %(accounts)d; candidates put back for "
-"review %(candidates)d."
+"Deleted: example entries %(units)d, attestations %(attestations)d, "
+"other items %(parts)d, abstract words %(abstract_words)d, example "
+"accounts %(accounts)d; candidates put back for review %(candidates)d."
 
 #: phraseology/management/commands/extract_candidates.py:46
 #, python-format
@@ -4647,26 +4651,35 @@ msgid "néologismes, avec justification et preuves"
 msgstr "neologisms, with justification and evidence"
 
 #: templates/api/data.html:39
+#, python-brace-format
+msgid ""
+"mots abstraits, classes de mots nommées {liquide} dans les schémas, avec "
+"leurs règles"
+msgstr ""
+"abstract words, classes of words named {liquide} in schemas, with "
+"their rules"
+
+#: templates/api/data.html:40
 msgid "versions publiées, phrase par phrase, avec leurs justifications"
 msgstr "published versions, sentence by sentence, with their justifications"
 
-#: templates/api/data.html:40
+#: templates/api/data.html:41
 msgid "recherches qui n’ont rien trouvé, avec la version du corpus"
 msgstr "searches that found nothing, with the version of the corpus"
 
-#: templates/api/data.html:41
+#: templates/api/data.html:42
 msgid "repérages de phraséologie sans fiche, rattachés ou non"
 msgstr "sightings of phraseology without an entry, attached or not"
 
-#: templates/api/data.html:42
+#: templates/api/data.html:43
 msgid "notes de lecture publiques, avec les mots qu’elles commentent"
 msgstr "public reading notes, with the words they comment on"
 
-#: templates/api/data.html:43
+#: templates/api/data.html:44
 msgid "corrections validées de l’analyse automatique d’un mot"
 msgstr "validated corrections of the automatic analysis of a word"
 
-#: templates/api/data.html:45
+#: templates/api/data.html:46
 msgid ""
 "Une attestation de niveau « automatic » a été repérée automatiquement : elle "
 "n’est pas vérifiée par des personnes. Les citations du corpus viennent de "
@@ -4676,11 +4689,11 @@ msgstr ""
 "checked by people. Corpus quotations come from Perseus canonical-latinLit "
 "(CC BY-SA 4.0)."
 
-#: templates/api/data.html:49
+#: templates/api/data.html:50
 msgid "Réutilisation"
 msgstr "Reuse"
 
-#: templates/api/data.html:50
+#: templates/api/data.html:51
 msgid ""
 "Toute réutilisation crédite « contributeurs de Phraséologie latine » et "
 "partage les données sous la même licence (CC BY-SA 4.0). Chaque élément "
@@ -8087,8 +8100,7 @@ msgstr "Abstract word %%s"
 msgid ""
 "Aucun mot abstrait de ce nom : proposez-le dans la liste des mots abstraits."
 msgstr ""
-"No abstract word of this name: propose it in the list of abstract "
-"words."
+"No abstract word of this name: propose it in the list of abstract words."
 
 #: templates/phraseology/widgets/schema.html:38
 msgid "Variante"
@@ -8169,11 +8181,10 @@ msgid ""
 "chacun des deux mots. Les mots en pointillé restent hors du schéma ; ▾ "
 "change le lemme d’un mot, ou en fait un mot abstrait comme {liquide}."
 msgstr ""
-"Link the words: click the governing word, then the word that depends "
-"on it, or drag an arrow from one to the other. With the keyboard, "
-"press Enter on each of the two words. Dashed words stay outside the "
-"schema; ▾ changes the lemma of a word, or makes it an abstract word "
-"such as {liquide}."
+"Link the words: click the governing word, then the word that depends on it, "
+"or drag an arrow from one to the other. With the keyboard, press Enter on "
+"each of the two words. Dashed words stay outside the schema; ▾ changes the "
+"lemma of a word, or makes it an abstract word such as {liquide}."
 
 #: templates/phraseology/widgets/schema.html:68
 msgid "Mots à relier"

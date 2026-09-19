@@ -26,6 +26,7 @@ from moderation.models import Comment, Report, Revision, Vote
 
 from .frequency import occurrence_words, schema_matches
 from .models import (
+    AbstractWord,
     Attestation,
     Candidate,
     Equivalent,
@@ -40,6 +41,7 @@ from .models import (
 from .schema import parse_schema
 from .services import (
     add_attestations,
+    create_abstract_word,
     create_unit,
     propose_unit,
     record_automatic_attestations,
@@ -47,6 +49,7 @@ from .services import (
     review_attestations,
     save_part,
     set_example,
+    validate_abstract_word,
     validate_unit,
 )
 
@@ -61,6 +64,7 @@ OUTSIDE_AUTHORS = 3
 VALIDATED, PROPOSED, DRAFT = Unit.Status.VALIDATED, Unit.Status.PROPOSED, Unit.Status.DRAFT
 ELEVATED, STANDARD = Work.Register.ELEVATED, Work.Register.STANDARD
 BASE, PASSIVE = Realization.Variation.BASE, Realization.Variation.PASSIVE
+INSERTION = Realization.Variation.INSERTION
 WORD_ORDER, OTHER = Realization.Variation.WORD_ORDER, Realization.Variation.OTHER
 
 
@@ -82,15 +86,30 @@ class Example:
     status: str = VALIDATED
 
 
+# Abstract words the examples use: (name, label, definition, rules). One that already exists,
+# whoever made it, is used as it is.
+EXAMPLE_ABSTRACTS = (
+    (
+        "liquide",
+        "nom désignant un liquide",
+        "Liquides que l’on boit ou que l’on verse : eau, vin, lait, boisson.",
+        [{"upos": [], "feats": [], "lemmas": ["aqua", "uinum", "merum", "lac", "potio"]}],
+    ),
+)
+
 EXAMPLES = (
     Example(
         "bellum gerere",
         Kind.VERB_NOUN,
         "faire la guerre, conduire une guerre",
         (("fr", "faire la guerre"), ("en", "to wage war")),
-        schema="gero -obj|nsubj:pass-> bellum",
+        schema="gero -obj|nsubj:pass-> bellum; gero -(sp)-> cum; cum -reg-> aliquis",
         construction="bellum gerere cum aliquo, contra ou adversus aliquem",
-        realizations=(("bellum gerere", BASE), ("bellum geritur", PASSIVE)),
+        realizations=(
+            ("bellum gerere", BASE),
+            ("bellum geritur", PASSIVE),
+            ("bellum cum aliquo gerere", INSERTION),
+        ),
         reference=("Gaffiot", "s. v. gero"),
     ),
     Example(
@@ -338,6 +357,21 @@ EXAMPLES = (
 )
 
 
+EXAMPLES += (
+    Example(
+        "{liquide} sūmere",
+        Kind.VERB_NOUN,
+        "boire (de l’eau, du vin…), prendre une boisson",
+        (("fr", "boire"), ("en", "to drink")),
+        schema="sumo -obj|nsubj:pass-> {liquide}",
+        construction="aquam, uinum sumere",
+        realizations=(("aquam sumere", BASE), ("uinum sumere", BASE)),
+        reference=("Gaffiot", "s. v. sumo"),
+        status=PROPOSED,
+    ),
+)
+
+
 def check_development():
     if not settings.DEBUG:
         raise CommandError(
@@ -364,6 +398,17 @@ def example_accounts():
             user.groups.add(Group.objects.get(name=role))
         accounts.append(user)
     return accounts
+
+
+def create_example_abstracts(author, reviewer):
+    """The abstract words of the examples, created and validated when missing."""
+    for name, label, definition, rules in EXAMPLE_ABSTRACTS:
+        if AbstractWord.objects.filter(name=name).exists():
+            continue
+        word = create_abstract_word(
+            AbstractWord(name=name, label=label, definition=definition, rules=rules), author
+        )
+        validate_abstract_word(word, reviewer)
 
 
 # Finding occurrences
@@ -589,8 +634,21 @@ def links_from_other_contents(unit_ids):
         "relations": UnitRelation.objects.filter(target_id__in=unit_ids)
         .exclude(unit_id__in=unit_ids)
         .count(),
+        "abstract_words": _units_using_example_abstracts().exclude(pk__in=unit_ids).count(),
     }
     return {name: count for name, count in links.items() if count}
+
+
+def _example_abstracts():
+    return AbstractWord.objects.filter(created_by__email=EXAMPLE_AUTHOR)
+
+
+def _units_using_example_abstracts():
+    """Units whose schema or reference form names an abstract word of the examples."""
+    condition = Q(pk__in=[])
+    for word in _example_abstracts():
+        condition |= Q(schema__contains=str(word)) | Q(reference_form__contains=str(word))
+    return Unit.objects.filter(condition)
 
 
 def _delete_records(model, pks):
@@ -640,6 +698,10 @@ def delete_examples():
     )
     _delete_records(Unit, unit_ids)
     Unit.objects.filter(pk__in=unit_ids).delete()
+    words = list(_example_abstracts().values_list("pk", flat=True))
+    _delete_records(AbstractWord, words)
+    AbstractWord.objects.filter(pk__in=words).delete()
+    counts["abstract_words"] = len(words)
     counts["accounts"] = 0
     for user in User.objects.filter(email__in=(EXAMPLE_AUTHOR, EXAMPLE_REVIEWER)):
         try:

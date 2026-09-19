@@ -30,6 +30,7 @@ class ExportTests(ApiTestCase):
                     "LISEZMOI.txt",
                     "fiches.json",
                     "neologismes.json",
+                    "mots-abstraits.json",
                     "versions.json",
                     "recherches-infructueuses.json",
                     "reperages.json",

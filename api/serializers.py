@@ -11,7 +11,10 @@ from django.db.models import Prefetch
 from corpus.models import AnalysisCorrection, Token
 from justifications.models import Evidence, Justification
 from moderation.registry import can_view
+from phraseology.abstract import WRITTEN as ABSTRACT
+from phraseology.abstract import rule_label
 from phraseology.models import (
+    AbstractWord,
     NegativeSearch,
     Neologism,
     ReadingNote,
@@ -88,6 +91,8 @@ def unit_summary(unit, link):
         "marked_form": unit.marked_form,
         "kind": unit.kind,
         "schema": unit.schema,
+        # The abstract words the schema and the reference form name, between braces.
+        "abstract_words": sorted(set(ABSTRACT.findall(f"{unit.schema} {unit.reference_form}"))),
         "construction": unit.construction,
         "register": unit.register,
         "usage_marks": unit.usage_marks,
@@ -163,6 +168,7 @@ def unit_data(unit, link):
         "frequency": (
             {
                 "schema": frequency.schema,
+                "abstract_words": frequency.abstract_state,
                 "total": frequency.total,
                 "core_total": frequency.core_total,
                 "corpus_version": frequency.corpus_version,
@@ -175,6 +181,27 @@ def unit_data(unit, link):
 
 
 # Neologisms
+
+
+def public_abstract_words():
+    return AbstractWord.objects.filter(is_hidden=False).select_related("created_by").order_by("pk")
+
+
+def abstract_word_data(word, link):
+    """An abstract word: a word belongs to it when it meets every condition of one rule, on
+    the analysis of the corpus (upos, feats written as Universal Dependencies, lemma)."""
+    return {
+        "id": word.pk,
+        "url": link(word.get_absolute_url()),
+        "name": word.name,
+        "label": word.label,
+        "definition": word.definition,
+        "rules": [{**rule, "label": rule_label(rule)} for rule in word.rules],
+        "status": word.status,
+        "created_by": word.created_by.public_name,
+        "created_at": _date(word.created_at),
+        "validated_at": _date(word.validated_at),
+    }
 
 
 def public_neologisms():

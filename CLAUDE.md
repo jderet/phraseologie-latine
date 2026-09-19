@@ -64,7 +64,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
 | `api` | API publique en lecture, export complet, page des données ouvertes | API JSON (fiches, néologismes, versions publiées, recherches infructueuses, repérages, notes de lecture, corrections validées), export zip |
 | `notebook` | carnet personnel : surlignages, notes privées, listes de passages | visible de son seul propriétaire, jamais dans l'API ni les exports, effacé avec le compte |
-| `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications ; schéma dessiné en reliant des mots (`phraseology/widgets.py`, `phraseology/schema_help.py`) ; syntagme prépositionnel noté la préposition en tête (`sp`, `reg`, traduits pour la recherche par `corpus_edges`) ; fiches contenues dans un schéma repérées d'après les schémas (`phraseology/composition.py`) ; forme de référence balisée des fiches qu'elle contient, avec surbrillance et bulle (`phraseology/markup.py`) |
+| `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications ; schéma dessiné en reliant des mots (`phraseology/widgets.py`, `phraseology/schema_help.py`) ; syntagme prépositionnel noté la préposition en tête (`sp`, `reg`, traduits pour la recherche par `corpus_edges`) ; fiches contenues dans un schéma repérées d'après les schémas (`phraseology/composition.py`) ; forme de référence balisée des fiches qu'elle contient, avec surbrillance et bulle (`phraseology/markup.py`) ; relations facultatives et mots abstraits, classes de mots partagées et modérées (`phraseology/abstract.py`) |
 
 - `canonical-latinLit/` : clone du dépôt Perseus (CC BY-SA 4.0), ignoré par Git. Chemin réglable par `PERSEUS_LATIN_DIR`.
 - Les traitements lourds du corpus sont des commandes `manage.py` lancées sur le Mac : `import_perseus` lit le catalogue `corpus/data/` et les fichiers TEI ; `analyze_corpus` crée une couche d'analyse LatinCy, raccrochée aux mots par leur position dans le texte (un seul processus : le modèle ne se transmet pas entre processus).
@@ -91,6 +91,8 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | composante (fiche contenue dans un schéma) | `Component` |
 | forme de référence balisée | `Unit.marked_form` |
 | construction cherchée | `ConstructionTerm` |
+| relation facultative | `Edge.optional`, écrite `-(sp)->` |
+| mot abstrait | `AbstractWord`, écrit `{liquide}` |
 | équivalent | `Equivalent` |
 | attestation validée ou automatique | `Attestation` (`level` : `validated`, `automatic`) |
 | candidat | `Candidate` |

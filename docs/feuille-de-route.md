@@ -173,6 +173,24 @@ Demandée par le porteur le 15 septembre 2026 : dans « Chercher des attestation
 
 Terminé quand un testeur a écrit `[rēs pūblica;rem pūblicam] administrāre`, vu *rēs pūblica* en tête de la recherche et *administro* comme mot, et trouvé des attestations sans rien taper dans la recherche.
 
+## Étape 13 : relations facultatives et mots abstraits
+
+Demandée par le porteur le 16 septembre 2026 : noter qu'une relation peut manquer (*bellum gerere*, avec ou sans *cum aliquō*) et réunir dans un schéma une classe de mots (*aquam, pōtiōnem sūmere* dans *{liquide} sūmere* ; *Caesaris, meā causā*).
+
+- [x] Relation facultative écrite entre parenthèses, `-(sp)->`, au moins une relation obligatoire, régime jamais facultatif
+- [x] Recherche, fréquence, relevé et repérage sans exiger les relations facultatives ; composition sur les relations obligatoires
+- [x] Dessin : case « relation facultative », arc en pointillé, « facultatif » sur la fiche
+- [x] Mots abstraits : pages, proposition, modification, validation, historique ; lignes de catégories, traits et lemmes ; nom figé, intitulé libre
+- [x] Schéma : mot abstrait entre accolades, jamais à la racine ; recherche, fréquence et relevé trouvent tous ses mots
+- [x] Forme de référence portant le mot abstrait, avec sa bulle ; fiche retrouvée sans les accolades
+- [x] Repérage dans l'éditeur par les lemmes d'un mot abstrait
+- [x] Fréquence et relevé à recalculer quand un mot abstrait change ; fiche validée avec des mots abstraits validés
+- [x] Dessin : mot abstrait écrit dans la forme ou choisi dans le panneau d'un mot
+- [x] API, export, documentation, fiches d'exemple
+- [ ] Préciser le cas de la racine d'un schéma (*causā* à l'ablatif), pour que `{possesseur} causā` ne trouve pas *causam Caesaris*
+
+Terminé quand un testeur a créé `{liquide}`, écrit *{liquide} sūmere* au dessin et vu la fiche repérée dans *aquam sumpsit*, et dessiné *bellum cum aliquō gerere* avec le syntagme facultatif.
+
 ## Ouverture publique
 
 - [ ] Conditions de la section 7 du cahier des charges remplies

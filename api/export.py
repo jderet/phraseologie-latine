@@ -29,6 +29,8 @@ Version du corpus : {corpus}
 Contenu
 - fiches.json : fiches phraséologiques proposées, validées ou contestées ({units})
 - neologismes.json : lexique des néologismes ({neologisms})
+- mots-abstraits.json : mots abstraits, classes de mots nommées {{liquide}} dans les
+  schémas ({abstract_words})
 - versions.json : versions de traduction publiées, avec leurs justifications ({versions})
 - recherches-infructueuses.json : recherches qui n'ont rien trouvé ({searches})
 - reperages.json : repérages de phraséologie sans fiche, rattachés ou non ({sightings})
@@ -67,6 +69,9 @@ def write_export(directory=None, now=None):
         "neologismes.json": [
             serializers.neologism_data(n, _link) for n in serializers.public_neologisms()
         ],
+        "mots-abstraits.json": [
+            serializers.abstract_word_data(w, _link) for w in serializers.public_abstract_words()
+        ],
         "versions.json": [
             serializers.version_data(v, _link) for v in serializers.public_versions()
         ],
@@ -90,6 +95,7 @@ def write_export(directory=None, now=None):
         corpus=corpus_version().label,
         units=counts["fiches.json"],
         neologisms=counts["neologismes.json"],
+        abstract_words=counts["mots-abstraits.json"],
         versions=counts["versions.json"],
         searches=counts["recherches-infructueuses.json"],
         sightings=counts["reperages.json"],

@@ -14,7 +14,9 @@ from corpus.text import normalize
 from justifications.models import BibliographicWork
 from moderation.models import Comment, Revision
 from moderation.registry import can_view
+from phraseology.abstract import clean_rules
 from phraseology.examples import (
+    EXAMPLE_ABSTRACTS,
     EXAMPLE_AUTHOR,
     EXAMPLE_REVIEWER,
     EXAMPLES,
@@ -22,11 +24,13 @@ from phraseology.examples import (
     ExamplesInUse,
     attestation_counts,
     create_example,
+    create_example_abstracts,
     delete_examples,
     example_accounts,
     example_units,
 )
 from phraseology.models import (
+    AbstractWord,
     Attestation,
     Candidate,
     Kind,
@@ -35,7 +39,7 @@ from phraseology.models import (
     UnitRelation,
     UsageMark,
 )
-from phraseology.schema import parse_schema
+from phraseology.schema import parse_schema, schema_abstracts
 from phraseology.services import add_attestations, contest_unit, current_frequency, save_part
 from translations.models import Language
 
@@ -84,6 +88,11 @@ class ExampleDataTests(TestCase):
                 if example.status == Unit.Status.VALIDATED:
                     self.assertTrue(example.schema and example.construction)
                     self.assertTrue(example.equivalents and example.reference)
+                if example.schema:
+                    names = {name for name, *_rest in EXAMPLE_ABSTRACTS}
+                    self.assertLessEqual(set(schema_abstracts(parse_schema(example.schema))), names)
+        for _name, _label, _definition, rules in EXAMPLE_ABSTRACTS:
+            self.assertEqual(clean_rules(rules), rules)
 
 
 class ExampleTestCase(AnalysedCorpusTestCase):
@@ -182,6 +191,19 @@ class DeletionTests(ExampleTestCase):
         self.assertEqual((candidate.status, candidate.unit), (Candidate.Status.PENDING, None))
         self.assertTrue(Revision.objects.filter(content_type=unit_type, object_id=self.unit.pk))
         self.assertEqual(Attestation.objects.filter(unit=self.unit).count(), 1)
+
+    def test_the_abstract_words_of_the_examples(self):
+        create_example_abstracts(self.example_author, self.example_reviewer)
+        create_example_abstracts(self.example_author, self.example_reviewer)
+        word = AbstractWord.objects.get(name="liquide")
+        self.assertEqual(word.status, AbstractWord.Status.VALIDATED)
+        Unit.objects.filter(pk=self.unit.pk).update(schema="capio -obj-> {liquide}")
+        with self.assertRaises(ExamplesInUse) as caught:
+            delete_examples()
+        self.assertEqual(caught.exception.links, {"abstract_words": 1})
+        Unit.objects.filter(pk=self.unit.pk).update(schema="")
+        self.assertEqual(delete_examples()["abstract_words"], 1)
+        self.assertFalse(AbstractWord.objects.exists())
 
     def test_a_link_from_another_content_stops_the_deletion(self):
         relation = UnitRelation(unit=self.unit, target=self.example, kind=UnitRelation.Kind.SYNONYM)

@@ -10,6 +10,7 @@ from phraseology.examples import (
     attestation_counts,
     check_development,
     create_example,
+    create_example_abstracts,
     example_accounts,
     example_units,
 )
@@ -35,6 +36,7 @@ class Command(BaseCommand):
         created = 0
         with transaction.atomic():
             author, reviewer = example_accounts()
+            create_example_abstracts(author, reviewer)
             for example in EXAMPLES:
                 unit = create_example(example, focus, layer, author, reviewer)
                 if unit is None:

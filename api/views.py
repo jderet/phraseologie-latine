@@ -65,6 +65,7 @@ def index(request):
             "endpoints": {
                 "units": link(reverse("api:units")),
                 "neologisms": link(reverse("api:neologisms")),
+                "abstract_words": link(reverse("api:abstract_words")),
                 "versions": link(reverse("api:versions")),
                 "negative_searches": link(reverse("api:negative_searches")),
                 "sightings": link(reverse("api:sightings")),
@@ -94,6 +95,16 @@ def neologisms(request):
 @require_GET
 def neologism(request, pk):
     return _detail(request, serializers.public_neologisms(), pk, serializers.neologism_data)
+
+
+@require_GET
+def abstract_words(request):
+    return _list(request, serializers.public_abstract_words(), serializers.abstract_word_data)
+
+
+@require_GET
+def abstract_word(request, pk):
+    return _detail(request, serializers.public_abstract_words(), pk, serializers.abstract_word_data)
 
 
 @require_GET

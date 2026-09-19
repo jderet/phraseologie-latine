@@ -17,6 +17,7 @@ class Command(BaseCommand):
                 "evidences": gettext("preuves"),
                 "sightings": gettext("repérages"),
                 "relations": gettext("relations entre unités"),
+                "abstract_words": gettext("fiches qui emploient un mot abstrait d’exemple"),
             }
             links = ", ".join(f"{labels[name]} : {count}" for name, count in error.links.items())
             raise CommandError(
@@ -30,7 +31,8 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 gettext(
                     "Effacé : fiches d’exemple %(units)d, attestations %(attestations)d, "
-                    "autres éléments %(parts)d, comptes d’exemple %(accounts)d ; "
+                    "autres éléments %(parts)d, mots abstraits %(abstract_words)d, "
+                    "comptes d’exemple %(accounts)d ; "
                     "candidats remis à examiner %(candidates)d."
                 )
                 % counts
