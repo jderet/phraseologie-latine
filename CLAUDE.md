@@ -63,6 +63,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | `translations` | textes sources, projets, versions, segments, étapes, propositions | textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable ; étapes à la manière de Git (`translations/steps.py`), texte source modifiable dont le latin suit les phrases, et propositions de modification du texte adoptées ou refusées en bloc (`translations/sources.py`), différences mot à mot (`translations/diffs.py`), copie d'une version publiée, propositions de modifications décidées phrase par phrase |
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
 | `api` | API publique en lecture, export complet, page des données ouvertes | API JSON (fiches, néologismes, versions publiées, recherches infructueuses, repérages, notes de lecture, corrections validées), export zip |
+| `activity` | événements, notifications, abonnements, étoiles | notifications sur le site (cloche, page, mentions @nom) déclenchées par les services (`activity.services.record`) et par les messages de discussion (signal) ; personne n'est prévenu d'un contenu qu'il ne peut pas voir ; effacés avec le compte |
 | `notebook` | carnet personnel : surlignages, notes privées, listes de passages | visible de son seul propriétaire, jamais dans l'API ni les exports, effacé avec le compte |
 | `phraseology` | unités, réalisations, sens, attestations, candidats, néologismes | fiches (schéma, sens, équivalents, réalisations, relations, renvois, attestations), proposition, validation, contestation, fréquence calculée ; lexique de néologismes ; candidats et file de validation ; unités connues repérées dans l'éditeur ; liens avec les justifications ; schéma dessiné en reliant des mots (`phraseology/widgets.py`, `phraseology/schema_help.py`) ; syntagme prépositionnel noté la préposition en tête (`sp`, `reg`, traduits pour la recherche par `corpus_edges`) ; fiches contenues dans un schéma repérées d'après les schémas (`phraseology/composition.py`) ; forme de référence balisée des fiches qu'elle contient, avec surbrillance et bulle (`phraseology/markup.py`) ; relations facultatives et mots abstraits, classes de mots partagées et modérées (`phraseology/abstract.py`) |
 
@@ -117,6 +118,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | ouvrage de référence | `BibliographicWork` |
 | contestation | `Challenge` |
 | révision, signalement | `Revision`, `Report` |
+| événement, notification, abonnement, étoile | `Event`, `Notification`, `Subscription`, `Star` |
 | contributeur, relecteur, administrateur | groupes `contributor`, `reviewer`, `administrator` |
 
 ## Règles non négociables

@@ -112,6 +112,11 @@ Noms de code provisoires, fixés au moment de coder. Les fonctions sont décrite
 - **Discussion** (`Comment`) : messages rattachés à un contenu qui l'autorise (pour l'instant les contestations ouvertes). Le fil est la liste des messages du contenu, sans objet séparé. Un message est un contenu modéré : révisions, signalement, masquage.
 - **Vote** (`Vote`) : objet, auteur, valeur (pour ou contre). Un avis indicatif, modifiable ou retiré, sans historique. Votent les comptes confirmés et les relecteurs, sauf l'auteur de l'objet et, pour une contestation, l'auteur de la version contestée.
 - **Signalement** (`Report`) : objet, auteur, motif, statut.
+- **Événement** (`Event`) : auteur, action, contenu visé, projet, public ou non (visible de tous au moment où il arrive), date. Enregistré par les services (publication, étape, proposition, décision, message, contestation, invitation…). Les fils d'activité ne montrent que les événements publics, et seulement si le lecteur voit encore le contenu.
+- **Notification** (`Notification`) : destinataire, événement, lue le. Reçoivent une notification les personnes concernées (auteurs et co-auteurs d'une version pour une proposition ou une contestation, auteur d'une proposition pour sa décision, invité…), celles qui suivent le contenu ou un contenu dont il fait partie (projet, version, texte source, discussion), et celles mentionnées par `@` suivi de leur nom affiché sans espaces ; jamais l'auteur de l'action, jamais qui ne peut pas voir le contenu (règle 8). Sur le site seulement, pas d'e-mail (choix du 19 septembre 2026).
+- **Abonnement** (`Subscription`) : personne, contenu suivi, actif ou non. On suit automatiquement ce qu'on crée, co-écrit ou discute ; un abonnement retiré le reste.
+- **Étoile** (`Star`) : personne, version publiée. Seul le nombre est public.
+- Événements, notifications, abonnements et étoiles ne sont pas des contributions : ni révision ni export ; notifications, abonnements et étoiles sont effacés avec le compte.
 
 ## 6. Statuts
 

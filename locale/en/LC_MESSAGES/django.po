@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 13:36+0200\n"
+"POT-Creation-Date: 2026-09-19 13:39+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -200,6 +200,170 @@ msgid "Votre compte est supprimé. Vos contributions restent, sans votre nom."
 msgstr ""
 "Your account has been deleted. Your contributions remain, without your name."
 
+#: activity/apps.py:7
+msgid "Activité"
+msgstr "Activity"
+
+#: activity/models.py:17
+msgid "a publié une version"
+msgstr "published a version"
+
+#: activity/models.py:18
+msgid "a créé une étape"
+msgstr "created a step"
+
+#: activity/models.py:19
+msgid "a proposé des modifications"
+msgstr "proposed changes"
+
+#: activity/models.py:20
+msgid "a examiné une proposition"
+msgstr "reviewed a proposal"
+
+#: activity/models.py:21
+msgid "a retiré une proposition"
+msgstr "withdrew a proposal"
+
+#: activity/models.py:22
+msgid "a écrit un message"
+msgstr "wrote a message"
+
+#: activity/models.py:23
+msgid "vous a mentionné"
+msgstr "mentioned you"
+
+#: activity/models.py:24
+msgid "a contesté un choix"
+msgstr "contested a choice"
+
+#: activity/models.py:25
+msgid "a proposé de modifier un texte source"
+msgstr "proposed to change a source text"
+
+#: activity/models.py:26
+msgid "a examiné une proposition sur un texte"
+msgstr "reviewed a proposal on a text"
+
+#: activity/models.py:27
+msgid "vous invite comme co-auteur"
+msgstr "invites you as a co-author"
+
+#: activity/models.py:28
+msgid "est devenu co-auteur"
+msgstr "became a co-author"
+
+#: activity/models.py:29
+msgid "a refusé l’invitation"
+msgstr "declined the invitation"
+
+#: activity/models.py:30
+msgid "a ouvert un sujet"
+msgstr "opened a topic"
+
+#: activity/models.py:31
+msgid "a fermé un sujet"
+msgstr "closed a topic"
+
+#: activity/models.py:32
+msgid "a rouvert un sujet"
+msgstr "reopened a topic"
+
+#: activity/models.py:33
+msgid "a commenté une phrase"
+msgstr "commented on a sentence"
+
+#: activity/models.py:43 corpus/models.py:40 corpus/models.py:85
+#: justifications/models.py:96 justifications/models.py:334
+#: moderation/models.py:53 moderation/models.py:127 moderation/models.py:175
+#: moderation/models.py:217 templates/translations/version_members.html:29
+#: translations/models.py:245 translations/models.py:307
+#: translations/models.py:473 translations/models.py:632
+#: translations/models.py:725
+msgid "auteur"
+msgstr "author"
+
+#: activity/models.py:45 moderation/models.py:56
+msgid "action"
+msgstr "action"
+
+#: activity/models.py:56 translations/models.py:467
+msgid "projet"
+msgstr "project"
+
+#: activity/models.py:59
+msgid "public"
+msgstr "public"
+
+#: activity/models.py:60 activity/models.py:126 activity/models.py:159
+#: moderation/models.py:55 moderation/models.py:134 moderation/models.py:178
+#: moderation/models.py:220 translations/models.py:264
+msgid "date"
+msgstr "date"
+
+#: activity/models.py:63 activity/models.py:85
+msgid "événement"
+msgstr "event"
+
+#: activity/models.py:64
+msgid "événements"
+msgstr "events"
+
+#: activity/models.py:82
+msgid "destinataire"
+msgstr "recipient"
+
+#: activity/models.py:87
+msgid "lue le"
+msgstr "read on"
+
+#: activity/models.py:90
+msgid "notification"
+msgstr "notification"
+
+#: activity/models.py:91
+msgid "notifications"
+msgstr "notifications"
+
+#: activity/models.py:120 activity/models.py:151
+msgid "personne"
+msgstr "person"
+
+#: activity/models.py:125
+msgid "suivi"
+msgstr "followed"
+
+#: activity/models.py:129
+msgid "abonnement"
+msgstr "subscription"
+
+#: activity/models.py:130
+msgid "abonnements"
+msgstr "subscriptions"
+
+#: activity/models.py:157 core/models.py:16 templates/corpus/passage.html:47
+#: templates/corpus/reading.html:189 templates/corpus/work.html:56
+#: translations/models.py:506 translations/models.py:554
+#: translations/models.py:619 translations/models.py:712
+#: translations/models.py:830
+msgid "version"
+msgstr "version"
+
+#: activity/models.py:162
+msgid "étoile"
+msgstr "star"
+
+#: activity/models.py:163
+msgid "étoiles"
+msgstr "stars"
+
+#: activity/views.py:44
+msgid "Ce contenu n’est plus accessible."
+msgstr "This content is no longer available."
+
+#: activity/views.py:53
+msgid "Toutes les notifications sont lues."
+msgstr "All notifications are read."
+
 #: api/apps.py:7
 msgid "API publique et données ouvertes"
 msgstr "Public API and open data"
@@ -208,14 +372,6 @@ msgstr "Public API and open data"
 #, python-format
 msgid "Export écrit : %(path)s"
 msgstr "Export written: %(path)s"
-
-#: core/models.py:16 templates/corpus/passage.html:47
-#: templates/corpus/reading.html:189 templates/corpus/work.html:56
-#: translations/models.py:506 translations/models.py:554
-#: translations/models.py:619 translations/models.py:712
-#: translations/models.py:830
-msgid "version"
-msgstr "version"
 
 #: core/models.py:18 corpus/models.py:168 corpus/models.py:295
 msgid "texte"
@@ -688,15 +844,6 @@ msgstr "year of death"
 #: corpus/models.py:37
 msgid "époque"
 msgstr "period"
-
-#: corpus/models.py:40 corpus/models.py:85 justifications/models.py:96
-#: justifications/models.py:334 moderation/models.py:53
-#: moderation/models.py:127 moderation/models.py:175 moderation/models.py:217
-#: templates/translations/version_members.html:29 translations/models.py:245
-#: translations/models.py:307 translations/models.py:473
-#: translations/models.py:632 translations/models.py:725
-msgid "auteur"
-msgstr "author"
 
 #: corpus/models.py:41
 msgid "auteurs"
@@ -1326,7 +1473,7 @@ msgstr "The correction is rejected."
 msgid "Justification"
 msgstr "Justification"
 
-#: justifications/forms.py:28 justifications/services.py:72
+#: justifications/forms.py:28 justifications/services.py:75
 msgid "Ce passage ne figure pas dans la phrase latine : copiez-le tel quel."
 msgstr "This passage is not in the Latin sentence: copy it exactly."
 
@@ -1510,7 +1657,7 @@ msgstr "justification"
 msgid "justifications"
 msgstr "justifications"
 
-#: justifications/models.py:157 justifications/services.py:91
+#: justifications/models.py:157 justifications/services.py:94
 msgid "Une justification par analogie exige un commentaire."
 msgstr "A justification by analogy requires a comment."
 
@@ -1653,39 +1800,39 @@ msgstr "challenges"
 msgid "Contestation de « %(excerpt)s »"
 msgstr "Challenge of “%(excerpt)s”"
 
-#: justifications/services.py:47
+#: justifications/services.py:50
 msgid "Cette attestation n’est pas valide : refaites la recherche."
 msgstr "This attestation is not valid: search again."
 
-#: justifications/services.py:85
+#: justifications/services.py:88
 msgid "Cette force de preuve exige au moins une attestation du corpus."
 msgstr "This strength of evidence requires at least one corpus attestation."
 
-#: justifications/services.py:96
+#: justifications/services.py:99
 msgid "Une justification par analogie s’appuie sur au moins une preuve."
 msgstr "A justification by analogy rests on at least one piece of evidence."
 
-#: justifications/services.py:101
+#: justifications/services.py:104
 msgid "Expliquez ce choix par un commentaire ou par une preuve."
 msgstr "Explain this choice with a comment or a piece of evidence."
 
-#: justifications/services.py:133
+#: justifications/services.py:136
 msgid "Cette fiche phraséologique n’est pas accessible."
 msgstr "This phraseology entry is not accessible."
 
-#: justifications/services.py:201 phraseology/services.py:776
+#: justifications/services.py:204 phraseology/services.py:776
 msgid "Preuve retirée"
 msgstr "Evidence withdrawn"
 
-#: justifications/services.py:233
+#: justifications/services.py:244
 msgid "Cette contestation est déjà close."
 msgstr "This challenge is already closed."
 
-#: justifications/services.py:249
+#: justifications/services.py:260
 msgid "Contestation close"
 msgstr "Challenge closed"
 
-#: justifications/services.py:256
+#: justifications/services.py:267
 msgid "Contestation retirée"
 msgstr "Challenge withdrawn"
 
@@ -1850,15 +1997,6 @@ msgstr "content type"
 #: moderation/models.py:211
 msgid "identifiant du contenu"
 msgstr "content identifier"
-
-#: moderation/models.py:55 moderation/models.py:134 moderation/models.py:178
-#: moderation/models.py:220 translations/models.py:264
-msgid "date"
-msgstr "date"
-
-#: moderation/models.py:56
-msgid "action"
-msgstr "action"
 
 #: moderation/models.py:57
 msgid "état avant"
@@ -3960,7 +4098,7 @@ msgid "Une unité garde au moins un sens."
 msgstr "A unit keeps at least one sense."
 
 #: phraseology/services.py:277 phraseology/services.py:337
-#: phraseology/services.py:759 translations/members.py:107
+#: phraseology/services.py:759 translations/members.py:114
 msgid "Retrait"
 msgstr "Withdrawal"
 
@@ -4353,7 +4491,7 @@ msgid "Indiquez l’expression cherchée."
 msgstr "Give the expression searched for."
 
 #: templates/accounts/account.html:4 templates/accounts/account.html:8
-#: templates/base.html:43 templates/notebook/notebook.html:8
+#: templates/base.html:44 templates/notebook/notebook.html:8
 #: templates/phraseology/annotator.html:8
 msgid "Mon compte"
 msgstr "My account"
@@ -4591,7 +4729,7 @@ msgstr "Name"
 msgid "État"
 msgstr "Status"
 
-#: templates/accounts/dashboard.html:70 templates/base.html:50
+#: templates/accounts/dashboard.html:70 templates/base.html:51
 msgid "Inscription"
 msgstr "Sign up"
 
@@ -4744,7 +4882,7 @@ msgstr ""
 "message: your password stays the same."
 
 #: templates/accounts/login.html:4 templates/accounts/login.html:8
-#: templates/base.html:49
+#: templates/base.html:50
 msgid "Connexion"
 msgstr "Log in"
 
@@ -4877,7 +5015,62 @@ msgstr ""
 "Nothing received? Check your spam folder, or sign up again with the same "
 "address: a new link will be sent to you."
 
-#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:81
+#: templates/activity/event.html:3
+msgid "contenu indisponible"
+msgstr "content unavailable"
+
+#: templates/activity/notifications.html:4
+#: templates/activity/notifications.html:8 templates/base.html:41
+msgid "Notifications"
+msgstr "Notifications"
+
+#: templates/activity/notifications.html:9
+msgid ""
+"Ce qui arrive aux contenus que vous écrivez ou suivez, et les messages qui "
+"vous mentionnent."
+msgstr ""
+"What happens to the contents you write or follow, and the messages that "
+"mention you."
+
+#: templates/activity/notifications.html:11
+msgid "Filtre"
+msgstr "Filter"
+
+#: templates/activity/notifications.html:12
+msgid "Toutes"
+msgstr "All"
+
+#: templates/activity/notifications.html:13
+msgid "Non lues"
+msgstr "Unread"
+
+#: templates/activity/notifications.html:18
+msgid "Tout marquer comme lu"
+msgstr "Mark all as read"
+
+#: templates/activity/notifications.html:26
+#: templates/phraseology/widgets/schema.html:53
+#: templates/translations/version_detail.html:42
+msgid "voir"
+msgstr "see"
+
+#: templates/activity/notifications.html:26
+msgid "voir et marquer comme lue"
+msgstr "see and mark as read"
+
+#: templates/activity/notifications.html:29
+msgid "Aucune notification."
+msgstr "No notification."
+
+#: templates/activity/notifications.html:33
+msgid ""
+"Pour mentionner quelqu’un dans un message, écrivez @ suivi de son nom "
+"affiché sans espaces, par exemple @MarcusTullius."
+msgstr ""
+"To mention someone in a message, write @ followed by their displayed name "
+"without spaces, for instance @MarcusTullius."
+
+#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:82
 msgid "Données ouvertes"
 msgstr "Open data"
 
@@ -5044,48 +5237,55 @@ msgstr "Review"
 msgid "Signalements"
 msgstr "Reports"
 
-#: templates/base.html:41 templates/phraseology/annotator.html:4
+#: templates/base.html:41
+#, python-format
+msgid "%(counter)s non lue"
+msgid_plural "%(counter)s non lues"
+msgstr[0] "%(counter)s unread"
+msgstr[1] "%(counter)s unread"
+
+#: templates/base.html:42 templates/phraseology/annotator.html:4
 #: templates/phraseology/annotator.html:9
 msgid "Mes annotations"
 msgstr "My annotations"
 
-#: templates/base.html:42 templates/notebook/highlight_panel.html:2
+#: templates/base.html:43 templates/notebook/highlight_panel.html:2
 #: templates/notebook/list_panel.html:2 templates/notebook/note_panel.html:2
 #: templates/notebook/notebook.html:4 templates/notebook/notebook.html:9
 #: templates/notebook/panel_page.html:4
 msgid "Mon carnet"
 msgstr "My notebook"
 
-#: templates/base.html:46
+#: templates/base.html:47
 msgid "Déconnexion"
 msgstr "Log out"
 
-#: templates/base.html:56 templates/translations/source_detail.html:22
+#: templates/base.html:57 templates/translations/source_detail.html:22
 msgid "Langue"
 msgstr "Language"
 
-#: templates/base.html:63
+#: templates/base.html:64
 msgid "Changer"
 msgstr "Change"
 
-#: templates/base.html:81
+#: templates/base.html:82
 msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
 msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
 
-#: templates/base.html:81
+#: templates/base.html:82
 msgid "Code source"
 msgstr "Source code"
 
-#: templates/base.html:82 templates/core/legal_notice.html:4
+#: templates/base.html:83 templates/core/legal_notice.html:4
 #: templates/core/legal_notice.html:9
 msgid "Mentions légales"
 msgstr "Legal notice"
 
-#: templates/base.html:82
+#: templates/base.html:83
 msgid "Confidentialité"
 msgstr "Privacy"
 
-#: templates/base.html:82 templates/core/terms.html:4
+#: templates/base.html:83 templates/core/terms.html:4
 #: templates/core/terms.html:9
 msgid "Conditions d’utilisation"
 msgstr "Terms of use"
@@ -8407,11 +8607,6 @@ msgstr "No occurrence in the core (corpus %%s)"
 msgid "Trop long à compter : le schéma est peut-être trop général."
 msgstr "Too long to count: the schema may be too general."
 
-#: templates/phraseology/widgets/schema.html:53
-#: templates/translations/version_detail.html:42
-msgid "voir"
-msgstr "see"
-
 #: templates/phraseology/widgets/schema.html:58
 msgid "Fiches reconnues dans la forme de référence"
 msgstr "Entries recognized in the reference form"
@@ -9640,7 +9835,7 @@ msgstr "sentence %(number)s"
 msgid "Créer l’étape"
 msgstr "Create the step"
 
-#: templates/translations/step_create.html:33 translations/services.py:714
+#: templates/translations/step_create.html:33 translations/services.py:752
 msgid "Rien n’a changé depuis la dernière étape."
 msgstr "Nothing has changed since the latest step."
 
@@ -10292,11 +10487,11 @@ msgid ""
 "La personne invitée accepte ou refuse ; elle voit alors votre brouillon."
 msgstr "The person invited accepts or declines; they then see your draft."
 
-#: translations/members.py:29
+#: translations/members.py:31
 msgid "Aucun compte ne porte ce nom."
 msgstr "No account has this name."
 
-#: translations/members.py:33
+#: translations/members.py:35
 msgid ""
 "Plusieurs comptes portent ce nom : indiquez le numéro de sa page de profil "
 "(par exemple 12 pour …/contributeurs/12/)."
@@ -10304,44 +10499,44 @@ msgstr ""
 "Several accounts have this name: give the number of their profile page (for "
 "instance 12 for …/contributeurs/12/)."
 
-#: translations/members.py:52
+#: translations/members.py:54
 msgid "Vous êtes déjà l’auteur de cette version."
 msgstr "You are already the author of this version."
 
-#: translations/members.py:54
+#: translations/members.py:56
 msgid "Ce compte n’est pas actif."
 msgstr "This account is not active."
 
-#: translations/members.py:61
+#: translations/members.py:63
 msgid "Cette personne est déjà invitée ou co-autrice."
 msgstr "This person is already invited or a co-author."
 
-#: translations/members.py:68
+#: translations/members.py:70
 #, python-format
 msgid "Une version a au plus %(count)d co-auteurs."
 msgstr "A version has at most %(count)d co-authors."
 
-#: translations/members.py:77
+#: translations/members.py:79
 msgid "Invitation"
 msgstr "Invitation"
 
-#: translations/members.py:88
+#: translations/members.py:91
 msgid "Cette invitation n’est plus en attente."
 msgstr "This invitation is no longer pending."
 
-#: translations/members.py:91
+#: translations/members.py:94
 msgid "Invitation acceptée"
 msgstr "Invitation accepted"
 
-#: translations/members.py:91
+#: translations/members.py:94
 msgid "Invitation refusée"
 msgstr "Invitation declined"
 
-#: translations/members.py:104
+#: translations/members.py:111
 msgid "Cette personne n’est plus co-autrice."
 msgstr "This person is no longer a co-author."
 
-#: translations/members.py:107
+#: translations/members.py:114
 msgid "Départ"
 msgstr "Left"
 
@@ -10626,10 +10821,6 @@ msgstr "translation projects"
 msgid "publiée"
 msgstr "published"
 
-#: translations/models.py:467
-msgid "projet"
-msgstr "project"
-
 #: translations/models.py:475
 msgid "style déclaré"
 msgstr "declared style"
@@ -10806,55 +10997,55 @@ msgstr "co-authors of a version"
 msgid "%(name)s, co-auteur de %(version)s"
 msgstr "%(name)s, co-author of %(version)s"
 
-#: translations/services.py:128
+#: translations/services.py:132
 #, python-format
 msgid "Un texte compte au plus %(limit)d phrase."
 msgid_plural "Un texte compte au plus %(limit)d phrases."
 msgstr[0] "A text holds at most %(limit)d sentence."
 msgstr[1] "A text holds at most %(limit)d sentences."
 
-#: translations/services.py:137
+#: translations/services.py:141
 #, python-format
 msgid "Une phrase compte au plus %(limit)d caractères."
 msgstr "A sentence has at most %(limit)d characters."
 
-#: translations/services.py:150
+#: translations/services.py:154
 #, python-format
 msgid "%(count)d phrase ajoutée au début"
 msgid_plural "%(count)d phrases ajoutées au début"
 msgstr[0] "%(count)d sentence added at the beginning"
 msgstr[1] "%(count)d sentences added at the beginning"
 
-#: translations/services.py:156
+#: translations/services.py:160
 #, python-format
 msgid "%(count)d phrase ajoutée à la fin"
 msgid_plural "%(count)d phrases ajoutées à la fin"
 msgstr[0] "%(count)d sentence added at the end"
 msgstr[1] "%(count)d sentences added at the end"
 
-#: translations/services.py:160
+#: translations/services.py:164
 #, python-format
 msgid "%(count)d phrase ajoutée après la phrase %(number)d"
 msgid_plural "%(count)d phrases ajoutées après la phrase %(number)d"
 msgstr[0] "%(count)d sentence added after sentence %(number)d"
 msgstr[1] "%(count)d sentences added after sentence %(number)d"
 
-#: translations/services.py:167 translations/sources.py:206
+#: translations/services.py:171 translations/sources.py:206
 #, python-format
 msgid "Phrase %(number)d modifiée"
 msgstr "Sentence %(number)d edited"
 
-#: translations/services.py:169 translations/sources.py:208
+#: translations/services.py:173 translations/sources.py:208
 #, python-format
 msgid "Phrases %(number)d et %(next)d fusionnées"
 msgstr "Sentences %(number)d and %(next)d merged"
 
-#: translations/services.py:173 translations/sources.py:212
+#: translations/services.py:177 translations/sources.py:212
 #, python-format
 msgid "Phrase %(number)d scindée en %(count)d"
 msgstr "Sentence %(number)d split into %(count)d"
 
-#: translations/services.py:198
+#: translations/services.py:202
 msgid ""
 "Le texte a changé pendant que vous le modifiiez : vérifiez la phrase, puis "
 "recommencez."
@@ -10862,12 +11053,12 @@ msgstr ""
 "The text changed while you were editing it: check the sentence, then try "
 "again."
 
-#: translations/services.py:210 translations/services.py:554
-#: translations/services.py:586
+#: translations/services.py:214 translations/services.py:579
+#: translations/services.py:612
 msgid "Cette proposition est close."
 msgstr "This proposal is closed."
 
-#: translations/services.py:216
+#: translations/services.py:220
 msgid ""
 "Le texte a changé depuis le début de cette proposition : son auteur doit la "
 "reprendre sur le texte actuel."
@@ -10875,39 +11066,39 @@ msgstr ""
 "The text has changed since this proposal began: its author must carry it "
 "over to the current text."
 
-#: translations/services.py:262
+#: translations/services.py:266
 msgid "Il n’y a aucun changement à annuler."
 msgstr "There is no change to undo."
 
-#: translations/services.py:264
+#: translations/services.py:268
 msgid "Dernier changement annulé"
 msgstr "Last change undone"
 
-#: translations/services.py:278
+#: translations/services.py:282
 msgid "Ajoutez au moins un changement avant d’envoyer la proposition."
 msgstr "Add at least one change before sending the proposal."
 
-#: translations/services.py:285
+#: translations/services.py:289
 msgid "Expliquez ces changements."
 msgstr "Explain these changes."
 
-#: translations/services.py:288
+#: translations/services.py:292
 msgid "Proposition envoyée"
 msgstr "Proposal sent"
 
-#: translations/services.py:310
+#: translations/services.py:323
 msgid "Proposition adoptée"
 msgstr "Proposal adopted"
 
-#: translations/services.py:322
+#: translations/services.py:335
 msgid "Proposition refusée"
 msgstr "Proposal refused"
 
-#: translations/services.py:343 translations/services.py:589
+#: translations/services.py:358 translations/services.py:615
 msgid "Proposition retirée"
 msgstr "Proposal withdrawn"
 
-#: translations/services.py:360
+#: translations/services.py:375
 msgid ""
 "Cette proposition ne s’applique plus au texte actuel : une phrase qu’elle "
 "change a changé entre-temps. Annulez ce changement, ou retirez la "
@@ -10916,23 +11107,23 @@ msgstr ""
 "This proposal no longer applies to the current text: a sentence it changes "
 "has changed in the meantime. Undo this change, or withdraw the proposal."
 
-#: translations/services.py:368
+#: translations/services.py:383
 msgid "Proposition reprise sur le texte actuel"
 msgstr "Proposal carried over to the current text"
 
-#: translations/services.py:458
+#: translations/services.py:473
 msgid "Texte source changé"
 msgstr "Source text changed"
 
-#: translations/services.py:530
+#: translations/services.py:547
 msgid "Changez au moins une phrase avant d’envoyer la proposition."
 msgstr "Change at least one sentence before sending the proposal."
 
-#: translations/services.py:557
+#: translations/services.py:582
 msgid "Cette phrase a déjà été examinée."
 msgstr "This sentence has already been decided on."
 
-#: translations/services.py:561
+#: translations/services.py:586
 msgid ""
 "La phrase source a changé depuis cette proposition : refusez cette phrase, "
 "ou recopiez son latin dans votre texte de travail."
@@ -10940,32 +11131,32 @@ msgstr ""
 "The source sentence has changed since this proposal: refuse this sentence, "
 "or copy its Latin into your working text."
 
-#: translations/services.py:576
+#: translations/services.py:601
 msgid "Proposition close"
 msgstr "Proposal closed"
 
-#: translations/services.py:623
+#: translations/services.py:656
 #, python-format
 msgid "Copie de la version de %(author)s, étape %(number)d"
 msgstr "Copy of the version by %(author)s, step %(number)d"
 
-#: translations/services.py:645
+#: translations/services.py:678
 msgid "Traduisez au moins une phrase avant de publier."
 msgstr "Translate at least one sentence before publishing."
 
-#: translations/services.py:650 translations/services.py:652
+#: translations/services.py:683 translations/services.py:685
 msgid "Publication"
 msgstr "Publication"
 
-#: translations/services.py:702
+#: translations/services.py:740
 msgid "Écrivez un message : ce qui a changé depuis l’étape précédente."
 msgstr "Write a message: what changed since the previous step."
 
-#: translations/services.py:732
+#: translations/services.py:772
 msgid "La version de référence doit être une version publiée de ce projet."
 msgstr "The reference version must be a published version of this project."
 
-#: translations/services.py:736
+#: translations/services.py:776
 msgid "Choix de la version de référence"
 msgstr "Choice of the reference version"
 
@@ -11237,139 +11428,9 @@ msgid "La personne n’est plus co-autrice de cette version."
 msgstr "This person is no longer a co-author of this version."
 
 #, fuzzy
-#~| msgid "invité"
-#~ msgid "Activité"
-#~ msgstr "invited"
-
-#, fuzzy
-#~| msgid "Copier une version"
-#~ msgid "a publié une version"
-#~ msgstr "Copying a version"
-
-#, fuzzy
-#~| msgid "Créer une étape"
-#~ msgid "a créé une étape"
-#~ msgstr "Create a step"
-
-#, fuzzy
 #~| msgid "Copier une version"
 #~ msgid "a copié une version"
 #~ msgstr "Copying a version"
-
-#, fuzzy
-#~| msgid "Proposer des modifications"
-#~ msgid "a proposé des modifications"
-#~ msgstr "Proposing changes"
-
-#, fuzzy
-#~| msgid "Continuer la proposition"
-#~ msgid "a examiné une proposition"
-#~ msgstr "Continue the proposal"
-
-#, fuzzy
-#~| msgid "Retirer ma proposition"
-#~ msgid "a retiré une proposition"
-#~ msgstr "Withdraw my proposal"
-
-#, fuzzy
-#~| msgid "édition en usage"
-#~ msgid "a écrit un message"
-#~ msgstr "current edition"
-
-#, fuzzy
-#~| msgid "contestée : discussion"
-#~ msgid "a contesté un choix"
-#~ msgstr "contested: discussion"
-
-#, fuzzy
-#~| msgid "Propositions de modification du texte source"
-#~ msgid "a proposé de modifier un texte source"
-#~ msgstr "Proposed changes to the source text"
-
-#, fuzzy
-#~| msgid "Inviter un co-auteur"
-#~ msgid "vous invite comme co-auteur"
-#~ msgstr "Invite a co-author"
-
-#, fuzzy
-#~| msgid "Inviter un co-auteur"
-#~ msgid "est devenu co-auteur"
-#~ msgstr "Invite a co-author"
-
-#, fuzzy
-#~| msgid "Annuler l’invitation"
-#~ msgid "a refusé l’invitation"
-#~ msgstr "Cancel the invitation"
-
-#, fuzzy
-#~| msgid "Ajouter un sens"
-#~ msgid "a ouvert un sujet"
-#~ msgstr "Add a sense"
-
-#, fuzzy
-#~| msgid "Lancer un projet"
-#~ msgid "a fermé un sujet"
-#~ msgstr "Start a project"
-
-#, fuzzy
-#~| msgid "Ajouter un sens"
-#~ msgid "a rouvert un sujet"
-#~ msgstr "Add a sense"
-
-#, fuzzy
-#~| msgid "commencée le"
-#~ msgid "a commenté une phrase"
-#~ msgstr "started on"
-
-#, fuzzy
-#~| msgid "publiée"
-#~ msgid "public"
-#~ msgstr "published"
-
-#, fuzzy
-#~| msgid "Avancement"
-#~ msgid "événement"
-#~ msgstr "Progress"
-
-#, fuzzy
-#~| msgid "Avancement"
-#~ msgid "événements"
-#~ msgstr "Progress"
-
-#, fuzzy
-#~| msgid "dictionnaire"
-#~ msgid "destinataire"
-#~ msgstr "dictionary"
-
-#, fuzzy
-#~| msgid "close le"
-#~ msgid "lue le"
-#~ msgstr "closed on"
-
-#, fuzzy
-#~| msgid "modification"
-#~ msgid "notification"
-#~ msgstr "change"
-
-#, fuzzy
-#~| msgid "justifications"
-#~ msgid "notifications"
-#~ msgstr "justifications"
-
-#, fuzzy
-#~| msgid "Carnet personnel"
-#~ msgid "personne"
-#~ msgstr "Personal notebook"
-
-#, fuzzy
-#~| msgid "Avancement"
-#~ msgid "abonnement"
-#~ msgstr "Progress"
-
-#, fuzzy
-#~| msgid "Changements"
-#~ msgid "abonnements"
-#~ msgstr "Changes"
 
 #~ msgid "Visibles de vous seul, jusqu’à leur publication."
 #~ msgstr "Visible to you only, until they are published."

@@ -7,6 +7,8 @@ from django.utils import timezone
 from django.utils.translation import gettext
 
 from accounts.models import User
+from activity.models import Verb
+from activity.services import auto_follow, record
 from moderation.services import save_with_revision
 
 from .models import TranslationVersion, VersionMember
@@ -75,6 +77,7 @@ def invite(version, author, invitee):
     member.decided_at = None
     member.status = VersionMember.Status.INVITED
     save_with_revision(member, author, comment=gettext("Invitation"))
+    record(author, Verb.MEMBER_INVITED, member, recipients=[invitee.pk], notify_followers=False)
     return member
 
 
@@ -91,6 +94,10 @@ def answer(member, user, accept):
     comment = gettext("Invitation acceptée") if accept else gettext("Invitation refusée")
     save_with_revision(member, user, comment=comment)
     _forget_writers(member.version)
+    if accept:
+        auto_follow(user, member.version)
+    verb = Verb.MEMBER_JOINED if accept else Verb.MEMBER_DECLINED
+    record(user, verb, member, recipients=[member.version.author_id], notify_followers=False)
     return member
 
 

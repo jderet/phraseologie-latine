@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "justifications",
     "phraseology",
     "notebook",
+    "activity",
     "api",
 ]
 
@@ -67,6 +68,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.site",
+                "activity.context_processors.notifications",
             ],
         },
     },

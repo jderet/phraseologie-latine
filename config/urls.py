@@ -11,6 +11,7 @@ urlpatterns = [
     path("", include("justifications.urls")),
     path("", include("phraseology.urls")),
     path("", include("notebook.urls")),
+    path("", include("activity.urls")),
     path("", include("api.urls")),
     path("", include("core.urls")),
 ]

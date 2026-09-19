@@ -38,6 +38,7 @@
             {% if user|is_administrator %}
             <a href="{% url 'accounts:dashboard' %}">{% translate "Tableau de bord" %}</a>
             {% endif %}
+            <a class="bell" href="{% url 'activity:notifications' %}">{% translate "Notifications" %}{% if unread_notifications %} <span class="bell-count" aria-label="{% blocktranslate count counter=unread_notifications %}{{ counter }} non lue{% plural %}{{ counter }} non lues{% endblocktranslate %}">{{ unread_notifications }}</span>{% endif %}</a>
             <a href="{% url 'phraseology:annotator' %}">{% translate "Mes annotations" %}</a>
             <a href="{% url 'notebook:notebook' %}">{% translate "Mon carnet" %}</a>
             <a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a>

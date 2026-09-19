@@ -9,6 +9,8 @@ from django.db.models import Max
 from django.utils import timezone
 from django.utils.translation import gettext, ngettext
 
+from activity.models import Verb
+from activity.services import auto_follow, record
 from moderation.services import save_with_revision
 
 from .models import (
@@ -24,6 +26,7 @@ from .models import (
     TranslationVersion,
     VersionStep,
     is_version_writer,
+    version_writer_ids,
 )
 from .permissions import can_change_source, can_copy, can_propose, can_propose_source
 from .segmentation import MAX_SENTENCE_LENGTH, MAX_SENTENCES, to_lines
@@ -72,6 +75,7 @@ def create_source_text(source_text, author, sentences):
         )
         for number, sentence in enumerate(sentences, start=1)
     )
+    auto_follow(author, source_text)
     return source_text
 
 
@@ -285,7 +289,16 @@ def send_source_proposal(proposal, user, explanation):
         raise ValidationError(gettext("Expliquez ces changements."), code="no_explanation")
     proposal.status = SourceProposal.Status.OPEN
     proposal.sent_at = timezone.now()
-    return save_with_revision(proposal, user, comment=gettext("Proposition envoyée"))
+    revision = save_with_revision(proposal, user, comment=gettext("Proposition envoyée"))
+    auto_follow(user, proposal)
+    record(
+        user,
+        Verb.SOURCE_PROPOSAL_SENT,
+        proposal,
+        recipients=[source.added_by_id],
+        mention_text=proposal.explanation,
+    )
+    return revision
 
 
 @transaction.atomic
@@ -327,7 +340,9 @@ def _close_source_proposal(proposal, user, status, comment):
     proposal.status = status
     proposal.decided_by = user
     proposal.closed_at = timezone.now()
-    return save_with_revision(proposal, user, comment=comment)
+    revision = save_with_revision(proposal, user, comment=comment)
+    record(user, Verb.SOURCE_PROPOSAL_CLOSED, proposal, recipients=[proposal.author_id])
+    return revision
 
 
 @transaction.atomic
@@ -461,6 +476,7 @@ def _carry_working_texts(removed_ids, carrier, editor):
 def create_project(project, author):
     project.created_by = author
     save_with_revision(project, author)
+    auto_follow(author, project)
     return project
 
 
@@ -468,6 +484,7 @@ def create_version(version, author):
     version.author = author
     version.state = TranslationVersion.State.DRAFT
     save_with_revision(version, author)
+    auto_follow(author, version)
     return version
 
 
@@ -536,6 +553,14 @@ def create_proposal(proposal, author, texts):
     for segment, base, text in changed:
         proposed = ProposedSentence(proposal=proposal, segment=segment, base_text=base, text=text)
         save_with_revision(proposed, author)
+    auto_follow(author, proposal)
+    record(
+        author,
+        Verb.PROPOSAL_OPENED,
+        proposal,
+        recipients=version_writer_ids(version),
+        mention_text=proposal.explanation,
+    )
     return proposal
 
 
@@ -574,6 +599,7 @@ def decide_sentence(proposed, user, accept):
         proposal.status = ChangeProposal.Status.CLOSED
         proposal.closed_at = timezone.now()
         save_with_revision(proposal, user, comment=gettext("Proposition close"))
+        record(user, Verb.PROPOSAL_CLOSED, proposal, recipients=[proposal.author_id])
     return proposed
 
 
@@ -586,7 +612,14 @@ def withdraw_proposal(proposal, user):
         raise ValidationError(gettext("Cette proposition est close."), code="closed")
     proposal.status = ChangeProposal.Status.WITHDRAWN
     proposal.closed_at = timezone.now()
-    return save_with_revision(proposal, user, comment=gettext("Proposition retirée"))
+    revision = save_with_revision(proposal, user, comment=gettext("Proposition retirée"))
+    record(
+        user,
+        Verb.PROPOSAL_WITHDRAWN,
+        proposal,
+        recipients=version_writer_ids(proposal.version),
+    )
+    return revision
 
 
 @transaction.atomic
@@ -651,6 +684,11 @@ def publish_version(version, user, message="", show_draft_steps=False):
     # Publishing always creates a step, the first one the public may see.
     message = normalize_sentence(message) or gettext("Publication")
     _record_step(version, user, message)
+    # The author of a copied version hears about it once the copy is public.
+    recipients = set(version_writer_ids(version))
+    if version.copied_from_id:
+        recipients |= version_writer_ids(version.copied_from.version)
+    record(user, Verb.VERSION_PUBLISHED, version, recipients=recipients)
     return revision
 
 
@@ -713,7 +751,9 @@ def create_step(version, author, message):
         raise ValidationError(
             gettext("Rien n’a changé depuis la dernière étape."), code="unchanged"
         )
-    return _record_step(version, author, message, source)
+    step = _record_step(version, author, message, source)
+    record(author, Verb.STEP_CREATED, step, recipients=version_writer_ids(version))
+    return step
 
 
 @transaction.atomic

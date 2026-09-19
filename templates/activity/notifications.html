@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n activity_tags %}
+
+{% block title %}{% translate "Notifications" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Notifications" %}</h1>
+  <p class="lede">{% translate "Ce qui arrive aux contenus que vous écrivez ou suivez, et les messages qui vous mentionnent." %}</p>
+  <div class="notification-tools">
+    <nav class="workshop-tabs" aria-label="{% translate 'Filtre' %}">
+      <a href="{% url 'activity:notifications' %}"{% if not unread_only %} aria-current="page"{% endif %}>{% translate "Toutes" %}</a>
+      <a href="{% url 'activity:notifications' %}?non-lues"{% if unread_only %} aria-current="page"{% endif %}>{% translate "Non lues" %}{% if unread_notifications %} <span class="tab-count">{{ unread_notifications }}</span>{% endif %}</a>
+    </nav>
+    {% if unread_notifications %}
+    <form method="post" action="{% url 'activity:notifications_read' %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button button-quiet">{% translate "Tout marquer comme lu" %}</button>
+    </form>
+    {% endif %}
+  </div>
+  <ul class="notification-list">
+    {% for notification in page %}
+    <li class="{% if not notification.read_at %}is-unread{% endif %}">
+      {% event_line notification.event show_project=True %}
+      <a class="small-link" href="{{ notification.get_absolute_url }}">{% if notification.read_at %}{% translate "voir" %}{% else %}{% translate "voir et marquer comme lue" %}{% endif %}</a>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune notification." %}</li>
+    {% endfor %}
+  </ul>
+  {% include "translations/pager.html" %}
+  <p class="note">{% translate "Pour mentionner quelqu’un dans un message, écrivez @ suivi de son nom affiché sans espaces, par exemple @MarcusTullius." %}</p>
+</section>
+{% endblock %}

@@ -8,10 +8,13 @@ from django.utils import timezone
 from django.utils.translation import gettext
 
 from accounts.roles import is_reviewer
+from activity.models import Verb
+from activity.services import auto_follow, record
 from corpus.models import Token
 from corpus.search import corpus_version
 from moderation.registry import can_view
 from moderation.services import save_with_revision
+from translations.models import version_writer_ids
 from translations.permissions import can_challenge, can_translate
 from translations.steps import public_step, sentence_at, working_translation
 
@@ -224,6 +227,14 @@ def create_challenge(challenge, author, evidences, hint=None):
     save_with_revision(challenge, author)
     for evidence in evidences:
         _save_evidence(evidence, author, challenge=challenge)
+    auto_follow(author, challenge)
+    record(
+        author,
+        Verb.CHALLENGE_OPENED,
+        challenge,
+        recipients=version_writer_ids(version),
+        mention_text=challenge.argument,
+    )
     return challenge
 
 

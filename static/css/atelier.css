@@ -99,3 +99,54 @@
 .help-terms dd {
   margin: 2px 0 0;
 }
+
+/* Notifications */
+
+.bell-count {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.notification-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.notification-list,
+.event-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notification-list > li,
+.event-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.notification-list > li.is-unread {
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+}
+
+.event-line time {
+  margin-left: 6px;
+  font-size: 0.85rem;
+}
