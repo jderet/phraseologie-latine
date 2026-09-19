@@ -17,8 +17,12 @@
   // Units a search looks for by their schema at once, as the server allows.
   const MAX_CONSTRUCTIONS = 3;
   const SVG = "http://www.w3.org/2000/svg";
-  // An optional relation is written between parentheses: gero -(sp)-> cum.
-  const EDGE = /^(\p{L}+)\s*[-—–]\s*(?:\(\s*([a-zA-Z:|\s]+?)\s*\)|([a-zA-Z:|\s]+?))\s*(?:->|→)\s*(\p{L}+|\*)$/u;
+  // An optional relation is written between parentheses: gero -(sp)-> cum; an abstract word,
+  // a class of words, between braces: sumo -obj-> {liquide}.
+  const EDGE =
+    /^(\p{L}+|\{[^{}]*\})\s*[-—–]\s*(?:\(\s*([a-zA-Z:|\s]+?)\s*\)|([a-zA-Z:|\s]+?))\s*(?:->|→)\s*(\p{L}+|\*|\{[^{}]*\})$/u;
+  // A word of a reference form, or an abstract word.
+  const WORD = /\{[^{}]*\}|\p{L}+/gu;
   // A unit named in a reference form, then its words there: [rēs pūblica;rem pūblicam].
   const MARK = /\[([^[\];]*);([^[\];]*)\]/g;
 
@@ -34,11 +38,19 @@
       .replace(/j/g, "i");
   }
 
+  function isAbstract(lemma) {
+    return lemma.startsWith("{");
+  }
+
+  // A node of a written schema as the server writes it: an abstract word keeps its name.
+  function normalizeNode(text) {
+    return isAbstract(text) ? `{${text.slice(1, -1).trim().toLowerCase()}}` : normalizeLatin(text);
+  }
+
   // The words of a reference form in order, each telling whether a mark holds it.
   function formWords(text) {
     const found = [];
-    const add = (piece, marked) =>
-      (piece.match(/\p{L}+/gu) || []).forEach((form) => found.push({ form, marked }));
+    const add = (piece, marked) => (piece.match(WORD) || []).forEach((form) => found.push({ form, marked }));
     let last = 0;
     for (const match of text.matchAll(MARK)) {
       add(text.slice(last, match.index), false);
@@ -91,8 +103,8 @@
       const optional = match[2] !== undefined;
       const relations = (optional ? match[2] : match[3]).split("|").map((relation) => relation.trim().toLowerCase());
       triples.push({
-        head: normalizeLatin(match[1]),
-        dependent: match[4] === SLOT ? SLOT : normalizeLatin(match[4]),
+        head: normalizeNode(match[1]),
+        dependent: match[4] === SLOT ? SLOT : normalizeNode(match[4]),
         relations: [...new Set(relations.filter(Boolean))],
         optional,
       });
@@ -165,6 +177,8 @@
     const unlinkButton = linkPanel.querySelector(".schema-unlink");
     const wordPanel = builder.querySelector(".schema-word-panel");
     const lemmaInput = wordPanel.querySelector(".schema-lemma-input");
+    const abstractInput = wordPanel.querySelector(".schema-abstract-input");
+    const abstractResults = wordPanel.querySelector(".schema-abstract-results");
     const addInput = builder.querySelector(".schema-add-input");
     const markerId = `schema-arrow-${index}`;
 
@@ -215,7 +229,9 @@
       return edges.some((edge) => edge.head === key || edge.dependent === key);
     }
 
-    function makeWord(form, lemmas, known, lemma) {
+    // ``abstract`` describes the abstract word a word stands for: its name, label, status and
+    // page, as the server gives them.
+    function makeWord(form, lemmas, known, lemma, abstract) {
       const choices = lemmas.length ? lemmas : [normalizeLatin(form)];
       return {
         key: `w${nextKey++}`,
@@ -225,6 +241,7 @@
         known,
         slot: false,
         added: false,
+        abstract: abstract || null,
       };
     }
 
@@ -551,19 +568,29 @@
       shownWord = key;
       wordPanel.querySelector(".schema-word-title").textContent = word.slot
         ? labels.labelAny
-        : labels.labelLemmaOf.replace("%s", word.form);
+        : isAbstract(word.form)
+          ? labels.labelAbstractOf.replace("%s", word.form)
+          : labels.labelLemmaOf.replace("%s", word.form);
       const choices = wordPanel.querySelector(".schema-lemma-choices");
       choices.replaceChildren(
         ...word.lemmas.map((lemma) => {
-          const choice = button(lemma, () => setLemma(key, lemma), lemma === word.lemma ? "button" : "button button-quiet");
-          choice.lang = "la";
+          const choice = isAbstract(lemma)
+            ? button(lemma, () => setAbstract(key, { ...(word.abstract || {}), name: lemma.slice(1, -1) }), lemma === word.lemma ? "button" : "button button-quiet")
+            : button(lemma, () => setLemma(key, lemma), lemma === word.lemma ? "button" : "button button-quiet");
+          choice.lang = isAbstract(lemma) ? "fr" : "la";
           choice.setAttribute("aria-pressed", lemma === word.lemma ? "true" : "false");
           return choice;
         }),
       );
-      choices.hidden = word.slot;
-      wordPanel.querySelector(".schema-lemma-other").hidden = word.slot;
+      // A word written as an abstract word in the reference form has no other lemma.
+      const fixed = word.slot || isAbstract(word.form);
+      choices.hidden = fixed;
+      wordPanel.querySelector(".schema-lemma-other").hidden = fixed;
+      wordPanel.querySelector(".schema-abstract").hidden = fixed;
       lemmaInput.value = "";
+      abstractInput.value = "";
+      abstractResults.replaceChildren();
+      abstractResults.hidden = true;
       wordPanel.hidden = false;
       (choices.querySelector("button") || wordPanel.querySelector(".schema-word-remove")).focus();
     }
@@ -576,10 +603,59 @@
         return;
       }
       byKey(key).lemma = lemma;
+      byKey(key).abstract = null;
       closePanels();
       render();
       write();
       focusWord(key);
+    }
+
+    // A word of the drawing stands for an abstract word: its lemma is the name between braces.
+    function setAbstract(key, abstract) {
+      const word = byKey(key);
+      word.lemma = `{${abstract.name}}`;
+      if (!word.lemmas.includes(word.lemma)) {
+        word.lemmas = [...word.lemmas, word.lemma];
+      }
+      word.abstract = abstract;
+      closePanels();
+      render();
+      write();
+      focusWord(key);
+    }
+
+    async function searchAbstracts() {
+      const text = abstractInput.value.trim();
+      if (!text || !shownWord) {
+        return;
+      }
+      const key = shownWord;
+      let found;
+      try {
+        found = (await getJson(labels.abstractsUrl, { q: text })).words;
+      } catch {
+        say(labels.labelError);
+        return;
+      }
+      abstractResults.replaceChildren(
+        ...found.map((abstract) => {
+          const item = element("li");
+          item.append(
+            button(`{${abstract.name}}`, () => setAbstract(key, abstract), "link-button"),
+            " ",
+            abstract.label,
+            " ",
+            element("span", "schema-component-status", abstract.status),
+          );
+          return item;
+        }),
+      );
+      abstractResults.hidden = found.length === 0;
+      say(found.length ? "" : labels.labelNoAbstract);
+      const first = abstractResults.querySelector("button");
+      if (first) {
+        first.focus();
+      }
     }
 
     function removeWord(key) {
@@ -769,6 +845,9 @@
 
     // A marked piece of the reference form, as the page of the unit shows it.
     function previewPart(part) {
+      if (part.abstract) {
+        return previewAbstract(part);
+      }
       if (!part.name) {
         return document.createTextNode(part.text);
       }
@@ -797,10 +876,35 @@
       return mark;
     }
 
+    // An abstract word of the reference form, as the page of the unit shows it.
+    function previewAbstract(part) {
+      const entry = element("span", "form-mark-entry");
+      entry.lang = "fr";
+      const abstract = part.abstract;
+      if (abstract.url) {
+        const link = element("a", "", `{${abstract.name}}`);
+        link.href = abstract.url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        entry.append(link, ` ${abstract.label} `, element("span", "form-mark-status", `${labels.labelAbstract}, ${abstract.status}`));
+      } else {
+        entry.append(part.text, " ", element("span", "form-mark-status", labels.labelAbstractUnknown));
+      }
+      const bubble = element("span", "form-mark-bubble");
+      bubble.setAttribute("role", "tooltip");
+      bubble.append(entry);
+      const mark = element("span", "form-mark");
+      mark.tabIndex = 0;
+      const name = element("span", "form-abstract-name", part.text);
+      name.lang = "fr";
+      mark.append(name, bubble);
+      return mark;
+    }
+
     function showFormHelp(data) {
       formProblems.textContent = data.errors.join(" ");
       markPreview.replaceChildren(...data.parts.map(previewPart));
-      markPreview.hidden = !data.parts.some((part) => part.name);
+      markPreview.hidden = !data.parts.some((part) => part.name || part.abstract);
       const [before, after] = labels.labelSuggestion.split("%s");
       suggestionList.replaceChildren(
         ...data.suggestions.map((suggestion) => {
@@ -858,7 +962,7 @@
         if (place >= 0) {
           next = place + 1;
         }
-        if (item.marked) {
+        if (item.marked || isAbstract(item.form)) {
           return;
         }
         const term = word && word.known ? { value: word.lemma, mode: "lemma" } : { value: item.form, mode: "form" };
@@ -918,11 +1022,20 @@
       const previous = new Map();
       words
         .filter((word) => !word.added)
-        .forEach((word) => previous.has(word.form) || previous.set(word.form, word.lemma));
+        .forEach((word) => previous.has(word.form) || previous.set(word.form, word));
       const kept = words.filter((word) => word.added);
       words = found
         .filter((word) => !removed.has(word.form.toLowerCase()))
-        .map((word) => makeWord(word.form, word.lemmas, word.known, previous.get(word.form)));
+        .map((word) => {
+          const before = previous.get(word.form);
+          const made = makeWord(word.form, word.lemmas, word.known, before && before.lemma, word.abstract);
+          // A word turned into an abstract word stays so.
+          if (before && before.abstract && !made.abstract) {
+            made.abstract = before.abstract;
+            made.lemmas = [...new Set([...made.lemmas, before.lemma])];
+          }
+          return made;
+        });
       words.push(...kept);
       attach(links);
     }
@@ -1037,24 +1150,31 @@
       const linked = isLinked(word.key);
       item.classList.toggle("is-outside", !linked);
       item.classList.toggle("is-slot", word.slot);
+      item.classList.toggle("is-abstract", !word.slot && isAbstract(word.lemma));
       item.classList.toggle("is-chosen", chosen === word.key);
       const token = element("button", "schema-token");
       token.type = "button";
       token.setAttribute("aria-pressed", chosen === word.key ? "true" : "false");
       const form = element("span", "schema-form", word.slot ? labels.labelAny : word.form);
       if (!word.slot) {
-        form.lang = "la";
+        form.lang = isAbstract(word.form) ? "fr" : "la";
       }
       token.append(form);
       const hints = [];
       if (!word.slot) {
         const lemma = element("span", "schema-lemma", word.lemma);
-        lemma.lang = "la";
+        lemma.lang = isAbstract(word.lemma) ? "fr" : "la";
         if (word.lemmas.length > 1) {
           lemma.append(element("span", "schema-dot", "•"));
           hints.push(labels.labelAmbiguous);
         }
-        if (!word.known) {
+        if (isAbstract(word.lemma)) {
+          hints.push(word.abstract && word.abstract.label ? `${labels.labelAbstract} : ${word.abstract.label}` : labels.labelAbstract);
+          if (isAbstract(word.form) && !word.known) {
+            lemma.classList.add("is-unknown");
+            hints.push(labels.labelAbstractUnknown);
+          }
+        } else if (!word.known) {
           lemma.classList.add("is-unknown");
           hints.push(labels.labelUnknown);
         }
@@ -1318,6 +1438,8 @@
           searchUnits();
         } else if (event.target === lemmaInput && shownWord) {
           setLemma(shownWord, lemmaInput.value);
+        } else if (event.target === abstractInput) {
+          searchAbstracts();
         }
       }
     }
@@ -1342,7 +1464,7 @@
         say(labels.labelBadLemma);
         return;
       }
-      const word = makeWord(found[0].form, found[0].lemmas, found[0].known);
+      const word = makeWord(found[0].form, found[0].lemmas, found[0].known, "", found[0].abstract);
       word.added = true;
       words.push(word);
       addInput.value = "";
@@ -1367,6 +1489,7 @@
     );
     wordPanel.querySelector(".schema-lemma-set").addEventListener("click", () => setLemma(shownWord, lemmaInput.value));
     wordPanel.querySelector(".schema-word-remove").addEventListener("click", () => removeWord(shownWord));
+    wordPanel.querySelector(".schema-abstract-search").addEventListener("click", searchAbstracts);
     builder.querySelector(".schema-add-word").addEventListener("click", addWord);
     builder.querySelector(".schema-insert-search").addEventListener("click", searchUnits);
     const addSlot = builder.querySelector(".schema-add-slot");

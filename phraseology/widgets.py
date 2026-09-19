@@ -46,6 +46,7 @@ class SchemaWidget(forms.TextInput):
             "lemmas_url": reverse("phraseology:schema_lemmas"),
             "check_url": reverse("phraseology:schema_check"),
             "units_url": reverse("phraseology:schema_units"),
+            "abstracts_url": reverse("phraseology:schema_abstracts"),
             "common": [relation for relation in relations if relation["common"]],
             "others": [relation for relation in relations if not relation["common"]],
             "cases": [{"code": code, "label": str(label)} for code, label in CASE_CHOICES],

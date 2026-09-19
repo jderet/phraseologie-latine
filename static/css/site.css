@@ -1879,6 +1879,21 @@ article > h2 {
   stroke-dasharray: 5 4;
 }
 
+/* A word of the drawing that stands for an abstract word, a class of words. */
+.schema-word.is-abstract .schema-lemma {
+  font-family: var(--sans);
+  color: var(--accent);
+}
+
+.schema-word.is-abstract .schema-token {
+  border-style: dashed;
+}
+
+.schema-abstract-results {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
 /* An optional relation: the expression exists without it. */
 .schema-arc-line.is-optional {
   stroke-dasharray: 1 4;

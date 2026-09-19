@@ -8,6 +8,7 @@
   data-lemmas-url="{{ builder.lemmas_url }}"
   data-check-url="{{ builder.check_url }}"
   data-units-url="{{ builder.units_url }}"
+  data-abstracts-url="{{ builder.abstracts_url }}"
   data-form-url="{{ builder.form_url }}"
   data-search="{{ builder.search }}"
   data-keep="{{ builder.keep }}"
@@ -29,6 +30,10 @@
   data-label-outside="{% translate 'Hors du schéma : relié à aucun mot' %}"
   data-label-passive="{% translate 'aussi au passif' %}"
   data-label-optional="{% translate 'facultatif' %}"
+  data-label-abstract="{% translate 'mot abstrait' %}"
+  data-label-abstract-of="{% translate 'Mot abstrait %s' %}"
+  data-label-abstract-unknown="{% translate 'mot abstrait inconnu' %}"
+  data-label-no-abstract="{% translate 'Aucun mot abstrait de ce nom : proposez-le dans la liste des mots abstraits.' %}"
   data-label-or="{% translate 'ou' %}"
   data-label-variant="{% translate 'Variante' %}"
   data-label-remove-variant="{% translate 'retirer' %}"
@@ -55,7 +60,8 @@
   <p class="schema-help">{% blocktranslate trimmed %}
     Reliez les mots : cliquez sur le mot qui régit, puis sur le mot qui en dépend, ou tirez une
     flèche de l’un vers l’autre. Au clavier, Entrée sur chacun des deux mots. Les mots en
-    pointillé restent hors du schéma ; ▾ change le lemme d’un mot.
+    pointillé restent hors du schéma ; ▾ change le lemme d’un mot, ou en fait un mot abstrait
+    comme {liquide}.
   {% endblocktranslate %}</p>
   <div class="schema-canvas">
     <svg class="schema-arcs" aria-hidden="true"></svg>
@@ -109,6 +115,11 @@
       <label>{% translate "Autre lemme" %} <input type="text" class="schema-lemma-input" lang="la" spellcheck="false" autocomplete="off" maxlength="60"></label>
       <button type="button" class="button button-quiet schema-lemma-set">{% translate "Choisir" %}</button>
     </p>
+    <p class="schema-abstract">
+      <label>{% translate "ou un mot abstrait" %} <input type="text" class="schema-abstract-input" spellcheck="false" autocomplete="off" maxlength="40"></label>
+      <button type="button" class="button button-quiet schema-abstract-search">{% translate "Chercher" %}</button>
+    </p>
+    <ul class="schema-abstract-results" aria-label="{% translate 'Mots abstraits' %}" hidden></ul>
     <p class="schema-panel-actions">
       <button type="button" class="link-button schema-word-remove">{% translate "Retirer ce mot" %}</button>
       <button type="button" class="link-button schema-cancel">{% translate "Fermer" %}</button>

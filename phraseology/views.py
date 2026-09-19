@@ -95,7 +95,13 @@ from .permissions import (
 )
 from .reading_notes import create_reading_note, word_reading_notes
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
-from .schema_help import check_schema, form_help, lemma_choices, unit_schemas, written_words
+from .schema_help import (
+    abstract_words,
+    check_schema,
+    form_help,
+    unit_schemas,
+    word_choices,
+)
 from .search_terms import marked_search
 from .services import (
     FREQUENCY_SECONDS,
@@ -2243,9 +2249,14 @@ def schema_search(request):
 @require_GET
 def schema_help_lemmas(request):
     """The lemmas the words of a text may have, for the drawing of a schema."""
-    layer = default_layer()
-    words = written_words(request.GET.get("formes", "")[:1000])
-    return JsonResponse({"words": [lemma_choices(word, layer) for word in words]})
+    words = word_choices(request.user, request.GET.get("formes", "")[:1000])
+    return JsonResponse({"words": words})
+
+
+@require_GET
+def schema_help_abstracts(request):
+    """The abstract words a drawing may use, found by their name or label."""
+    return JsonResponse({"words": abstract_words(request.user, request.GET.get("q", ""))})
 
 
 @require_GET

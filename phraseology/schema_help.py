@@ -3,7 +3,7 @@
 import re
 
 from django.core.exceptions import ValidationError
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.urls import reverse
 from django.utils.http import urlencode
 from django.utils.translation import gettext
@@ -12,12 +12,14 @@ from corpus.models import TokenAnalysis
 from corpus.search import corpus_version, default_layer
 from corpus.text import normalize
 from corpus.timeouts import TimeLimit
+from moderation.registry import can_view
 
-from .abstract import check_abstract_words
+from .abstract import check_abstract_words, clean_name
 from .composition import components
 from .frequency import schema_matches
 from .markup import clean_marks, name_key, name_pattern, resolve
-from .schema import MAX_RELATIONS, format_schema, parse_schema, schema_lemmas
+from .models import AbstractWord
+from .schema import MAX_RELATIONS, format_schema, parse_schema, schema_nodes
 from .spotting import spot_units, visible_units
 
 # A schema has at most five lemmas; the words of a reference form beyond are not offered.
@@ -32,11 +34,62 @@ MAX_UNITS = 10
 MAX_QUERY_LENGTH = 100
 MAX_FORM_LENGTH = 300
 WORD = re.compile(r"[^\W\d_]+")
+# A written word, or an abstract word between braces.
+NODE = re.compile(r"\{[^{}]*\}|[^\W\d_]+")
+# Abstract words offered to a drawing.
+MAX_ABSTRACTS = 10
 
 
 def written_words(text):
-    """The words of a text, without punctuation, as many as a schema may use."""
-    return [word[:MAX_WORD_LENGTH] for word in WORD.findall(text or "")][:MAX_WORDS]
+    """The words of a text, without punctuation, as many as a schema may use; an abstract word
+    stays whole, {liquide}."""
+    return [word[:MAX_WORD_LENGTH] for word in NODE.findall(text or "")][:MAX_WORDS]
+
+
+def _abstract_word_json(word):
+    return {
+        "name": word.name,
+        "label": word.label,
+        "status": word.get_status_display(),
+        "url": word.get_absolute_url(),
+    }
+
+
+def abstract_choice(written, user):
+    """An abstract word written in a drawing, as a word of it: its name is its lemma."""
+    try:
+        name = clean_name(written)
+    except ValidationError:
+        name = written.strip("{}").lower()
+    word = AbstractWord.objects.filter(name=name, is_hidden=False).first()
+    if word is not None and not can_view(user, word):
+        word = None
+    return {
+        "form": f"{{{name}}}",
+        "lemmas": [f"{{{name}}}"],
+        "known": word is not None,
+        "abstract": _abstract_word_json(word) if word else None,
+    }
+
+
+def word_choices(user, text, layer=None):
+    """The words of a text as a drawing needs them: lemmas of Latin words, abstract words."""
+    layer = layer or default_layer()
+    return [
+        abstract_choice(word, user) if word.startswith("{") else lemma_choices(word, layer)
+        for word in written_words(text)
+    ]
+
+
+def abstract_words(user, query):
+    """The abstract words the user may see whose name or label holds the query."""
+    query = " ".join((query or "").split())[:MAX_QUERY_LENGTH].strip("{}")
+    if not query:
+        return []
+    words = AbstractWord.objects.filter(is_hidden=False).filter(
+        Q(name__icontains=query) | Q(label__icontains=query)
+    )
+    return [_abstract_word_json(word) for word in words[:MAX_ABSTRACTS] if can_view(user, word)]
 
 
 def lemma_choices(word, layer=None):
@@ -211,7 +264,7 @@ def check_schema(text, slot=False, count=False, user=None):
                 "reference_form": component.unit.reference_form,
                 "status": component.unit.get_status_display(),
                 "url": component.unit.get_absolute_url(),
-                "lemmas": schema_lemmas(component.edges),
+                "lemmas": schema_nodes(component.edges),
             }
             for component in components(user, edges)
         ]

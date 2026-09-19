@@ -22,6 +22,8 @@ class SchemaDrawingPagesTests(PhraseologyTestCase):
         self.assertNotContains(page, 'value="root"')
         self.assertContains(page, 'class="schema-optional-box"')
         self.assertContains(page, 'data-label-optional="facultatif"')
+        self.assertContains(page, f'data-abstracts-url="{reverse("phraseology:schema_abstracts")}"')
+        self.assertContains(page, 'class="schema-abstract-input"')
 
     def test_the_creation_page_draws_the_schema(self):
         self.client.force_login(self.other)

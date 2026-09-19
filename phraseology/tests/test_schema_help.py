@@ -6,8 +6,15 @@ from django.urls import reverse
 from corpus.tests.test_timeouts import canceled_query
 from justifications.tests.factories import make_passage
 from phraseology.schema import RELATION_CHOICES, RELATIONS
-from phraseology.schema_help import MAX_WORDS, check_schema, lemma_choices, written_words
-from phraseology.tests.factories import analyze
+from phraseology.schema_help import (
+    MAX_WORDS,
+    abstract_words,
+    check_schema,
+    lemma_choices,
+    word_choices,
+    written_words,
+)
+from phraseology.tests.factories import analyze, make_abstract_word
 
 from .test_frequency import AnalysedCorpusTestCase
 
@@ -26,6 +33,7 @@ class RelationChoicesTests(SimpleTestCase):
         self.assertEqual(written_words("in memoriam, redigere !"), ["in", "memoriam", "redigere"])
         self.assertEqual(len(written_words("a b c d e f g h i")), MAX_WORDS)
         self.assertEqual(written_words(""), [])
+        self.assertEqual(written_words("{liquide} sūmere"), ["{liquide}", "sūmere"])
 
 
 class LemmaChoicesTests(AnalysedCorpusTestCase):
@@ -105,3 +113,36 @@ class CheckSchemaTests(AnalysedCorpusTestCase):
         result = self.client.get(url, {"schema": "capio -obj-> consilium", "compter": "1"}).json()
         self.assertEqual(result["core"], 3)
         self.assertTrue(self.client.get(url, {"schema": "capio -obj-> *"}).json()["errors"])
+
+
+class AbstractWordDrawingTests(AnalysedCorpusTestCase):
+    def test_an_abstract_word_is_a_word_of_the_drawing(self):
+        make_abstract_word(self.author, label="nom désignant un liquide")
+        known, unknown, verb = word_choices(self.other, "{liquide} {boisson} capiunt")
+        self.assertEqual(
+            (known["form"], known["lemmas"], known["known"]), ("{liquide}", ["{liquide}"], True)
+        )
+        self.assertEqual(known["abstract"]["label"], "nom désignant un liquide")
+        self.assertEqual((unknown["known"], unknown["abstract"]), (False, None))
+        self.assertEqual(verb["lemmas"], ["capio"])
+        page = self.client.get(reverse("phraseology:schema_lemmas"), {"formes": "{liquide}"})
+        self.assertEqual(page.json()["words"][0]["lemmas"], ["{liquide}"])
+
+    def test_abstract_words_found_by_name_or_label(self):
+        make_abstract_word(self.author, label="nom désignant un liquide")
+        self.assertEqual([word["name"] for word in abstract_words(self.other, "liqu")], ["liquide"])
+        self.assertEqual(
+            [word["name"] for word in abstract_words(self.other, "désignant")], ["liquide"]
+        )
+        self.assertEqual(abstract_words(self.other, ""), [])
+        page = self.client.get(reverse("phraseology:schema_abstracts"), {"q": "{liquide}"})
+        self.assertEqual(page.json()["words"][0]["status"], "proposé")
+
+    def test_a_component_brackets_its_abstract_word(self):
+        make_abstract_word(self.author, "decisio", [{"lemmas": ["consilium"]}])
+        self.unit.schema = "capio -obj-> {decisio}"
+        self.unit.save()
+        result = check_schema("capio -obj-> {decisio}; {decisio} -amod-> bonus", user=self.author)
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(result["components"][0]["lemmas"], ["capio", "{decisio}"])
+        self.assertIn("Mot abstrait inconnu", check_schema("capio -obj-> {ignotum}")["errors"][0])

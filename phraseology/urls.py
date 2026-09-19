@@ -10,6 +10,7 @@ urlpatterns = [
     path("recherche/schema/verifier/", views.schema_help_check, name="schema_check"),
     path("recherche/schema/fiches/", views.schema_help_units, name="schema_units"),
     path("recherche/schema/forme/", views.schema_help_form, name="schema_form"),
+    path("recherche/schema/mots-abstraits/", views.schema_help_abstracts, name="schema_abstracts"),
     path("lecture/mots/<int:pk>/", views.reading_word, name="reading_word"),
     path("lecture/annoter/", views.annotate_selection, name="annotate_selection"),
     path("lecture/annoter/rattacher/", views.annotate_attach, name="annotate_attach"),
