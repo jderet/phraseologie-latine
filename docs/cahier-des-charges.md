@@ -27,7 +27,7 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 - Public prioritaire : la communauté du latin vivant (Q1). Quelques centaines d'utilisateurs actifs visés à deux ans (Q8). Majeurs seulement (Q57).
 - Le site est à la fois un atelier, un ouvrage de référence et une communauté (Q2).
 - Posture descriptive : on montre ce qui est attesté, où et combien de fois. Des recommandations sont possibles, signées et argumentées (Q3).
-- Le latin visé est déclaré pour chaque version de traduction, sous forme de style : cicéronien, tacitéen… (Q4, Q41).
+- Le latin visé est déclaré pour chaque projet de traduction, sous forme de style : cicéronien, tacitéen… (Q4, Q41 ; déclaré par version jusqu'au choix du 19 septembre 2026, qui le fixe pour tout le projet).
 - Langues sources : français, anglais, allemand, italien, espagnol (Q5).
 
 ## 4. Fonctions
@@ -35,24 +35,29 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 ### 4.1 Traduction collaborative
 
 - Un **projet** porte sur un texte source découpé en phrases (Q35).
+- **Une traduction par projet** (choix du 19 septembre 2026, qui remplace « chacun sa version » de Q36 et la version de référence de T6) : un projet vise une seule traduction latine de son texte, dans un style choisi à sa création pour tout le projet. Un même texte peut avoir plusieurs projets, dans des styles différents ou non.
+  - La **traduction principale** naît avec le projet, en brouillon. Le créateur du projet et les **mainteneurs** qu'il invite (les co-auteurs de la traduction principale) l'écrivent ; le créateur seul la publie.
+  - Tout compte actif peut **proposer une variante** : une copie de la dernière étape publique de la traduction principale, en brouillon, où il traduit autrement les phrases de son choix. Il l'envoie aux mainteneurs sous la forme d'une proposition de modifications ; ils acceptent ou refusent chaque phrase. La variante est alors **close** : fusionnée si une phrase au moins est acceptée, écartée sinon. Les mainteneurs peuvent aussi l'écarter avec un motif. Une variante close se lit toujours mais ne s'écrit plus ; on ne copie jamais une variante.
+  - Les mainteneurs décident aussi du glossaire et des sujets du projet.
+  - La page « Traduction » présente les textes d'abord : sous chaque texte, ses projets, leur style, l'avancement de leur traduction principale et leurs variantes ouvertes. L'ancienne liste des projets y renvoie.
 - **Le texte source reste modifiable** (choix du 15 septembre 2026) : on ajoute des phrases (au début, à la fin ou entre deux phrases), on modifie une phrase, on fusionne deux phrases ou on en scinde une. Le changement vaut pour tous les projets qui utilisent ce texte.
   - La personne qui a ajouté le texte et les relecteurs le modifient directement. Tout compte actif peut **proposer** plusieurs changements, avec une explication et une discussion ; ces mêmes personnes les adoptent ou les refusent en bloc. Une proposition ne s'adopte plus si le texte a changé entre-temps.
   - Une phrase n'est jamais écrasée : l'ancienne reste, pour les étapes qui l'ont figée. Une scission ne change aucun mot ; aucune phrase n'est supprimée.
   - Dans le texte de travail de chaque version, le latin suit : deux phrases fusionnées mettent leurs latins bout à bout, une phrase scindée garde son latin sur sa première partie, une phrase modifiée garde le sien, une phrase ajoutée n'en a pas. L'éditeur signale les phrases touchées, avec l'ancien texte source, jusqu'à l'étape suivante.
   - Une étape fige aussi le texte source : le public garde celui de la dernière étape publique, et la prochaine étape de l'auteur intègre le nouveau.
   - L'historique des étapes résume ce qu'a changé chaque étape (phrases traduites, phrases du texte source) et en déplie le détail mot à mot.
-- Chaque participant rédige **sa propre version** latine et déclare un style (Q36, Q41).
-- **Co-auteurs** (choix du 19 septembre 2026, qui assouplit Q36) : l'auteur d'une version invite des co-auteurs par leur nom affiché ou leur numéro de profil ; l'invité accepte ou refuse. Un co-auteur écrit le texte de travail, crée des étapes, justifie et décide des propositions de modifications ; il voit le brouillon. L'auteur seul publie, change le style et choisit ses co-auteurs ; un co-auteur peut partir. Chaque phrase garde le nom de qui l'a écrite. Une invitation compte dans la limite des nouveaux comptes (T10).
+- ~~Chaque participant rédige sa propre version latine et déclare un style (Q36, Q41).~~ Remplacé le 19 septembre 2026 : voir « Une traduction par projet » ci-dessus.
+- **Co-auteurs** (choix du 19 septembre 2026, qui assouplit Q36 ; sur la traduction principale, les co-auteurs sont les mainteneurs) : l'auteur d'une version invite des co-auteurs par leur nom affiché ou leur numéro de profil ; l'invité accepte ou refuse. Un co-auteur écrit le texte de travail, crée des étapes, justifie et décide des propositions de modifications ; il voit le brouillon. L'auteur seul publie et choisit ses co-auteurs (le style appartient au projet) ; un co-auteur peut partir. Chaque phrase garde le nom de qui l'a écrite. Une invitation compte dans la limite des nouveaux comptes (T10).
 - Une version reste un **brouillon visible de son seul auteur et de ses co-auteurs**, jusqu'à ce que l'auteur la publie (T7). Tout ce qui est publié est public ; il n'y a pas d'espace de groupe privé (Q42).
-- Une **vue de comparaison** aligne toutes les versions publiées, phrase par phrase.
-- Le **créateur du projet** désigne la version de référence (T6). Elle suit la dernière étape de la version choisie.
+- Une **vue de comparaison** aligne la traduction principale et les variantes publiées, phrase par phrase : la traduction principale d'abord, puis les variantes ouvertes, puis les closes.
+- ~~Le créateur du projet désigne la version de référence (T6).~~ Remplacé le 19 septembre 2026 : la traduction principale tient ce rôle dès la création du projet.
 - **Étapes, à la manière de Git** (choix du 15 septembre 2026) :
   - L'éditeur enregistre chaque phrase au fil de la saisie : c'est le **texte de travail**, visible de son seul auteur. Quand il le décide, l'auteur crée une **étape** de toute la version, avec un message. Chaque étape garde le texte de toutes les phrases et reste consultable à une adresse fixe, citable.
   - Le public voit la **dernière étape** d'une version publiée : les retouches restent privées jusqu'à l'étape suivante. La vue de comparaison, les exports et l'API montrent aussi la dernière étape.
   - Publier crée une étape. L'auteur choisit alors, une fois pour toutes, de montrer ou non les étapes créées pendant le brouillon.
   - Une justification paraît avec l'étape qui suit sa création. Une contestation vise le texte d'une étape publique.
   - On compare deux étapes, ou la dernière étape et le texte de travail, phrase par phrase et mot à mot. Chaque phrase d'une étape indique l'étape où elle a changé et qui l'a écrite.
-  - Tout compte peut **partir d'une version publiée** : il obtient sa propre version, en brouillon, qui mentionne son origine (version et étape). Les justifications ne sont pas copiées ; chaque phrase reprise reste au nom de qui l'a écrite.
+  - Tout compte peut **partir de la traduction principale publiée** : il obtient une variante, en brouillon, qui mentionne son origine (étape). Les justifications ne sont pas copiées ; chaque phrase reprise reste au nom de qui l'a écrite.
   - Tout compte actif peut **proposer des modifications** à la version publiée d'un autre, avec une explication et une discussion. L'auteur de la version accepte ou refuse chaque phrase proposée ; une phrase acceptée entre dans son texte de travail, au nom de qui l'a proposée, et paraît à l'étape suivante. L'auteur et ses co-auteurs restent seuls maîtres de leur version (Q36). Une proposition compte dans la limite des nouveaux comptes (T10).
 - **Vie d'un projet, à la manière de GitHub** (choix du 19 septembre 2026) : page à onglets (aperçu, comparer, propositions, sujets, activité), encadré « Premiers pas » refermable et page d'aide ; notifications sur le site (cloche, page, mentions @nom), sans e-mail ; suivre un projet, une version, un texte ou une discussion ; étoiles sur les versions publiées et tri des projets ; fil d'activité public ; profil avec contributions et calendrier d'activité ; page « Mon atelier » ; sujets d'un projet, comme des *issues*.
 - **Éditeur professionnel** (choix du 19 septembre 2026) : les trois colonnes restent l'écran ; les outils avancés sont dans un panneau à onglets (justifications, mémoire, glossaire, commentaires, historique, concordance, corpus) et dans des menus repliés. Statut de chaque phrase (à traduire, brouillon, traduite, relue) et progression en couleurs ; filtres et recherche ; raccourcis clavier ; mémoire de traduction (autres versions de la phrase, phrases ressemblantes, mémoire personnelle importée en TMX) ; concordance des traductions publiées ; glossaire du projet ; commentaires par phrase ; historique d'une phrase ; contrôle qualité de forme, jamais le corpus (Q47) ; rechercher et remplacer ; statistiques.
@@ -217,7 +222,7 @@ Choix du 14 septembre 2026, à la suite d'un questionnaire de 40 questions sur l
 
 L'ouverture n'est pas datée : elle a lieu quand toutes ces conditions sont remplies. Six mois de construction ou plus sont acceptés (T1).
 
-- Au moins un texte traduit dans plusieurs styles, comparé et justifié.
+- Au moins un texte traduit dans plusieurs styles (un projet par style), comparé et justifié.
 - Un premier lot de fiches validées (une centaine, par exemple).
 - Une revue de sécurité sans problème ouvert, et une restauration de sauvegarde réussie.
 - Mentions légales, politique de confidentialité et conditions d'utilisation publiées.
