@@ -24,6 +24,7 @@
     <li><a href="{% url 'translations:version_members' version.pk %}">{% translate "Co-auteurs" %}</a></li>
     <li><a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "Exporter en TMX" %}</a></li>
     <li><a href="{% url 'translations:version_export_xliff' version.pk %}">{% translate "Exporter en XLIFF" %}</a></li>
+    <li><a href="{% url 'translations:xliff_import' version.pk %}">{% translate "Importer un fichier XLIFF" %}</a></li>
   </ul>
 </details>
 <details class="toolbar-menu">

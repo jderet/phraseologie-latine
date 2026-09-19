@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Importer un fichier XLIFF" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{% url 'translations:version_edit' version.pk %}">{% translate "Retour à l’éditeur" %}</a></p>
+  <h1>{% translate "Importer un fichier XLIFF" %}</h1>
+  <p class="lede">{% translate "Exportez la version en XLIFF, traduisez-la dans votre logiciel habituel, puis importez le fichier ici : vous verrez chaque phrase changée avant de l’accepter." %}</p>
+  {% if rows %}
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="appliquer">
+    <ol class="quality-list">
+      {% for row in rows %}
+      <li>
+        <label class="replace-choice"><input type="checkbox" name="phrase" value="{{ row.segment.pk }}" checked> {% blocktranslate with number=row.number %}Phrase {{ number }}{% endblocktranslate %}{% if row.state %} <span class="muted">({{ row.state }})</span>{% endif %}</label>
+        <p class="muted">{{ row.segment.text }}</p>
+        <p class="word-diff" lang="la">{% include "translations/word_diff.html" with chunks=row.chunks %}</p>
+      </li>
+      {% endfor %}
+    </ol>
+    <p><label><input type="checkbox" name="statuts" value="1" checked> {% translate "Reprendre les statuts du fichier (traduite, relue)" %}</label></p>
+    <button type="submit" class="button">{% translate "Importer les phrases cochées" %}</button>
+  </form>
+  {% else %}
+  {% if read %}<p class="notice notice-info">{% translate "Le fichier ne change aucune phrase du texte de travail." %}</p>{% endif %}
+  <form method="post" enctype="multipart/form-data" class="form">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% translate "Lire le fichier" %}</button>
+  </form>
+  {% endif %}
+  {% if unknown %}<p class="note">{% blocktranslate count counter=unknown %}{{ counter }} phrase du fichier ne correspond à aucune phrase actuelle du texte : elle est ignorée.{% plural %}{{ counter }} phrases du fichier ne correspondent à aucune phrase actuelle du texte : elles sont ignorées.{% endblocktranslate %}</p>{% endif %}
+</section>
+{% endblock %}

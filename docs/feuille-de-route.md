@@ -234,7 +234,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 ## Étape 17 : échanger avec les outils professionnels
 
 - [x] Export XLIFF d'une version
-- [ ] Import XLIFF dans le texte de travail
+- [x] Import XLIFF dans le texte de travail
 - [ ] Mémoire personnelle importée d'un fichier TMX
 - [ ] Glossaire exporté en CSV et TBX ; API et export complet
 

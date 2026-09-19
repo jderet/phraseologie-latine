@@ -146,6 +146,7 @@ urlpatterns = [
     path("versions/<int:pk>/mise-a-jour/", collab_views.sync_copy, name="sync_copy"),
     path("versions/<int:pk>/copies/", collab_views.version_network, name="version_network"),
     path("versions/<int:pk>/auteurs/", collab_views.version_blame, name="version_blame"),
+    path("versions/<int:pk>/import-xliff/", collab_views.xliff_import, name="xliff_import"),
     path(
         "versions/<int:pk>/proposer-a-l-originale/",
         collab_views.propose_to_original,

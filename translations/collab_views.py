@@ -4,6 +4,7 @@ review proposals, label and restore steps, the network of copies, who wrote what
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -13,11 +14,13 @@ from accounts.limits import check_text_for_links
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
-from .forms import ProposalForm, ProposalReviewForm, StepLabelForm
+from .diffs import word_diff
+from .forms import ProposalForm, ProposalReviewForm, StepLabelForm, XliffImportForm
 from .models import ChangeProposal  # noqa: F401 - the form builds one
 from .network import copy_network
 from .permissions import can_propose
-from .services import create_proposal, review_proposal
+from .services import create_proposal, review_proposal, save_translation, set_sentence_status
+from .sources import SourceHistory
 from .sync import (
     differences_with_original,
     restore_preview,
@@ -26,6 +29,7 @@ from .sync import (
     upstream_changes,
 )
 from .views import _contribute, _export_step, _own_version, _proposal, _rows, _version
+from .xliff import MAX_BYTES, STATUSES, XliffError, parse_xliff
 
 
 @login_required
@@ -236,5 +240,84 @@ def version_blame(request, pk):
             "step": step,
             "rows": rows,
             "legend": legend,
+        },
+    )
+
+
+XLIFF_SESSION = "xliff_import_{pk}"
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def xliff_import(request, pk):
+    """Import an XLIFF file into the working text: read it, show the sentences it changes,
+    then apply the ones kept."""
+    version = _own_version(request.user, pk)
+    key = XLIFF_SESSION.format(pk=version.pk)
+    form = XliffImportForm()
+    history = SourceHistory(version.project.source_text)
+    segments = {
+        str(segment.pk): (number, segment)
+        for number, segment in enumerate(history.segments_at(), 1)
+    }
+    working = {str(item.segment_id): item.text for item in version.segments.current()}
+    if request.method == "POST" and request.POST.get("action") == "appliquer":
+        pending = request.session.pop(key, {})
+        chosen = set(request.POST.getlist("phrase"))
+        keep_status = bool(request.POST.get("statuts"))
+        done = 0
+        with transaction.atomic():
+            for segment_id, (text, state) in pending.items():
+                if segment_id not in chosen or segment_id not in segments:
+                    continue
+                segment = segments[segment_id][1]
+                save_translation(version, segment, text, request.user)
+                status = STATUSES.get(state)
+                if keep_status and status and text:
+                    set_sentence_status(version, segment, status, request.user)
+                done += 1
+        messages.success(
+            request,
+            ngettext("%(count)d phrase importée.", "%(count)d phrases importées.", done)
+            % {"count": done},
+        )
+        return redirect("translations:version_edit", version.pk)
+    rows, unknown = [], 0
+    if request.method == "POST":
+        form = XliffImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                units = parse_xliff(form.cleaned_data["file"].read(MAX_BYTES + 1))
+            except XliffError as error:
+                form.add_error("file", str(error))
+            else:
+                pending = {}
+                for unit in units:
+                    if unit.id not in segments:
+                        unknown += 1
+                        continue
+                    current = working.get(unit.id, "")
+                    if unit.target and unit.target != current:
+                        number, segment = segments[unit.id]
+                        pending[unit.id] = [unit.target, unit.state]
+                        rows.append(
+                            {
+                                "segment": segment,
+                                "number": number,
+                                "state": unit.state,
+                                "chunks": word_diff(current, unit.target),
+                            }
+                        )
+                request.session[key] = pending
+    return render(
+        request,
+        "translations/xliff_import.html",
+        {
+            "version": version,
+            "project": version.project,
+            "form": form,
+            "rows": sorted(rows, key=lambda row: row["number"]),
+            "unknown": unknown,
+            "read": request.method == "POST" and form.is_valid() and not form.errors,
         },
     )

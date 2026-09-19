@@ -423,3 +423,10 @@ class ProposalReviewForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 3}),
         help_text=_("Obligatoire, sauf pour approuver."),
     )
+
+
+class XliffImportForm(forms.Form):
+    file = forms.FileField(
+        label=_("Fichier XLIFF"),
+        help_text=_("Un fichier exporté de ce site, puis traduit dans un autre logiciel."),
+    )

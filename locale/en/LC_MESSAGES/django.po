@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 15:20+0200\n"
+"POT-Creation-Date: 2026-09-19 15:22+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -1886,7 +1886,7 @@ msgstr "Save the justification"
 
 #: justifications/views.py:289 phraseology/views.py:514
 #: phraseology/views.py:660 phraseology/views.py:1722 phraseology/views.py:1918
-#: translations/collab_views.py:151 translations/views.py:140
+#: translations/collab_views.py:155 translations/views.py:140
 #: translations/views.py:733 translations/views.py:1032
 #: translations/workshop_views.py:290 translations/workshop_views.py:400
 msgid "Aucune modification."
@@ -8179,6 +8179,7 @@ msgstr "Known units in sentence %(number)s"
 #: templates/phraseology/spotted_page.html:13
 #: templates/translations/find_replace.html:8
 #: templates/translations/quality_report.html:8
+#: templates/translations/xliff_import.html:8
 msgid "Retour à l’éditeur"
 msgstr "Back to the editor"
 
@@ -9292,52 +9293,58 @@ msgstr "Export as TMX"
 msgid "Exporter en XLIFF"
 msgstr "Export as XLIFF"
 
-#: templates/translations/editor_menus.html:30
-#: templates/translations/editor_menus.html:32
+#: templates/translations/editor_menus.html:27
+#: templates/translations/xliff_import.html:4
+#: templates/translations/xliff_import.html:9
+msgid "Importer un fichier XLIFF"
+msgstr "Import an XLIFF file"
+
+#: templates/translations/editor_menus.html:31
+#: templates/translations/editor_menus.html:33
 msgid "Raccourcis clavier"
 msgstr "Keyboard shortcuts"
 
-#: templates/translations/editor_menus.html:34
+#: templates/translations/editor_menus.html:35
 msgid "phrase suivante"
 msgstr "next sentence"
 
-#: templates/translations/editor_menus.html:35
+#: templates/translations/editor_menus.html:36
 msgid "retour à la ligne"
 msgstr "new line"
 
-#: templates/translations/editor_menus.html:36
+#: templates/translations/editor_menus.html:37
 msgid "marquer traduite et passer à la suivante"
 msgstr "mark as translated and go to the next one"
 
-#: templates/translations/editor_menus.html:37
+#: templates/translations/editor_menus.html:38
 msgid "marquer relue et passer à la suivante"
 msgstr "mark as reviewed and go to the next one"
 
-#: templates/translations/editor_menus.html:38
+#: templates/translations/editor_menus.html:39
 msgid "phrase suivante ou précédente"
 msgstr "next or previous sentence"
 
-#: templates/translations/editor_menus.html:39
+#: templates/translations/editor_menus.html:40
 msgid "recopier la phrase source (noms propres, nombres)"
 msgstr "copy the source sentence (proper names, numbers)"
 
-#: templates/translations/editor_menus.html:40
+#: templates/translations/editor_menus.html:41
 msgid "onglets du panneau de droite"
 msgstr "tabs of the right-hand panel"
 
-#: templates/translations/editor_menus.html:41
+#: templates/translations/editor_menus.html:42
 msgid "chercher dans les phrases"
 msgstr "search the sentences"
 
-#: templates/translations/editor_menus.html:42
+#: templates/translations/editor_menus.html:43
 msgid "quitter la phrase"
 msgstr "leave the sentence"
 
-#: templates/translations/editor_menus.html:43
+#: templates/translations/editor_menus.html:44
 msgid "ā (macron), et de même pour les autres voyelles"
 msgstr "ā (macron), and likewise for the other vowels"
 
-#: templates/translations/editor_menus.html:45
+#: templates/translations/editor_menus.html:46
 msgid "Sur Mac, Ctrl peut être remplacé par ⌘ et Alt s’appelle ⌥."
 msgstr "On a Mac, Ctrl may be replaced by ⌘, and Alt is called ⌥."
 
@@ -9362,6 +9369,7 @@ msgstr "Overview"
 #: templates/translations/topic_detail.html:20
 #: templates/translations/version_comments.html:14
 #: templates/translations/version_edit.html:74
+#: templates/translations/xliff_import.html:18
 #, python-format
 msgid "Phrase %(number)s"
 msgstr "Sentence %(number)s"
@@ -11474,38 +11482,78 @@ msgid ""
 msgstr ""
 "Number of sentence saves per day, visible to the authors of the version only."
 
-#: translations/collab_views.py:37 translations/collab_views.py:74
+#: templates/translations/xliff_import.html:10
+msgid ""
+"Exportez la version en XLIFF, traduisez-la dans votre logiciel habituel, "
+"puis importez le fichier ici : vous verrez chaque phrase changée avant de "
+"l’accepter."
+msgstr ""
+"Export the version as XLIFF, translate it in your usual software, then "
+"import the file here: you will see each changed sentence before accepting it."
+
+#: templates/translations/xliff_import.html:24
+msgid "Reprendre les statuts du fichier (traduite, relue)"
+msgstr "Take the statuses of the file (translated, reviewed)"
+
+#: templates/translations/xliff_import.html:25
+msgid "Importer les phrases cochées"
+msgstr "Import the ticked sentences"
+
+#: templates/translations/xliff_import.html:28
+msgid "Le fichier ne change aucune phrase du texte de travail."
+msgstr "The file changes no sentence of the working text."
+
+#: templates/translations/xliff_import.html:32
+msgid "Lire le fichier"
+msgstr "Read the file"
+
+#: templates/translations/xliff_import.html:35
+#, python-format
+msgid ""
+"%(counter)s phrase du fichier ne correspond à aucune phrase actuelle du "
+"texte : elle est ignorée."
+msgid_plural ""
+"%(counter)s phrases du fichier ne correspondent à aucune phrase actuelle du "
+"texte : elles sont ignorées."
+msgstr[0] ""
+"%(counter)s sentence of the file matches no current sentence of the text: it "
+"is ignored."
+msgstr[1] ""
+"%(counter)s sentences of the file match no current sentence of the text: "
+"they are ignored."
+
+#: translations/collab_views.py:41 translations/collab_views.py:78
 msgid "Cette version n’est pas une copie."
 msgstr "This version is not a copy."
 
-#: translations/collab_views.py:46
+#: translations/collab_views.py:50
 #, python-format
 msgid "%(count)d phrase reprise de l’originale."
 msgid_plural "%(count)d phrases reprises de l’originale."
 msgstr[0] "%(count)d sentence taken from the original."
 msgstr[1] "%(count)d sentences taken from the original."
 
-#: translations/collab_views.py:78
+#: translations/collab_views.py:82
 msgid "Vous ne pouvez pas proposer de modifications à l’originale."
 msgstr "You cannot propose changes to the original."
 
-#: translations/collab_views.py:96
+#: translations/collab_views.py:100
 msgid "La proposition est envoyée à l’auteur de l’originale."
 msgstr "The proposal is sent to the author of the original."
 
-#: translations/collab_views.py:120
+#: translations/collab_views.py:124
 msgid "Choisissez un avis."
 msgstr "Choose an opinion."
 
-#: translations/collab_views.py:136
+#: translations/collab_views.py:140
 msgid "Votre relecture est publiée."
 msgstr "Your review is published."
 
-#: translations/collab_views.py:151
+#: translations/collab_views.py:155
 msgid "L’étiquette est enregistrée."
 msgstr "The label is saved."
 
-#: translations/collab_views.py:170
+#: translations/collab_views.py:174
 #, python-format
 msgid ""
 "%(count)d phrase revient au texte de l’étape. Créez une étape pour le "
@@ -11519,6 +11567,13 @@ msgstr[0] ""
 msgstr[1] ""
 "%(count)d sentences go back to the text of the step. Create a step to "
 "publish it."
+
+#: translations/collab_views.py:281
+#, python-format
+msgid "%(count)d phrase importée."
+msgid_plural "%(count)d phrases importées."
+msgstr[0] "%(count)d sentence imported."
+msgstr[1] "%(count)d sentences imported."
 
 #: translations/comments.py:36 translations/editor_views.py:156
 msgid "Écrivez un commentaire."
@@ -11784,6 +11839,14 @@ msgstr "Your opinion"
 #: translations/forms.py:424
 msgid "Obligatoire, sauf pour approuver."
 msgstr "Required, except to approve."
+
+#: translations/forms.py:430
+msgid "Fichier XLIFF"
+msgstr "XLIFF file"
+
+#: translations/forms.py:431
+msgid "Un fichier exporté de ce site, puis traduit dans un autre logiciel."
+msgstr "A file exported from this site, then translated in other software."
 
 #: translations/glossary.py:68
 msgid "Terme adopté"
@@ -12986,6 +13049,30 @@ msgstr "The term is adopted."
 #: translations/workshop_views.py:422
 msgid "Le terme est écarté."
 msgstr "The term is rejected."
+
+#: translations/xliff.py:46
+msgid "Le fichier dépasse 2 Mo."
+msgstr "The file exceeds 2 MB."
+
+#: translations/xliff.py:51
+msgid "Le fichier doit être encodé en UTF-8."
+msgstr "The file must be encoded in UTF-8."
+
+#: translations/xliff.py:54
+msgid "Ce fichier XML déclare un type de document : il est refusé."
+msgstr "This XML file declares a document type: it is refused."
+
+#: translations/xliff.py:61
+msgid "Ce fichier n’est pas un XML lisible."
+msgstr "This file is not readable XML."
+
+#: translations/xliff.py:63
+msgid "Ce fichier n’est pas un fichier XLIFF."
+msgstr "This file is not an XLIFF file."
+
+#: translations/xliff.py:79
+msgid "Le fichier contient trop de phrases."
+msgstr "The file contains too many sentences."
 
 #~ msgid ""
 #~ "Une voyelle suivie de = prend un macron : a= donne ā (tapez = une seconde "
