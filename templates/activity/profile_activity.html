@@ -19,7 +19,7 @@
     {% for version in versions %}
     <li>
       <a class="item-title" href="{{ version.get_absolute_url }}">{{ version.project.title }}</a>
-      <span class="muted">{{ version.get_style_display|capfirst }}{% if version.author_id != contributor.pk %} · {% blocktranslate with name=version.author.public_name %}co-auteur de la version de {{ name }}{% endblocktranslate %}{% endif %} · {{ version.published_at|date:"j F Y" }}{% if version.star_count %} · <span aria-hidden="true">★</span> {% blocktranslate count counter=version.star_count %}{{ counter }} étoile{% plural %}{{ counter }} étoiles{% endblocktranslate %}{% endif %}</span>
+      <span class="muted">{{ version.project.get_style_display|capfirst }} · {% if version.is_main %}{% translate "traduction principale" %}{% else %}{{ version.get_variant_status_display }}{% endif %}{% if version.author_id != contributor.pk %} · {% blocktranslate with name=version.author.public_name %}avec {{ name }}{% endblocktranslate %}{% endif %} · {{ version.published_at|date:"j F Y" }}{% if version.star_count %} · <span aria-hidden="true">★</span> {% blocktranslate count counter=version.star_count %}{{ counter }} étoile{% plural %}{{ counter }} étoiles{% endblocktranslate %}{% endif %}</span>
     </li>
     {% empty %}
     <li>{% translate "Aucune version publiée." %}</li>

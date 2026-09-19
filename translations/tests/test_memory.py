@@ -1,7 +1,6 @@
 from django.urls import reverse
 
 from translations.memory import other_versions, score, similar_sentences
-from translations.models import Style
 
 from .factories import make_project, make_published_version, make_source_text, make_version
 from .test_versions import TranslationTestCase
@@ -16,7 +15,7 @@ class MemoryTests(TranslationTestCase):
         self.assertLess(score("Il pleut beaucoup ce matin.", "Nous partirons."), 60)
 
     def test_other_versions_show_their_public_step(self):
-        published = make_published_version(self.other, self.project, style=Style.LIVIAN)
+        published = make_published_version(self.other, self.project)
         draft = make_version(self.reviewer, self.project)
         found = other_versions(self.author, self.version, self.first)
         self.assertEqual([item["version"] for item in found], [published])
@@ -46,7 +45,7 @@ class MemoryTests(TranslationTestCase):
     def test_panel_for_writers_only(self):
         url = reverse("translations:editor_memory", args=[self.version.pk, self.first.pk])
         self.client.force_login(self.author)
-        self.assertContains(self.client.get(url), "Dans les autres versions")
+        self.assertContains(self.client.get(url), "Dans la traduction principale et les variantes")
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(url).status_code, 404)
 

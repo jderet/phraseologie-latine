@@ -7,7 +7,7 @@
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a> · <a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
+  <p class="eyebrow"><a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a> · <a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
   <h1>{% translate "Traduire" %}</h1>
   <p class="lede">{% if version.is_draft %}{% if has_members %}{% translate "Brouillon visible de son auteur et de ses co-auteurs." %}{% else %}{% translate "Brouillon visible de vous seul." %}{% endif %}{% else %}{% translate "Version publiée : le public voit la dernière étape. Vos modifications restent privées jusqu’à la prochaine étape." %}{% endif %}</p>
   {% first_steps "editor" %}

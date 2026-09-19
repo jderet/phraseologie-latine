@@ -1,13 +1,13 @@
 {% load i18n %}<section class="memory-section">
-  <h3 class="panel-subheading">{% translate "Dans les autres versions" %}</h3>
+  <h3 class="panel-subheading">{% translate "Dans la traduction principale et les variantes" %}</h3>
   {% for item in others %}
   <div class="memory-item">
     <p class="memory-latin" lang="la">{{ item.text }}</p>
-    <p class="memory-meta muted"><a href="{{ item.version.get_absolute_url }}">{{ item.version.author.public_name }}</a> · {{ item.version.get_style_display }}{% if item.version.pk == version.project.reference_version_id %} · {% translate "référence" %}{% endif %}{% if item.version.is_draft %} · {% translate "brouillon" %}{% endif %}</p>
+    <p class="memory-meta muted"><a href="{{ item.version.get_absolute_url }}">{{ item.version.display_name }}</a>{% if not item.version.is_main %} · {{ item.version.get_variant_status_display }}{% endif %}{% if item.version.is_draft %} · {% translate "brouillon" %}{% endif %}</p>
     <p class="memory-actions"><button type="button" class="link-button" data-use-latin="{{ item.text }}" data-mode="replace">{% translate "Reprendre" %}</button> · <button type="button" class="link-button" data-use-latin="{{ item.text }}" data-mode="insert">{% translate "Insérer à la sélection" %}</button></p>
   </div>
   {% empty %}
-  <p class="note">{% translate "Aucune autre version n’a encore traduit cette phrase." %}</p>
+  <p class="note">{% translate "Ni la traduction principale ni une variante n’a encore traduit cette phrase." %}</p>
   {% endfor %}
 </section>
 <section class="memory-section">

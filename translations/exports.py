@@ -19,8 +19,8 @@ def bilingual_text(version, rows, step=None):
     project, source = version.project, version.project.source_text
     lines = [project.title, "=" * len(project.title), ""]
     lines.append(
-        gettext("Version latine de %(author)s, style déclaré : %(style)s.")
-        % {"author": version.author.public_name, "style": version.get_style_display()}
+        gettext("%(version)s, style %(style)s.")
+        % {"version": version.display_name, "style": project.get_style_display()}
     )
     if version.is_draft:
         lines.append(gettext("Brouillon non publié."))

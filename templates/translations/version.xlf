@@ -3,7 +3,7 @@
   <file original="{{ version_url }}" source-language="{{ source.language }}" target-language="la" datatype="plaintext" date="{{ exported_iso }}">
     <header>
       <tool tool-id="phraseologie-latine" tool-name="{{ site_name }}"/>
-      <note from="{{ site_name }}">{{ project.title }} · {{ version.author.public_name }} · {{ version.get_style_display }}{% if step %} · {{ step.number }} : {{ step.message }}{% endif %} · CC BY-SA 4.0</note>
+      <note from="{{ site_name }}">{{ project.title }} · {{ version.author.public_name }} · {{ version.project.get_style_display }}{% if step %} · {{ step.number }} : {{ step.message }}{% endif %} · CC BY-SA 4.0</note>
     </header>
     <body>
 {% for row in rows %}      <trans-unit id="{{ row.segment.pk }}" resname="{{ row.number }}"{% if row.xliff_state == "signed-off" or row.xliff_state == "final" %} approved="yes"{% endif %}>

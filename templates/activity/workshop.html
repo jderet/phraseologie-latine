@@ -6,7 +6,7 @@
 {% block content %}
 <section>
   <h1>{% translate "Mon atelier" %}</h1>
-  <p class="lede">{% translate "Ce qui vous attend, vos versions et les nouvelles de ce que vous suivez." %}</p>
+  <p class="lede">{% translate "Ce qui vous attend, vos traductions et variantes, et les nouvelles de ce que vous suivez." %}</p>
 
   {% if invitations %}
   <section class="desk-section" aria-labelledby="desk-invitations">
@@ -14,7 +14,7 @@
     <ul class="item-list">
       {% for member in invitations %}
       <li>
-        <span>{% blocktranslate with name=member.invited_by.public_name project=member.version.project.title %}{{ name }} vous invite à co-écrire sa version de « {{ project }} ».{% endblocktranslate %}</span>
+        <span>{% if member.version.is_main %}{% blocktranslate with name=member.invited_by.public_name project=member.version.project.title %}{{ name }} vous invite à devenir mainteneur de « {{ project }} ».{% endblocktranslate %}{% else %}{% blocktranslate with name=member.invited_by.public_name project=member.version.project.title %}{{ name }} vous invite à co-écrire sa variante de « {{ project }} ».{% endblocktranslate %}{% endif %}</span>
         <form method="post" action="{% url 'translations:member_answer' member.pk %}" class="inline-form">
           {% csrf_token %}
           <button type="submit" class="button button-small" name="decision" value="accept">{% translate "Accepter" %}</button>
@@ -40,7 +40,7 @@
       <h3>{% translate "Vos propositions en cours" %}</h3>
       <ul class="item-list">
         {% for proposal in mine %}
-        <li><a class="item-title" href="{{ proposal.get_absolute_url }}">{{ proposal.version.project.title }}</a> <span class="muted">{% blocktranslate with name=proposal.version.author.public_name %}pour la version de {{ name }}{% endblocktranslate %}</span></li>
+        <li><a class="item-title" href="{{ proposal.get_absolute_url }}">{{ proposal.version.project.title }}</a> <span class="muted">{{ proposal.version.display_name }}</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -58,14 +58,14 @@
   <p class="note"><a href="{% url 'translations:personal_memory' %}">{% translate "Votre mémoire personnelle" %}</a> · <a href="{% url 'translations:help' %}">{% translate "Aide" %}</a></p>
 
   <section class="desk-section" aria-labelledby="desk-versions">
-    <h2 id="desk-versions">{% translate "Vos versions" %}</h2>
+    <h2 id="desk-versions">{% translate "Vos traductions et variantes" %}</h2>
     {% if drafts or published %}
     <ul class="item-list desk-versions">
       {% for version in drafts %}{% include "activity/workshop_version.html" %}{% endfor %}
       {% for version in published %}{% include "activity/workshop_version.html" %}{% endfor %}
     </ul>
     {% else %}
-    <p>{% translate "Vous n’avez pas encore de version." %} <a href="{% url 'translations:project_list' %}">{% translate "Choisir un projet" %}</a></p>
+    <p>{% translate "Vous ne traduisez encore rien." %} <a href="{% url 'translations:source_list' %}">{% translate "Choisir un texte" %}</a></p>
     {% endif %}
   </section>
 </section>

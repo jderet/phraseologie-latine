@@ -5,7 +5,7 @@
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a></p>
   <h1>{% translate "Proposer des modifications" %}</h1>
   <p class="lede">{% blocktranslate trimmed with name=version.author.public_name number=step.number %}
     Modifiez les phrases que vous voulez changer dans le texte de l’étape {{ number }}, puis

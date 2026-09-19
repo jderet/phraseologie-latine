@@ -248,9 +248,16 @@ def public_versions():
             project__is_hidden=False,
             project__source_text__is_hidden=False,
         )
-        .select_related("project__source_text", "author", "copied_from")
+        .select_related("project__source_text", "project__main_version", "author", "copied_from")
         .order_by("pk")
     )
+
+
+def _public_main_id(project):
+    main = project.main_version
+    if main is None or not main.is_published or main.is_hidden:
+        return None
+    return main.pk
 
 
 def version_summary(version, link):
@@ -258,7 +265,18 @@ def version_summary(version, link):
     return {
         "id": version.pk,
         "url": link(version.get_absolute_url()),
-        "project": {"id": version.project_id, "title": version.project.title},
+        "project": {
+            "id": version.project_id,
+            "title": version.project.title,
+            "style": version.project.style,
+            "style_note": version.project.style_note,
+            # A draft main version is not named: drafts stay private (rule 8).
+            "main_version": _public_main_id(version.project),
+        },
+        # "main" for the translation of the project; otherwise the status of the variant.
+        "role": "main" if version.is_main else "variant",
+        "variant_status": version.variant_status or None,
+        "closed_at": _date(version.closed_at),
         "source_text": {
             "title": source.title,
             "author": source.author,
@@ -267,8 +285,6 @@ def version_summary(version, link):
             "url": source.source_url,
         },
         "author": version.author.public_name,
-        "style": version.style,
-        "style_note": version.style_note,
         "published_at": _date(version.published_at),
         "copied_from": (
             {"version": version.copied_from.version_id, "step": version.copied_from.number}

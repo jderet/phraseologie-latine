@@ -32,11 +32,24 @@ def make_source_text(user, sentences=SENTENCES, **fields):
 def make_project(user, source_text=None, **fields):
     source_text = source_text or make_source_text(user)
     fields.setdefault("title", source_text.title)
+    fields.setdefault("style", Style.CICERONIAN)
     return create_project(TranslationProject(source_text=source_text, **fields), user)
 
 
-def make_version(user, project, style=Style.CICERONIAN, **fields):
-    return create_version(TranslationVersion(project=project, style=style, **fields), user)
+def make_version(user, project, **fields):
+    """The main version of the project for its creator, while it is still empty; otherwise a
+    variant, started from nothing."""
+    main = project.main_version
+    if (
+        main is not None
+        and main.author_id == user.pk
+        and main.is_draft
+        and not fields
+        and not main.segments.exists()
+        and not main.steps.exists()
+    ):
+        return main
+    return create_version(TranslationVersion(project=project, **fields), user)
 
 
 def translate(version, texts=LATIN):

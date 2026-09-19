@@ -211,9 +211,7 @@ class LatinFollowsTheSourceTests(TranslationTestCase):
 
     def test_a_copy_of_an_earlier_step_follows_the_current_text(self):
         change_source_text(self.source, merge(1), self.author)
-        copy = copy_version(
-            self.version.steps.get(), TranslationVersion(style=self.version.style), self.other
-        )
+        copy = copy_version(self.version.steps.get(), TranslationVersion(), self.other)
         self.assertEqual(
             list(copy.segments.values_list("segment__text", "text", "written_by")),
             [

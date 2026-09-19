@@ -1,26 +1,27 @@
 {% extends "base.html" %}
 {% load i18n workshop_tags %}
 
-{% block title %}{% translate "Comparer les versions" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+{% block title %}{% translate "Comparer" %} · {{ project.title }} · {{ block.super }}{% endblock %}
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <p class="eyebrow"><a href="{% url 'translations:source_list' %}">{% translate "Traduction" %}</a> · <a href="{{ project.source_text.get_absolute_url }}">{{ project.source_text.title }}</a></p>
   <h1>{{ project.title }}</h1>
   {% project_tabs project "compare" %}
   {% if not versions %}
-  <p class="lede">{% translate "Aucune version publiée pour l’instant." %}</p>
+  <p class="lede">{% translate "Rien à comparer pour l’instant : la traduction n’est pas encore publiée." %}</p>
   {% else %}
   <p class="lede">{% blocktranslate trimmed %}
-    Les versions publiées, alignées phrase par phrase, chacune dans sa dernière étape. La version
-    de référence, choisie par le créateur du projet, vient en premier.
+    La traduction principale et ses variantes, alignées phrase par phrase, chacune dans sa
+    dernière étape publique : la traduction principale d’abord, puis les variantes ouvertes, puis
+    les variantes closes.
   {% endblocktranslate %}</p>
 
   <form method="get" class="filters version-picker">
     <fieldset>
-      <legend>{% translate "Versions affichées" %}</legend>
+      <legend>{% translate "Textes affichés" %}</legend>
       {% for version in versions %}
-      <label><input type="checkbox" name="v" value="{{ version.pk }}"{% if version in shown %} checked{% endif %}> {{ version.author.public_name }} <span class="muted">({{ version.get_style_display }}{% if version.is_draft %}, {% translate "votre brouillon" %}{% elif version.author_id == user.pk %}, {% translate "votre texte de travail" %}{% endif %}{% if version.pk == reference_id %}, {% translate "référence" %}{% endif %})</span></label>
+      <label><input type="checkbox" name="v" value="{{ version.pk }}"{% if version in shown %} checked{% endif %}> {{ version.display_name }} <span class="muted">({% if not version.is_main %}{{ version.get_variant_status_display }}{% if version.is_draft or version.author_id == user.pk %}, {% endif %}{% endif %}{% if version.is_draft %}{% translate "votre brouillon" %}{% elif version.author_id == user.pk %}{% translate "votre texte de travail" %}{% endif %})</span></label>
       {% endfor %}
     </fieldset>
     <button type="submit" class="button button-quiet">{% translate "Afficher" %}</button>
@@ -34,8 +35,8 @@
       <p class="comparison-source" lang="{{ source.language }}">{{ row.segment.text }}</p>
       <ul class="renderings">
         {% for cell in row.cells %}
-        <li{% if cell.version.pk == reference_id %} class="is-reference"{% endif %}>
-          <a class="rendering-label" href="{{ cell.version.get_absolute_url }}#phrase-{{ row.number }}">{{ cell.version.author.public_name }} · {{ cell.version.get_style_display }}</a>
+        <li{% if cell.version.pk == main_id %} class="is-reference"{% endif %}>
+          <a class="rendering-label" href="{{ cell.version.get_absolute_url }}#phrase-{{ row.number }}">{{ cell.version.display_name }}</a>
           <span class="rendering-text" lang="la">{% if cell.text %}{% latin_sentence cell.text as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</span>
           {% if cell.older %}<span class="muted">{% translate "d’après un texte source antérieur" %}</span>{% endif %}
         </li>

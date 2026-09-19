@@ -381,7 +381,7 @@ class SourceProposal(ModeratedContent):
 
 
 class Style(models.TextChoices):
-    """The Latin a version aims at (Q4, Q41)."""
+    """The Latin a project aims at (Q4, Q41, choice of 19 September 2026)."""
 
     CLASSICAL = "classical", _("classique, sans modèle particulier")
     CICERONIAN = "ciceronian", _("cicéronien")
@@ -397,7 +397,12 @@ class Style(models.TextChoices):
 
 
 class TranslationProject(ModeratedContent):
-    """The Latin versions of one source text; its creator chooses the reference version."""
+    """The Latin translation of one source text, in one style.
+
+    The project aims at a single text, its main version, written by its creator and the
+    maintainers (the co-authors of the main version); the other versions are variants, to be
+    merged or set aside (choice of 19 September 2026).
+    """
 
     source_text = models.ForeignKey(
         SourceText,
@@ -407,6 +412,13 @@ class TranslationProject(ModeratedContent):
     )
     title = models.CharField(_("titre"), max_length=300)
     description = models.TextField(_("description"), max_length=5000, blank=True)
+    style = models.CharField(_("style visé"), max_length=20, choices=Style.choices)
+    style_note = models.CharField(
+        _("précision sur le style"),
+        max_length=200,
+        blank=True,
+        help_text=_("Facultatif, par exemple : « Cicéron des lettres à Atticus »."),
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -414,15 +426,14 @@ class TranslationProject(ModeratedContent):
         verbose_name=_("créé par"),
     )
     created_at = models.DateTimeField(_("créé le"), default=timezone.now, editable=False)
-    reference_version = models.ForeignKey(
+    main_version = models.OneToOneField(
         "TranslationVersion",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         editable=False,
         related_name="+",
-        verbose_name=_("version de référence"),
-        help_text=_("Choisie par le créateur du projet parmi les versions publiées."),
+        verbose_name=_("traduction principale"),
     )
 
     class Meta:
@@ -461,11 +472,18 @@ def coauthored_by(user):
 
 
 class TranslationVersion(ModeratedContent):
-    """One person's Latin version of a project: a private draft until its author publishes it."""
+    """The main version of a project, or a variant of it: a private draft until its author
+    publishes it."""
 
     class State(models.TextChoices):
         DRAFT = "draft", _("brouillon")
         PUBLISHED = "published", _("publiée")
+
+    class VariantStatus(models.TextChoices):
+        MAIN = "", _("traduction principale")
+        OPEN = "open", _("variante ouverte")
+        MERGED = "merged", _("variante fusionnée")
+        SET_ASIDE = "set_aside", _("variante écartée")
 
     project = models.ForeignKey(
         TranslationProject,
@@ -479,16 +497,18 @@ class TranslationVersion(ModeratedContent):
         related_name="translation_versions",
         verbose_name=_("auteur"),
     )
-    style = models.CharField(_("style déclaré"), max_length=20, choices=Style.choices)
-    style_note = models.CharField(
-        _("précision sur le style"),
-        max_length=200,
-        blank=True,
-        help_text=_("Facultatif, par exemple : « Cicéron des lettres à Atticus »."),
-    )
     state = models.CharField(
         _("état"), max_length=10, choices=State.choices, default=State.DRAFT, editable=False
     )
+    variant_status = models.CharField(
+        _("statut de la variante"),
+        max_length=10,
+        choices=VariantStatus.choices,
+        default=VariantStatus.OPEN,
+        blank=True,
+        editable=False,
+    )
+    closed_at = models.DateTimeField(_("close le"), null=True, blank=True, editable=False)
     created_at = models.DateTimeField(_("commencée le"), default=timezone.now, editable=False)
     published_at = models.DateTimeField(_("publiée le"), null=True, blank=True, editable=False)
     shows_draft_steps = models.BooleanField(
@@ -529,10 +549,17 @@ class TranslationVersion(ModeratedContent):
                 | Q(state="published", published_at__isnull=False),
                 name="translations_version_published_at",
             ),
+            models.CheckConstraint(
+                condition=Q(closed_at__isnull=True, variant_status__in=["", "open"])
+                | Q(closed_at__isnull=False, variant_status__in=["merged", "set_aside"]),
+                name="translations_version_closing",
+            ),
         ]
 
     def __str__(self):
-        return gettext("%(project)s, version de %(author)s") % {
+        if self.is_main:
+            return self.project.title
+        return gettext("%(project)s, variante de %(author)s") % {
             "project": self.project.title,
             "author": self.author.public_name,
         }
@@ -547,6 +574,25 @@ class TranslationVersion(ModeratedContent):
     @property
     def is_draft(self):
         return self.state == self.State.DRAFT
+
+    @property
+    def is_main(self):
+        return self.variant_status == self.VariantStatus.MAIN
+
+    @property
+    def display_name(self):
+        """« Traduction principale », or « Variante de » its author."""
+        if self.is_main:
+            return gettext("Traduction principale")
+        return gettext("Variante de %(name)s") % {"name": self.author.public_name}
+
+    @property
+    def is_open_variant(self):
+        return self.variant_status == self.VariantStatus.OPEN
+
+    @property
+    def is_closed(self):
+        return self.closed_at is not None
 
 
 class TranslatedQuerySet(models.QuerySet):
@@ -730,7 +776,8 @@ class StepSentence(models.Model):
 class ChangeProposal(ModeratedContent):
     """Changes proposed to the published version of someone else, like a pull request.
 
-    The author of the version accepts or refuses each proposed sentence (Q36).
+    The writers of the version accept or refuse each proposed sentence (Q36). A proposal sent
+    from a variant to the main version closes the variant once decided.
     """
 
     class Status(models.TextChoices):
@@ -750,6 +797,15 @@ class ChangeProposal(ModeratedContent):
         related_name="proposals",
         editable=False,
         verbose_name=_("étape de départ"),
+    )
+    from_version = models.ForeignKey(
+        TranslationVersion,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="sent_proposals",
+        verbose_name=_("variante d’origine"),
     )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1243,6 +1299,20 @@ def version_writer_ids(version):
     }
 
 
+def maintainer_ids(project):
+    """Ids of the creator and the maintainers of a project."""
+    if project.main_version_id is None:
+        return {project.created_by_id}
+    return version_writer_ids(project.main_version)
+
+
+def is_maintainer(user, project):
+    """The creator of a project and its maintainers, the writers of its main version: they
+    write the translation and decide on the variants, the glossary and the topics."""
+    main = project.main_version
+    return main is not None and is_version_writer(user, main)
+
+
 def is_version_writer(user, version):
     """The author of a version, or one of its co-authors: they write and see the working text."""
     if not user.is_authenticated:
@@ -1293,16 +1363,23 @@ register(
 register(
     TranslationProject,
     owner_field="created_by",
-    text_fields=("title", "description"),
-    # Only the creator chooses the reference version, never a revert (T6).
-    not_reverted=("reference_version",),
+    text_fields=("title", "description", "style_note"),
+    # The main version is set once, at the creation of the project.
+    not_reverted=("main_version",),
 )
 register(
     TranslationVersion,
     owner_field="author",
-    text_fields=("style_note",),
     visible_to=version_visible_to,
-    not_reverted=("state", "published_at", "shows_draft_steps", "copied_from", "synced_to"),
+    not_reverted=(
+        "state",
+        "published_at",
+        "shows_draft_steps",
+        "copied_from",
+        "synced_to",
+        "variant_status",
+        "closed_at",
+    ),
 )
 register(
     TranslatedSegment,
@@ -1327,7 +1404,7 @@ register(
     text_fields=("explanation",),
     visible_to=lambda user, proposal: version_visible_to(user, proposal.version),
     # A revert never reopens or closes a proposal.
-    not_reverted=("status", "closed_at"),
+    not_reverted=("status", "closed_at", "from_version"),
     discussion=lambda user, proposal: proposal.is_open,
 )
 register(

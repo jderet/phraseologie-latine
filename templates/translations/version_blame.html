@@ -5,7 +5,7 @@
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a></p>
   <h1>{% translate "Qui a écrit quoi" %}</h1>
   <p class="lede">{% if step %}{% blocktranslate with number=step.number %}Chaque phrase de l’étape {{ number }}, avec la personne qui l’a écrite.{% endblocktranslate %}{% else %}{% translate "Chaque phrase du texte de travail, avec la personne qui l’a écrite." %}{% endif %}</p>
   <ul class="blame-legend">

@@ -2,7 +2,12 @@ from django.urls import reverse
 
 from activity.models import Star
 from activity.services import is_following
-from translations.tests.factories import make_project, make_published_version, make_version
+from translations.tests.factories import (
+    make_project,
+    make_published_version,
+    make_source_text,
+    make_version,
+)
 
 from .test_notifications import ActivityTestCase
 
@@ -56,17 +61,19 @@ class StarTests(ActivityTestCase):
         self.client.post(reverse("activity:star", args=[version.pk]))
         self.assertFalse(Star.objects.exists())
 
-    def test_projects_sorted_by_stars(self):
-        quiet = make_project(self.author, self.source, title="Projet calme")
+    def test_texts_sorted_by_the_stars_of_their_translations(self):
+        quiet_text = make_source_text(self.author, title="Texte calme")
+        quiet = make_project(self.author, quiet_text, title="Projet calme")
         make_published_version(self.author, quiet)
-        starred = make_project(self.author, self.source, title="Projet aimé")
+        loved_text = make_source_text(self.author, title="Texte aimé")
+        starred = make_project(self.author, loved_text, title="Projet aimé")
         version = make_published_version(self.author, starred)
         Star.objects.create(user=self.reader, version=version)
-        response = self.client.get(reverse("translations:project_list") + "?tri=etoiles")
-        titles = [project.title for project in response.context["page"]]
-        self.assertLess(titles.index("Projet aimé"), titles.index("Projet calme"))
+        response = self.client.get(reverse("translations:source_list") + "?tri=etoiles")
+        titles = [text.title for text in response.context["page"]]
+        self.assertLess(titles.index("Texte aimé"), titles.index("Texte calme"))
         self.assertContains(response, "1 étoile")
 
-    def test_projects_sorted_by_activity(self):
-        response = self.client.get(reverse("translations:project_list") + "?tri=activite")
+    def test_texts_sorted_by_activity(self):
+        response = self.client.get(reverse("translations:source_list") + "?tri=activite")
         self.assertEqual(response.status_code, 200)

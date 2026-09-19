@@ -43,7 +43,7 @@ def score(first, second):
 
 def other_versions(user, version, segment):
     """The Latin of the same sentence in the other versions of the project the user may see:
-    [{version, text}], the reference version first."""
+    [{version, text}], the main version first."""
     project = version.project
     history = SourceHistory(project.source_text)
     found = []
@@ -62,7 +62,7 @@ def other_versions(user, version, segment):
         sentence = sentences.get(segment.pk)
         if sentence is not None and sentence.text:
             found.append({"version": other, "text": sentence.text, "step": step})
-    found.sort(key=lambda item: item["version"].pk != project.reference_version_id)
+    found.sort(key=lambda item: not item["version"].is_main)
     return found
 
 

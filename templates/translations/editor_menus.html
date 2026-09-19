@@ -19,9 +19,9 @@
     <li><a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a></li>
     <li><a href="{% url 'translations:step_compare' version.pk %}?a=travail">{% translate "Différences depuis la dernière étape" %}</a></li>
     <li><a href="{% url 'translations:version_comments' version.pk %}">{% translate "Tous les commentaires" %}</a></li>
-    {% if version.copied_from_id %}<li><a href="{% url 'translations:sync_copy' version.pk %}">{% translate "Mettre la copie à jour" %}</a></li>
-    <li><a href="{% url 'translations:propose_to_original' version.pk %}">{% translate "Proposer mes changements à l’originale" %}</a></li>{% endif %}
-    <li><a href="{% url 'translations:version_members' version.pk %}">{% translate "Co-auteurs" %}</a></li>
+    {% if version.copied_from_id %}<li><a href="{% url 'translations:sync_copy' version.pk %}">{% translate "Mettre la variante à jour" %}</a></li>
+    <li><a href="{% url 'translations:propose_to_original' version.pk %}">{% translate "Envoyer la variante aux mainteneurs" %}</a></li>{% endif %}
+    <li><a href="{% url 'translations:version_members' version.pk %}">{% if version.is_main %}{% translate "Mainteneurs" %}{% else %}{% translate "Co-auteurs" %}{% endif %}</a></li>
     <li><a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "Exporter en TMX" %}</a></li>
     <li><a href="{% url 'translations:version_export_xliff' version.pk %}">{% translate "Exporter en XLIFF" %}</a></li>
     <li><a href="{% url 'translations:xliff_import' version.pk %}">{% translate "Importer un fichier XLIFF" %}</a></li>

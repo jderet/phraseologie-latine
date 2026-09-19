@@ -5,7 +5,7 @@
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a></p>
   <h1>{% translate "Statistiques" %}</h1>
   <p class="lede">{% if stats.statuses %}{% translate "Chiffres du texte de travail." %}{% elif step %}{% blocktranslate with number=step.number %}Chiffres de l’étape {{ number }}, la dernière que le public voit.{% endblocktranslate %}{% else %}{% translate "Aucune étape publique pour l’instant." %}{% endif %}</p>
   <dl class="stat-tiles">

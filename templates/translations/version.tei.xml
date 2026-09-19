@@ -7,7 +7,7 @@
         <author>{{ version.author.public_name }}</author>
       </titleStmt>
       <editionStmt>
-        <edition{% if step %} n="{{ step.number }}"{% endif %}>{{ version.get_style_display }}{% if version.style_note %} ({{ version.style_note }}){% endif %}{% if step %} <date when="{{ step.created_at|date:'Y-m-d' }}"/>{% endif %}</edition>
+        <edition{% if step %} n="{{ step.number }}"{% endif %}>{{ version.project.get_style_display }}{% if version.project.style_note %} ({{ version.project.style_note }}){% endif %}{% if step %} <date when="{{ step.created_at|date:'Y-m-d' }}"/>{% endif %}</edition>
       </editionStmt>
       <publicationStmt>
         <publisher>{{ site_name }}</publisher>

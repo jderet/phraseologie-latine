@@ -5,7 +5,7 @@
 
 {% block content %}
 <article>
-  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <p class="eyebrow"><a href="{% url 'translations:source_list' %}">{% translate "Traduction" %}</a> · <a href="{{ source.get_absolute_url }}">{{ source.title }}</a></p>
   <h1>{{ project.title }}</h1>
   <div class="page-actions">{% follow_button project %}</div>
   {% if project.is_hidden %}
@@ -21,34 +21,54 @@
       <dd><a href="{{ source.get_absolute_url }}">{{ source.title }}</a> <span class="muted">({{ source.get_language_display }}, {% blocktranslate count counter=segment_count %}{{ counter }} phrase{% plural %}{{ counter }} phrases{% endblocktranslate %})</span></dd>
     </div>
     <div>
-      <dt>{% translate "Lancé par" %}</dt>
-      <dd><a href="{{ project.created_by.get_absolute_url }}">{{ project.created_by.public_name }}</a>, {{ project.created_at|date:"j F Y" }}</dd>
+      <dt>{% translate "Style" %}</dt>
+      <dd>{{ project.get_style_display|capfirst }}{% if project.style_note %} ({{ project.style_note }}){% endif %}</dd>
+    </div>
+    <div>
+      <dt>{% translate "Mainteneurs" %}</dt>
+      <dd>{% for person in maintainers %}<a href="{{ person.get_absolute_url }}">{{ person.public_name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}<a href="{{ project.created_by.get_absolute_url }}">{{ project.created_by.public_name }}</a>{% endfor %}{% if can_manage_main %} · <a href="{% url 'translations:version_members' main.pk %}">{% translate "inviter ou retirer" %}</a>{% endif %}</dd>
     </div>
   </dl>
   <p class="form-links">
-    {% if user.is_authenticated and not project.is_hidden %}<a class="button" href="{% url 'translations:version_create' project.pk %}">{% translate "Rédiger une version" %}</a>{% endif %}
     {% if can_edit %}<a href="{% url 'translations:project_edit' project.pk %}">{% translate "Modifier le projet" %}</a>{% endif %}
     {% if can_change_source %}<a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Modifier le texte à traduire" %}</a>{% elif can_propose_source %}<a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Proposer des modifications du texte" %}</a>{% endif %}
   </p>
   {% moderation_links project %}
 
-  {% if drafts %}
-  <h2>{% translate "Vos brouillons" %}</h2>
-  <p class="note">{% translate "Vos versions et celles dont vous êtes co-auteur, visibles de leurs seuls auteurs jusqu’à leur publication." %}</p>
-  <ul class="item-list">
-    {% for version in drafts %}{% include "translations/version_item.html" %}{% endfor %}
-  </ul>
-  {% endif %}
+  <section class="main-translation" aria-labelledby="main-title">
+    <h2 id="main-title">{% translate "La traduction" %}</h2>
+    {% if main %}
+    <p class="project-row-progress"><progress max="{{ segment_count }}" value="{{ summary.translated_count }}" aria-hidden="true"></progress> {% blocktranslate with done=summary.translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{% if main.is_draft %} · {% translate "brouillon, visible des seuls mainteneurs" %}{% else %} · {% blocktranslate with date=main.published_at|date:"j F Y" %}publiée le {{ date }}{% endblocktranslate %}{% endif %}</p>
+    <div class="version-actions">
+      <a class="button{% if can_translate_main %} button-quiet{% endif %}" href="{{ main.get_absolute_url }}">{% translate "Lire" %}</a>
+      {% if can_translate_main %}<a class="button" href="{% url 'translations:version_edit' main.pk %}">{% translate "Traduire" %}</a>{% endif %}
+      {% if can_publish_main %}<a class="button button-quiet" href="{% url 'translations:version_publish' main.pk %}">{% translate "Publier" %}</a>{% endif %}
+      {% if copy_step %}<a class="button button-quiet" href="{% url 'translations:version_copy' main.pk copy_step.number %}">{% translate "Proposer une variante" %}</a>{% endif %}
+      {% if open_proposal_count %}<a href="{% url 'translations:proposal_list' main.pk %}">{% blocktranslate count counter=open_proposal_count %}{{ counter }} proposition à trancher{% plural %}{{ counter }} propositions à trancher{% endblocktranslate %}</a>{% endif %}
+    </div>
+    {% else %}
+    <p class="note">{% translate "La traduction est en préparation : elle paraîtra quand ses mainteneurs la publieront." %}</p>
+    {% endif %}
+  </section>
 
-  <h2>{% translate "Versions publiées" %}</h2>
-  {% if published|length > 1 %}<p class="note">{% if by_stars %}<a href="{% url 'translations:project' project.pk %}">{% translate "Trier par date de publication" %}</a>{% else %}<a href="?tri=etoiles">{% translate "Trier par étoiles" %}</a>{% endif %}</p>{% endif %}
-  {% if is_creator and published %}
-  <p class="note">{% translate "Vous avez créé ce projet : c’est vous qui choisissez la version de référence." %}</p>
-  {% endif %}
+  <h2>{% translate "Variantes ouvertes" %}</h2>
+  <p class="note">{% blocktranslate trimmed %}
+    Une variante reprend la traduction et propose d’autres phrases. Les mainteneurs acceptent ou
+    refusent chacune ; la variante est alors close, fusionnée ou écartée.
+  {% endblocktranslate %}</p>
   <ul class="item-list">
-    {% for version in published %}{% include "translations/version_item.html" %}{% empty %}
-    <li>{% translate "Aucune version publiée pour l’instant." %}</li>
+    {% for version in open_variants %}{% include "translations/version_item.html" %}{% empty %}
+    <li>{% translate "Aucune variante ouverte." %}</li>
     {% endfor %}
   </ul>
+
+  {% if closed_variants %}
+  <details class="closed-variants">
+    <summary><h2>{% blocktranslate count counter=closed_variants|length %}{{ counter }} variante close{% plural %}{{ counter }} variantes closes{% endblocktranslate %}</h2></summary>
+    <ul class="item-list">
+      {% for version in closed_variants %}{% include "translations/version_item.html" %}{% endfor %}
+    </ul>
+  </details>
+  {% endif %}
 </article>
 {% endblock %}

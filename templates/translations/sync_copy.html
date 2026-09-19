@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% translate "Mettre la copie à jour" %} · {{ version }} · {{ block.super }}{% endblock %}
+{% block title %}{% translate "Mettre la variante à jour" %} · {{ version }} · {{ block.super }}{% endblock %}
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
-  <h1>{% translate "Mettre la copie à jour" %}</h1>
-  <p class="lede">{% blocktranslate trimmed with name=original.author.public_name number=base.number %}
-    Ce que la version de {{ name }} a changé depuis son étape {{ number }}, que vous avez copiée
-    ou reprise en dernier. Cochez les phrases à reprendre : elles entrent dans votre texte de
-    travail, au nom de qui les a écrites.
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a></p>
+  <h1>{% translate "Mettre la variante à jour" %}</h1>
+  <p class="lede">{% blocktranslate trimmed with number=base.number %}
+    Ce que la traduction principale a changé depuis son étape {{ number }}, dont votre variante est
+    partie ou qu’elle a reprise en dernier. Cochez les phrases à reprendre : elles entrent dans
+    votre texte de travail, au nom de qui les a écrites.
   {% endblocktranslate %}</p>
   {% if changes %}
   <form method="post">
@@ -29,7 +29,7 @@
     <button type="submit" class="button">{% translate "Reprendre les phrases cochées" %}</button>
   </form>
   {% else %}
-  <p class="notice notice-info">{% if latest %}{% blocktranslate with number=latest.number %}Votre copie est à jour : l’originale n’a rien changé qui vous manque jusqu’à son étape {{ number }}.{% endblocktranslate %}{% else %}{% translate "L’originale n’a pas d’étape publique." %}{% endif %}</p>
+  <p class="notice notice-info">{% if latest %}{% blocktranslate with number=latest.number %}Votre variante est à jour : la traduction principale n’a rien changé qui vous manque jusqu’à son étape {{ number }}.{% endblocktranslate %}{% else %}{% translate "La traduction principale n’a pas d’étape publique." %}{% endif %}</p>
   {% endif %}
 </section>
 {% endblock %}

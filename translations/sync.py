@@ -103,7 +103,8 @@ def take_upstream(user, version, segment_ids):
             )
             taken += 1
     version.synced_to = latest
-    save_with_revision(version, user, comment=gettext("Mise à jour depuis l’originale"))
+    comment = gettext("Mise à jour depuis la traduction principale")
+    save_with_revision(version, user, comment=comment)
     return taken
 
 

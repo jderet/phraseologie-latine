@@ -5,7 +5,7 @@
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <p class="eyebrow"><a href="{% url 'translations:source_list' %}">{% translate "Traduction" %}</a> · <a href="{{ project.source_text.get_absolute_url }}">{{ project.source_text.title }}</a></p>
   <h1>{{ project.title }}</h1>
   {% project_tabs project "proposals" %}
   <p class="note">{% blocktranslate trimmed %}
@@ -16,7 +16,7 @@
     {% for proposal in page %}
     <li>
       <span><a class="item-title" href="{{ proposal.get_absolute_url }}">{% blocktranslate with name=proposal.author.public_name %}Proposition de {{ name }}{% endblocktranslate %}</a> <span class="badge{% if proposal.is_open %} state-open{% endif %}">{{ proposal.get_status_display }}</span></span>
-      <span class="muted">{% blocktranslate with name=proposal.version.author.public_name %}pour la version de {{ name }}{% endblocktranslate %} · {{ proposal.created_at|date:"j F Y" }}</span>
+      <span class="muted">{% if proposal.from_version_id %}{% translate "variante envoyée" %}{% else %}{% blocktranslate with name=proposal.version.display_name %}pour : {{ name }}{% endblocktranslate %}{% endif %} · {{ proposal.created_at|date:"j F Y" }}</span>
     </li>
     {% empty %}
     <li>{% translate "Aucune proposition pour l’instant." %}</li>

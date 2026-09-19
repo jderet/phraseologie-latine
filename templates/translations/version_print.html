@@ -12,7 +12,7 @@
 
   <header>
     <h1>{{ project.title }}</h1>
-    <p class="lede">{% blocktranslate with name=version.author.public_name style=version.get_style_display %}Version latine de {{ name }}, style {{ style }}{% endblocktranslate %}{% if version.style_note %} ({{ version.style_note }}){% endif %}</p>
+    <p class="lede">{% blocktranslate with name=version.author.public_name style=version.project.get_style_display %}Version latine de {{ name }}, style {{ style }}{% endblocktranslate %}{% if version.project.style_note %} ({{ version.project.style_note }}){% endif %}</p>
     {% if version.is_draft %}<p class="notice">{% translate "Brouillon non publié." %}</p>{% endif %}
     {% if step %}<p>{% blocktranslate with number=step.number date=step.created_at|date:"j F Y" %}Étape {{ number }} du {{ date }}{% endblocktranslate %} : {{ step.message }}</p>{% endif %}
   </header>

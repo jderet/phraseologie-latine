@@ -1,0 +1,9 @@
+{% load i18n %}<li class="project-row">
+  <span class="project-row-name"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> <span class="badge">{{ project.get_style_display }}</span></span>
+  {% if project.main_visible %}
+  <span class="project-row-progress"><progress max="{{ project.segment_count }}" value="{{ project.translated_count }}" aria-hidden="true"></progress> {% blocktranslate with done=project.translated_count total=project.segment_count %}{{ done }} sur {{ total }}{% endblocktranslate %}{% if project.main_version.is_draft %} · {% translate "brouillon" %}{% endif %}</span>
+  {% else %}
+  <span class="project-row-progress muted">{% translate "en préparation" %}</span>
+  {% endif %}
+  <span class="muted">{% if project.open_variant_count %}{% blocktranslate count counter=project.open_variant_count %}{{ counter }} variante ouverte{% plural %}{{ counter }} variantes ouvertes{% endblocktranslate %}{% endif %}</span>
+</li>
