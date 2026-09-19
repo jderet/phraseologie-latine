@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 14:50+0200\n"
+"POT-Creation-Date: 2026-09-19 14:52+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -4649,7 +4649,8 @@ msgid "Versions publiées"
 msgstr "Published versions"
 
 #: templates/accounts/dashboard.html:18 templates/translations/help.html:64
-#: templates/translations/version_edit.html:70 translations/editor.py:30
+#: templates/translations/version_edit.html:70
+#: templates/translations/version_stats.html:16 translations/editor.py:30
 msgid "Justifications"
 msgstr "Justifications"
 
@@ -9224,6 +9225,13 @@ msgid "Contrôle qualité"
 msgstr "Quality check"
 
 #: templates/translations/editor_menus.html:17
+#: templates/translations/version_detail.html:83
+#: templates/translations/version_stats.html:4
+#: templates/translations/version_stats.html:9
+msgid "Statistiques"
+msgstr "Statistics"
+
+#: templates/translations/editor_menus.html:18
 #: templates/translations/step_create.html:4
 #: templates/translations/step_create.html:9
 #: templates/translations/step_list.html:15
@@ -9232,7 +9240,7 @@ msgstr "Quality check"
 msgid "Créer une étape"
 msgstr "Create a step"
 
-#: templates/translations/editor_menus.html:18
+#: templates/translations/editor_menus.html:19
 #: templates/translations/step_compare.html:37
 #: templates/translations/step_create.html:35
 #: templates/translations/step_detail.html:47
@@ -9241,15 +9249,15 @@ msgstr "Create a step"
 msgid "Historique des étapes"
 msgstr "History of steps"
 
-#: templates/translations/editor_menus.html:19
+#: templates/translations/editor_menus.html:20
 msgid "Différences depuis la dernière étape"
 msgstr "Differences since the last step"
 
-#: templates/translations/editor_menus.html:20
+#: templates/translations/editor_menus.html:21
 msgid "Tous les commentaires"
 msgstr "All comments"
 
-#: templates/translations/editor_menus.html:21
+#: templates/translations/editor_menus.html:22
 #: templates/translations/help.html:49
 #: templates/translations/version_detail.html:42
 #: templates/translations/version_members.html:4
@@ -9257,56 +9265,56 @@ msgstr "All comments"
 msgid "Co-auteurs"
 msgstr "Co-authors"
 
-#: templates/translations/editor_menus.html:22
+#: templates/translations/editor_menus.html:23
 msgid "Exporter en TMX"
 msgstr "Export as TMX"
 
-#: templates/translations/editor_menus.html:26
-#: templates/translations/editor_menus.html:28
+#: templates/translations/editor_menus.html:27
+#: templates/translations/editor_menus.html:29
 msgid "Raccourcis clavier"
 msgstr "Keyboard shortcuts"
 
-#: templates/translations/editor_menus.html:30
+#: templates/translations/editor_menus.html:31
 msgid "phrase suivante"
 msgstr "next sentence"
 
-#: templates/translations/editor_menus.html:31
+#: templates/translations/editor_menus.html:32
 msgid "retour à la ligne"
 msgstr "new line"
 
-#: templates/translations/editor_menus.html:32
+#: templates/translations/editor_menus.html:33
 msgid "marquer traduite et passer à la suivante"
 msgstr "mark as translated and go to the next one"
 
-#: templates/translations/editor_menus.html:33
+#: templates/translations/editor_menus.html:34
 msgid "marquer relue et passer à la suivante"
 msgstr "mark as reviewed and go to the next one"
 
-#: templates/translations/editor_menus.html:34
+#: templates/translations/editor_menus.html:35
 msgid "phrase suivante ou précédente"
 msgstr "next or previous sentence"
 
-#: templates/translations/editor_menus.html:35
+#: templates/translations/editor_menus.html:36
 msgid "recopier la phrase source (noms propres, nombres)"
 msgstr "copy the source sentence (proper names, numbers)"
 
-#: templates/translations/editor_menus.html:36
+#: templates/translations/editor_menus.html:37
 msgid "onglets du panneau de droite"
 msgstr "tabs of the right-hand panel"
 
-#: templates/translations/editor_menus.html:37
+#: templates/translations/editor_menus.html:38
 msgid "chercher dans les phrases"
 msgstr "search the sentences"
 
-#: templates/translations/editor_menus.html:38
+#: templates/translations/editor_menus.html:39
 msgid "quitter la phrase"
 msgstr "leave the sentence"
 
-#: templates/translations/editor_menus.html:39
+#: templates/translations/editor_menus.html:40
 msgid "ā (macron), et de même pour les autres voyelles"
 msgstr "ā (macron), and likewise for the other vowels"
 
-#: templates/translations/editor_menus.html:41
+#: templates/translations/editor_menus.html:42
 msgid "Sur Mac, Ctrl peut être remplacé par ⌘ et Alt s’appelle ⌥."
 msgstr "On a Mac, Ctrl may be replaced by ⌘, and Alt is called ⌥."
 
@@ -9973,6 +9981,7 @@ msgstr "Compare"
 #: templates/translations/version_detail.html:9
 #: templates/translations/version_edit.html:10
 #: templates/translations/version_members.html:8
+#: templates/translations/version_stats.html:8
 #, python-format
 msgid "Version de %(name)s"
 msgstr "Version by %(name)s"
@@ -10562,6 +10571,7 @@ msgstr "Changes"
 
 #: templates/translations/step_detail.html:32
 #: templates/translations/version_detail.html:57
+#: templates/translations/version_stats.html:20
 msgid "Avancement"
 msgstr "Progress"
 
@@ -10895,6 +10905,7 @@ msgid "Le texte de travail, tel qu’il est enregistré."
 msgstr "The working text, as saved."
 
 #: templates/translations/version_detail.html:91
+#: templates/translations/version_stats.html:10
 msgid "Aucune étape publique pour l’instant."
 msgstr "No public step yet."
 
@@ -11171,7 +11182,62 @@ msgstr[1] ""
 "Your draft has %(counter)s steps. Unless you agree, the public will only see "
 "the publication step."
 
-#: translations/comments.py:36 translations/editor_views.py:155
+#: templates/translations/version_stats.html:10
+msgid "Chiffres du texte de travail."
+msgstr "Figures of the working text."
+
+#: templates/translations/version_stats.html:10
+#, python-format
+msgid "Chiffres de l’étape %(number)s, la dernière que le public voit."
+msgstr "Figures of step %(number)s, the latest the public sees."
+
+#: templates/translations/version_stats.html:12
+msgid "Phrases traduites"
+msgstr "Translated sentences"
+
+#: templates/translations/version_stats.html:13
+msgid "Mots du texte source"
+msgstr "Words of the source text"
+
+#: templates/translations/version_stats.html:14
+msgid "Mots latins"
+msgstr "Latin words"
+
+#: templates/translations/version_stats.html:15
+msgid "Étapes"
+msgstr "Steps"
+
+#: templates/translations/version_stats.html:26
+msgid "Qui a écrit quoi"
+msgstr "Who wrote what"
+
+#: templates/translations/version_stats.html:29
+#, python-format
+msgid "%(counter)s phrase (%(percent)s %%)"
+msgid_plural "%(counter)s phrases (%(percent)s %%)"
+msgstr[0] "%(counter)s sentence (%(percent)s %%)"
+msgstr[1] "%(counter)s sentences (%(percent)s %%)"
+
+#: templates/translations/version_stats.html:31
+msgid "Aucune phrase traduite."
+msgstr "No translated sentence."
+
+#: templates/translations/version_stats.html:36
+msgid "Rythme des trente derniers jours"
+msgstr "Pace over the last thirty days"
+
+#: templates/translations/version_stats.html:38
+msgid "Phrases enregistrées chaque jour"
+msgstr "Sentences saved each day"
+
+#: templates/translations/version_stats.html:43
+msgid ""
+"Nombre d’enregistrements de phrases par jour, visible des seuls auteurs de "
+"la version."
+msgstr ""
+"Number of sentence saves per day, visible to the authors of the version only."
+
+#: translations/comments.py:36 translations/editor_views.py:156
 msgid "Écrivez un commentaire."
 msgstr "Write a comment."
 
@@ -11224,23 +11290,23 @@ msgstr "with quality alerts"
 msgid "texte source modifié"
 msgstr "source text changed"
 
-#: translations/editor_views.py:184
+#: translations/editor_views.py:185
 msgid "C’est enregistré."
 msgstr "Saved."
 
-#: translations/editor_views.py:266
+#: translations/editor_views.py:267
 msgid "Le texte de l’étape est rétabli dans le texte de travail."
 msgstr "The text of the step is restored in the working text."
 
-#: translations/editor_views.py:291
+#: translations/editor_views.py:292
 msgid "L’alerte est ignorée tant que cette phrase ne change pas."
 msgstr "The alert is ignored as long as this sentence does not change."
 
-#: translations/editor_views.py:317
+#: translations/editor_views.py:318
 msgid "Les alertes ignorées sont de nouveau montrées."
 msgstr "Ignored alerts are shown again."
 
-#: translations/editor_views.py:347
+#: translations/editor_views.py:348
 #, python-format
 msgid "%(count)d phrase modifiée."
 msgid_plural "%(count)d phrases modifiées."

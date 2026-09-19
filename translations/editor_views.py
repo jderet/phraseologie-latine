@@ -31,6 +31,7 @@ from .replace import build_pattern, preview
 from .sentence_history import sentence_history
 from .services import save_translation, set_sentence_status
 from .sources import SourceHistory
+from .stats import version_stats
 from .views import _own_version, _rows, _version
 
 
@@ -352,4 +353,22 @@ def find_replace(request, pk):
         request,
         "translations/find_replace.html",
         {"version": version, "project": version.project, "form": form, "changes": changes},
+    )
+
+
+@require_GET
+def version_stats_page(request, pk):
+    """Figures of a version: of its working text for its writers, of its latest public step
+    for the others."""
+    version = _version(request.user, pk)
+    step, rows = _rows(request.user, version)
+    return render(
+        request,
+        "translations/version_stats.html",
+        {
+            "version": version,
+            "project": version.project,
+            "step": step,
+            "stats": version_stats(request.user, version, rows),
+        },
     )

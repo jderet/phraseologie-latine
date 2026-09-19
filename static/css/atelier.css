@@ -866,3 +866,55 @@ mark.term {
   font-size: 0.88rem;
   color: var(--danger);
 }
+
+/* Figures of a version */
+
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.stat-tiles > div {
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.stat-tiles dt {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+
+.stat-tiles dd {
+  margin: 4px 0 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.stat-statuses {
+  font-size: 0.95rem;
+}
+
+.pace-scroll {
+  overflow-x: auto;
+}
+
+.pace-chart {
+  width: 100%;
+  min-width: 18rem;
+  max-width: 40rem;
+  height: 90px;
+}
+
+.pace-value {
+  fill: var(--accent);
+}
+
+.pace-axis {
+  stroke: var(--rule-strong);
+  stroke-width: 0.5;
+}

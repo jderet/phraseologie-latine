@@ -219,7 +219,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Historique d'une phrase, avec retour à un texte antérieur
 - [x] Contrôle qualité formel (jamais le corpus, Q47)
 - [x] Rechercher et remplacer dans le texte de travail
-- [ ] Statistiques d'une version
+- [x] Statistiques d'une version
 
 ## Étape 16 : collaborer entre versions
 

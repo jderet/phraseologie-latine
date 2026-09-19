@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Statistiques" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Statistiques" %}</h1>
+  <p class="lede">{% if stats.statuses %}{% translate "Chiffres du texte de travail." %}{% elif step %}{% blocktranslate with number=step.number %}Chiffres de l’étape {{ number }}, la dernière que le public voit.{% endblocktranslate %}{% else %}{% translate "Aucune étape publique pour l’instant." %}{% endif %}</p>
+  <dl class="stat-tiles">
+    <div><dt>{% translate "Phrases traduites" %}</dt><dd>{{ stats.translated }} <span class="muted">/ {{ stats.sentences }}</span></dd></div>
+    <div><dt>{% translate "Mots du texte source" %}</dt><dd>{{ stats.source_words }}</dd></div>
+    <div><dt>{% translate "Mots latins" %}</dt><dd>{{ stats.latin_words }}{% if stats.ratio %} <span class="muted">(× {{ stats.ratio }})</span>{% endif %}</dd></div>
+    <div><dt>{% translate "Étapes" %}</dt><dd>{{ stats.steps }}</dd></div>
+    <div><dt>{% translate "Justifications" %}</dt><dd>{{ stats.justifications }}</dd></div>
+  </dl>
+
+  {% if stats.statuses %}
+  <h2>{% translate "Avancement" %}</h2>
+  <ul class="status-legend stat-statuses">
+    {% for item in stats.statuses %}<li><span class="status-dot status-{{ item.status }}" aria-hidden="true"></span> {{ item.label }} <strong>{{ item.count }}</strong></li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <h2>{% translate "Qui a écrit quoi" %}</h2>
+  <ul class="item-list">
+    {% for share in stats.shares %}
+    <li><a class="item-title" href="{{ share.user.get_absolute_url }}">{{ share.user.public_name }}</a> <span class="muted">{% blocktranslate count counter=share.count with percent=share.percent %}{{ counter }} phrase ({{ percent }} %){% plural %}{{ counter }} phrases ({{ percent }} %){% endblocktranslate %}</span></li>
+    {% empty %}
+    <li>{% translate "Aucune phrase traduite." %}</li>
+    {% endfor %}
+  </ul>
+
+  {% if stats.pace %}
+  <h2>{% translate "Rythme des trente derniers jours" %}</h2>
+  <div class="pace-scroll">
+    <svg class="pace-chart" viewBox="0 0 300 60" role="img" aria-label="{% translate 'Phrases enregistrées chaque jour' %}">
+      {% for bar in stats.pace %}<rect class="pace-value" x="{{ bar.x }}" y="{{ bar.y }}" width="8" height="{{ bar.height }}"><title>{{ bar.day|date:"j F" }} : {{ bar.count }}</title></rect>{% endfor %}
+      <line x1="0" y1="60" x2="300" y2="60" class="pace-axis"></line>
+    </svg>
+  </div>
+  <p class="note">{% translate "Nombre d’enregistrements de phrases par jour, visible des seuls auteurs de la version." %}</p>
+  {% endif %}
+</section>
+{% endblock %}
