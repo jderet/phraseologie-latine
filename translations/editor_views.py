@@ -8,11 +8,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached, check_text_for_links
 from moderation.registry import can_view
 
+from . import qa
 from .comments import (
     can_comment_sentence,
     can_resolve,
@@ -23,11 +24,11 @@ from .comments import (
 from .forms import SentenceCommentForm, TranslationTextForm
 from .glossary import can_propose_term, find_terms, visible_terms
 from .memory import MIN_SCORE, other_versions, similar_sentences
-from .models import GlossaryEntry, SentenceComment, TranslatedSegment
+from .models import GlossaryEntry, IgnoredAlert, SentenceComment, TranslatedSegment
 from .sentence_history import sentence_history
 from .services import save_translation, set_sentence_status
 from .sources import SourceHistory
-from .views import _own_version, _version
+from .views import _own_version, _rows, _version
 
 
 def _wants_json(request):
@@ -261,3 +262,54 @@ def sentence_restore(request, pk, segment_pk):
         return JsonResponse({"text": entry.text})
     messages.success(request, _("Le texte de l’étape est rétabli dans le texte de travail."))
     return redirect(_editor_url(version, segment))
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def quality_report(request, pk):
+    """Every alert of the quality checks on the working text; an alert may be ignored for the
+    current Latin of its sentence."""
+    version = _own_version(request.user, pk)
+    _step, rows = _rows(request.user, version)
+    if request.method == "POST":
+        code = request.POST.get("code", "")
+        row = next(
+            (row for row in rows if str(row["segment"].pk) == request.POST.get("phrase")), None
+        )
+        if row is None or code not in qa.LABELS or not row["saved"]:
+            return HttpResponseBadRequest()
+        IgnoredAlert.objects.get_or_create(
+            version=version,
+            segment=row["segment"],
+            code=code,
+            fingerprint=qa.fingerprint(row["saved"]),
+            defaults={"ignored_by": request.user},
+        )
+        messages.success(request, _("L’alerte est ignorée tant que cette phrase ne change pas."))
+        return redirect(f"{request.path}#phrase-{row['number']}")
+    terms = visible_terms(request.user, version.project)
+    alerts = qa.check_rows(rows, terms, qa.ignored_alerts(version))
+    flagged = [
+        dict(row, alerts=alerts[row["segment"].pk]) for row in rows if row["segment"].pk in alerts
+    ]
+    return render(
+        request,
+        "translations/quality_report.html",
+        {
+            "version": version,
+            "project": version.project,
+            "rows": flagged,
+            "checked": sum(1 for row in rows if row["saved"]),
+            "ignored_count": version.ignored_alerts.count(),
+        },
+    )
+
+
+@login_required
+@require_POST
+def quality_reset(request, pk):
+    """Show again every alert that was ignored."""
+    version = _own_version(request.user, pk)
+    version.ignored_alerts.all().delete()
+    messages.success(request, _("Les alertes ignorées sont de nouveau montrées."))
+    return redirect("translations:quality_report", version.pk)

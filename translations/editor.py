@@ -75,6 +75,7 @@ def row_data(row):
         "status": row_status(row),
         "source-changed": "1" if row["source_changed"] else "0",
         "comments": str(row.get("open_comments", 0)),
+        "alerts": str(len(row.get("alerts", []))),
     }
 
 
@@ -117,6 +118,10 @@ FILTERS = {
     "commentees": (
         _("avec des commentaires ouverts"),
         lambda row: row["data"]["comments"] != "0",
+    ),
+    "alertes": (
+        _("avec des alertes du contrôle qualité"),
+        lambda row: row["data"]["alerts"] != "0",
     ),
     "source-modifiee": (
         _("texte source modifié"),

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Contrôle qualité" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{% url 'translations:version_edit' version.pk %}">{% translate "Retour à l’éditeur" %}</a></p>
+  <h1>{% translate "Contrôle qualité" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Des vérifications de forme sur le texte de travail : ponctuation, nombres, guillemets,
+    macrons, glossaire, justifications à revoir. Le corpus n’est pas consulté : ce contrôle ne
+    dit jamais qu’un tour est fautif ou introuvable.
+  {% endblocktranslate %}</p>
+  <p class="note">{% blocktranslate count counter=checked %}{{ counter }} phrase vérifiée.{% plural %}{{ counter }} phrases vérifiées.{% endblocktranslate %} {% blocktranslate count counter=rows|length %}{{ counter }} avec des alertes.{% plural %}{{ counter }} avec des alertes.{% endblocktranslate %}</p>
+  {% if ignored_count %}
+  <form method="post" action="{% url 'translations:quality_reset' version.pk %}" class="inline-form">
+    {% csrf_token %}
+    <button type="submit" class="link-button">{% blocktranslate count counter=ignored_count %}Montrer de nouveau {{ counter }} alerte ignorée{% plural %}Montrer de nouveau les {{ counter }} alertes ignorées{% endblocktranslate %}</button>
+  </form>
+  {% endif %}
+  <ol class="quality-list">
+    {% for row in rows %}
+    <li id="phrase-{{ row.number }}">
+      <p class="muted">{% blocktranslate with number=row.number %}Phrase {{ number }}{% endblocktranslate %} · <a href="{% url 'translations:version_edit' version.pk %}#s{{ row.segment.pk }}">{% translate "corriger" %}</a></p>
+      <p>{{ row.segment.text }}</p>
+      <p class="memory-latin" lang="la">{{ row.saved }}</p>
+      <ul class="quality-alerts">
+        {% for alert in row.alerts %}
+        <li>⚠ {{ alert.label }}{% if alert.detail %} <span class="muted">({{ alert.detail }})</span>{% endif %}
+          <form method="post" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="phrase" value="{{ row.segment.pk }}">
+            <input type="hidden" name="code" value="{{ alert.code }}">
+            <button type="submit" class="link-button">{% translate "Ignorer" %}</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune alerte : rien à signaler dans la forme." %}</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

@@ -1096,6 +1096,43 @@ class SentenceComment(ModeratedContent):
         return f"{page}#commentaire-{self.pk}"
 
 
+class IgnoredAlert(models.Model):
+    """A quality alert the writers of a version chose to ignore, for one Latin text: it comes
+    back when the Latin changes. Working data of the version, private like its working text."""
+
+    version = models.ForeignKey(
+        TranslationVersion,
+        on_delete=models.CASCADE,
+        related_name="ignored_alerts",
+        verbose_name=_("version"),
+    )
+    segment = models.ForeignKey(
+        Segment, on_delete=models.CASCADE, related_name="+", verbose_name=_("phrase source")
+    )
+    code = models.CharField(_("vérification"), max_length=20)
+    fingerprint = models.CharField(_("empreinte du latin"), max_length=16)
+    ignored_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name=_("ignorée par"),
+    )
+    created_at = models.DateTimeField(_("date"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("alerte ignorée")
+        verbose_name_plural = _("alertes ignorées")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["version", "segment", "code", "fingerprint"],
+                name="translations_one_ignored_alert",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.code} · {self.segment_id}"
+
+
 def version_visible_to(user, version):
     return version.is_published or is_version_writer(user, version)
 

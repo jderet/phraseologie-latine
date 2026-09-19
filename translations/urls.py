@@ -135,6 +135,12 @@ urlpatterns = [
         editor_views.sentence_restore,
         name="sentence_restore",
     ),
+    path("versions/<int:pk>/controle/", editor_views.quality_report, name="quality_report"),
+    path(
+        "versions/<int:pk>/controle/tout-montrer/",
+        editor_views.quality_reset,
+        name="quality_reset",
+    ),
     path("versions/<int:pk>/etapes/", views.step_list, name="step_list"),
     path("versions/<int:pk>/etapes/nouvelle/", views.step_create, name="step_create"),
     path("versions/<int:pk>/etapes/comparer/", views.step_compare, name="step_compare"),

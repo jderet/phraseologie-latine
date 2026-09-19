@@ -67,6 +67,7 @@ from .permissions import (
     can_propose_source,
     can_translate,
 )
+from .qa import check_rows, ignored_alerts
 from .segmentation import from_lines, segment, to_lines
 from .services import (
     add_proposal_operation,
@@ -985,8 +986,10 @@ def version_edit(request, pk):
     _step, rows = _rows(request.user, version)
     terms = visible_terms(request.user, version.project)
     open_comments = open_counts(request.user, version)
+    alerts = check_rows(rows, terms, ignored_alerts(version))
     for row in rows:
         row["open_comments"] = open_comments.get(row["segment"].pk, 0)
+        row["alerts"] = alerts.get(row["segment"].pk, [])
         row["data"] = row_data(row)
         if terms and find_terms(row["segment"].text, terms):
             row["source_marked"] = marked_text(row["segment"].text, terms)
