@@ -17,6 +17,7 @@
       <p class="row-alert"><a href="{{ challenge.get_absolute_url }}">{% blocktranslate with excerpt=challenge.latin_excerpt %}Contesté : « {{ excerpt }} »{% endblocktranslate %}</a>{% if can_translate and not row.justifications %} · {% translate "une justification est attendue" %}{% endif %}</p>
       {% endfor %}
       {% if can_translate and row.saved %}<a class="small-link" href="{% url 'justifications:create' version.pk row.segment.pk %}">{% translate "Justifier" %}</a>{% endif %}
+      {% if can_comment_sentences and row.segment.removed_in is None %}<a class="small-link" href="{% url 'translations:version_comments' version.pk %}?phrase={{ row.number }}#commenter">{% translate "Commenter" %}</a>{% endif %}
       {% if can_challenge and row.saved %}<a class="small-link" href="{% url 'justifications:challenge_create' row.translated_pk %}">{% translate "Contester" %}</a>{% endif %}
     </div>
   </li>

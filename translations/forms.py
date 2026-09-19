@@ -379,3 +379,12 @@ class GlossaryEntryForm(ContributionForm):
         entry.unit = self.cleaned_data["unit_number"]
         entry.neologism = self.cleaned_data["neologism_number"]
         return entry
+
+
+class SentenceCommentForm(forms.Form):
+    text = forms.CharField(
+        label=_("Commentaire"),
+        max_length=2000,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("@Nom prévient quelqu’un."),
+    )

@@ -26,6 +26,7 @@ from justifications.models import Challenge, Justification
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
+from .comments import can_comment_sentence, open_counts
 from .diffs import word_diff
 from .editor import filter_choices, filter_rows, panel_tabs, row_data, status_counts
 from .exports import bilingual_text, export_filename
@@ -949,6 +950,7 @@ def version_detail(request, pk):
             "is_author": is_author,
             "can_translate": can_translate(user, version),
             "can_manage": can_manage(user, version),
+            "can_comment_sentences": step is not None and can_comment_sentence(user, version),
             "members": active_members(version),
             "is_reference": version.pk == version.project.reference_version_id,
             "can_challenge": step is not None and can_challenge(user, version),
@@ -982,7 +984,9 @@ def version_edit(request, pk):
     version = _own_version(request.user, pk)
     _step, rows = _rows(request.user, version)
     terms = visible_terms(request.user, version.project)
+    open_comments = open_counts(request.user, version)
     for row in rows:
+        row["open_comments"] = open_comments.get(row["segment"].pk, 0)
         row["data"] = row_data(row)
         if terms and find_terms(row["segment"].text, terms):
             row["source_marked"] = marked_text(row["segment"].text, terms)

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Commentaires" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Commentaires des phrases" %}</h1>
+  <p class="lede">{% if version.is_draft %}{% translate "Brouillon : ces commentaires ne sont visibles que de ses auteurs." %}{% else %}{% translate "Remarques et questions sur les phrases de cette version ; ses auteurs les marquent résolues quand elles sont traitées." %}{% endif %}</p>
+  {% regroup comments by number as by_sentence %}
+  {% for group in by_sentence %}
+  <section class="comment-group">
+    <h2>{% if group.grouper %}{% blocktranslate with number=group.grouper %}Phrase {{ number }}{% endblocktranslate %}{% else %}{% translate "Phrase retirée du texte" %}{% endif %}</h2>
+    <p class="muted">{{ group.list.0.segment.text }}</p>
+    <ol class="sentence-comments">{% for comment in group.list %}{% url 'translations:version_comments' version.pk as next %}{% include "translations/sentence_comment.html" %}{% endfor %}</ol>
+  </section>
+  {% empty %}
+  <p>{% translate "Aucun commentaire pour l’instant." %}</p>
+  {% endfor %}
+  {% if can_comment %}
+  <h2 id="commenter">{% translate "Commenter une phrase" %}</h2>
+  <form method="post" action="{% url 'translations:comment_post_by_number' version.pk %}" class="form">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{% url 'translations:version_comments' version.pk %}">
+    <div class="field">
+      <label for="comment-sentence">{% translate "Phrase" %}</label>
+      <select id="comment-sentence" name="phrase">
+        {% for number, segment in sentences %}<option value="{{ number }}"{% if number == asked %} selected{% endif %}>{{ number }}. {{ segment.text|truncatechars:80 }}</option>{% endfor %}
+      </select>
+    </div>
+    {{ form.as_div }}
+    <button type="submit" class="button">{% translate "Commenter" %}</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

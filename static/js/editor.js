@@ -277,6 +277,32 @@
     field.focus();
   });
 
+  // Forms of the panel (comments): sent without leaving the page, then the tab is reloaded.
+  document.addEventListener("submit", async (event) => {
+    const form = event.target.closest(".editor-panel form[data-panel-form]");
+    if (!form) {
+      return;
+    }
+    event.preventDefault();
+    const body = new FormData(form, event.submitter);
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body,
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        window.alert(data.errors.join(" "));
+        return;
+      }
+      loadTab(currentTab, true);
+    } catch {
+      window.alert(labels.labelError);
+    }
+  });
+
   // Tabs of the side panel: one section at a time, the choice kept for the next visit.
   const tabList = document.querySelector(".panel-tabs");
   const tabButtons = tabList ? [...tabList.querySelectorAll("[role=tab]")] : [];

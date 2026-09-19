@@ -1047,6 +1047,55 @@ class GlossaryEntry(ModeratedContent):
         return self.status == self.Status.ADOPTED
 
 
+class SentenceComment(ModeratedContent):
+    """A comment on one sentence of a version, as in translation software: a question, a
+    remark of review. It is resolved once dealt with. On a draft, only its writers see it."""
+
+    version = models.ForeignKey(
+        TranslationVersion,
+        on_delete=models.PROTECT,
+        related_name="sentence_comments",
+        verbose_name=_("version"),
+    )
+    segment = models.ForeignKey(
+        Segment,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name=_("phrase source"),
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        editable=False,
+        verbose_name=_("auteur"),
+    )
+    text = models.TextField(_("commentaire"), max_length=2000)
+    is_resolved = models.BooleanField(_("résolu"), default=False, editable=False)
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        editable=False,
+        verbose_name=_("résolu par"),
+    )
+    created_at = models.DateTimeField(_("écrit le"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("commentaire d’une phrase")
+        verbose_name_plural = _("commentaires des phrases")
+        ordering = ["version", "segment", "created_at", "pk"]
+
+    def __str__(self):
+        return gettext("Commentaire de %(name)s") % {"name": self.author.public_name}
+
+    def get_absolute_url(self):
+        page = reverse("translations:version_comments", args=[self.version_id])
+        return f"{page}#commentaire-{self.pk}"
+
+
 def version_visible_to(user, version):
     return version.is_published or is_version_writer(user, version)
 
@@ -1187,4 +1236,11 @@ register(
     text_fields=("source_term", "latin_term", "note"),
     visible_to=lambda user, entry: can_view(user, entry.project),
     not_reverted=("status", "decided_by"),
+)
+register(
+    SentenceComment,
+    owner_field="author",
+    text_fields=("text",),
+    visible_to=lambda user, comment: version_visible_to(user, comment.version),
+    not_reverted=("is_resolved", "resolved_by"),
 )

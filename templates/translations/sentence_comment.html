@@ -1,0 +1,12 @@
+{% load i18n %}<li class="sentence-comment{% if comment.is_resolved %} is-resolved{% endif %}" id="commentaire-{{ comment.pk }}">
+  <p class="comment-meta muted"><a href="{{ comment.author.get_absolute_url }}">{{ comment.author.public_name }}</a> · {{ comment.created_at|date:"j F Y, H:i" }}{% if comment.is_resolved %} · {% blocktranslate with name=comment.resolved_by.public_name %}résolu par {{ name }}{% endblocktranslate %}{% endif %}</p>
+  {% if comment.is_hidden %}<p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>{% endif %}
+  <p>{{ comment.text|linebreaksbr }}</p>
+  {% if comment.can_resolve %}
+  <form method="post" action="{% url 'translations:comment_resolve' comment.pk %}" class="inline-form" data-panel-form>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% if comment.is_resolved %}<button type="submit" class="link-button" name="resolu" value="0">{% translate "Rouvrir" %}</button>{% else %}<button type="submit" class="link-button" name="resolu" value="1">{% translate "Marquer comme résolu" %}</button>{% endif %}
+  </form>
+  {% endif %}
+</li>

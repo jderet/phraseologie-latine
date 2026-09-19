@@ -15,6 +15,7 @@
     <li><a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></li>
     <li><a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a></li>
     <li><a href="{% url 'translations:step_compare' version.pk %}?a=travail">{% translate "Différences depuis la dernière étape" %}</a></li>
+    <li><a href="{% url 'translations:version_comments' version.pk %}">{% translate "Tous les commentaires" %}</a></li>
     <li><a href="{% url 'translations:version_members' version.pk %}">{% translate "Co-auteurs" %}</a></li>
     <li><a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "Exporter en TMX" %}</a></li>
   </ul>

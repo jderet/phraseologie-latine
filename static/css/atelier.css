@@ -777,3 +777,46 @@ mark.term {
 .glossary-table tr:target td {
   background: var(--gold-soft);
 }
+
+/* Comments on the sentences */
+
+.sentence-comments {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sentence-comment {
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--gold);
+  border-radius: 6px;
+  background: var(--ground);
+}
+
+.sentence-comment.is-resolved {
+  border-left-color: var(--rule-strong);
+  opacity: 0.75;
+}
+
+.sentence-comment p {
+  margin: 0 0 4px;
+}
+
+.comment-meta {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+}
+
+.comment-badge {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.comment-group {
+  margin-top: 22px;
+}

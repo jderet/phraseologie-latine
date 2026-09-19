@@ -40,6 +40,12 @@ def panel_tabs(version):
             _("Les termes du glossaire du projet présents dans cette phrase."),
             _fragment("translations:editor_glossary", version),
         ),
+        PanelTab(
+            "comments",
+            _("Commentaires"),
+            _("Les commentaires de cette phrase."),
+            _fragment("translations:editor_comments", version),
+        ),
         PanelTab("concordance", _("Concordance")),
         PanelTab("corpus", _("Corpus")),
     ]
@@ -62,6 +68,7 @@ def row_data(row):
     return {
         "status": row_status(row),
         "source-changed": "1" if row["source_changed"] else "0",
+        "comments": str(row.get("open_comments", 0)),
     }
 
 
@@ -100,6 +107,10 @@ FILTERS = {
     "non-relues": (
         _("traduites mais pas relues"),
         lambda row: row["data"]["status"] in ("draft", "translated"),
+    ),
+    "commentees": (
+        _("avec des commentaires ouverts"),
+        lambda row: row["data"]["comments"] != "0",
     ),
     "source-modifiee": (
         _("texte source modifié"),

@@ -108,6 +108,23 @@ urlpatterns = [
         editor_views.glossary_panel,
         name="editor_glossary",
     ),
+    path(
+        "versions/<int:pk>/phrases/<int:segment_pk>/commentaires/",
+        editor_views.comments_panel,
+        name="editor_comments",
+    ),
+    path(
+        "versions/<int:pk>/phrases/<int:segment_pk>/commenter/",
+        editor_views.comment_post,
+        name="comment_post",
+    ),
+    path("commentaires/<int:pk>/resoudre/", editor_views.comment_resolve, name="comment_resolve"),
+    path("versions/<int:pk>/commentaires/", editor_views.version_comments, name="version_comments"),
+    path(
+        "versions/<int:pk>/commentaires/nouveau/",
+        editor_views.comment_post_by_number,
+        name="comment_post_by_number",
+    ),
     path("versions/<int:pk>/etapes/", views.step_list, name="step_list"),
     path("versions/<int:pk>/etapes/nouvelle/", views.step_create, name="step_create"),
     path("versions/<int:pk>/etapes/comparer/", views.step_compare, name="step_compare"),
