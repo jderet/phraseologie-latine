@@ -430,3 +430,10 @@ class XliffImportForm(forms.Form):
         label=_("Fichier XLIFF"),
         help_text=_("Un fichier exporté de ce site, puis traduit dans un autre logiciel."),
     )
+
+
+class TmxImportForm(forms.Form):
+    file = forms.FileField(
+        label=_("Fichier TMX"),
+        help_text=_("Une mémoire de traduction exportée d’un autre logiciel, avec du latin."),
+    )

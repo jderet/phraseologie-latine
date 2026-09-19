@@ -25,7 +25,7 @@ from .comments import (
 )
 from .forms import ReplaceForm, SentenceCommentForm, TranslationTextForm
 from .glossary import can_propose_term, find_terms, visible_terms
-from .memory import MIN_SCORE, other_versions, similar_sentences
+from .memory import MIN_SCORE, other_versions, personal_matches, similar_sentences
 from .models import GlossaryEntry, IgnoredAlert, SentenceComment, TranslatedSegment
 from .replace import build_pattern, preview
 from .sentence_history import sentence_history
@@ -88,6 +88,7 @@ def memory_panel(request, pk, segment_pk):
             "segment": segment,
             "others": other_versions(request.user, version, segment),
             "matches": similar_sentences(request.user, version, segment),
+            "personal": personal_matches(request.user, segment),
             "min_score": MIN_SCORE,
         },
     )

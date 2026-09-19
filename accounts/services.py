@@ -60,6 +60,7 @@ def anonymize_user(user):
 
     delete_notebook(user)
     delete_personal_activity(user)
+    user.memory_entries.all().delete()
 
 
 @transaction.atomic

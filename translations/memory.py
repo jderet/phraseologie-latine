@@ -14,7 +14,7 @@ from corpus.timeouts import TimeLimit
 from moderation.registry import can_view
 
 from .diffs import word_diff
-from .models import Segment, TranslatedSegment, TranslationVersion
+from .models import PersonalMemoryEntry, Segment, TranslatedSegment, TranslationVersion
 from .sources import SourceHistory
 from .steps import carried, public_step, sentence_at, shown_sentences
 
@@ -127,3 +127,26 @@ def similar_sentences(user, version, segment):
         matches.append(Match(candidate, value, word_diff(candidate.text, text), translations))
     matches.sort(key=lambda match: -match.score)
     return matches[:MAX_MATCHES]
+
+
+def personal_matches(user, segment):
+    """Pairs of the user's own memory whose source resembles the sentence, the most similar
+    first: [{entry, score, chunks}]."""
+    if not user.is_authenticated:
+        return []
+    text = segment.text
+    with TimeLimit(seconds=3) as limit:
+        candidates = list(
+            PersonalMemoryEntry.objects.filter(user=user, source__trigram_similar=text)
+            .annotate(similarity=TrigramSimilarity("source", text))
+            .order_by("-similarity")[:MAX_CANDIDATES]
+        )
+    if limit.exceeded:
+        return []
+    found = []
+    for entry in candidates:
+        value = score(entry.source, text)
+        if value >= MIN_SCORE:
+            found.append({"entry": entry, "score": value, "chunks": word_diff(entry.source, text)})
+    found.sort(key=lambda item: -item["score"])
+    return found[:MAX_MATCHES]

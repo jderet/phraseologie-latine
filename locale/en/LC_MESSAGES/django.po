@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 15:22+0200\n"
+"POT-Creation-Date: 2026-09-19 20:05+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -334,7 +334,7 @@ msgstr "notification"
 msgid "notifications"
 msgstr "notifications"
 
-#: activity/models.py:121 activity/models.py:152
+#: activity/models.py:121 activity/models.py:152 translations/models.py:1207
 msgid "personne"
 msgstr "person"
 
@@ -1021,7 +1021,7 @@ msgstr "works"
 msgid "source"
 msgstr "source"
 
-#: corpus/models.py:131 corpus/models.py:249
+#: corpus/models.py:131 corpus/models.py:249 translations/models.py:1212
 msgid "fichier"
 msgstr "file"
 
@@ -1041,7 +1041,7 @@ msgstr "license"
 msgid "schéma de citation"
 msgstr "citation scheme"
 
-#: corpus/models.py:137 corpus/models.py:252
+#: corpus/models.py:137 corpus/models.py:252 translations/models.py:1213
 msgid "importée le"
 msgstr "imported on"
 
@@ -1886,7 +1886,7 @@ msgstr "Save the justification"
 
 #: justifications/views.py:289 phraseology/views.py:514
 #: phraseology/views.py:660 phraseology/views.py:1722 phraseology/views.py:1918
-#: translations/collab_views.py:155 translations/views.py:140
+#: translations/collab_views.py:168 translations/views.py:140
 #: translations/views.py:733 translations/views.py:1032
 #: translations/workshop_views.py:290 translations/workshop_views.py:400
 msgid "Aucune modification."
@@ -5212,7 +5212,7 @@ msgid "Étoiler"
 msgstr "Star"
 
 #: templates/activity/workshop.html:4 templates/activity/workshop.html:8
-#: templates/base.html:41
+#: templates/base.html:41 templates/translations/personal_memory.html:8
 msgid "Mon atelier"
 msgstr "My workshop"
 
@@ -5278,15 +5278,27 @@ msgstr "News"
 msgid "Toutes les notifications"
 msgstr "All notifications"
 
-#: templates/activity/workshop.html:59
+#: templates/activity/workshop.html:58
+#: templates/translations/panel_memory.html:35
+#: templates/translations/personal_memory.html:4
+#: templates/translations/personal_memory.html:9
+msgid "Votre mémoire personnelle"
+msgstr "Your personal memory"
+
+#: templates/activity/workshop.html:58
+#: templates/translations/project_list.html:13
+msgid "Aide"
+msgstr "Help"
+
+#: templates/activity/workshop.html:61
 msgid "Vos versions"
 msgstr "Your versions"
 
-#: templates/activity/workshop.html:66
+#: templates/activity/workshop.html:68
 msgid "Vous n’avez pas encore de version."
 msgstr "You have no version yet."
 
-#: templates/activity/workshop.html:66
+#: templates/activity/workshop.html:68
 msgid "Choisir un projet"
 msgstr "Choose a project"
 
@@ -9171,6 +9183,7 @@ msgstr[1] "%(counter)s sentences found in the published versions."
 #: templates/translations/panel_glossary.html:5
 #: templates/translations/panel_memory.html:7
 #: templates/translations/panel_memory.html:21
+#: templates/translations/panel_memory.html:32
 msgid "Insérer à la sélection"
 msgstr "Insert at the selection"
 
@@ -9757,6 +9770,7 @@ msgstr "In the other versions"
 
 #: templates/translations/panel_memory.html:7
 #: templates/translations/panel_memory.html:21
+#: templates/translations/panel_memory.html:32
 msgid "Reprendre"
 msgstr "Use"
 
@@ -9773,13 +9787,44 @@ msgstr "Similar sentences"
 msgid "Aucune phrase traduite ne ressemble à celle-ci à %(score)s %% au moins."
 msgstr "No translated sentence resembles this one by at least %(score)s %%."
 
-#: templates/translations/panel_memory.html:27
+#: templates/translations/panel_memory.html:31
+msgid "votre mémoire personnelle"
+msgstr "your personal memory"
+
+#: templates/translations/panel_memory.html:35
 msgid ""
 "Les mots barrés sont dans la phrase trouvée, les mots soulignés dans la "
 "vôtre. Rien n’est inséré sans votre clic."
 msgstr ""
 "Struck-out words are in the sentence found, underlined words in yours. "
 "Nothing is inserted without your click."
+
+#: templates/translations/personal_memory.html:10
+msgid ""
+"Vos anciennes traductions vers le latin, importées d’un fichier TMX : "
+"l’onglet « Mémoire » de l’éditeur vous les propose quand une phrase leur "
+"ressemble. Elles ne sont visibles que de vous, n’entrent ni dans l’API ni "
+"dans les exports, et sont effacées avec votre compte."
+msgstr ""
+"Your earlier translations into Latin, imported from a TMX file: the “Memory” "
+"tab of the editor offers them when a sentence resembles them. They are "
+"visible to you only, never enter the API or the exports, and are erased with "
+"your account."
+
+#: templates/translations/personal_memory.html:15
+#, python-format
+msgid "%(counter)s paire sur %(limit)s au plus."
+msgid_plural "%(counter)s paires sur %(limit)s au plus."
+msgstr[0] "%(counter)s pair out of %(limit)s at most."
+msgstr[1] "%(counter)s pairs out of %(limit)s at most."
+
+#: templates/translations/personal_memory.html:24
+msgid "Importer"
+msgstr "Import"
+
+#: templates/translations/personal_memory.html:30
+msgid "Effacer toute ma mémoire"
+msgstr "Erase my whole memory"
 
 #: templates/translations/project_activity.html:11
 msgid ""
@@ -9929,10 +9974,6 @@ msgstr ""
 #: templates/translations/source_list.html:9
 msgid "Textes à traduire"
 msgstr "Texts to translate"
-
-#: templates/translations/project_list.html:13
-msgid "Aide"
-msgstr "Help"
 
 #: templates/translations/project_list.html:13
 msgid "Pour lancer un projet, choisissez d’abord un texte."
@@ -11522,38 +11563,38 @@ msgstr[1] ""
 "%(counter)s sentences of the file match no current sentence of the text: "
 "they are ignored."
 
-#: translations/collab_views.py:41 translations/collab_views.py:78
+#: translations/collab_views.py:54 translations/collab_views.py:91
 msgid "Cette version n’est pas une copie."
 msgstr "This version is not a copy."
 
-#: translations/collab_views.py:50
+#: translations/collab_views.py:63
 #, python-format
 msgid "%(count)d phrase reprise de l’originale."
 msgid_plural "%(count)d phrases reprises de l’originale."
 msgstr[0] "%(count)d sentence taken from the original."
 msgstr[1] "%(count)d sentences taken from the original."
 
-#: translations/collab_views.py:82
+#: translations/collab_views.py:95
 msgid "Vous ne pouvez pas proposer de modifications à l’originale."
 msgstr "You cannot propose changes to the original."
 
-#: translations/collab_views.py:100
+#: translations/collab_views.py:113
 msgid "La proposition est envoyée à l’auteur de l’originale."
 msgstr "The proposal is sent to the author of the original."
 
-#: translations/collab_views.py:124
+#: translations/collab_views.py:137
 msgid "Choisissez un avis."
 msgstr "Choose an opinion."
 
-#: translations/collab_views.py:140
+#: translations/collab_views.py:153
 msgid "Votre relecture est publiée."
 msgstr "Your review is published."
 
-#: translations/collab_views.py:155
+#: translations/collab_views.py:168
 msgid "L’étiquette est enregistrée."
 msgstr "The label is saved."
 
-#: translations/collab_views.py:174
+#: translations/collab_views.py:187
 #, python-format
 msgid ""
 "%(count)d phrase revient au texte de l’étape. Créez une étape pour le "
@@ -11568,14 +11609,25 @@ msgstr[1] ""
 "%(count)d sentences go back to the text of the step. Create a step to "
 "publish it."
 
-#: translations/collab_views.py:281
+#: translations/collab_views.py:294
 #, python-format
 msgid "%(count)d phrase importée."
 msgid_plural "%(count)d phrases importées."
 msgstr[0] "%(count)d sentence imported."
 msgstr[1] "%(count)d sentences imported."
 
-#: translations/comments.py:36 translations/editor_views.py:156
+#: translations/collab_views.py:348
+msgid "Votre mémoire personnelle est effacée."
+msgstr "Your personal memory is erased."
+
+#: translations/collab_views.py:376
+#, python-format
+msgid "%(count)d paire ajoutée à votre mémoire."
+msgid_plural "%(count)d paires ajoutées à votre mémoire."
+msgstr[0] "%(count)d pair added to your memory."
+msgstr[1] "%(count)d pairs added to your memory."
+
+#: translations/comments.py:36 translations/editor_views.py:157
 msgid "Écrivez un commentaire."
 msgstr "Write a comment."
 
@@ -11628,23 +11680,23 @@ msgstr "with quality alerts"
 msgid "texte source modifié"
 msgstr "source text changed"
 
-#: translations/editor_views.py:185
+#: translations/editor_views.py:186
 msgid "C’est enregistré."
 msgstr "Saved."
 
-#: translations/editor_views.py:267
+#: translations/editor_views.py:268
 msgid "Le texte de l’étape est rétabli dans le texte de travail."
 msgstr "The text of the step is restored in the working text."
 
-#: translations/editor_views.py:292
+#: translations/editor_views.py:293
 msgid "L’alerte est ignorée tant que cette phrase ne change pas."
 msgstr "The alert is ignored as long as this sentence does not change."
 
-#: translations/editor_views.py:318
+#: translations/editor_views.py:319
 msgid "Les alertes ignorées sont de nouveau montrées."
 msgstr "Ignored alerts are shown again."
 
-#: translations/editor_views.py:348
+#: translations/editor_views.py:349
 #, python-format
 msgid "%(count)d phrase modifiée."
 msgid_plural "%(count)d phrases modifiées."
@@ -11847,6 +11899,14 @@ msgstr "XLIFF file"
 #: translations/forms.py:431
 msgid "Un fichier exporté de ce site, puis traduit dans un autre logiciel."
 msgstr "A file exported from this site, then translated in other software."
+
+#: translations/forms.py:437
+msgid "Fichier TMX"
+msgstr "TMX file"
+
+#: translations/forms.py:438
+msgid "Une mémoire de traduction exportée d’un autre logiciel, avec du latin."
+msgstr "A translation memory exported from other software, with Latin."
 
 #: translations/glossary.py:68
 msgid "Terme adopté"
@@ -12234,12 +12294,12 @@ msgstr "%(project)s, version by %(author)s"
 
 #: translations/models.py:583 translations/models.py:704
 #: translations/models.py:812 translations/models.py:1084
-#: translations/models.py:1130
+#: translations/models.py:1130 translations/models.py:1210
 msgid "phrase source"
 msgstr "source sentence"
 
 #: translations/models.py:585 translations/models.py:706
-#: translations/models.py:1011
+#: translations/models.py:1011 translations/models.py:1211
 msgid "latin"
 msgstr "Latin"
 
@@ -12518,6 +12578,18 @@ msgstr "reviews of proposals"
 #, python-format
 msgid "%(name)s %(verdict)s"
 msgstr "%(name)s %(verdict)s"
+
+#: translations/models.py:1209
+msgid "langue source"
+msgstr "source language"
+
+#: translations/models.py:1216
+msgid "entrée de la mémoire personnelle"
+msgstr "personal memory entry"
+
+#: translations/models.py:1217
+msgid "entrées de la mémoire personnelle"
+msgstr "personal memory entries"
 
 #: translations/qa.py:29
 msgid "latin identique à la phrase source"
@@ -13050,29 +13122,34 @@ msgstr "The term is adopted."
 msgid "Le terme est écarté."
 msgstr "The term is rejected."
 
-#: translations/xliff.py:46
-msgid "Le fichier dépasse 2 Mo."
-msgstr "The file exceeds 2 MB."
+#: translations/xliff.py:47
+#, python-format
+msgid "Le fichier dépasse %(size)d Mo."
+msgstr "The file exceeds %(size)d MB."
 
-#: translations/xliff.py:51
+#: translations/xliff.py:53
 msgid "Le fichier doit être encodé en UTF-8."
 msgstr "The file must be encoded in UTF-8."
 
-#: translations/xliff.py:54
+#: translations/xliff.py:56
 msgid "Ce fichier XML déclare un type de document : il est refusé."
 msgstr "This XML file declares a document type: it is refused."
 
-#: translations/xliff.py:61
+#: translations/xliff.py:63
 msgid "Ce fichier n’est pas un XML lisible."
 msgstr "This file is not readable XML."
 
-#: translations/xliff.py:63
+#: translations/xliff.py:70
 msgid "Ce fichier n’est pas un fichier XLIFF."
 msgstr "This file is not an XLIFF file."
 
-#: translations/xliff.py:79
+#: translations/xliff.py:86 translations/xliff.py:118
 msgid "Le fichier contient trop de phrases."
 msgstr "The file contains too many sentences."
+
+#: translations/xliff.py:97
+msgid "Ce fichier n’est pas un fichier TMX."
+msgstr "This file is not a TMX file."
 
 #~ msgid ""
 #~ "Une voyelle suivie de = prend un macron : a= donne ā (tapez = une seconde "

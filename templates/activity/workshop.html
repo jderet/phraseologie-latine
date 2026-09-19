@@ -55,6 +55,8 @@
     </section>
   </div>
 
+  <p class="note"><a href="{% url 'translations:personal_memory' %}">{% translate "Votre mémoire personnelle" %}</a> · <a href="{% url 'translations:help' %}">{% translate "Aide" %}</a></p>
+
   <section class="desk-section" aria-labelledby="desk-versions">
     <h2 id="desk-versions">{% translate "Vos versions" %}</h2>
     {% if drafts or published %}

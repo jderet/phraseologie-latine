@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -15,8 +16,17 @@ from moderation.registry import can_view
 from moderation.services import save_with_revision
 
 from .diffs import word_diff
-from .forms import ProposalForm, ProposalReviewForm, StepLabelForm, XliffImportForm
-from .models import ChangeProposal  # noqa: F401 - the form builds one
+from .forms import (
+    ProposalForm,
+    ProposalReviewForm,
+    StepLabelForm,
+    TmxImportForm,
+    XliffImportForm,
+)
+from .models import (
+    ChangeProposal,  # noqa: F401 - the form builds one
+    PersonalMemoryEntry,
+)
 from .network import copy_network
 from .permissions import can_propose
 from .services import create_proposal, review_proposal, save_translation, set_sentence_status
@@ -29,7 +39,10 @@ from .sync import (
     upstream_changes,
 )
 from .views import _contribute, _export_step, _own_version, _proposal, _rows, _version
-from .xliff import MAX_BYTES, STATUSES, XliffError, parse_xliff
+from .xliff import MAX_BYTES, STATUSES, XliffError, parse_tmx, parse_xliff
+
+TMX_MAX_BYTES = 5 * 1024 * 1024
+PERSONAL_MEMORY_LIMIT = 20000
 
 
 @login_required
@@ -319,5 +332,61 @@ def xliff_import(request, pk):
             "rows": sorted(rows, key=lambda row: row["number"]),
             "unknown": unknown,
             "read": request.method == "POST" and form.is_valid() and not form.errors,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def personal_memory(request):
+    """One's own translation memory: import a TMX file, see how many pairs, erase them all."""
+    user = request.user
+    entries = PersonalMemoryEntry.objects.filter(user=user)
+    form = TmxImportForm()
+    if request.method == "POST" and request.POST.get("action") == "effacer":
+        entries.delete()
+        messages.success(request, _("Votre mémoire personnelle est effacée."))
+        return redirect("translations:personal_memory")
+    if request.method == "POST":
+        form = TmxImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            upload = form.cleaned_data["file"]
+            try:
+                pairs = parse_tmx(upload.read(TMX_MAX_BYTES + 1), TMX_MAX_BYTES)
+            except XliffError as error:
+                form.add_error("file", str(error))
+            else:
+                room = max(0, PERSONAL_MEMORY_LIMIT - entries.count())
+                known = set(entries.values_list("source", "latin"))
+                new = [
+                    PersonalMemoryEntry(
+                        user=user,
+                        language=language,
+                        source=source[:4000],
+                        latin=latin[:4000],
+                        origin=upload.name[:200],
+                    )
+                    for language, source, latin in pairs
+                    if (source, latin) not in known
+                ][:room]
+                PersonalMemoryEntry.objects.bulk_create(new)
+                messages.success(
+                    request,
+                    ngettext(
+                        "%(count)d paire ajoutée à votre mémoire.",
+                        "%(count)d paires ajoutées à votre mémoire.",
+                        len(new),
+                    )
+                    % {"count": len(new)},
+                )
+                return redirect("translations:personal_memory")
+    return render(
+        request,
+        "translations/personal_memory.html",
+        {
+            "form": form,
+            "count": entries.count(),
+            "limit": PERSONAL_MEMORY_LIMIT,
+            "files": entries.values("origin").annotate(total=Count("pk")).order_by("origin"),
         },
     )

@@ -1195,6 +1195,36 @@ class ProposalReview(ModeratedContent):
         return f"{self.proposal.get_absolute_url()}#relecture-{self.pk}"
 
 
+class PersonalMemoryEntry(models.Model):
+    """A pair of one's own translation memory, imported from a TMX file: offered in the memory
+    tab of the editor, to its owner only. Private like the notebook: never shown to anyone
+    else, never exported, deleted with the account."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="memory_entries",
+        verbose_name=_("personne"),
+    )
+    language = models.CharField(_("langue source"), max_length=8, blank=True)
+    source = models.TextField(_("phrase source"), max_length=4000)
+    latin = models.TextField(_("latin"), max_length=4000)
+    origin = models.CharField(_("fichier"), max_length=200, blank=True)
+    created_at = models.DateTimeField(_("importée le"), default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = _("entrée de la mémoire personnelle")
+        verbose_name_plural = _("entrées de la mémoire personnelle")
+        indexes = [
+            GinIndex(
+                name="translations_memory_trigrams", fields=["source"], opclasses=["gin_trgm_ops"]
+            )
+        ]
+
+    def __str__(self):
+        return self.source[:60]
+
+
 def version_visible_to(user, version):
     return version.is_published or is_version_writer(user, version)
 

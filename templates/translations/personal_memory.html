@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Votre mémoire personnelle" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <p class="eyebrow"><a href="{% url 'activity:workshop' %}">{% translate "Mon atelier" %}</a></p>
+  <h1>{% translate "Votre mémoire personnelle" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Vos anciennes traductions vers le latin, importées d’un fichier TMX : l’onglet « Mémoire »
+    de l’éditeur vous les propose quand une phrase leur ressemble. Elles ne sont visibles que de
+    vous, n’entrent ni dans l’API ni dans les exports, et sont effacées avec votre compte.
+  {% endblocktranslate %}</p>
+  <p>{% blocktranslate count counter=count with limit=limit %}{{ counter }} paire sur {{ limit }} au plus.{% plural %}{{ counter }} paires sur {{ limit }} au plus.{% endblocktranslate %}</p>
+  {% if files %}
+  <ul class="item-list">
+    {% for item in files %}<li>{{ item.origin|default:"—" }} <span class="muted">{{ item.total }}</span></li>{% endfor %}
+  </ul>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data" class="form">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% translate "Importer" %}</button>
+  </form>
+  {% if count %}
+  <form method="post" class="actions">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="effacer">
+    <button type="submit" class="button button-danger">{% translate "Effacer toute ma mémoire" %}</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}
