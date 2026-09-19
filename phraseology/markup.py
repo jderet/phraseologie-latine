@@ -3,6 +3,9 @@
 ``[rēs pūblica;rem pūblicam] administrāre`` names the unit *rēs pūblica*, written *rem pūblicam*
 in the reference form *rem pūblicam administrāre*. The marked text is kept beside the plain
 reference form, which every other use of the unit reads.
+
+An abstract word stays in the plain reference form, between braces: ``{liquide} sūmere``. It
+is shown with its label and a link to its page.
 """
 
 import re
@@ -12,14 +15,20 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext
 
 from corpus.text import normalize
+from moderation.registry import can_view
 
+from .abstract import WRITTEN as ABSTRACT
+from .abstract import clean_name
 from .composition import contains
-from .models import Unit
+from .models import AbstractWord, Unit
 from .schema import parse_schema
 from .spotting import visible_units
 
 MARK = re.compile(r"\[([^\[\];]*);([^\[\];]*)\]")
+# A mark or an abstract word, in the order of the text.
+PIECE = re.compile(f"{MARK.pattern}|{ABSTRACT.pattern}")
 MAX_MARKS = 5
+MAX_ABSTRACTS = 3
 # A marked unit may have homonyms; a few are named in its bubble.
 MAX_HOMONYMS = 5
 STATUS_ORDER = {
@@ -48,6 +57,9 @@ class Segment:
     name: str = ""
     unit: object = None
     others: list = field(default_factory=list)
+    # The name of an abstract word, and the word itself if the reader may see it.
+    abstract: str = ""
+    word: object = None
 
 
 def plain_form(text):
@@ -79,18 +91,45 @@ def clean_marks(text):
             % {"limit": MAX_MARKS},
             code="too_many_marks",
         )
-    return MARK.sub(
+    bare = MARK.sub("", text)
+    if "{" in ABSTRACT.sub("", bare) or "}" in ABSTRACT.sub("", bare):
+        raise ValidationError(
+            gettext("Écrivez un mot abstrait entre accolades fermées : {liquide} sūmere."),
+            code="abstract",
+        )
+    names = [clean_name(name) for name in ABSTRACT.findall(bare)]
+    if len(names) > MAX_ABSTRACTS:
+        raise ValidationError(
+            gettext("Une forme de référence compte au plus %(limit)d mots abstraits.")
+            % {"limit": MAX_ABSTRACTS},
+            code="too_many_abstracts",
+        )
+    text = MARK.sub(
         lambda match: f"[{' '.join(match[1].split())};{' '.join(match[2].split())}]", text
     )
+    return ABSTRACT.sub(lambda match: f"{{{clean_name(match[1])}}}", text)
+
+
+def form_abstracts(text):
+    """The names of the abstract words of a reference form, outside its marks."""
+    return ABSTRACT.findall(MARK.sub("", text or ""))
+
+
+def is_marked(text):
+    """Whether a reference form marks a unit or names an abstract word: it is then kept marked."""
+    return bool(MARK.search(text or "") or ABSTRACT.search(MARK.sub("", text or "")))
 
 
 def segments(text):
     """The pieces of a marked reference form, in order."""
     parts, last = [], 0
-    for match in MARK.finditer(text or ""):
+    for match in PIECE.finditer(text or ""):
         if match.start() > last:
             parts.append(Segment(text[last : match.start()]))
-        parts.append(Segment(match[2], match[1]))
+        if match[3] is not None:
+            parts.append(Segment(match[0], abstract=match[3]))
+        else:
+            parts.append(Segment(match[2], match[1]))
         last = match.end()
     if last < len(text or ""):
         parts.append(Segment(text[last:]))
@@ -98,8 +137,9 @@ def segments(text):
 
 
 def name_key(name):
-    """A name as it is compared: normalized, with single spaces."""
-    return normalize(" ".join((name or "").split()))
+    """A name as it is compared: normalized, with single spaces, without the braces of its
+    abstract words: {liquide} sūmere is found as liquide sumere."""
+    return normalize(" ".join((name or "").replace("{", "").replace("}", "").split()))
 
 
 def _letter(char):
@@ -107,16 +147,21 @@ def _letter(char):
 
 
 def name_pattern(name, whole=True):
-    """A regular expression for a name, whatever its macrons, its case, u or v, i or j."""
-    key, pieces, index = name_key(name), [], 0
+    """A regular expression for a name, whatever its macrons, its case, u or v, i or j, and
+    the braces of its abstract words."""
+    key, pieces, index = name_key(name), [r"\{?"], 0
     while index < len(key):
         pair = key[index : index + 2]
         if pair in LIGATURES:
             pieces.append(f"(?:{_letter(pair[0])}{_letter(pair[1])}|{LIGATURES[pair]})")
             index += 2
             continue
-        pieces.append(r"\s+" if key[index] == " " else _letter(key[index]))
+        if key[index] == " ":
+            pieces.append(r"\}?\s+\{?")
+        else:
+            pieces.append(_letter(key[index]))
         index += 1
+    pieces.append(r"\}?")
     pattern = "".join(pieces)
     return f"^{pattern}$" if whole else pattern
 
@@ -163,4 +208,14 @@ def resolve(user, text, edges=(), exclude=None):
             units = found[name_key(part.name)]
             part.unit = units[0] if units else None
             part.others = units[1 : 1 + MAX_HOMONYMS]
+    names = {part.abstract for part in parts if part.abstract}
+    if names:
+        words = {
+            word.name: word
+            for word in AbstractWord.objects.filter(name__in=names)
+            if can_view(user, word)
+        }
+        for part in parts:
+            if part.abstract:
+                part.word = words.get(part.abstract)
     return parts

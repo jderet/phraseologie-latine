@@ -225,11 +225,8 @@ def abstract_conditions(edges):
     return {f"{{{name}}}": word_condition(words.get(name)) for name in names}
 
 
-def check_abstract_words(edges):
-    """The abstract words of a schema; raise ValidationError if one is unknown or hidden."""
-    from .schema import schema_abstracts
-
-    names = schema_abstracts(edges)
+def check_abstract_names(names):
+    """The abstract words of these names; raise ValidationError if one is unknown or hidden."""
     words = _words(names) if names else {}
     missing = [name for name in names if name not in words or words[name].is_hidden]
     if missing:
@@ -242,3 +239,10 @@ def check_abstract_words(edges):
             code="abstract_unknown",
         )
     return [words[name] for name in names]
+
+
+def check_abstract_words(edges):
+    """The abstract words of a schema; raise ValidationError if one is unknown or hidden."""
+    from .schema import schema_abstracts
+
+    return check_abstract_names(schema_abstracts(edges))

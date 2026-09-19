@@ -60,7 +60,17 @@ class Unit(ModeratedContent):
     marked_form = models.CharField(
         _("forme de référence balisée"), max_length=300, blank=True, editable=False
     )
-    kind = models.CharField(_("type"), max_length=20, choices=Kind.choices, blank=True)
+    kind = models.CharField(
+        _("type"),
+        max_length=20,
+        choices=Kind.choices,
+        blank=True,
+        help_text=_(
+            "Le type ne dépend pas des mots abstraits : {liquide} sūmere reste une collocation "
+            "verbe–nom. « Construction à case vide » désigne une construction dont une place "
+            "reste ouverte à presque tout mot."
+        ),
+    )
     tags = models.JSONField(_("étiquettes"), default=list, blank=True)
     schema = models.CharField(
         _("schéma"),

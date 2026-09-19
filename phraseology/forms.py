@@ -18,11 +18,12 @@ from .abstract import (
     MAX_RULES,
     PARTS_OF_SPEECH,
     RULE_PARTS_OF_SPEECH,
+    check_abstract_names,
     check_abstract_words,
     clean_name,
     clean_rules,
 )
-from .markup import MARK, clean_marks, plain_form
+from .markup import clean_marks, form_abstracts, is_marked, plain_form
 from .models import (
     AbstractWord,
     Equivalent,
@@ -57,7 +58,8 @@ class MarkedReferenceFormMixin:
             help_text=_(
                 "La forme sous laquelle on cite l’unité, par exemple : consilium capere. Une "
                 "fiche qu’elle contient se marque entre crochets, son nom puis ses mots : "
-                "[rēs pūblica;rem pūblicam] administrāre."
+                "[rēs pūblica;rem pūblicam] administrāre ; un mot abstrait s’écrit entre "
+                "accolades : {liquide} sūmere."
             ),
             widget=forms.TextInput(attrs={"lang": "la"}),
         )
@@ -75,7 +77,8 @@ class MarkedReferenceFormMixin:
                 _("La forme de référence compte au plus %(limit)d caractères.") % {"limit": limit},
                 code="max_length",
             )
-        self.instance.marked_form = marked if MARK.search(marked) else ""
+        check_abstract_names(form_abstracts(marked))
+        self.instance.marked_form = marked if is_marked(marked) else ""
         return plain
 
 

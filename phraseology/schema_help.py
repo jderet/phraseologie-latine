@@ -119,6 +119,19 @@ def unit_schemas(user, query):
     return found
 
 
+def _abstract_json(part):
+    """An abstract word of a reference form, as the drawing shows it; None for other parts."""
+    if not part.abstract:
+        return None
+    word = part.word
+    return {
+        "name": part.abstract,
+        "label": word.label if word else "",
+        "status": word.get_status_display() if word else "",
+        "url": word.get_absolute_url() if word else "",
+    }
+
+
 def form_help(user, text, schema=""):
     """A reference form being written, as the drawing shows it under the field.
 
@@ -143,6 +156,7 @@ def form_help(user, text, schema=""):
             "name": part.name,
             "unit": _unit_json(part.unit) if part.unit else None,
             "others": [_unit_json(other, with_edges=False) for other in part.others],
+            "abstract": _abstract_json(part),
         }
         for part in parts
     ]
@@ -150,7 +164,8 @@ def form_help(user, text, schema=""):
     for part in parts:
         if part.name:
             marked.append((len(plain), len(plain) + len(part.text)))
-        plain += part.text
+        # An abstract word is no Latin word to spot; its place keeps the offsets.
+        plain += " " * len(part.text) if part.abstract else part.text
     named = {name_key(part.name) for part in parts if part.name}
     _words, spots = spot_units(plain, user, describe=False)
     for spot in spots:

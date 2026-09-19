@@ -1585,6 +1585,17 @@ article > h2 {
   border-radius: 3px;
 }
 
+/* An abstract word in a reference form: a class of words, not a Latin word. */
+.form-abstract-name {
+  padding: 0 3px;
+  font-family: var(--sans);
+  font-size: 0.85em;
+  font-style: normal;
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  border-radius: 3px;
+}
+
 .form-mark-bubble {
   display: none;
   position: absolute;

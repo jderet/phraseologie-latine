@@ -71,9 +71,13 @@ def construction_named(user, name):
 
 
 def form_words(marked):
-    """The words of a reference form outside its marks, in order, as they are written."""
+    """The words of a reference form outside its marks and abstract words, in order, as they
+    are written."""
     return [
-        word for part in segments(marked or "") if not part.name for word in WORD.findall(part.text)
+        word
+        for part in segments(marked or "")
+        if not part.name and not part.abstract
+        for word in WORD.findall(part.text)
     ]
 
 

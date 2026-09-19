@@ -3,11 +3,22 @@ from django.test import SimpleTestCase
 from django.urls import reverse
 
 from phraseology.forms import UnitCreateForm, UnitForm
-from phraseology.markup import clean_marks, plain_form, resolve, segments, units_named
+from phraseology.markup import (
+    clean_marks,
+    form_abstracts,
+    is_marked,
+    name_key,
+    plain_form,
+    resolve,
+    segments,
+    units_named,
+)
 from phraseology.models import Unit
 from phraseology.models import UnitForm as UnitFormRow
 from phraseology.schema import parse_schema
-from phraseology.tests.factories import make_layer
+from phraseology.schema_help import form_help
+from phraseology.search_terms import form_words
+from phraseology.tests.factories import make_abstract_word, make_layer
 
 from .test_units import PhraseologyTestCase
 
@@ -29,6 +40,24 @@ class MarksTests(SimpleTestCase):
             clean_marks("[ rēs  pūblica ; rem pūblicam ] x"), "[rēs pūblica;rem pūblicam] x"
         )
 
+    def test_an_abstract_word_stays_in_the_plain_form(self):
+        text = "{liquide} [rēs pūblica;rem pūblicam] sūmere"
+        self.assertEqual(plain_form(text), "{liquide} rem pūblicam sūmere")
+        self.assertEqual(
+            [(part.text, part.name, part.abstract) for part in segments(text)],
+            [
+                ("{liquide}", "", "liquide"),
+                (" ", "", ""),
+                ("rem pūblicam", "rēs pūblica", ""),
+                (" sūmere", "", ""),
+            ],
+        )
+        self.assertEqual(clean_marks("{ Liquide } sūmere"), "{liquide} sūmere")
+        self.assertEqual(form_abstracts(text), ["liquide"])
+        self.assertTrue(is_marked("{liquide} sūmere"))
+        self.assertFalse(is_marked("aquam sūmere"))
+        self.assertEqual(name_key("{liquide} Sūmere"), name_key("liquide sumere"))
+
     def test_invalid_marks(self):
         cases = {
             "[rēs pūblica rem pūblicam] administrāre": "mark",
@@ -36,6 +65,11 @@ class MarksTests(SimpleTestCase):
             "rem pūblicam] administrāre": "mark",
             "[;rem pūblicam] administrāre": "mark_empty",
             " ".join(["[a;b]"] * 6): "too_many_marks",
+            "{liquide sūmere": "abstract",
+            "liquide} sūmere": "abstract",
+            "{} sūmere": "abstract_name",
+            "{liquidé} sūmere": "abstract_name",
+            "{a} {b} {c} {d}": "too_many_abstracts",
         }
         for text, code in cases.items():
             with self.subTest(text=text), self.assertRaises(ValidationError) as caught:
@@ -119,6 +153,45 @@ class ResolveTests(PhraseologyTestCase):
         listing = self.client.get(reverse("phraseology:unit_list"))
         self.assertContains(listing, 'class="marked-form"')
         self.assertContains(listing, "rem pūblicam</mark> administrāre</a>")
+
+    def test_a_unit_named_with_an_abstract_word(self):
+        word = make_abstract_word(self.author, label="nom désignant un liquide")
+        data = {
+            "reference_form": "{liquide}  sūmere",
+            "schema": "sumo -obj-> {liquide}",
+            "definition": "boire",
+        }
+        form = UnitCreateForm(data, user=self.author)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["reference_form"], "{liquide} sūmere")
+        self.assertEqual(form.instance.marked_form, "{liquide} sūmere")
+        unknown = UnitCreateForm({**data, "reference_form": "{boisson} sūmere"}, user=self.author)
+        self.assertIn("Mot abstrait inconnu : {boisson}.", str(unknown.errors))
+        unit = Unit.objects.create(
+            reference_form="{liquide} sūmere",
+            marked_form="{liquide} sūmere",
+            schema="sumo -obj-> {liquide}",
+            status=Unit.Status.PROPOSED,
+            created_by=self.author,
+        )
+        self.assertEqual(units_named(self.other, "liquide sumere"), [unit])
+        self.assertEqual(units_named(self.other, "{liquide} sūmere"), [unit])
+        page = self.client.get(unit.get_absolute_url())
+        self.assertContains(page, '<span class="form-abstract-name" lang="fr">{liquide}</span>')
+        self.assertContains(page, f'<a href="{word.get_absolute_url()}">{{liquide}}</a>')
+        self.assertContains(page, "nom désignant un liquide")
+        listing = self.client.get(reverse("phraseology:unit_list"), {"q": "sūmere"})
+        self.assertContains(listing, "{liquide}</span> sūmere</a>")
+        page = self.client.get(word.get_absolute_url())
+        self.assertContains(page, f'href="{unit.get_absolute_url()}"')
+
+    def test_the_help_under_the_field_and_the_first_search(self):
+        make_abstract_word(self.author, label="nom désignant un liquide")
+        self.assertEqual(form_words("{liquide} sūmere"), ["sūmere"])
+        data = form_help(self.author, "{liquide} sūmere")
+        self.assertEqual(data["errors"], [])
+        self.assertEqual(data["parts"][0]["abstract"]["label"], "nom désignant un liquide")
+        self.assertIsNone(data["parts"][1]["abstract"])
 
     def test_the_schema_of_the_composed_unit_is_read(self):
         self.assertEqual(len(parse_schema(self.composed.schema)), 2)

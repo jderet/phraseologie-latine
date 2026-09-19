@@ -1,0 +1,1 @@
+{% load i18n %}<span class="form-mark-entry" lang="fr">{% if part.word %}<a href="{{ part.word.get_absolute_url }}">{{ part.word }}</a> {{ part.word.label }} <span class="form-mark-status">{% translate "mot abstrait" %}, {{ part.word.get_status_display }}</span>{% else %}{{ part.text }} <span class="form-mark-status">{% translate "mot abstrait inconnu" %}</span>{% endif %}</span>
