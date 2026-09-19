@@ -18,6 +18,7 @@ from .abstract import (
     MAX_RULES,
     PARTS_OF_SPEECH,
     RULE_PARTS_OF_SPEECH,
+    check_abstract_words,
     clean_name,
     clean_rules,
 )
@@ -107,7 +108,9 @@ class UnitCreateForm(MarkedReferenceFormMixin, ContributionForm):
         }
 
     def clean_schema(self):
-        return format_schema(parse_schema(self.cleaned_data["schema"]))
+        edges = parse_schema(self.cleaned_data["schema"])
+        check_abstract_words(edges)
+        return format_schema(edges)
 
 
 class CandidateUnitForm(UnitCreateForm):
@@ -159,7 +162,9 @@ class UnitForm(MarkedReferenceFormMixin, ContributionForm):
             self.initial["tags"] = ", ".join(self.instance.tags)
 
     def clean_schema(self):
-        return format_schema(parse_schema(self.cleaned_data["schema"]))
+        edges = parse_schema(self.cleaned_data["schema"])
+        check_abstract_words(edges)
+        return format_schema(edges)
 
     def clean_tags(self):
         tags = []
@@ -544,6 +549,7 @@ class SchemaSearchForm(forms.Form):
         edges = parse_schema(self.cleaned_data["schema"], slot=True)
         if not edges:
             raise ValidationError(_("Écrivez au moins une relation."), code="empty")
+        check_abstract_words(edges)
         return edges
 
     @property

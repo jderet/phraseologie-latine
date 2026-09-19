@@ -206,3 +206,39 @@ def rule_label(rule):
         lemmas = ", ".join(rule["lemmas"])
         label = f"{label} ; {lemmas}" if label else lemmas
     return label
+
+
+def _words(names):
+    # The models read schemas, which read the names of abstract words here.
+    from .models import AbstractWord
+
+    return {word.name: word for word in AbstractWord.objects.filter(name__in=names)}
+
+
+def abstract_conditions(edges):
+    """Conditions on the analysis of a word for each abstract word of a schema, by node:
+    {"{liquide}": Q(...)}. A missing or hidden word matches nothing."""
+    from .schema import schema_abstracts
+
+    names = schema_abstracts(edges)
+    words = _words(names) if names else {}
+    return {f"{{{name}}}": word_condition(words.get(name)) for name in names}
+
+
+def check_abstract_words(edges):
+    """The abstract words of a schema; raise ValidationError if one is unknown or hidden."""
+    from .schema import schema_abstracts
+
+    names = schema_abstracts(edges)
+    words = _words(names) if names else {}
+    missing = [name for name in names if name not in words or words[name].is_hidden]
+    if missing:
+        raise ValidationError(
+            gettext(
+                "Mot abstrait inconnu : %(names)s. Proposez-le d’abord dans la liste des mots "
+                "abstraits."
+            )
+            % {"names": ", ".join(f"{{{name}}}" for name in missing)},
+            code="abstract_unknown",
+        )
+    return [words[name] for name in names]

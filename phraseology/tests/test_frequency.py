@@ -3,7 +3,12 @@ from justifications.tests.factories import make_passage
 from phraseology.frequency import count_by_author, occurrence_tokens, schema_matches, slot_fillers
 from phraseology.schema import parse_schema
 from phraseology.services import current_frequency, refresh_frequency, update_unit
-from phraseology.tests.factories import analyze, make_layer, make_outside_passage
+from phraseology.tests.factories import (
+    analyze,
+    make_abstract_word,
+    make_layer,
+    make_outside_passage,
+)
 
 from .test_units import PhraseologyTestCase
 
@@ -61,6 +66,19 @@ class SchemaMatchesTests(AnalysedCorpusTestCase):
         words = [occurrence_tokens(match, edges, self.layer) for match in matches]
         self.assertIn(list(self.good_words), words)
         self.assertEqual(sorted(len(found) for found in words), [2, 2, 3])
+
+    def test_an_abstract_word(self):
+        make_abstract_word(self.author, "decisio", [{"lemmas": ["consilium", "ratio"]}])
+        make_abstract_word(self.author, "nomen", [{"upos": ["NOUN"]}])
+        make_abstract_word(self.author, "genetiuus", [{"upos": ["NOUN"], "feats": ["Case=Gen"]}])
+        self.assertEqual(self.count("capio -obj-> {decisio}"), 3)
+        self.assertEqual(self.count("capio -obj-> {nomen}"), 3)
+        self.assertEqual(self.count("capio -obj-> {genetiuus}"), 0)
+        # An unknown abstract word finds nothing.
+        self.assertEqual(self.count("capio -obj-> {ignotum}"), 0)
+        edges = parse_schema("capio -obj-> {decisio}; {decisio} -amod-> bonus")
+        (match,) = schema_matches(edges, self.layer)
+        self.assertEqual(occurrence_tokens(match, edges, self.layer), list(self.good_words))
 
     def test_count_by_author(self):
         matches = schema_matches(parse_schema("capio -obj|nsubj:pass-> consilium"), self.layer)

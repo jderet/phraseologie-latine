@@ -7,7 +7,9 @@ from phraseology.schema import (
     format_schema,
     parse_schema,
     required_edges,
+    schema_abstracts,
     schema_lemmas,
+    schema_nodes,
 )
 
 
@@ -91,6 +93,20 @@ class SchemaTests(SimpleTestCase):
             "gero -obj-> bellum; gero -(obl|nmod)-> aliquis; aliquis -case-> cum",
         )
 
+    def test_an_abstract_word_between_braces(self):
+        edges = parse_schema("Sūmō -obj-> { Liquide }; {liquide} -(amod)-> frigidus")
+        self.assertEqual(
+            format_schema(edges), "sumo -obj-> {liquide}; {liquide} -(amod)-> frigidus"
+        )
+        self.assertEqual(schema_lemmas(edges), ["sumo", "frigidus"])
+        self.assertEqual(schema_nodes(edges), ["sumo", "{liquide}", "frigidus"])
+        self.assertEqual(schema_abstracts(edges), ["liquide"])
+        # Two different abstract words, and the regime of a phrase.
+        edges = parse_schema("causa -nmod-> {possesseur}; causa -sp-> in; in -reg-> {lieu}")
+        self.assertEqual(schema_abstracts(edges), ["possesseur", "lieu"])
+        written, _cases = corpus_edges(edges)
+        self.assertEqual(written[0].head, "causa")
+
     def test_invalid_schemas(self):
         cases = {
             "capio obj consilium": "syntax",
@@ -110,6 +126,13 @@ class SchemaTests(SimpleTestCase):
             "gero -(obj)-> bellum; gero -(sp)-> cum; cum -reg-> aliquis": "all_optional",
             "gero -obj-> bellum; gero -sp-> cum; cum -(reg)-> aliquis": "optional_regime",
             "capio -(obj-> consilium": "syntax",
+            "{liquide} -amod-> frigidus": "abstract_root",
+            # The regime of a phrase at the root is the word looked for.
+            "in -reg-> {lieu}": "abstract_root",
+            "sumo -obj-> {liquidé}": "abstract_name",
+            "sumo -obj-> {}": "abstract_name",
+            "sumo -obj-> {liquide}; sumo -obl-> {liquide}": "two_abstract",
+            "sumo -obj-> {liquide": "syntax",
         }
         for text, code in cases.items():
             with self.subTest(text=text), self.assertRaises(ValidationError) as caught:

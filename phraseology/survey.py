@@ -6,6 +6,7 @@ from django.utils.translation import gettext
 
 from corpus.models import TokenAnalysis
 
+from .abstract import abstract_conditions
 from .models import Attestation
 from .schema import schema_lemmas
 
@@ -15,7 +16,8 @@ def attestation_shapes(ids, layer, edges):
 
     Adjacent words are separated by a space and words apart by « … »; a passive adds
     « (passif) ». Attestations with the same label realize the unit in the same way: word
-    order, inserted words, passive. A word without a lemma of the schema keeps its form.
+    order, inserted words, passive. A word of an abstract word of the schema is named by it,
+    {liquide}; a word without a lemma of the schema keeps its form.
     """
     words = defaultdict(list)
     rows = Attestation.tokens.through.objects.filter(attestation_id__in=ids).values_list(
@@ -31,6 +33,14 @@ def attestation_shapes(ids, layer, edges):
         )
         for token_id, lemma, deprel in rows:
             analyses[token_id].append((lemma, deprel))
+    classes = {}
+    if layer is not None:
+        for node, condition in abstract_conditions(edges).items():
+            members = TokenAnalysis.objects.filter(
+                condition, layer=layer, token_id__in=token_ids
+            ).values_list("token_id", flat=True)
+            for token_id in members:
+                classes.setdefault(token_id, node)
     lemmas = set(schema_lemmas(edges))
     shapes = {}
     for attestation_id, items in words.items():
@@ -39,7 +49,7 @@ def attestation_shapes(ids, layer, edges):
             if previous is not None:
                 parts.append(" " if position == previous + 1 else " … ")
             found = [lemma for lemma, _deprel in analyses[token_id] if lemma in lemmas]
-            parts.append(found[0] if found else norm)
+            parts.append(found[0] if found else classes.get(token_id, norm))
             passive = passive or any(deprel.endswith(":pass") for _l, deprel in analyses[token_id])
             previous = position
         shape = "".join(parts)

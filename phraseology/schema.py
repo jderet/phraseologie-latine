@@ -7,7 +7,9 @@ may have alternatives separated by "|": ``gero -obj|nsubj:pass-> bellum`` also f
 ``obl:arg``. A relation written between parentheses is optional: in
 ``gero -obj-> bellum; gero -(sp)-> cum; cum -reg-> aliquis`` the phrase *cum aliquo* may be
 missing; when it is there, its preposition has its regime. A query may leave one dependent
-open, written ``*``: ``capio -obj-> *`` finds every object of *capio*.
+open, written ``*``: ``capio -obj-> *`` finds every object of *capio*. A word between braces is
+an abstract word, a class of words (see abstract.py): ``sumo -obj-> {liquide}``; it is never
+the root, which is looked for by its lemma.
 
 A prepositional phrase is written with the preposition first, unlike Universal Dependencies:
 ``redigo -sp-> in; in -reg-> memoria``; the case of the regime may be given, as in
@@ -22,6 +24,8 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_noop, pgettext_lazy
 
 from corpus.text import normalize
+
+from .abstract import clean_name
 
 # Universal Dependencies relations; LatinCy writes the root of a sentence ROOT.
 RELATIONS = frozenset(
@@ -90,10 +94,22 @@ MAX_RELATIONS = 4
 SLOT = "*"
 
 EDGE_PATTERN = re.compile(
-    r"^(?P<head>[^\W\d_]+)\s*[-—–]\s*"
+    r"^(?P<head>[^\W\d_]+|\{[^{}]*\})\s*[-—–]\s*"
     r"(?:\(\s*(?P<optional>[a-zA-Z:|\s]+?)\s*\)|(?P<relations>[a-zA-Z:|\s]+?))"
-    r"\s*(?:->|→)\s*(?P<dependent>[^\W\d_]+|\*)$"
+    r"\s*(?:->|→)\s*(?P<dependent>[^\W\d_]+|\*|\{[^{}]*\})$"
 )
+
+
+def is_abstract(node):
+    """Whether a node of a schema is an abstract word, written between braces."""
+    return node.startswith("{")
+
+
+def _node(text):
+    """A node as stored: a lemma normalized, an abstract word by its name between braces."""
+    if is_abstract(text):
+        return f"{{{clean_name(text)}}}"
+    return normalize(text)
 
 
 def base(relation):
@@ -191,15 +207,25 @@ def parse_schema(text, slot=False):
             raise ValidationError(
                 gettext("La case vide * ne sert qu’à chercher : écrivez un lemme."), code="slot"
             )
-        dependent = dependent if dependent == SLOT else normalize(dependent)
+        dependent = dependent if dependent == SLOT else _node(dependent)
         optional = match["optional"] is not None
         relations = _relations(match["optional"] if optional else match["relations"])
-        edges.append(Edge(normalize(match["head"]), relations, dependent, optional))
+        edges.append(Edge(_node(match["head"]), relations, dependent, optional))
     if sum(edge.dependent == SLOT for edge in edges) > 1:
         raise ValidationError(gettext("Un schéma n’a qu’une case vide."), code="two_slots")
+    abstract = [edge.dependent for edge in edges if is_abstract(edge.dependent)]
+    if len(abstract) != len(set(abstract)):
+        raise ValidationError(
+            gettext(
+                "Un même mot abstrait ne figure qu’une fois dans un schéma ; deux mots abstraits "
+                "différents le peuvent."
+            ),
+            code="two_abstract",
+        )
     edges = _as_tree(_from_analysis(edges))
     _check_phrases(edges)
     _check_optional(edges)
+    _check_root(edges)
     return edges
 
 
@@ -308,6 +334,19 @@ def _check_optional(edges):
             )
 
 
+def _check_root(edges):
+    """The word a schema is looked for by is a lemma: its root, or the regime of a phrase at
+    its root."""
+    if edges and is_abstract(corpus_edges(edges)[0][0].head):
+        raise ValidationError(
+            gettext(
+                "Un mot abstrait ne peut pas être le mot qui régit tout le schéma : il dépend "
+                "d’un lemme."
+            ),
+            code="abstract_root",
+        )
+
+
 def required_edges(edges):
     """The relations every occurrence has: not optional, nor under an optional relation."""
     dropped, required = set(), []
@@ -354,11 +393,21 @@ def format_schema(edges):
     return "; ".join(str(edge) for edge in edges)
 
 
-def schema_lemmas(edges):
-    """The lemmas of a schema, the root first."""
-    lemmas = []
+def schema_nodes(edges):
+    """The words of a schema, the root first: lemmas, the open dependent, abstract words."""
+    nodes = []
     for edge in edges:
-        for lemma in (edge.head, edge.dependent):
-            if lemma not in lemmas:
-                lemmas.append(lemma)
-    return lemmas
+        for node in (edge.head, edge.dependent):
+            if node not in nodes:
+                nodes.append(node)
+    return nodes
+
+
+def schema_lemmas(edges):
+    """The lemmas of a schema, the root first, and its open dependent; no abstract word."""
+    return [node for node in schema_nodes(edges) if not is_abstract(node)]
+
+
+def schema_abstracts(edges):
+    """The names of the abstract words of a schema, without their braces."""
+    return [node[1:-1] for node in schema_nodes(edges) if is_abstract(node)]

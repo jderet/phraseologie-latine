@@ -13,6 +13,7 @@ from corpus.search import corpus_version, default_layer
 from corpus.text import normalize
 from corpus.timeouts import TimeLimit
 
+from .abstract import check_abstract_words
 from .composition import components
 from .frequency import schema_matches
 from .markup import clean_marks, name_key, name_pattern, resolve
@@ -183,6 +184,7 @@ def check_schema(text, slot=False, count=False, user=None):
         return result
     try:
         edges = parse_schema(text, slot=slot)
+        check_abstract_words(edges)
     except ValidationError as error:
         result["errors"] = error.messages
         return result

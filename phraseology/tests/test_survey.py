@@ -18,7 +18,7 @@ from phraseology.services import (
 )
 from phraseology.survey import attestation_shapes
 
-from .factories import set_status
+from .factories import make_abstract_word, set_status
 from .test_frequency import AnalysedCorpusTestCase
 
 SCHEMA = "capio -obj|nsubj:pass-> consilium"
@@ -183,6 +183,19 @@ class ShapeTests(SurveyTestCase):
         self.assertEqual(shapes[original.pk], "consilium capio … abiret")
         self.assertEqual(sorted(shapes.values()).count("consilium capio"), 2)
         self.assertEqual(shapes[outside.pk], "consilium capio (passif)")
+
+    def test_the_words_of_an_abstract_word_are_named_by_it(self):
+        make_abstract_word(self.author, "decisio", [{"lemmas": ["consilium"]}])
+        edges = parse_schema("capio -obj|nsubj:pass-> {decisio}; {decisio} -(amod)-> bonus")
+        survey_unit(self.unit, self.other)
+        good = Attestation.objects.create(
+            unit=self.unit, passage=self.good_words[0].passage, created_by=self.other
+        )
+        good.tokens.set(self.good_words)
+        ids = self.unit.attestations.values_list("pk", flat=True)
+        shapes = attestation_shapes(ids, self.layer, edges)
+        self.assertEqual(shapes[good.pk], "bonus {decisio} capio")
+        self.assertEqual(sorted(shapes.values()).count("{decisio} capio"), 3)
 
 
 class SurveyPagesTests(SurveyTestCase):

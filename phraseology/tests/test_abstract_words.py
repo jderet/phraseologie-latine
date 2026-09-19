@@ -173,3 +173,34 @@ class AbstractWordPagesTests(PhraseologyTestCase):
     def test_signing_in_is_needed_to_propose(self):
         page = self.client.get(reverse("phraseology:abstract_word_create"))
         self.assertEqual(page.status_code, 302)
+
+
+class AbstractWordInSchemaTests(PhraseologyTestCase):
+    def test_the_schema_of_a_unit_names_a_known_word(self):
+        self.client.force_login(self.author)
+        url = reverse("phraseology:unit_edit", args=[self.unit.pk])
+        page = self.client.get(url)
+        data = {
+            key: value
+            for key, value in page.context["form"].initial.items()
+            if value is not None and not isinstance(value, list)
+        }
+        data.update(reference_form="consilium capere", schema="capio -obj-> {decisio}")
+        page = self.client.post(url, data)
+        self.assertContains(page, "Mot abstrait inconnu : {decisio}.")
+        make_abstract_word(self.author, "decisio", [{"lemmas": ["consilium"]}])
+        page = self.client.post(url, data)
+        self.unit.refresh_from_db()
+        self.assertEqual(self.unit.schema, "capio -obj-> {decisio}")
+
+    def test_the_schema_search_takes_an_abstract_word(self):
+        make_abstract_word(self.author)
+        page = self.client.get(
+            reverse("phraseology:schema_search"), {"schema": "sumo -obj-> {liquide}"}
+        )
+        self.assertEqual(page.status_code, 200)
+        self.assertNotContains(page, "Mot abstrait inconnu")
+        page = self.client.get(
+            reverse("phraseology:schema_search"), {"schema": "sumo -obj-> {ignotum}"}
+        )
+        self.assertContains(page, "Mot abstrait inconnu : {ignotum}.")
