@@ -15,6 +15,7 @@ from moderation.services import save_with_revision
 
 from .forms import ProposalForm, ProposalReviewForm, StepLabelForm
 from .models import ChangeProposal  # noqa: F401 - the form builds one
+from .network import copy_network
 from .permissions import can_propose
 from .services import create_proposal, review_proposal
 from .sync import (
@@ -24,7 +25,7 @@ from .sync import (
     take_upstream,
     upstream_changes,
 )
-from .views import _contribute, _own_version, _proposal
+from .views import _contribute, _own_version, _proposal, _version
 
 
 @login_required
@@ -183,4 +184,15 @@ def step_restore(request, pk, number):
             "step": step,
             "rows": restore_preview(version, step),
         },
+    )
+
+
+def version_network(request, pk):
+    """The versions this one comes from, and the tree of the copies made from it."""
+    version = _version(request.user, pk)
+    ancestors, nodes = copy_network(request.user, version)
+    return render(
+        request,
+        "translations/version_network.html",
+        {"version": version, "project": version.project, "ancestors": ancestors, "nodes": nodes},
     )

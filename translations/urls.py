@@ -144,6 +144,7 @@ urlpatterns = [
         name="quality_reset",
     ),
     path("versions/<int:pk>/mise-a-jour/", collab_views.sync_copy, name="sync_copy"),
+    path("versions/<int:pk>/copies/", collab_views.version_network, name="version_network"),
     path(
         "versions/<int:pk>/proposer-a-l-originale/",
         collab_views.propose_to_original,

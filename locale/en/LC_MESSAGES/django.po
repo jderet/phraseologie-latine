@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 15:08+0200\n"
+"POT-Creation-Date: 2026-09-19 15:12+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -1886,7 +1886,7 @@ msgstr "Save the justification"
 
 #: justifications/views.py:289 phraseology/views.py:514
 #: phraseology/views.py:660 phraseology/views.py:1722 phraseology/views.py:1918
-#: translations/collab_views.py:150 translations/views.py:140
+#: translations/collab_views.py:151 translations/views.py:140
 #: translations/views.py:733 translations/views.py:1032
 #: translations/workshop_views.py:290 translations/workshop_views.py:400
 msgid "Aucune modification."
@@ -2966,7 +2966,8 @@ msgstr "to avoid"
 #: phraseology/models.py:48 templates/translations/editor_badges.html:1
 #: templates/translations/panel_memory.html:6
 #: templates/translations/version_detail.html:38
-#: templates/translations/version_edit.html:32 translations/editor.py:86
+#: templates/translations/version_edit.html:32
+#: templates/translations/version_network.html:17 translations/editor.py:86
 #: translations/models.py:467 translations/models.py:569
 msgid "brouillon"
 msgstr "draft"
@@ -10003,6 +10004,7 @@ msgstr "Compare"
 #: templates/translations/version_detail.html:9
 #: templates/translations/version_edit.html:10
 #: templates/translations/version_members.html:8
+#: templates/translations/version_network.html:8
 #: templates/translations/version_stats.html:8
 #, python-format
 msgid "Version de %(name)s"
@@ -11063,6 +11065,12 @@ msgstr "Publish"
 msgid "pour rédiger votre propre version à partir de son texte"
 msgstr "to write your own version from its text"
 
+#: templates/translations/version_detail.html:89
+#: templates/translations/version_network.html:4
+#: templates/translations/version_network.html:9
+msgid "Réseau des copies"
+msgstr "Network of copies"
+
 #: templates/translations/version_detail.html:90
 msgid "Exporter :"
 msgstr "Export:"
@@ -11257,6 +11265,29 @@ msgstr "Invite a co-author"
 msgid "Inviter"
 msgstr "Invite"
 
+#: templates/translations/version_network.html:10
+msgid ""
+"Les versions dont celle-ci descend, et les copies faites à partir d’elle, "
+"avec le nombre de phrases où chacune s’écarte de la version copiée."
+msgstr ""
+"The versions this one comes from, and the copies made from it, with the "
+"number of sentences where each departs from the version it copied."
+
+#: templates/translations/version_network.html:15
+msgid "cette version"
+msgstr "this version"
+
+#: templates/translations/version_network.html:17
+#, python-format
+msgid "%(counter)s phrase différente"
+msgid_plural "%(counter)s phrases différentes"
+msgstr[0] "%(counter)s different sentence"
+msgstr[1] "%(counter)s different sentences"
+
+#: templates/translations/version_network.html:19
+msgid "Personne n’a encore copié cette version."
+msgstr "Nobody has copied this version yet."
+
 #: templates/translations/version_print.html:8
 msgid ""
 "Pour obtenir un PDF, utilisez la commande Imprimer de votre navigateur (⌘ P "
@@ -11408,38 +11439,38 @@ msgid ""
 msgstr ""
 "Number of sentence saves per day, visible to the authors of the version only."
 
-#: translations/collab_views.py:36 translations/collab_views.py:73
+#: translations/collab_views.py:37 translations/collab_views.py:74
 msgid "Cette version n’est pas une copie."
 msgstr "This version is not a copy."
 
-#: translations/collab_views.py:45
+#: translations/collab_views.py:46
 #, python-format
 msgid "%(count)d phrase reprise de l’originale."
 msgid_plural "%(count)d phrases reprises de l’originale."
 msgstr[0] "%(count)d sentence taken from the original."
 msgstr[1] "%(count)d sentences taken from the original."
 
-#: translations/collab_views.py:77
+#: translations/collab_views.py:78
 msgid "Vous ne pouvez pas proposer de modifications à l’originale."
 msgstr "You cannot propose changes to the original."
 
-#: translations/collab_views.py:95
+#: translations/collab_views.py:96
 msgid "La proposition est envoyée à l’auteur de l’originale."
 msgstr "The proposal is sent to the author of the original."
 
-#: translations/collab_views.py:119
+#: translations/collab_views.py:120
 msgid "Choisissez un avis."
 msgstr "Choose an opinion."
 
-#: translations/collab_views.py:135
+#: translations/collab_views.py:136
 msgid "Votre relecture est publiée."
 msgstr "Your review is published."
 
-#: translations/collab_views.py:150
+#: translations/collab_views.py:151
 msgid "L’étiquette est enregistrée."
 msgstr "The label is saved."
 
-#: translations/collab_views.py:169
+#: translations/collab_views.py:170
 #, python-format
 msgid ""
 "%(count)d phrase revient au texte de l’étape. Créez une étape pour le "

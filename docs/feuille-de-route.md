@@ -228,7 +228,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Revue phrase par phrase des propositions, avis de relecture
 - [x] Étiquettes d'étape (éditions)
 - [x] Revenir à une étape
-- [ ] Réseau des copies
+- [x] Réseau des copies
 - [ ] Vue « qui a écrit quoi »
 
 ## Étape 17 : échanger avec les outils professionnels

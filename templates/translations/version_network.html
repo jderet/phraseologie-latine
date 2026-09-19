@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Réseau des copies" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Réseau des copies" %}</h1>
+  <p class="lede">{% translate "Les versions dont celle-ci descend, et les copies faites à partir d’elle, avec le nombre de phrases où chacune s’écarte de la version copiée." %}</p>
+  <ol class="network">
+    {% for ancestor in ancestors %}
+    <li class="network-node is-ancestor"><a href="{{ ancestor.get_absolute_url }}">{{ ancestor.author.public_name }}</a> <span class="muted">{{ ancestor.get_style_display }}</span></li>
+    {% endfor %}
+    <li class="network-node is-current"><strong>{{ version.author.public_name }}</strong> <span class="muted">{{ version.get_style_display }} · {% translate "cette version" %}</span></li>
+    {% for node in nodes %}
+    <li class="network-node depth-{{ node.depth }}"><span class="network-branch" aria-hidden="true">└</span> <a href="{{ node.version.get_absolute_url }}">{{ node.version.author.public_name }}</a> <span class="muted">{{ node.version.get_style_display }}{% if node.version.is_draft %} · {% translate "brouillon" %}{% endif %} · {% blocktranslate count counter=node.differing %}{{ counter }} phrase différente{% plural %}{{ counter }} phrases différentes{% endblocktranslate %}</span></li>
+    {% empty %}
+    <li class="note">{% translate "Personne n’a encore copié cette version." %}</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

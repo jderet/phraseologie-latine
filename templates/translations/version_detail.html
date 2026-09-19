@@ -86,7 +86,7 @@
   <p class="form-links">{% if can_propose %}<a href="{% url 'translations:proposal_create' version.pk %}">{% translate "Proposer des modifications" %}</a>{% endif %}
     <a href="{% url 'translations:proposal_list' version.pk %}">{% blocktranslate count counter=open_proposal_count %}{{ counter }} proposition ouverte{% plural %}{{ counter }} propositions ouvertes{% endblocktranslate %}</a></p>
   {% endif %}
-  <p class="form-links"><a href="{% url 'translations:version_comments' version.pk %}">{% translate "Commentaires des phrases" %}</a> <a href="{% url 'translations:version_stats' version.pk %}">{% translate "Statistiques" %}</a></p>
+  <p class="form-links"><a href="{% url 'translations:version_comments' version.pk %}">{% translate "Commentaires des phrases" %}</a> <a href="{% url 'translations:version_stats' version.pk %}">{% translate "Statistiques" %}</a> <a href="{% url 'translations:version_network' version.pk %}">{% translate "Réseau des copies" %}</a></p>
   <p class="export-links">{% translate "Exporter :" %} <a href="{% url 'translations:version_export_text' version.pk %}">{% translate "texte bilingue" %}</a> · <a href="{% url 'translations:version_export_print' version.pk %}">{% translate "version imprimable avec notes (PDF)" %}</a> · <a href="{% url 'translations:version_export_tei' version.pk %}">TEI</a> · <a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "mémoire de traduction (TMX)" %}</a></p>
   {% moderation_links version %}
 
