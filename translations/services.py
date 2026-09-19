@@ -513,11 +513,36 @@ def save_translation(version, segment, text, author, written_by=None):
             return None
         translated = TranslatedSegment(version=version, segment=segment)
     if translated.text != text:
-        # A rewritten sentence belongs to whoever wrote the new Latin.
+        # A rewritten sentence belongs to whoever wrote the new Latin, and is a draft again.
         credited = written_by is not None and written_by.pk != version.author_id
         translated.written_by = written_by if credited else None
+        translated.status = TranslatedSegment.Status.DRAFT
     translated.text = text
     return save_with_revision(translated, author)
+
+
+@transaction.atomic
+def set_sentence_status(version, segment, status, user):
+    """Mark a sentence of the working text as a draft, translated or reviewed.
+
+    Return None when nothing changed. An empty sentence has no status to set.
+    """
+    if not is_version_writer(user, version):
+        raise PermissionDenied
+    if status not in TranslatedSegment.Status.values:
+        raise ValueError("Unknown status.")
+    translated = (
+        TranslatedSegment.objects.current()
+        .filter(version=version, segment=segment)
+        .exclude(text="")
+        .first()
+    )
+    if translated is None:
+        raise ValidationError(gettext("Traduisez d’abord cette phrase."), code="empty")
+    if translated.status == status:
+        return None
+    translated.status = status
+    return save_with_revision(translated, user, comment=translated.get_status_display())
 
 
 @transaction.atomic

@@ -542,10 +542,16 @@ class TranslatedQuerySet(models.QuerySet):
 
 
 class TranslatedSegment(ModeratedContent):
-    """The Latin of one sentence in the working text of a version, seen by its author only.
+    """The Latin of one sentence in the working text of a version, seen by its writers only.
 
-    Others see the text of the steps (``VersionStep``).
+    Others see the text of the steps (``VersionStep``). Its status tells where the work stands,
+    as in translation software: a changed sentence goes back to draft.
     """
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", _("brouillon")
+        TRANSLATED = "translated", _("traduite")
+        REVIEWED = "reviewed", _("relue")
 
     version = models.ForeignKey(
         TranslationVersion,
@@ -570,6 +576,9 @@ class TranslatedSegment(ModeratedContent):
         editable=False,
         related_name="+",
         verbose_name=_("écrite par"),
+    )
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.DRAFT, editable=False
     )
     updated_at = models.DateTimeField(_("modifié le"), auto_now=True)
 

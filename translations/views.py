@@ -27,7 +27,7 @@ from moderation.registry import can_view
 from moderation.services import save_with_revision
 
 from .diffs import word_diff
-from .editor import panel_tabs, row_data
+from .editor import panel_tabs, row_data, status_counts
 from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
@@ -1020,6 +1020,7 @@ def version_edit(request, pk):
         {
             "search_form": SearchForm(initial=PANEL_SEARCH_DEFAULTS),
             "panel_tabs": panel_tabs(version),
+            "status_counts": status_counts(rows),
             "has_members": active_members(version).exists(),
             "source_step": _source_changed_since(request.user, version),
             "version": version,
@@ -1130,7 +1131,9 @@ def translation_save(request, pk, segment_pk):
         return JsonResponse({"errors": errors}, status=400)
     text = form.cleaned_data["text"]
     revision = save_translation(version, source_segment, text, request.user)
-    return JsonResponse({"text": text, "changed": revision is not None})
+    translated = version.segments.filter(segment=source_segment).first()
+    status = translated.status if translated and translated.text else "todo"
+    return JsonResponse({"text": text, "changed": revision is not None, "status": status})
 
 
 @login_required

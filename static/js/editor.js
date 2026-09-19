@@ -66,6 +66,9 @@
         showStatus(field, labels.labelSaved);
         showUnits(field);
         forgetSentence(field);
+        if (data.status) {
+          setRowStatus(field, data.status);
+        }
       } else {
         showStatus(field, data.errors.join(" "), true);
       }
@@ -162,6 +165,90 @@
     showUnits(field);
     loadTab(currentTab);
   }
+
+  // Status of each sentence: to translate, draft, translated, reviewed; the bar of progress
+  // follows.
+  const STATUSES = ["todo", "draft", "translated", "reviewed"];
+  const statusLabels = {
+    todo: labels.statusTodo,
+    draft: labels.statusDraft,
+    translated: labels.statusTranslated,
+    reviewed: labels.statusReviewed,
+  };
+
+  function setRowStatus(field, status) {
+    const row = field.closest(".bitext-row");
+    row.dataset.status = status;
+    const dot = row.querySelector("[data-status-dot]");
+    if (dot) {
+      dot.className = `status-dot status-${status}`;
+      dot.title = statusLabels[status] || "";
+    }
+    for (const button of row.querySelectorAll("[data-set-status]")) {
+      button.setAttribute("aria-pressed", String(button.dataset.setStatus === status));
+    }
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const rows = [...editor.querySelectorAll(".bitext-row[data-status]")];
+    const total = rows.length || 1;
+    let offset = 0;
+    for (const status of STATUSES) {
+      const count = rows.filter((row) => row.dataset.status === status).length;
+      const share = (count * 100) / total;
+      const part = document.querySelector(`.status-part[data-status="${status}"]`);
+      if (part) {
+        part.setAttribute("x", offset.toFixed(3));
+        part.setAttribute("width", share.toFixed(3));
+      }
+      const number = document.querySelector(`[data-count="${status}"]`);
+      if (number) {
+        number.textContent = String(count);
+      }
+      offset += share;
+    }
+  }
+
+  async function markStatus(field, status) {
+    await save(field);
+    const row = field.closest(".bitext-row");
+    const button = row.querySelector(`[data-set-status="${status}"]`);
+    if (!button) {
+      return false;
+    }
+    const body = new FormData();
+    body.append("csrfmiddlewaretoken", csrfToken);
+    body.append("status", status);
+    try {
+      const response = await fetch(button.formAction, {
+        method: "POST",
+        body,
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        showStatus(field, data.errors.join(" "), true);
+        return false;
+      }
+      setRowStatus(field, data.status);
+      return true;
+    } catch {
+      showStatus(field, labels.labelError, true);
+      return false;
+    }
+  }
+
+  editor.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-set-status]");
+    if (!button) {
+      return;
+    }
+    event.preventDefault();
+    const field = button.closest(".bitext-row").querySelector("textarea[data-save-url]");
+    markStatus(field, button.dataset.setStatus);
+  });
 
   // Tabs of the side panel: one section at a time, the choice kept for the next visit.
   const tabList = document.querySelector(".panel-tabs");

@@ -1,1 +1,8 @@
-{% load i18n %}<p class="editor-progress note">{% blocktranslate asvar progress with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{{ progress|capfirst }}</p>
+{% load i18n %}<div class="editor-progress">
+  <svg class="status-bar" viewBox="0 0 100 4" preserveAspectRatio="none" role="img" aria-label="{% for item in status_counts %}{{ item.label }} : {{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+    {% for item in status_counts %}<rect class="status-part status-{{ item.status }}" data-status="{{ item.status }}" x="{{ item.x }}" y="0" width="{{ item.width }}" height="4"></rect>{% endfor %}
+  </svg>
+  <ul class="status-legend">
+    {% for item in status_counts %}<li><span class="status-dot status-{{ item.status }}" aria-hidden="true"></span> {{ item.label }} <strong data-count="{{ item.status }}">{{ item.count }}</strong></li>{% endfor %}
+  </ul>
+</div>

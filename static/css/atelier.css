@@ -492,3 +492,78 @@
   gap: 8px;
   font-size: 0.93rem;
 }
+
+/* Status of each sentence: to translate, draft, translated, reviewed */
+
+.editor-progress {
+  display: grid;
+  gap: 6px;
+  flex: 1 1 22rem;
+  max-width: 34rem;
+}
+
+.status-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.status-todo { fill: var(--rule-strong); background: transparent; box-shadow: inset 0 0 0 1.5px var(--rule-strong); }
+.status-draft { fill: var(--gold); background: var(--gold); }
+.status-translated { fill: color-mix(in srgb, var(--accent) 55%, var(--surface)); background: color-mix(in srgb, var(--accent) 55%, var(--surface)); }
+.status-reviewed { fill: var(--accent); background: var(--accent); }
+
+.row-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 2px;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+}
+
+.row-actions button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-3);
+  font: inherit;
+  cursor: pointer;
+}
+
+.row-actions button:hover,
+.row-actions button[aria-pressed="true"] {
+  color: var(--accent);
+}
+
+.bitext-row:not(.is-active):not(:hover) .row-actions {
+  visibility: hidden;
+}

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, workshop_views
+from . import editor_views, views, workshop_views
 
 app_name = "translations"
 
@@ -80,6 +80,11 @@ urlpatterns = [
         "versions/<int:pk>/phrases/<int:segment_pk>/",
         views.translation_save,
         name="translation_save",
+    ),
+    path(
+        "versions/<int:pk>/phrases/<int:segment_pk>/statut/",
+        editor_views.sentence_status,
+        name="sentence_status",
     ),
     path("versions/<int:pk>/etapes/", views.step_list, name="step_list"),
     path("versions/<int:pk>/etapes/nouvelle/", views.step_create, name="step_create"),

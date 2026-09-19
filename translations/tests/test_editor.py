@@ -35,7 +35,9 @@ class SentenceSaveTests(TranslationTestCase):
     def test_a_sentence_is_saved_and_the_answer_is_json(self):
         self.client.force_login(self.author)
         response = self.client.post(self.url, {"text": "  Pluīt   hodie. "})
-        self.assertEqual(response.json(), {"text": "Pluīt hodie.", "changed": True})
+        self.assertEqual(
+            response.json(), {"text": "Pluīt hodie.", "changed": True, "status": "draft"}
+        )
         response = self.client.post(self.url, {"text": "Pluīt hodie."})
         self.assertEqual(response.json()["changed"], False)
         self.assertEqual(TranslatedSegment.objects.get().text, "Pluīt hodie.")

@@ -27,7 +27,11 @@
           data-label-error="{% translate 'Échec de l’enregistrement : vérifiez la connexion, puis réessayez.' %}"
           data-label-units-error="{% translate 'Les unités connues n’ont pas pu être chargées.' %}"
           data-label-load-error="{% translate 'Ce panneau n’a pas pu être chargé.' %}"
-          data-label-loading="{% translate 'Chargement…' %}">
+          data-label-loading="{% translate 'Chargement…' %}"
+          data-status-todo="{% translate 'à traduire' %}"
+          data-status-draft="{% translate 'brouillon' %}"
+          data-status-translated="{% translate 'traduite' %}"
+          data-status-reviewed="{% translate 'relue' %}">
       {% csrf_token %}
       <ol class="bitext">
         {% for row in rows %}
@@ -37,6 +41,10 @@
           <div class="bitext-latin">
             <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false" data-segment="{{ row.segment.pk }}" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
             <p class="save-status" aria-live="polite">{% for error in row.errors %}{{ error }} {% endfor %}</p>
+            <div class="row-actions">
+              <button type="submit" formaction="{% url 'translations:sentence_status' version.pk row.segment.pk %}" name="status" value="translated" data-set-status="translated" aria-pressed="{% if row.data.status == 'translated' %}true{% else %}false{% endif %}" title="Ctrl+Entrée">✓ {% translate "Traduite" %}</button>
+              <button type="submit" formaction="{% url 'translations:sentence_status' version.pk row.segment.pk %}" name="status" value="reviewed" data-set-status="reviewed" aria-pressed="{% if row.data.status == 'reviewed' %}true{% else %}false{% endif %}" title="Ctrl+Maj+Entrée">✓✓ {% translate "Relue" %}</button>
+            </div>
             {% include "translations/source_changed.html" %}
           </div>
         </li>
