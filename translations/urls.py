@@ -136,6 +136,7 @@ urlpatterns = [
         name="sentence_restore",
     ),
     path("versions/<int:pk>/controle/", editor_views.quality_report, name="quality_report"),
+    path("versions/<int:pk>/remplacer/", editor_views.find_replace, name="find_replace"),
     path(
         "versions/<int:pk>/controle/tout-montrer/",
         editor_views.quality_reset,

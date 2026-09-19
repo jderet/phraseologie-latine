@@ -218,7 +218,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Commentaires par phrase, résolus ou non
 - [x] Historique d'une phrase, avec retour à un texte antérieur
 - [x] Contrôle qualité formel (jamais le corpus, Q47)
-- [ ] Rechercher et remplacer dans le texte de travail
+- [x] Rechercher et remplacer dans le texte de travail
 - [ ] Statistiques d'une version
 
 ## Étape 16 : collaborer entre versions

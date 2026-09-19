@@ -3,11 +3,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached, check_text_for_links
@@ -21,10 +23,11 @@ from .comments import (
     post_sentence_comment,
     set_resolved,
 )
-from .forms import SentenceCommentForm, TranslationTextForm
+from .forms import ReplaceForm, SentenceCommentForm, TranslationTextForm
 from .glossary import can_propose_term, find_terms, visible_terms
 from .memory import MIN_SCORE, other_versions, similar_sentences
 from .models import GlossaryEntry, IgnoredAlert, SentenceComment, TranslatedSegment
+from .replace import build_pattern, preview
 from .sentence_history import sentence_history
 from .services import save_translation, set_sentence_status
 from .sources import SourceHistory
@@ -313,3 +316,40 @@ def quality_reset(request, pk):
     version.ignored_alerts.all().delete()
     messages.success(request, _("Les alertes ignorées sont de nouveau montrées."))
     return redirect("translations:quality_report", version.pk)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def find_replace(request, pk):
+    """Find a text in the working text and replace it in the sentences one keeps."""
+    version = _own_version(request.user, pk)
+    data = request.POST if request.method == "POST" else request.GET
+    form = ReplaceForm(data if "find" in data else None, initial={"ignore_macrons": True})
+    changes = []
+    if form.is_bound and form.is_valid():
+        _step, rows = _rows(request.user, version)
+        options = form.cleaned_data
+        pattern = build_pattern(
+            options["find"], options["whole_word"], options["match_case"], options["ignore_macrons"]
+        )
+        changes = preview(rows, pattern, options["replace"])
+        if request.method == "POST":
+            chosen = set(request.POST.getlist("phrase"))
+            done = 0
+            with transaction.atomic():
+                for change in changes:
+                    segment = change["row"]["segment"]
+                    if str(segment.pk) in chosen:
+                        save_translation(version, segment, change["after"], request.user)
+                        done += 1
+            messages.success(
+                request,
+                ngettext("%(count)d phrase modifiée.", "%(count)d phrases modifiées.", done)
+                % {"count": done},
+            )
+            return redirect("translations:version_edit", version.pk)
+    return render(
+        request,
+        "translations/find_replace.html",
+        {"version": version, "project": version.project, "form": form, "changes": changes},
+    )

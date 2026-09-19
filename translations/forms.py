@@ -388,3 +388,13 @@ class SentenceCommentForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 3}),
         help_text=_("@Nom prévient quelqu’un."),
     )
+
+
+class ReplaceForm(forms.Form):
+    find = forms.CharField(label=_("Chercher"), max_length=200)
+    replace = forms.CharField(label=_("Remplacer par"), max_length=200, required=False)
+    whole_word = forms.BooleanField(label=_("Mot entier"), required=False)
+    match_case = forms.BooleanField(label=_("Respecter les majuscules"), required=False)
+    ignore_macrons = forms.BooleanField(
+        label=_("Ignorer les macrons (a trouve aussi ā)"), required=False, initial=True
+    )

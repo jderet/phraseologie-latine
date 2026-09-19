@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Rechercher et remplacer" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{% url 'translations:version_edit' version.pk %}">{% translate "Retour à l’éditeur" %}</a></p>
+  <h1>{% translate "Rechercher et remplacer" %}</h1>
+  <p class="lede">{% translate "Dans le latin du texte de travail. Vérifiez l’aperçu, décochez les phrases à laisser, puis remplacez : chaque phrase changée garde son historique." %}</p>
+  <form method="get" class="form replace-form">
+    {{ form.as_div }}
+    <button type="submit" class="button button-quiet">{% translate "Aperçu" %}</button>
+  </form>
+  {% if form.is_bound and form.is_valid %}
+  {% if changes %}
+  <form method="post" class="replace-preview">
+    {% csrf_token %}
+    {% for field in form %}{% if field.value %}<input type="hidden" name="{{ field.html_name }}" value="{% if field.value == True %}on{% else %}{{ field.value }}{% endif %}">{% endif %}{% endfor %}
+    <ol class="quality-list">
+      {% for change in changes %}
+      <li>
+        <label class="replace-choice"><input type="checkbox" name="phrase" value="{{ change.row.segment.pk }}" checked> {% blocktranslate with number=change.row.number %}Phrase {{ number }}{% endblocktranslate %} <span class="muted">({% blocktranslate count counter=change.count %}{{ counter }} remplacement{% plural %}{{ counter }} remplacements{% endblocktranslate %})</span></label>
+        <p class="word-diff" lang="la">{% include "translations/word_diff.html" with chunks=change.chunks %}</p>
+      </li>
+      {% endfor %}
+    </ol>
+    <button type="submit" class="button">{% translate "Remplacer dans les phrases cochées" %}</button>
+  </form>
+  {% else %}
+  <p class="note">{% translate "Ce texte ne se trouve dans aucune phrase." %}</p>
+  {% endif %}
+  {% endif %}
+</section>
+{% endblock %}
