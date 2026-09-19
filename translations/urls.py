@@ -195,6 +195,11 @@ urlpatterns = [
         "versions/<int:pk>/export/version.tmx", views.version_export_tmx, name="version_export_tmx"
     ),
     path(
+        "versions/<int:pk>/export/version.xlf",
+        views.version_export_xliff,
+        name="version_export_xliff",
+    ),
+    path(
         "versions/<int:pk>/export/imprimer/",
         views.version_export_print,
         name="version_export_print",

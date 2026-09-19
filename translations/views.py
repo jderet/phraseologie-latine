@@ -26,7 +26,7 @@ from justifications.models import Challenge, Justification
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
-from .comments import can_comment_sentence, open_counts
+from .comments import can_comment_sentence, comments_for, open_counts
 from .diffs import word_diff
 from .editor import filter_choices, filter_rows, panel_tabs, row_data, status_counts
 from .exports import bilingual_text, export_filename
@@ -1118,6 +1118,38 @@ def version_export_tmx(request, pk):
     version = _version(request.user, pk)
     content = render_to_string("translations/version.tmx", _export_context(request, version))
     return _download(content, version, "tmx", "application/x-tmx+xml; charset=utf-8")
+
+
+# States of XLIFF 1.2 for the statuses of the working text.
+XLIFF_STATES = {
+    "todo": "needs-translation",
+    "draft": "needs-review-translation",
+    "translated": "translated",
+    "reviewed": "signed-off",
+}
+
+
+def version_export_xliff(request, pk):
+    """The version as XLIFF 1.2, for translation software: the working text with its statuses
+    for its writers, the latest public step for the others; comments as notes."""
+    version = _version(request.user, pk)
+    context = _export_context(request, version)
+    comments = defaultdict(list)
+    for comment in comments_for(request.user, version):
+        if not comment.is_resolved:
+            comments[comment.segment_id].append(comment)
+    for row in context["rows"]:
+        if context["step"] is None:
+            status = row["sentence"].status if row["saved"] and row["sentence"] else "todo"
+            row["xliff_state"] = XLIFF_STATES.get(status, "")
+        else:
+            row["xliff_state"] = "final" if row["saved"] else ""
+        row["xliff_notes"] = comments.get(row["segment"].pk, [])
+    context["exported_iso"] = (
+        context["exported_at"].astimezone(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
+    content = render_to_string("translations/version.xlf", context)
+    return _download(content, version, "xlf", "application/x-xliff+xml; charset=utf-8")
 
 
 def version_export_print(request, pk):

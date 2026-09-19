@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 15:19+0200\n"
+"POT-Creation-Date: 2026-09-19 15:20+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -9288,52 +9288,56 @@ msgstr "Co-authors"
 msgid "Exporter en TMX"
 msgstr "Export as TMX"
 
-#: templates/translations/editor_menus.html:29
-#: templates/translations/editor_menus.html:31
+#: templates/translations/editor_menus.html:26
+msgid "Exporter en XLIFF"
+msgstr "Export as XLIFF"
+
+#: templates/translations/editor_menus.html:30
+#: templates/translations/editor_menus.html:32
 msgid "Raccourcis clavier"
 msgstr "Keyboard shortcuts"
 
-#: templates/translations/editor_menus.html:33
+#: templates/translations/editor_menus.html:34
 msgid "phrase suivante"
 msgstr "next sentence"
 
-#: templates/translations/editor_menus.html:34
+#: templates/translations/editor_menus.html:35
 msgid "retour à la ligne"
 msgstr "new line"
 
-#: templates/translations/editor_menus.html:35
+#: templates/translations/editor_menus.html:36
 msgid "marquer traduite et passer à la suivante"
 msgstr "mark as translated and go to the next one"
 
-#: templates/translations/editor_menus.html:36
+#: templates/translations/editor_menus.html:37
 msgid "marquer relue et passer à la suivante"
 msgstr "mark as reviewed and go to the next one"
 
-#: templates/translations/editor_menus.html:37
+#: templates/translations/editor_menus.html:38
 msgid "phrase suivante ou précédente"
 msgstr "next or previous sentence"
 
-#: templates/translations/editor_menus.html:38
+#: templates/translations/editor_menus.html:39
 msgid "recopier la phrase source (noms propres, nombres)"
 msgstr "copy the source sentence (proper names, numbers)"
 
-#: templates/translations/editor_menus.html:39
+#: templates/translations/editor_menus.html:40
 msgid "onglets du panneau de droite"
 msgstr "tabs of the right-hand panel"
 
-#: templates/translations/editor_menus.html:40
+#: templates/translations/editor_menus.html:41
 msgid "chercher dans les phrases"
 msgstr "search the sentences"
 
-#: templates/translations/editor_menus.html:41
+#: templates/translations/editor_menus.html:42
 msgid "quitter la phrase"
 msgstr "leave the sentence"
 
-#: templates/translations/editor_menus.html:42
+#: templates/translations/editor_menus.html:43
 msgid "ā (macron), et de même pour les autres voyelles"
 msgstr "ā (macron), and likewise for the other vowels"
 
-#: templates/translations/editor_menus.html:44
+#: templates/translations/editor_menus.html:45
 msgid "Sur Mac, Ctrl peut être remplacé par ⌘ et Alt s’appelle ⌥."
 msgstr "On a Mac, Ctrl may be replaced by ⌘, and Alt is called ⌥."
 
@@ -10715,7 +10719,7 @@ msgid "Voir ce qu’a changé cette étape"
 msgstr "See what this step changed"
 
 #: templates/translations/step_detail.html:74
-#: templates/translations/version_detail.html:101
+#: templates/translations/version_detail.html:102
 msgid "Texte et traduction"
 msgstr "Text and translation"
 
@@ -11110,16 +11114,20 @@ msgstr "Export:"
 msgid "mémoire de traduction (TMX)"
 msgstr "translation memory (TMX)"
 
-#: templates/translations/version_detail.html:103
+#: templates/translations/version_detail.html:96
+msgid "XLIFF (logiciels de traduction)"
+msgstr "XLIFF (translation software)"
+
+#: templates/translations/version_detail.html:104
 msgid "Le texte de travail, tel qu’il est enregistré."
 msgstr "The working text, as saved."
 
-#: templates/translations/version_detail.html:105
+#: templates/translations/version_detail.html:106
 #: templates/translations/version_stats.html:10
 msgid "Aucune étape publique pour l’instant."
 msgstr "No public step yet."
 
-#: templates/translations/version_detail.html:107
+#: templates/translations/version_detail.html:108
 msgid ""
 "Dans le latin, un trait pointillé signale une unité connue repérée dans la "
 "phrase, à titre de suggestion ; un double trait, un passage justifié par une "
@@ -12845,7 +12853,7 @@ msgstr ""
 msgid "Ajouter les phrases"
 msgstr "Add the sentences"
 
-#: translations/views.py:572 translations/views.py:1434
+#: translations/views.py:572 translations/views.py:1466
 msgid "La proposition est envoyée."
 msgstr "The proposal is sent."
 
@@ -12857,7 +12865,7 @@ msgstr "The proposal is adopted: the text is changed."
 msgid "La proposition est refusée."
 msgstr "The proposal is refused."
 
-#: translations/views.py:584 translations/views.py:1573
+#: translations/views.py:584 translations/views.py:1605
 msgid "La proposition est retirée."
 msgstr "The proposal is withdrawn."
 
@@ -12896,27 +12904,27 @@ msgstr[1] "%(count)d sentences saved."
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:1196
+#: translations/views.py:1228
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:1211
+#: translations/views.py:1243
 msgid "La version est publiée."
 msgstr "The version has been published."
 
-#: translations/views.py:1321
+#: translations/views.py:1353
 msgid "La copie est créée : c’est votre brouillon, visible de vous seul."
 msgstr "The copy is created: it is your draft, visible to you only."
 
-#: translations/views.py:1557
+#: translations/views.py:1589
 msgid "La phrase est acceptée : elle entre dans votre texte de travail."
 msgstr "The sentence is accepted: it enters your working text."
 
-#: translations/views.py:1560
+#: translations/views.py:1592
 msgid "La phrase est refusée."
 msgstr "The sentence is refused."
 
-#: translations/views.py:1612
+#: translations/views.py:1644
 #, python-format
 msgid "L’étape %(number)d est créée."
 msgstr "Step %(number)d is created."
