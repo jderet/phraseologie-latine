@@ -15,7 +15,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from accounts.limits import ContributionLimitReached, is_limited
 from accounts.roles import is_reviewer
 from corpus.forms import search_query
-from corpus.models import Author, Passage, Token, Work
+from corpus.models import Author, Passage, Token, TokenAnalysis, Work
 from corpus.search import corpus_version, default_layer, quotation
 from corpus.text import normalize
 from corpus.timeouts import TimeLimit
@@ -29,6 +29,7 @@ from translations.models import TranslatedSegment, TranslationVersion
 from translations.permissions import can_translate
 from translations.steps import shown_text
 
+from .abstract import rule_condition, rule_label
 from .annotation import guess_schema, search_units, suggested_units
 from .collocations import profile, profile_computed
 from .completeness import (
@@ -41,6 +42,7 @@ from .completeness import (
 from .composition import components, containers, schema_parts
 from .dashboards import annotator_summary, public_figures, reviewer_queue
 from .forms import (
+    AbstractWordForm,
     AnnotationForm,
     AttestationPlaceForm,
     AttestationResolveForm,
@@ -65,6 +67,7 @@ from .forms import (
 )
 from .frequency import count_by_author, load_tokens, occurrence_words, schema_matches, slot_fillers
 from .models import (
+    AbstractWord,
     Attestation,
     AttestationDoubt,
     Candidate,
@@ -84,7 +87,12 @@ from .models import (
     UnitSurvey,
 )
 from .panel import unit_card, word_analysis, word_attestations
-from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
+from .permissions import (
+    can_edit_abstract_word,
+    can_edit_neologism,
+    can_edit_unit,
+    can_withdraw_attestation,
+)
 from .reading_notes import create_reading_note, word_reading_notes
 from .schema import SLOT, format_schema, parse_schema, schema_lemmas
 from .schema_help import check_schema, form_help, lemma_choices, unit_schemas, written_words
@@ -96,6 +104,7 @@ from .services import (
     add_neologism_evidences,
     contest_attestation,
     contest_unit,
+    create_abstract_word,
     create_neologism,
     create_unit,
     create_unit_from_candidate,
@@ -118,8 +127,10 @@ from .services import (
     save_part,
     set_example,
     survey_unit,
+    update_abstract_word,
     update_neologism,
     update_unit,
+    validate_abstract_word,
     validate_neologism,
     validate_unit,
     withdraw_attestation,
@@ -135,7 +146,7 @@ from .sightings import (
     open_sighting,
     sighting_words,
 )
-from .spotting import spot_units
+from .spotting import spot_units, visible_units
 from .suggestions import confirm_suggestion
 from .survey import attestation_shapes
 
@@ -1792,6 +1803,129 @@ def neologism_validate(request, pk):
     if validate_neologism(neologism, request.user) is not None:
         messages.success(request, _("Le néologisme est validé."))
     return redirect(neologism)
+
+
+# Abstract words
+
+ABSTRACT_WORDS_PER_PAGE = 50
+# The time given to count the words of the core that meet each rule of an abstract word.
+RULE_COUNT_SECONDS = 3
+# Units shown on the page of an abstract word.
+ABSTRACT_WORD_UNITS = 50
+
+
+def _abstract_word(user, pk):
+    word = get_object_or_404(
+        AbstractWord.objects.select_related("created_by", "validated_by"), pk=pk
+    )
+    if not can_view(user, word):
+        raise Http404
+    return word
+
+
+def _rule_count(rule, layer):
+    """The words of the core that meet a rule, or None when they take too long to count."""
+    with TimeLimit(RULE_COUNT_SECONDS) as limit:
+        count = (
+            TokenAnalysis.objects.filter(
+                rule_condition(rule),
+                layer=layer,
+                token__edition__is_current=True,
+                token__edition__work__is_core=True,
+            )
+            .order_by()
+            .count()
+        )
+    return None if limit.exceeded else count
+
+
+def abstract_word_list(request):
+    words = AbstractWord.objects.filter(is_hidden=False)
+    query = " ".join(request.GET.get("q", "").split())[:100]
+    if query:
+        words = words.filter(Q(name__icontains=query) | Q(label__icontains=query))
+    page = Paginator(words, ABSTRACT_WORDS_PER_PAGE).get_page(request.GET.get("page"))
+    for word in page:
+        word.rule_labels = [rule_label(rule) for rule in word.rules]
+    return render(request, "phraseology/abstract_word_list.html", {"page": page, "query": query})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def abstract_word_create(request):
+    form = AbstractWordForm(request.POST or None, instance=AbstractWord(), user=request.user)
+    if request.method == "POST" and form.is_valid():
+        word = form.save(commit=False)
+        try:
+            create_abstract_word(word, request.user)
+        except ContributionLimitReached as error:
+            messages.error(request, str(error))
+        else:
+            messages.success(request, _("Le mot abstrait est proposé."))
+            return redirect(word)
+    return render(
+        request,
+        "phraseology/abstract_word_form.html",
+        {"form": form, "heading": _("Proposer un mot abstrait")},
+    )
+
+
+def abstract_word_detail(request, pk):
+    user = request.user
+    word = _abstract_word(user, pk)
+    layer = default_layer()
+    rules = [
+        {"label": rule_label(rule), "count": _rule_count(rule, layer) if layer else None}
+        for rule in word.rules
+    ]
+    written = str(word)
+    units = (
+        visible_units(user)
+        .filter(Q(schema__contains=written) | Q(reference_form__contains=written))
+        .order_by("reference_form", "pk")
+    )
+    return render(
+        request,
+        "phraseology/abstract_word_detail.html",
+        {
+            "word": word,
+            "rules": rules,
+            "units": units[:ABSTRACT_WORD_UNITS],
+            "counted": layer is not None,
+            "can_edit": can_edit_abstract_word(user, word),
+            "can_validate": is_reviewer(user) and word.status == AbstractWord.Status.PROPOSED,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def abstract_word_edit(request, pk):
+    word = _abstract_word(request.user, pk)
+    if not can_edit_abstract_word(request.user, word):
+        raise PermissionDenied
+    form = AbstractWordForm(request.POST or None, instance=word, user=request.user)
+    if request.method == "POST" and form.is_valid():
+        revision = update_abstract_word(form.save(commit=False), request.user)
+        if revision is None:
+            messages.info(request, _("Aucune modification."))
+        else:
+            messages.success(request, _("Les modifications sont enregistrées."))
+        return redirect(word)
+    return render(
+        request,
+        "phraseology/abstract_word_form.html",
+        {"form": form, "word": word, "heading": _("Modifier le mot abstrait")},
+    )
+
+
+@login_required
+@require_POST
+def abstract_word_validate(request, pk):
+    word = _abstract_word(request.user, pk)
+    if validate_abstract_word(word, request.user) is not None:
+        messages.success(request, _("Le mot abstrait est validé."))
+    return redirect(word)
 
 
 # Candidates

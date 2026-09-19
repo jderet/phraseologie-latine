@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n moderation_tags %}
+
+{% block title %}{{ word }} · {% translate "mot abstrait" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="page-medium">
+  <p class="eyebrow"><a href="{% url 'phraseology:abstract_word_list' %}">{% translate "Mots abstraits" %}</a></p>
+  <h1>{{ word }}</h1>
+  <p class="lede">{{ word.label }}</p>
+  <p class="badges"><span class="badge">{% translate "mot abstrait" %}</span> <span class="badge status-{{ word.status }}">{{ word.get_status_display }}</span></p>
+  {% if word.is_hidden %}
+  <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement : les fiches qui l’emploient n’en trouvent plus les mots." %}</p>
+  {% endif %}
+
+  <dl class="facts">
+    {% if word.definition %}
+    <div>
+      <dt>{% translate "Définition" %}</dt>
+      <dd>{{ word.definition|linebreaksbr }}</dd>
+    </div>
+    {% endif %}
+    <div id="regles">
+      <dt>{% translate "Un mot en fait partie s’il est" %}</dt>
+      <dd>
+        <ul class="part-list">
+          {% for rule in rules %}
+          <li>{% if not forloop.first %}<span class="muted">{% translate "ou" %}</span> {% endif %}{{ rule.label }}{% if counted %} <span class="muted">· {% if rule.count is None %}{% translate "trop long à compter" %}{% else %}{% blocktranslate count counter=rule.count %}{{ counter }} mot dans le noyau{% plural %}{{ counter }} mots dans le noyau{% endblocktranslate %}{% endif %}</span>{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </dd>
+    </div>
+    <div>
+      <dt>{% translate "Proposé par" %}</dt>
+      <dd>{% if word.created_by.is_active %}<a href="{{ word.created_by.get_absolute_url }}">{{ word.created_by.public_name }}</a>{% else %}{{ word.created_by.public_name }}{% endif %}, {{ word.created_at|date:"j F Y" }}</dd>
+    </div>
+    {% if word.validated_by %}
+    <div>
+      <dt>{% translate "Validé par" %}</dt>
+      <dd>{{ word.validated_by.public_name }}, {{ word.validated_at|date:"j F Y" }}</dd>
+    </div>
+    {% endif %}
+  </dl>
+  {% if can_edit or can_validate %}
+  <div class="form-links">
+    {% if can_edit %}<a class="button" href="{% url 'phraseology:abstract_word_edit' word.pk %}">{% translate "Modifier" %}</a>{% endif %}
+    {% if can_validate %}
+    <form method="post" action="{% url 'phraseology:abstract_word_validate' word.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button button-quiet">{% translate "Valider le mot abstrait" %}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <section class="unit-section" id="fiches" aria-labelledby="units-title">
+    <h2 id="units-title">{% translate "Fiches qui l’emploient" %}</h2>
+    <ul class="item-list">
+      {% for unit in units %}
+      <li><a class="item-title" lang="la" href="{{ unit.get_absolute_url }}">{{ unit.reference_form }}</a> <span class="muted">{{ unit.get_status_display }}</span></li>
+      {% empty %}
+      <li class="muted">{% translate "Aucune fiche ne l’emploie encore." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% moderation_links word %}
+  {% discussion word %}
+</article>
+{% endblock %}

@@ -1110,6 +1110,24 @@ article > h2 {
   border-top: 1px solid var(--rule);
 }
 
+.abstract-rule {
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.abstract-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.abstract-rules-short {
+  display: block;
+}
+
 .reference-row > div {
   display: grid;
   gap: 4px;

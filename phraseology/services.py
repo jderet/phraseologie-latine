@@ -23,6 +23,7 @@ from moderation.services import post_comment, save_with_revision
 
 from .frequency import count_by_author, occurrence_words, schema_matches
 from .models import (
+    AbstractWord,
     Attestation,
     AttestationDoubt,
     Candidate,
@@ -33,7 +34,12 @@ from .models import (
     UnitRelation,
     UnitSurvey,
 )
-from .permissions import can_edit_neologism, can_edit_unit, can_withdraw_attestation
+from .permissions import (
+    can_edit_abstract_word,
+    can_edit_neologism,
+    can_edit_unit,
+    can_withdraw_attestation,
+)
 from .schema import format_schema, writes_case
 from .spotting import refresh_unit_forms
 
@@ -748,6 +754,38 @@ def validate_neologism(neologism, reviewer):
     neologism.validated_by = reviewer
     neologism.validated_at = timezone.now()
     return save_with_revision(neologism, reviewer, comment=gettext("Validation"))
+
+
+# Abstract words
+
+
+@transaction.atomic
+def create_abstract_word(word, author):
+    """An abstract word is public at once, proposed until a reviewer validates it."""
+    word.created_by = author
+    word.status = AbstractWord.Status.PROPOSED
+    save_with_revision(word, author)
+    return word
+
+
+@transaction.atomic
+def update_abstract_word(word, user):
+    if not can_edit_abstract_word(user, word):
+        raise PermissionDenied
+    return save_with_revision(word, user)
+
+
+@transaction.atomic
+def validate_abstract_word(word, reviewer):
+    if not is_reviewer(reviewer):
+        raise PermissionDenied
+    word = AbstractWord.objects.select_for_update().get(pk=word.pk)
+    if word.status == AbstractWord.Status.VALIDATED:
+        return None
+    word.status = AbstractWord.Status.VALIDATED
+    word.validated_by = reviewer
+    word.validated_at = timezone.now()
+    return save_with_revision(word, reviewer, comment=gettext("Validation"))
 
 
 # Candidates

@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.text import Truncator
@@ -11,8 +13,17 @@ from translations.forms import ContributionForm
 from translations.models import Language
 from translations.services import normalize_sentence
 
+from .abstract import (
+    FEATURES,
+    MAX_RULES,
+    PARTS_OF_SPEECH,
+    RULE_PARTS_OF_SPEECH,
+    clean_name,
+    clean_rules,
+)
 from .markup import MARK, clean_marks, plain_form
 from .models import (
+    AbstractWord,
     Equivalent,
     NegativeSearch,
     Neologism,
@@ -284,6 +295,97 @@ class NeologismCreateForm(NeologismForm):
 
     def clean_expression(self):
         return normalize_sentence(self.cleaned_data["expression"])
+
+
+class AbstractWordForm(ContributionForm):
+    """An abstract word and its rules, one group of fields for each rule.
+
+    A word belongs to the class when it meets everything filled in on one line.
+    """
+
+    link_fields = ("label", "definition")
+
+    class Meta:
+        model = AbstractWord
+        fields = ("name", "label", "definition")
+        widgets = {"definition": forms.Textarea(attrs={"rows": 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            # The name is written in the units that use the word: it does not change.
+            self.fields["name"].disabled = True
+            self.fields["name"].help_text = _("Le nom ne change plus : les fiches l’emploient.")
+        rules = list(self.instance.rules or [])
+        for number in range(1, MAX_RULES + 1):
+            rule = rules[number - 1] if number <= len(rules) else {}
+            self.fields[f"upos{number}"] = forms.MultipleChoiceField(
+                label=_("Catégories"),
+                required=False,
+                choices=[(code, PARTS_OF_SPEECH[code]) for code in RULE_PARTS_OF_SPEECH],
+                widget=forms.CheckboxSelectMultiple(attrs={"class": "abstract-parts"}),
+                initial=rule.get("upos", []),
+            )
+            for feature, (label, choices) in FEATURES.items():
+                chosen = [value for value, _label in choices if value in rule.get("feats", [])]
+                self.fields[f"{feature.lower()}{number}"] = forms.ChoiceField(
+                    label=label,
+                    required=False,
+                    choices=[("", _("— tous —")), *choices],
+                    initial=chosen[0] if chosen else "",
+                )
+            self.fields[f"lemmas{number}"] = forms.CharField(
+                label=_("Lemmes"),
+                required=False,
+                max_length=1000,
+                help_text=_("Séparés par des virgules : aqua, uinum, potio."),
+                widget=forms.TextInput(attrs={"lang": "la", "spellcheck": "false"}),
+                initial=", ".join(rule.get("lemmas", [])),
+            )
+
+    def rule_rows(self):
+        """The fields of each rule, for the template: (number, parts of speech, the others)."""
+        return [
+            (
+                number,
+                self[f"upos{number}"],
+                [self[f"{feature.lower()}{number}"] for feature in FEATURES]
+                + [self[f"lemmas{number}"]],
+            )
+            for number in range(1, MAX_RULES + 1)
+        ]
+
+    def clean_name(self):
+        if self.instance.pk:
+            return self.instance.name
+        name = clean_name(self.cleaned_data["name"])
+        if AbstractWord.objects.filter(name=name).exists():
+            raise ValidationError(
+                _("Un mot abstrait porte déjà ce nom."), code="abstract_name_taken"
+            )
+        return name
+
+    def clean(self):
+        data = super().clean()
+        rules = []
+        for number in range(1, MAX_RULES + 1):
+            text = data.get(f"lemmas{number}", "") or ""
+            rules.append(
+                {
+                    "upos": data.get(f"upos{number}") or [],
+                    "feats": [
+                        data[f"{feature.lower()}{number}"]
+                        for feature in FEATURES
+                        if data.get(f"{feature.lower()}{number}")
+                    ],
+                    "lemmas": [lemma for lemma in re.split(r"[,;\s]+", text) if lemma],
+                }
+            )
+        try:
+            self.instance.rules = clean_rules(rules)
+        except ValidationError as error:
+            self.add_error(None, error)
+        return data
 
 
 class NeologismEquivalentForm(ContributionForm):

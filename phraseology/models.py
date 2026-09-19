@@ -556,6 +556,78 @@ class Neologism(ModeratedContent):
         return reverse("phraseology:neologism", args=[self.pk])
 
 
+class AbstractWord(ModeratedContent):
+    """A class of words that a node of a schema may stand for: {liquide}, {possesseur}.
+
+    A word belongs to the class when it meets every condition of one of its rules: parts of
+    speech, features and lemmas. Its name is written in the schemas and reference forms of the
+    units that use it, so that it never changes; its label may.
+    """
+
+    class Status(models.TextChoices):
+        PROPOSED = "proposed", _("proposé")
+        VALIDATED = "validated", _("validé")
+
+    name = models.CharField(
+        _("nom"),
+        max_length=40,
+        unique=True,
+        help_text=_(
+            "Le nom écrit entre accolades dans les schémas et les formes de référence : "
+            "liquide pour {liquide}. Lettres minuscules sans accents et traits d’union ; il ne "
+            "change plus ensuite."
+        ),
+    )
+    label = models.CharField(
+        _("intitulé"),
+        max_length=100,
+        help_text=_("Ce que le mot désigne, par exemple : nom désignant un liquide."),
+    )
+    definition = models.TextField(
+        _("définition"),
+        max_length=1000,
+        blank=True,
+        help_text=_("Facultatif : ce qui entre dans la classe et ce qui n’y entre pas."),
+    )
+    # [{"upos": ["NOUN"], "feats": ["Case=Gen"], "lemmas": ["aqua"]}, ...], see abstract.py.
+    rules = models.JSONField(_("règles"), default=list)
+    status = models.CharField(
+        _("statut"),
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PROPOSED,
+        editable=False,
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="abstract_words",
+        verbose_name=_("proposé par"),
+    )
+    created_at = models.DateTimeField(_("proposé le"), default=timezone.now, editable=False)
+    validated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("validé par"),
+    )
+    validated_at = models.DateTimeField(_("validé le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("mot abstrait")
+        verbose_name_plural = _("mots abstraits")
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{{{self.name}}}"
+
+    def get_absolute_url(self):
+        return reverse("phraseology:abstract_word", args=[self.pk])
+
+
 class NeologismEquivalent(ModeratedContent):
     """A modern word rendered by a neologism, such as « vélo » for *birota*."""
 
@@ -1043,6 +1115,13 @@ class ReadingNote(ModeratedContent):
 register(ReadingNote, owner_field="created_by", text_fields=("text",))
 
 
+register(
+    AbstractWord,
+    owner_field="created_by",
+    text_fields=("label", "definition"),
+    not_reverted=("name", "status", "validated_by", "validated_at"),
+    discussion=lambda user, word: True,
+)
 register(
     Neologism,
     owner_field="created_by",

@@ -7,6 +7,7 @@ from accounts.roles import is_reviewer
 from corpus.models import Author, TokenAnalysis
 from corpus.search import default_layer
 
+from .abstract import PARTS_OF_SPEECH
 from .models import Attestation, Equivalent, UnitFrequency
 from .permissions import can_edit_unit
 from .reading import shown_status
@@ -15,26 +16,7 @@ from .spotting import unit_attestations, visible_units
 EXAMPLES_SHOWN = 3
 AUTHORS_SHOWN = 6
 
-# Universal Dependencies parts of speech and relations, as the reader reads them.
-PARTS_OF_SPEECH = {
-    "ADJ": _("adjectif"),
-    "ADP": _("préposition"),
-    "ADV": _("adverbe"),
-    "AUX": _("auxiliaire"),
-    "CCONJ": _("conjonction de coordination"),
-    "DET": _("déterminant"),
-    "INTJ": _("interjection"),
-    "NOUN": _("nom commun"),
-    "NUM": _("numéral"),
-    "PART": _("particule"),
-    "PRON": _("pronom"),
-    "PROPN": _("nom propre"),
-    "PUNCT": _("ponctuation"),
-    "SCONJ": _("conjonction de subordination"),
-    "SYM": _("symbole"),
-    "VERB": _("verbe"),
-    "X": _("autre"),
-}
+# Universal Dependencies relations, as the reader reads them.
 RELATIONS = {
     "acl": _("proposition complément du nom"),
     "advcl": _("subordonnée circonstancielle"),

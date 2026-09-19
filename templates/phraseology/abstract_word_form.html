@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ heading }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-medium">
+  <p class="eyebrow">{% if word %}<a href="{{ word.get_absolute_url }}">{{ word }}</a>{% else %}<a href="{% url 'phraseology:abstract_word_list' %}">{% translate "Mots abstraits" %}</a>{% endif %}</p>
+  <h1>{{ heading }}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Un mot abstrait tient la place d’un mot dans un schéma : {liquide} pour aqua, uinum, potio…
+    Un mot du corpus lui appartient s’il remplit tout ce qui est coché ou écrit sur une des lignes.
+  {% endblocktranslate %}</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.name.as_field_group }}
+    {{ form.label.as_field_group }}
+    {{ form.definition.as_field_group }}
+    {% for number, parts, others in form.rule_rows %}
+    <fieldset class="abstract-rule">
+      <legend>{% blocktranslate %}Ligne {{ number }}{% endblocktranslate %}{% if number > 1 %} <span class="muted">{% translate "(ou)" %}</span>{% endif %}</legend>
+      {{ parts.as_field_group }}
+      <div class="reference-row">{% for field in others %}<div>{{ field.as_field_group }}</div>{% endfor %}</div>
+    </fieldset>
+    {% endfor %}
+    <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Mots abstraits" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a></p>
+  <h1>{% translate "Mots abstraits" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Un mot abstrait tient la place d’une classe de mots dans le schéma et la forme de référence
+    d’une fiche : {liquide} sūmere réunit aquam sūmere et pōtiōnem sūmere.
+  {% endblocktranslate %}</p>
+  {% if user.is_authenticated %}
+  <p class="actions"><a class="button" href="{% url 'phraseology:abstract_word_create' %}">{% translate "Proposer un mot abstrait" %}</a></p>
+  {% endif %}
+
+  <form method="get" class="filter-form">
+    <div class="field">
+      <label for="q">{% translate "Nom ou intitulé" %}</label>
+      <input type="search" id="q" name="q" value="{{ query }}">
+    </div>
+    <button type="submit" class="button button-quiet">{% translate "Filtrer" %}</button>
+  </form>
+
+  <ul class="item-list">
+    {% for word in page %}
+    <li>
+      <a class="item-title" href="{{ word.get_absolute_url }}">{{ word }}</a>
+      <span class="muted">{{ word.label }} · {{ word.get_status_display }}</span>
+      <span class="muted abstract-rules-short">{% for label in word.rule_labels %}{{ label }}{% if not forloop.last %} | {% endif %}{% endfor %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucun mot abstrait." %}</li>
+    {% endfor %}
+  </ul>
+  {% include "translations/pager.html" %}
+</section>
+{% endblock %}

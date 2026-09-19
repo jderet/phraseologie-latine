@@ -3,8 +3,8 @@
 from corpus.models import AnalysisLayer, Author, Edition, Passage, Token, TokenAnalysis, Work
 from corpus.text import normalize
 from justifications.services import corpus_evidence
-from phraseology.models import Unit
-from phraseology.services import create_unit
+from phraseology.models import AbstractWord, Unit
+from phraseology.services import create_abstract_word, create_unit
 
 
 def evidence(*tokens):
@@ -14,6 +14,23 @@ def evidence(*tokens):
 
 def make_unit(user, tokens, reference_form="consilium capere", definition="prendre une décision"):
     return create_unit(Unit(reference_form=reference_form), user, definition, [evidence(*tokens)])
+
+
+LIQUID = [{"upos": [], "feats": [], "lemmas": ["aqua", "uinum", "potio"]}]
+OWNER = [
+    {"upos": ["NOUN", "PROPN", "PRON"], "feats": ["Case=Gen"], "lemmas": []},
+    {"upos": [], "feats": [], "lemmas": ["meus", "tuus", "suus", "noster", "uester"]},
+]
+
+
+def make_abstract_word(user, name="liquide", rules=None, label="", validated=False):
+    word = create_abstract_word(
+        AbstractWord(name=name, label=label or name, rules=rules or LIQUID), user
+    )
+    if validated:
+        AbstractWord.objects.filter(pk=word.pk).update(status=AbstractWord.Status.VALIDATED)
+        word.refresh_from_db()
+    return word
 
 
 def set_status(unit, status):
