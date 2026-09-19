@@ -198,8 +198,8 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Page de projet à onglets (aperçu, comparer, propositions), encadré « Premiers pas » refermable, page d'aide « Traduire ici »
 - [x] Co-auteurs d'une version : invitation, acceptation, écriture à plusieurs ; l'auteur seul publie
 - [x] Notifications sur le site : cloche, page, mentions @nom
-- [ ] Suivre un projet, une version ou un texte source
-- [ ] Étoiles sur les versions publiées, tri des projets et des versions
+- [x] Suivre un projet, une version ou un texte source
+- [x] Étoiles sur les versions publiées, tri des projets et des versions
 - [ ] Fil d'activité d'un projet et d'un contributeur
 - [ ] Profil du contributeur : contributions et calendrier d'activité
 - [ ] Page « Mon atelier »

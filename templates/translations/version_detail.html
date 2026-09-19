@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n moderation_tags %}
+{% load i18n activity_tags moderation_tags %}
 
 {% block title %}{{ version }} · {{ block.super }}{% endblock %}
 
@@ -7,6 +7,7 @@
 <article>
   <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
   <h1>{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</h1>
+  <div class="page-actions">{% star_button version %}{% follow_button version %}</div>
   {% if is_reference %}<p><span class="badge reference-badge">{% translate "version de référence" %}</span></p>{% endif %}
   {% if version.is_draft %}
   <p class="notice notice-info">{% if members %}{% translate "Brouillon : cette version n’est visible que de son auteur et de ses co-auteurs." %}{% else %}{% translate "Brouillon : cette version n’est visible que de vous." %}{% endif %}</p>

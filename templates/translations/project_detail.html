@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n moderation_tags workshop_tags %}
+{% load i18n activity_tags moderation_tags workshop_tags %}
 
 {% block title %}{{ project.title }} · {{ block.super }}{% endblock %}
 
@@ -7,6 +7,7 @@
 <article>
   <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
   <h1>{{ project.title }}</h1>
+  <div class="page-actions">{% follow_button project %}</div>
   {% if project.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
   {% endif %}
@@ -40,6 +41,7 @@
   {% endif %}
 
   <h2>{% translate "Versions publiées" %}</h2>
+  {% if published|length > 1 %}<p class="note">{% if by_stars %}<a href="{% url 'translations:project' project.pk %}">{% translate "Trier par date de publication" %}</a>{% else %}<a href="?tri=etoiles">{% translate "Trier par étoiles" %}</a>{% endif %}</p>{% endif %}
   {% if is_creator and published %}
   <p class="note">{% translate "Vous avez créé ce projet : c’est vous qui choisissez la version de référence." %}</p>
   {% endif %}

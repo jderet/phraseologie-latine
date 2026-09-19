@@ -1,0 +1,4 @@
+{% load i18n %}{% if can_star %}<form method="post" action="{% url 'activity:star' version.pk %}" class="inline-form star-form">
+  {% csrf_token %}
+  <button type="submit" class="button button-quiet button-small star-button{% if starred %} is-on{% endif %}" aria-pressed="{% if starred %}true{% else %}false{% endif %}"><span aria-hidden="true">{% if starred %}★{% else %}☆{% endif %}</span> {% if starred %}{% translate "Étoilée" %}{% else %}{% translate "Étoiler" %}{% endif %} <span class="star-count">{{ count }}</span></button>
+</form>{% elif version.is_published %}<span class="star-total" title="{% translate 'étoiles' %}"><span aria-hidden="true">★</span> {% blocktranslate count counter=count %}{{ counter }} étoile{% plural %}{{ counter }} étoiles{% endblocktranslate %}</span>{% endif %}

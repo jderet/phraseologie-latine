@@ -150,3 +150,45 @@
   margin-left: 6px;
   font-size: 0.85rem;
 }
+
+/* Follow and star buttons */
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -4px 0 14px;
+}
+
+.button-small {
+  padding: 3px 10px;
+  font-size: 0.85rem;
+}
+
+.button-quiet.is-on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.star-button.is-on span[aria-hidden="true"],
+.star-total span[aria-hidden="true"] {
+  color: var(--gold);
+}
+
+.star-count {
+  margin-left: 2px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+.star-total {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+
+.sort-tabs {
+  margin-top: 4px;
+}

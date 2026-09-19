@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n moderation_tags %}
+{% load i18n activity_tags moderation_tags %}
 
 {% block title %}{{ proposal }} · {{ block.super }}{% endblock %}
 
@@ -7,6 +7,7 @@
 <article>
   <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a> · <a href="{% url 'translations:proposal_list' version.pk %}">{% translate "Propositions" %}</a></p>
   <h1>{% blocktranslate with name=proposal.author.public_name %}Proposition de {{ name }}{% endblocktranslate %}</h1>
+  <div class="page-actions">{% follow_button proposal %}</div>
   <p><span class="badge{% if proposal.is_open %} review-badge{% endif %}">{{ proposal.get_status_display }}</span></p>
   {% if proposal.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>

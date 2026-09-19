@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n moderation_tags %}
+{% load i18n activity_tags moderation_tags %}
 
 {% block title %}{{ source.title }} · {{ block.super }}{% endblock %}
 
@@ -7,6 +7,7 @@
 <article>
   <p class="eyebrow"><a href="{% url 'translations:source_list' %}">{% translate "Texte source" %}</a></p>
   <h1>{{ source.title }}</h1>
+  <div class="page-actions">{% follow_button source %}</div>
   {% if source.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
   {% endif %}

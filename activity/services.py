@@ -18,6 +18,17 @@ from moderation.registry import can_view
 
 from .models import Event, Notification, Star, Subscription, Verb
 
+# Contents one may follow, by model label.
+FOLLOWABLE = {
+    "translations.translationproject",
+    "translations.translationversion",
+    "translations.sourcetext",
+    "translations.changeproposal",
+    "translations.sourceproposal",
+    "translations.topic",
+    "justifications.challenge",
+}
+
 MENTION = re.compile(r"(?<![\w@])@([\w][\w.-]{1,79})")
 MAX_MENTIONS = 10
 

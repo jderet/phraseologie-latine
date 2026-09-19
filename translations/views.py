@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, F, OuterRef, Prefetch, Q, Subquery
+from django.db.models.functions import Coalesce
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -17,6 +18,8 @@ from django.utils.translation import ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
+from activity.models import Event, Star
+from activity.templatetags.activity_tags import star_counts
 from corpus.forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm
 from justifications.display import visible_evidences
 from justifications.models import Challenge, Justification
@@ -593,15 +596,48 @@ def source_proposal_act(request, pk, action):
 # Projects
 
 
+# Orders of the list of projects: newest, most starred, latest public activity.
+PROJECT_ORDERS = {
+    "recents": ("-created_at", "-pk"),
+    "etoiles": ("-star_count", "-created_at", "-pk"),
+    "activite": (F("last_activity").desc(nulls_last=True), "-created_at", "-pk"),
+}
+
+
 def project_list(request):
     published = Q(versions__state=TranslationVersion.State.PUBLISHED, versions__is_hidden=False)
+    order = request.GET.get("tri") if request.GET.get("tri") in PROJECT_ORDERS else "recents"
+    stars = (
+        Star.objects.filter(
+            version__project=OuterRef("pk"),
+            version__state=TranslationVersion.State.PUBLISHED,
+            version__is_hidden=False,
+        )
+        .order_by()
+        .values("version__project")
+        .annotate(total=Count("pk"))
+        .values("total")
+    )
+    last_event = (
+        Event.objects.filter(project=OuterRef("pk"), is_public=True)
+        .order_by("-created_at")
+        .values("created_at")[:1]
+    )
     projects = (
         TranslationProject.objects.filter(is_hidden=False, source_text__is_hidden=False)
         .select_related("source_text", "created_by")
-        .annotate(published_count=Count("versions", filter=published))
-        .order_by("-created_at", "-pk")
+        .annotate(
+            published_count=Count("versions", filter=published, distinct=True),
+            star_count=Coalesce(Subquery(stars), 0),
+            last_activity=Subquery(last_event),
+        )
+        .order_by(*PROJECT_ORDERS[order])
     )
-    return render(request, "translations/project_list.html", {"page": _paginate(request, projects)})
+    return render(
+        request,
+        "translations/project_list.html",
+        {"page": _paginate(request, projects), "order": order},
+    )
 
 
 @login_required
@@ -628,9 +664,14 @@ def project_detail(request, pk):
             "author", "copied_from__version__author"
         )
     )
+    stars = star_counts(versions)
     for version in versions:
         _step, sentences = shown_sentences(request.user, version)
         version.translated_count = sum(1 for sentence in sentences.values() if sentence.text)
+        version.star_count = stars.get(version.pk, 0)
+    by_stars = request.GET.get("tri") == "etoiles"
+    if by_stars:
+        versions.sort(key=lambda version: -version.star_count)
     return render(
         request,
         "translations/project_detail.html",
@@ -645,6 +686,7 @@ def project_detail(request, pk):
             "can_propose_source": can_propose_source(request.user, project.source_text),
             "reference_id": project.reference_version_id,
             "is_creator": request.user.pk == project.created_by_id,
+            "by_stars": by_stars,
         },
     )
 

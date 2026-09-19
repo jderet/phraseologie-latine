@@ -1,0 +1,4 @@
+{% load i18n %}{% if show %}<form method="post" action="{% url 'activity:follow' app_label model_name obj.pk %}" class="inline-form follow-form">
+  {% csrf_token %}
+  <button type="submit" class="button button-quiet button-small{% if following %} is-on{% endif %}" aria-pressed="{% if following %}true{% else %}false{% endif %}" title="{% if following %}{% translate 'Vous recevez une notification de ce qui arrive à ce contenu.' %}{% else %}{% translate 'Recevoir une notification de ce qui arrive à ce contenu.' %}{% endif %}">{% if following %}{% translate "Suivi" %}{% else %}{% translate "Suivre" %}{% endif %}</button>
+</form>{% endif %}
