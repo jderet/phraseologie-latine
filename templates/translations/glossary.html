@@ -40,6 +40,7 @@
       </tbody>
     </table>
   </div>
+  <p class="export-links">{% translate "Exporter les termes adoptés :" %} <a href="{% url 'translations:glossary_export' project.pk 'csv' %}">CSV</a> · <a href="{% url 'translations:glossary_export' project.pk 'tbx' %}">TBX</a></p>
   <p class="note">{% if show_rejected %}<a href="{% url 'translations:glossary' project.pk %}">{% translate "Masquer les termes écartés" %}</a>{% else %}<a href="?ecartes=1">{% translate "Montrer les termes écartés" %}</a>{% endif %}</p>
   {% if form %}
   <h2>{% if can_decide %}{% translate "Ajouter un terme" %}{% else %}{% translate "Proposer un terme" %}{% endif %}</h2>

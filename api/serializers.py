@@ -22,7 +22,7 @@ from phraseology.models import (
     Unit,
     UnitFrequency,
 )
-from translations.models import TranslationVersion
+from translations.models import GlossaryEntry, Topic, TranslationVersion, VersionMember
 from translations.sources import SourceHistory
 from translations.steps import public_step, step_sentences
 
@@ -275,6 +275,13 @@ def version_summary(version, link):
             if version.copied_from_id
             else None
         ),
+        "co_authors": [
+            member.user.public_name
+            for member in version.members.filter(status=VersionMember.Status.ACTIVE)
+            .select_related("user")
+            .order_by("decided_at", "pk")
+        ],
+        "stars": version.stars.count(),
         "license": LICENSE,
     }
 
@@ -283,6 +290,7 @@ def step_data(step, link):
     return {
         "number": step.number,
         "message": step.message,
+        "label": step.label,
         "created_at": _date(step.created_at),
         "url": link(step.get_absolute_url()),
     }
@@ -310,6 +318,10 @@ def version_data(version, link):
     return {
         **version_summary(version, link),
         "step": step_data(step, link) if step else None,
+        "editions": [
+            step_data(edition, link)
+            for edition in version.steps.public().exclude(label="").order_by("number")
+        ],
         "segments": [
             {
                 "order": number,
@@ -441,4 +453,65 @@ def correction_data(correction, link):
         "created_at": _date(correction.created_at),
         "validated_at": _date(correction.reviewed_at),
         **(_words([correction.token]) or {}),
+    }
+
+
+# Topics and glossaries of the projects
+
+
+def public_topics():
+    return (
+        Topic.objects.filter(
+            is_hidden=False, project__is_hidden=False, project__source_text__is_hidden=False
+        )
+        .select_related("project", "author", "segment")
+        .order_by("project", "number")
+    )
+
+
+def topic_data(topic, link):
+    return {
+        "project": {"id": topic.project_id, "title": topic.project.title},
+        "number": topic.number,
+        "url": link(topic.get_absolute_url()),
+        "title": topic.title,
+        "body": topic.body,
+        "labels": topic.labels,
+        "sentence": topic.segment.text if topic.segment_id else None,
+        "status": topic.status,
+        "author": topic.author.public_name,
+        "created_at": _date(topic.created_at),
+        "closed_at": _date(topic.closed_at),
+        "license": LICENSE,
+    }
+
+
+def public_glossary():
+    """Adopted terms of the glossaries of public projects."""
+    return (
+        GlossaryEntry.objects.filter(
+            status=GlossaryEntry.Status.ADOPTED,
+            is_hidden=False,
+            project__is_hidden=False,
+            project__source_text__is_hidden=False,
+        )
+        .select_related("project__source_text", "unit", "neologism", "author")
+        .order_by("project", "source_term", "pk")
+    )
+
+
+def glossary_entry_data(entry, link):
+    return {
+        "id": entry.pk,
+        "project": {"id": entry.project_id, "title": entry.project.title},
+        "source_language": entry.project.source_text.language,
+        "source_term": entry.source_term,
+        "latin_term": entry.latin_term,
+        "note": entry.note,
+        "unit": entry.unit_id if entry.unit_id and visible(entry.unit) else None,
+        "neologism": (
+            entry.neologism_id if entry.neologism_id and visible(entry.neologism) else None
+        ),
+        "author": entry.author.public_name,
+        "license": LICENSE,
     }

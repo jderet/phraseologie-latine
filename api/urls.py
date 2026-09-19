@@ -18,6 +18,8 @@ urlpatterns = [
     path("api/v1/reperages/", views.sightings, name="sightings"),
     path("api/v1/notes-de-lecture/", views.reading_notes, name="reading_notes"),
     path("api/v1/corrections/", views.corrections, name="corrections"),
+    path("api/v1/sujets/", views.topics, name="topics"),
+    path("api/v1/glossaires/", views.glossaries, name="glossaries"),
     path("donnees/", views.data, name="data"),
     path("donnees/export/", views.export_download, name="export"),
 ]

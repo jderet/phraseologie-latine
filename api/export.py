@@ -36,6 +36,8 @@ Contenu
 - reperages.json : repérages de phraséologie sans fiche, rattachés ou non ({sightings})
 - notes-de-lecture.json : notes de lecture publiques sur des mots du corpus ({notes})
 - corrections.json : corrections validées de l'analyse automatique ({corrections})
+- sujets.json : sujets ouverts sur les projets de traduction ({topics})
+- glossaires.json : termes adoptés des glossaires des projets ({glossary})
 
 Les attestations sont dans fiches.json. Les mots sont désignés par leur identifiant stable.
 
@@ -43,7 +45,8 @@ Licence : CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
 Créditer « contributeurs de Phraséologie latine » ; chaque élément donne le nom public de
 son auteur. Les citations du corpus viennent de Perseus canonical-latinLit (CC BY-SA 4.0).
 Les brouillons et les contenus masqués ne sont pas exportés, ni aucune adresse e-mail,
-ni le carnet personnel des lecteurs.
+ni le carnet personnel des lecteurs, ni leur mémoire personnelle, leurs notifications ou les
+commentaires des brouillons.
 Une attestation de niveau « automatic » a été repérée automatiquement, jamais vérifiée.
 """
 
@@ -88,6 +91,10 @@ def write_export(directory=None, now=None):
         "corrections.json": [
             serializers.correction_data(c, _link) for c in serializers.validated_corrections()
         ],
+        "sujets.json": [serializers.topic_data(t, _link) for t in serializers.public_topics()],
+        "glossaires.json": [
+            serializers.glossary_entry_data(e, _link) for e in serializers.public_glossary()
+        ],
     }
     counts = {name: len(items) for name, items in datasets.items()}
     notice = NOTICE.format(
@@ -101,6 +108,8 @@ def write_export(directory=None, now=None):
         sightings=counts["reperages.json"],
         notes=counts["notes-de-lecture.json"],
         corrections=counts["corrections.json"],
+        topics=counts["sujets.json"],
+        glossary=counts["glossaires.json"],
     )
     path = directory / f"{PREFIX}{now:%Y-%m-%d-%H%M%S}.zip"
     partial = path.with_suffix(".part")

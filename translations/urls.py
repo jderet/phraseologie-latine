@@ -68,6 +68,11 @@ urlpatterns = [
     ),
     path("projets/<int:pk>/glossaire/", workshop_views.glossary, name="glossary"),
     path(
+        "projets/<int:pk>/glossaire.<slug:extension>",
+        workshop_views.glossary_export,
+        name="glossary_export",
+    ),
+    path(
         "projets/<int:pk>/glossaire/<int:entry_pk>/modifier/",
         workshop_views.glossary_edit,
         name="glossary_edit",

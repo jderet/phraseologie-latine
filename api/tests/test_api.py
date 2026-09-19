@@ -58,6 +58,8 @@ class ApiTests(ApiTestCase):
                 "sightings",
                 "reading_notes",
                 "corrections",
+                "topics",
+                "glossaries",
             },
         )
         self.assertEqual(response["Access-Control-Allow-Origin"], "*")

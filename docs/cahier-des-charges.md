@@ -55,11 +55,14 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
   - Tout compte peut **partir d'une version publiée** : il obtient sa propre version, en brouillon, qui mentionne son origine (version et étape). Les justifications ne sont pas copiées ; chaque phrase reprise reste au nom de qui l'a écrite.
   - Tout compte actif peut **proposer des modifications** à la version publiée d'un autre, avec une explication et une discussion. L'auteur de la version accepte ou refuse chaque phrase proposée ; une phrase acceptée entre dans son texte de travail, au nom de qui l'a proposée, et paraît à l'étape suivante. L'auteur et ses co-auteurs restent seuls maîtres de leur version (Q36). Une proposition compte dans la limite des nouveaux comptes (T10).
 - **Vie d'un projet, à la manière de GitHub** (choix du 19 septembre 2026) : page à onglets (aperçu, comparer, propositions, sujets, activité), encadré « Premiers pas » refermable et page d'aide ; notifications sur le site (cloche, page, mentions @nom), sans e-mail ; suivre un projet, une version, un texte ou une discussion ; étoiles sur les versions publiées et tri des projets ; fil d'activité public ; profil avec contributions et calendrier d'activité ; page « Mon atelier » ; sujets d'un projet, comme des *issues*.
+- **Éditeur professionnel** (choix du 19 septembre 2026) : les trois colonnes restent l'écran ; les outils avancés sont dans un panneau à onglets (justifications, mémoire, glossaire, commentaires, historique, concordance, corpus) et dans des menus repliés. Statut de chaque phrase (à traduire, brouillon, traduite, relue) et progression en couleurs ; filtres et recherche ; raccourcis clavier ; mémoire de traduction (autres versions de la phrase, phrases ressemblantes, mémoire personnelle importée en TMX) ; concordance des traductions publiées ; glossaire du projet ; commentaires par phrase ; historique d'une phrase ; contrôle qualité de forme, jamais le corpus (Q47) ; rechercher et remplacer ; statistiques.
+- **Collaborer entre versions** (même date) : mettre sa copie à jour d'après l'originale, lui proposer ses changements, relectures des propositions et fil par phrase proposée, étiquettes d'étape (éditions), retour à une étape, réseau des copies, vue « qui a écrit quoi ».
+- **Échanges** : export et import XLIFF 1.2, glossaire en CSV et TBX.
 - Alignement phrase à phrase, et au niveau du groupe de mots en option (Q39).
 - Écran principal en trois colonnes : texte source, latin, corpus et justifications (Q67). Saisie facilitée des macrons (Q68) : une voyelle suivie de = prend un macron (a= donne ā), et des boutons ā ē ī ō ū ȳ complètent la saisie. Conçu d'abord pour ordinateur (Q69).
 - Réalités modernes : périphrase classique de préférence. Le *Lexicon recentis Latinitatis* est cité par simple référence. La plateforme tient son propre lexique de néologismes, justifiés comme le reste et marqués « néologisme » (Q40, T5).
 - Édition simultanée en temps réel : plus tard (Q38).
-- Exports : texte bilingue, PDF avec notes justificatives, TEI, TMX (Q43). Le PDF est enregistré par le navigateur à partir d'une page imprimable, sans outil supplémentaire sur le serveur (choix du 13 septembre 2026).
+- Exports : texte bilingue, PDF avec notes justificatives, TEI, TMX (Q43), XLIFF. Le PDF est enregistré par le navigateur à partir d'une page imprimable, sans outil supplémentaire sur le serveur (choix du 13 septembre 2026).
 
 ### 4.2 Phraséologie
 
@@ -134,7 +137,7 @@ L'objet central est l'**unité phraséologique** (par exemple *consilium capere*
 
 ### 4.9 Données ouvertes
 
-- API publique et export complet téléchargeable (Q65). L'API est en lecture seule, au format JSON et sans clé ; l'export complet est une archive de fichiers JSON produite par une commande et téléchargeable sur la page « Données ouvertes ». Ni l'une ni l'autre ne contient de brouillon, de contenu masqué ou d'adresse e-mail. Les versions de traduction s'exportent aussi en TEI et en TMX (choix du 14 septembre 2026).
+- API publique et export complet téléchargeable (Q65). L'API est en lecture seule, au format JSON et sans clé ; l'export complet est une archive de fichiers JSON produite par une commande et téléchargeable sur la page « Données ouvertes ». Ni l'une ni l'autre ne contient de brouillon, de contenu masqué ou d'adresse e-mail. Les versions de traduction s'exportent aussi en TEI, en TMX et en XLIFF, étape par étape (choix du 14 et du 19 septembre 2026). L'API et l'export complet donnent aussi les sujets des projets, les termes adoptés des glossaires, le nombre d'étoiles, les co-auteurs et les éditions des versions ; jamais les notifications, la mémoire personnelle ni les commentaires d'un brouillon.
 - Dépôt périodique des données sur Zenodo, avec la liste des contributeurs qui acceptent d'y figurer (T13, T17). Modalités à préciser.
 
 ### 4.10 Lecture et annotation du corpus

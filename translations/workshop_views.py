@@ -1,11 +1,16 @@
 """Pages of the translation workshop around the versions: help, tabs of a project."""
 
+import csv
+import io
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.http import Http404, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -421,3 +426,37 @@ def glossary_decide(request, pk, entry_pk):
     else:
         messages.success(request, _("Le terme est écarté."))
     return redirect(entry)
+
+
+@require_GET
+def glossary_export(request, pk, extension):
+    """The adopted terms of a glossary as CSV or TBX (TermBase eXchange), for other software."""
+    if extension not in ("csv", "tbx"):
+        raise Http404
+    project = _project(request.user, pk)
+    entries = glossary_services.visible_terms(request.user, project)
+    language = project.source_text.language
+    filename = f"glossaire-{slugify(project.title) or project.pk}.{extension}"
+    if extension == "csv":
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow([language, "la", "note"])
+        for entry in entries:
+            writer.writerow(
+                [_csv_cell(entry.source_term), _csv_cell(entry.latin_term), _csv_cell(entry.note)]
+            )
+        content, content_type = output.getvalue(), "text/csv; charset=utf-8"
+    else:
+        content = render_to_string(
+            "translations/glossary.tbx",
+            {"project": project, "entries": entries, "language": language},
+        )
+        content_type = "application/x-tbx+xml; charset=utf-8"
+    response = HttpResponse(content, content_type=content_type)
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+def _csv_cell(value):
+    """A cell a spreadsheet will not run as a formula."""
+    return f"'{value}" if value[:1] in ("=", "+", "-", "@") else value

@@ -71,6 +71,8 @@ def index(request):
                 "sightings": link(reverse("api:sightings")),
                 "reading_notes": link(reverse("api:reading_notes")),
                 "corrections": link(reverse("api:corrections")),
+                "topics": link(reverse("api:topics")),
+                "glossaries": link(reverse("api:glossaries")),
             },
             "full_export": link(reverse("api:data")),
         }
@@ -135,6 +137,16 @@ def reading_notes(request):
 @require_GET
 def corrections(request):
     return _list(request, serializers.validated_corrections(), serializers.correction_data)
+
+
+@require_GET
+def topics(request):
+    return _list(request, serializers.public_topics(), serializers.topic_data)
+
+
+@require_GET
+def glossaries(request):
+    return _list(request, serializers.public_glossary(), serializers.glossary_entry_data)
 
 
 @require_GET

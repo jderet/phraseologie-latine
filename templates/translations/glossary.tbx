@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<martif type="TBX" xml:lang="fr">
+  <martifHeader>
+    <fileDesc><titleStmt><title>{{ project.title }}</title></titleStmt><sourceDesc><p>Phraséologie latine · CC BY-SA 4.0</p></sourceDesc></fileDesc>
+  </martifHeader>
+  <text>
+    <body>
+{% for entry in entries %}      <termEntry id="terme-{{ entry.pk }}">
+{% if entry.note %}        <descrip type="definition">{{ entry.note }}</descrip>
+{% endif %}        <langSet xml:lang="{{ language }}"><tig><term>{{ entry.source_term }}</term></tig></langSet>
+        <langSet xml:lang="la"><tig><term>{{ entry.latin_term }}</term></tig></langSet>
+      </termEntry>
+{% endfor %}    </body>
+  </text>
+</martif>
