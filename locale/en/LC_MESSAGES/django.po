@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 14:06+0200\n"
+"POT-Creation-Date: 2026-09-19 14:08+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -5044,6 +5044,11 @@ msgstr ""
 #: templates/activity/event.html:3
 msgid "contenu indisponible"
 msgstr "content unavailable"
+
+#: templates/activity/event.html:4
+#, python-format
+msgid "il y a %(delay)s"
+msgstr "%(delay)s ago"
 
 #: templates/activity/follow_button.html:3
 msgid "Vous recevez une notification de ce qui arrive à ce contenu."

@@ -350,3 +350,9 @@
   margin: 14px 0;
   line-height: 1.55;
 }
+
+.item-list + h2,
+.item-list + form,
+.item-list + .form {
+  margin-top: 28px;
+}

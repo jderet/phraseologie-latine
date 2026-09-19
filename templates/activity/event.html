@@ -1,5 +1,5 @@
 {% load i18n activity_tags %}{% event_target event as target %}<span class="event-line">
   <a href="{{ event.actor.get_absolute_url }}">{{ event.actor.public_name }}</a>
   {{ event.get_verb_display }}{% if target %} : <a href="{{ target.url }}">{{ target.label }}</a>{% else %} <span class="muted">({% translate "contenu indisponible" %})</span>{% endif %}{% if show_project and event.project %} <span class="muted">· {{ event.project.title }}</span>{% endif %}
-  <time class="muted" datetime="{{ event.created_at|date:'c' }}">{{ event.created_at|timesince }}</time>
+  <time class="muted" datetime="{{ event.created_at|date:'c' }}">{% blocktranslate with delay=event.created_at|timesince %}il y a {{ delay }}{% endblocktranslate %}</time>
 </span>
