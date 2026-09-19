@@ -40,6 +40,10 @@ def signup(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
+            if settings.SIGNUP_SKIP_EMAIL_VERIFICATION:
+                activate_user(user)
+                login(request, user)
+                return redirect("accounts:account")
             # Signing up again resends the link, a few times per hour at most per address.
             if not ACTIVATION_EMAILS.is_blocked(user.email):
                 ACTIVATION_EMAILS.hit(user.email)
@@ -69,7 +73,7 @@ def activate(request, uidb64, token):
         return render(request, "accounts/activation_invalid.html", status=400)
     if request.method == "POST":
         activate_user(user)
-        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        login(request, user)
         messages.success(request, _("Votre compte est activé. Bienvenue !"))
         return set_language_cookie(redirect("accounts:account"), user.interface_language)
     return render(request, "accounts/activate.html", {"activated_user": user})

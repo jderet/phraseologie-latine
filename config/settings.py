@@ -123,6 +123,10 @@ NEW_ACCOUNT_DAILY_LIMIT = env.int("NEW_ACCOUNT_DAILY_LIMIT", default=10)
 # Days after which a registration whose activation link was never used is deleted.
 PENDING_SIGNUP_RETENTION_DAYS = env.int("PENDING_SIGNUP_RETENTION_DAYS", default=7)
 
+# Local testing only: activate and log in new accounts without the activation e-mail.
+# A deploy check refuses it when DEBUG is off.
+SIGNUP_SKIP_EMAIL_VERIFICATION = env.bool("SIGNUP_SKIP_EMAIL_VERIFICATION", default=False)
+
 
 # Internationalization: interface strings are written in French and translated in locale/.
 

@@ -8,6 +8,7 @@ class AccountsConfig(AppConfig):
     verbose_name = _("Comptes")
 
     def ready(self):
+        from . import checks  # noqa: F401
         from .roles import sync_roles
 
         post_migrate.connect(sync_roles, dispatch_uid="accounts.roles.sync_roles")

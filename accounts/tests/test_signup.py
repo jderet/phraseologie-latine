@@ -2,11 +2,12 @@ import re
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from accounts.checks import check_signup_verification
 from accounts.models import User
 from accounts.roles import CONTRIBUTOR
 
@@ -103,3 +104,23 @@ class ActivationTests(TestCase):
         token = default_token_generator.make_token(self.user)
         response = self.client.post(reverse("accounts:activate", args=[uid, token]))
         self.assertEqual(response.status_code, 400)
+
+
+class SkipEmailVerificationTests(TestCase):
+    @override_settings(SIGNUP_SKIP_EMAIL_VERIFICATION=True)
+    def test_account_is_active_and_logged_in_at_once(self):
+        response = self.client.post(reverse("accounts:signup"), SIGNUP)
+        self.assertRedirects(response, reverse("accounts:account"))
+        user = User.objects.get(email="plinius@example.org")
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.groups.filter(name=CONTRIBUTOR).exists())
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
+
+    @override_settings(SIGNUP_SKIP_EMAIL_VERIFICATION=True, DEBUG=False)
+    def test_deploy_check_refuses_it_without_debug(self):
+        self.assertEqual([e.id for e in check_signup_verification(None)], ["accounts.E001"])
+
+    @override_settings(SIGNUP_SKIP_EMAIL_VERIFICATION=True, DEBUG=True)
+    def test_deploy_check_allows_it_with_debug(self):
+        self.assertEqual(check_signup_verification(None), [])
