@@ -20,7 +20,11 @@
           <a href="{% url 'translations:project_list' %}">{% translate "Traduction" %}</a>
         </nav>
       </div>
-      <div class="site-tools">
+      <nav class="site-tools" aria-label="{% translate 'Compte' %}">
+        {% if user.is_authenticated %}
+          <a class="tool-link bell" href="{% url 'activity:notifications' %}">{% translate "Notifications" %}{% if unread_notifications %} <span class="bell-count" aria-label="{% blocktranslate count counter=unread_notifications %}{{ counter }} non lue{% plural %}{{ counter }} non lues{% endblocktranslate %}">{{ unread_notifications }}</span>{% endif %}</a>
+          <a class="tool-link" href="{% url 'activity:workshop' %}">{% translate "Mon atelier" %}</a>
+        {% endif %}
         <form class="theme-toggle" action="{% url 'core:theme' %}" method="post">
           {% csrf_token %}
           <input name="next" type="hidden" value="{{ request.get_full_path }}">
@@ -29,29 +33,30 @@
           <button type="submit" name="theme" value="auto" aria-labelledby="theme-label" class="theme-option{% if not request.COOKIES.theme or request.COOKIES.theme == 'auto' %} is-current{% endif %}"{% if not request.COOKIES.theme or request.COOKIES.theme == 'auto' %} aria-pressed="true"{% endif %}>{% translate "Auto" %}</button>
           <button type="submit" name="theme" value="dark" aria-labelledby="theme-label" class="theme-option{% if request.COOKIES.theme == 'dark' %} is-current{% endif %}"{% if request.COOKIES.theme == 'dark' %} aria-pressed="true"{% endif %}>{% translate "Sombre" %}</button>
         </form>
-        <nav class="site-nav" aria-label="{% translate 'Compte' %}">
-          {% if user.is_authenticated %}
-            {% if user|is_reviewer %}
-            <a href="{% url 'phraseology:reviewer' %}">{% translate "Relecture" %}</a>
-            <a href="{% url 'moderation:report_queue' %}">{% translate "Signalements" %}</a>
-            {% endif %}
-            {% if user|is_administrator %}
-            <a href="{% url 'accounts:dashboard' %}">{% translate "Tableau de bord" %}</a>
-            {% endif %}
-            <a href="{% url 'activity:workshop' %}">{% translate "Mon atelier" %}</a>
-            <a class="bell" href="{% url 'activity:notifications' %}">{% translate "Notifications" %}{% if unread_notifications %} <span class="bell-count" aria-label="{% blocktranslate count counter=unread_notifications %}{{ counter }} non lue{% plural %}{{ counter }} non lues{% endblocktranslate %}">{{ unread_notifications }}</span>{% endif %}</a>
-            <a href="{% url 'phraseology:annotator' %}">{% translate "Mes annotations" %}</a>
-            <a href="{% url 'notebook:notebook' %}">{% translate "Mon carnet" %}</a>
-            <a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a>
-            <form action="{% url 'accounts:logout' %}" method="post">
-              {% csrf_token %}
-              <button type="submit" class="link-button">{% translate "Déconnexion" %}</button>
-            </form>
-          {% else %}
-            <a href="{% url 'accounts:login' %}">{% translate "Connexion" %}</a>
-            <a href="{% url 'accounts:signup' %}">{% translate "Inscription" %}</a>
-          {% endif %}
-        </nav>
+        {% if user.is_authenticated %}
+          <details class="account-menu">
+            <summary class="tool-link">{{ user.public_name }} <span aria-hidden="true">▾</span></summary>
+            <div class="menu-body">
+              {% if user|is_reviewer %}
+              <a href="{% url 'phraseology:reviewer' %}">{% translate "Relecture" %}</a>
+              <a href="{% url 'moderation:report_queue' %}">{% translate "Signalements" %}</a>
+              {% endif %}
+              {% if user|is_administrator %}
+              <a href="{% url 'accounts:dashboard' %}">{% translate "Tableau de bord" %}</a>
+              {% endif %}
+              <a href="{% url 'phraseology:annotator' %}">{% translate "Mes annotations" %}</a>
+              <a href="{% url 'notebook:notebook' %}">{% translate "Mon carnet" %}</a>
+              <a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a>
+              <form action="{% url 'accounts:logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">{% translate "Déconnexion" %}</button>
+              </form>
+            </div>
+          </details>
+        {% else %}
+          <a href="{% url 'accounts:login' %}">{% translate "Connexion" %}</a>
+          <a class="button" href="{% url 'accounts:signup' %}">{% translate "Inscription" %}</a>
+        {% endif %}
         <form class="lang" action="{% url 'set_language' %}" method="post">
           {% csrf_token %}
           <input name="next" type="hidden" value="{{ request.get_full_path }}">
@@ -59,12 +64,12 @@
           <select id="language" name="language">
             {% get_available_languages as LANGUAGES %}
             {% for code, name in LANGUAGES %}
-              <option value="{{ code }}"{% if code == LANGUAGE_CODE %} selected{% endif %}>{{ name }}</option>
+            <option value="{{ code }}"{% if code == LANGUAGE_CODE %} selected{% endif %}>{{ name }}</option>
             {% endfor %}
           </select>
           <button type="submit">{% translate "Changer" %}</button>
         </form>
-      </div>
+      </nav>
     </div>
   </header>
 

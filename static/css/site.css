@@ -244,6 +244,75 @@ h2 {
   color: var(--ink-2);
 }
 
+/* The home page: the pitch at left, one validated entry quoted at right. */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 32px 48px;
+  align-items: center;
+}
+
+.hero .cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0 0;
+}
+
+.hero .cta .button-quiet {
+  padding: 8px 18px;
+}
+
+.home-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.84rem;
+  color: var(--ink-3);
+}
+
+.home-stats strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.home-quote {
+  margin: 0;
+  padding: 28px 32px;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--gold);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgb(27 36 31 / 6%), 0 4px 14px rgb(27 36 31 / 6%);
+}
+
+.home-quote blockquote {
+  margin: 0;
+}
+
+.home-quote figcaption {
+  margin-top: 14px;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .goals dl {
   display: grid;
   gap: 16px;
@@ -289,7 +358,81 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 28px;
+  gap: 8px 14px;
+}
+
+/* A tool of the header: bell, workshop, account name, as a quiet pill. */
+.tool-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+}
+
+.tool-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* The account links gathered in a dropdown, so the header fits a narrow screen. */
+.account-menu {
+  position: relative;
+}
+
+.account-menu summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.account-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-menu .menu-body {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  display: grid;
+  gap: 2px;
+  min-width: 15rem;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgb(27 36 31 / 14%);
+}
+
+.account-menu .menu-body a,
+.account-menu .menu-body button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+  text-decoration: none;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.account-menu .menu-body a:hover,
+.account-menu .menu-body button:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.account-menu .menu-body form {
+  margin: 0;
 }
 
 .site-nav {
@@ -1664,6 +1807,35 @@ article > h2 {
   font-size: 1.3rem;
 }
 
+/* The sections of an entry fold; they start open. */
+details.fold > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+details.fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.fold > summary::before {
+  content: "▸";
+  font-size: 0.9rem;
+  color: var(--accent);
+  transition: transform 0.15s;
+}
+
+details.fold[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+details.fold > summary h2 {
+  display: inline;
+  margin: 0;
+}
+
 .unit .evidence {
   padding: 10px 14px;
   background: var(--surface-2);
@@ -2342,15 +2514,46 @@ article > h2 {
 
 .reading-latin {
   font-family: var(--serif);
-  font-size: 1.18rem;
+  font-size: calc(1.18rem * var(--reading-scale, 1));
   line-height: 1.8;
 }
 
 .reading-translation {
   font-family: var(--serif);
-  font-size: 1rem;
+  font-size: calc(1rem * var(--reading-scale, 1));
   line-height: 1.65;
   color: var(--ink-2);
+}
+
+/* The text size of a reading page: a choice of the reader, kept from page to page. */
+.reading-scale {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.reading-scale:empty {
+  display: none;
+}
+
+.pill {
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  padding: 3px 12px;
+  cursor: pointer;
+}
+
+.pill[aria-pressed="true"] {
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: transparent;
 }
 
 .reading-heading {

@@ -1,14 +1,35 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n corpus_tags %}
 
 {% block content %}
-<section class="intro">
-  <p class="eyebrow">{% translate "En construction" %}</p>
-  <h1>{% translate "Traduire en latin, preuves à l’appui" %}</h1>
-  <p class="lede">{% blocktranslate trimmed %}
-    Une plateforme collaborative pour traduire vers le latin, relever la phraséologie des auteurs
-    et justifier chaque choix par le corpus.
-  {% endblocktranslate %}</p>
+<section class="intro hero">
+  <div class="hero-text">
+    <p class="eyebrow">{% translate "En construction" %}</p>
+    <h1>{% translate "Traduire en latin, preuves à l’appui" %}</h1>
+    <p class="lede">{% blocktranslate trimmed %}
+      Une plateforme collaborative pour traduire vers le latin, relever la phraséologie des auteurs
+      et justifier chaque choix par le corpus.
+    {% endblocktranslate %}</p>
+    <p class="cta">
+      <a class="button" href="{% url 'corpus:index' %}">{% translate "Lire le corpus" %}</a>
+      <a class="button-quiet" href="{% url 'phraseology:unit_list' %}">{% translate "Parcourir les fiches" %}</a>
+    </p>
+    <ul class="home-stats">
+      <li><strong>{{ counts.units }}</strong> {% translate "fiches validées" %}</li>
+      <li><strong>{{ counts.attestations }}</strong> {% translate "attestations validées" %}</li>
+      <li><strong>{{ counts.authors }}</strong> {% translate "auteurs au corpus" %}</li>
+    </ul>
+  </div>
+  {% if showcase %}
+  <figure class="home-quote">
+    <blockquote lang="la">{% render_tokens showcase.quotation.words showcase.quotation.highlighted %}</blockquote>
+    <figcaption>
+      <a href="{{ showcase.quotation.url }}">{{ showcase.quotation.citation }}</a>
+      · <a href="{{ showcase.unit.get_absolute_url }}" lang="la">{{ showcase.unit.reference_form }}</a>
+      <span class="badge status-validated">{{ showcase.unit.get_status_display }}</span>
+    </figcaption>
+  </figure>
+  {% endif %}
 </section>
 
 <section class="goals" aria-labelledby="goals-title">

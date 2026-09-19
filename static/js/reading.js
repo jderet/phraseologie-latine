@@ -19,6 +19,36 @@
   let bar = null;
   let request = 0;
 
+  // Text sizes for the reading page: a choice of the reader, remembered from page to page.
+  const scaleBox = article.querySelector("[data-scale]");
+  if (scaleBox) {
+    const sizes = { S: 0.9, M: 1, L: 1.15 };
+    const caption = document.createElement("span");
+    caption.textContent = scaleBox.dataset.label;
+    scaleBox.append(caption);
+    const apply = (name) => {
+      article.style.setProperty("--reading-scale", String(sizes[name]));
+      try {
+        window.localStorage.setItem("reading-scale", name);
+      } catch {
+        // Private browsing: the choice simply lasts for the page.
+      }
+      scaleBox.querySelectorAll("button").forEach((element) => {
+        element.setAttribute("aria-pressed", String(element.textContent === name));
+      });
+    };
+    for (const name of Object.keys(sizes)) {
+      scaleBox.append(button(name, () => apply(name), "pill"));
+    }
+    let saved = null;
+    try {
+      saved = window.localStorage.getItem("reading-scale");
+    } catch {
+      saved = null;
+    }
+    apply(sizes[saved] ? saved : "M");
+  }
+
   // The occurrences a word belongs to, from the closest line to the farthest.
   function occurrencesOf(word) {
     const keys = [];

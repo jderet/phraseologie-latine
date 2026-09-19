@@ -5,7 +5,10 @@ from django.conf import settings
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
+from accounts.tests.factories import make_user
 from core.checks import check_legal_pages
+from phraseology.models import Attestation, Unit
+from phraseology.tests.factories import make_outside_passage
 
 COMPLETE_LEGAL = {
     "publisher_name": "Marcus Tullius",
@@ -35,6 +38,43 @@ class HomePageTests(TestCase):
         response = self.client.post(reverse("set_language"), {"language": "en", "next": "/"})
         self.assertRedirects(response, "/", fetch_redirect_response=False)
         self.assertEqual(response.cookies["django_language"].value, "en")
+
+
+class HomeShowcaseTests(TestCase):
+    """The home page counts the public contents and quotes one validated example."""
+
+    def test_home_counts_and_quotes_a_validated_example(self):
+        user = make_user()
+        passage, tokens = make_outside_passage(["honesta", "mors", "praestat"])
+        unit = Unit.objects.create(reference_form="honesta mors", created_by=user)
+        Unit.objects.filter(pk=unit.pk).update(status="validated")
+        attestation = Attestation.objects.create(
+            unit=unit, passage=passage, created_by=user, is_example=True
+        )
+        attestation.tokens.set(tokens[:2])
+        Attestation.objects.filter(pk=attestation.pk).update(status="validated")
+
+        response = self.client.get(reverse("core:home"))
+        self.assertContains(response, "home-quote")
+        self.assertContains(response, "honesta")
+        self.assertContains(response, "fiches validées")
+        self.assertContains(response, "<strong>1</strong>")
+
+    def test_home_without_data_shows_no_quote(self):
+        response = self.client.get(reverse("core:home"))
+        self.assertNotContains(response, "home-quote")
+        self.assertContains(response, "fiches validées")
+
+    def test_a_draft_or_proposed_example_is_not_quoted(self):
+        user = make_user()
+        passage, tokens = make_outside_passage(["honesta", "mors"])
+        unit = Unit.objects.create(reference_form="honesta mors", created_by=user)
+        attestation = Attestation.objects.create(
+            unit=unit, passage=passage, created_by=user, is_example=True
+        )
+        attestation.tokens.set(tokens)
+        response = self.client.get(reverse("core:home"))
+        self.assertNotContains(response, "home-quote")
 
 
 class ThemeTests(TestCase):

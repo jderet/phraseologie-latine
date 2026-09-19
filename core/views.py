@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,7 +10,9 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from accounts.roles import is_administrator
-from phraseology.models import Kind
+from corpus.models import Author
+from corpus.search import quotation
+from phraseology.models import Attestation, Kind, Unit
 
 from . import legal
 from .forms import GuideForm
@@ -34,8 +37,53 @@ TRAINING_AGENTS = [
 ]
 
 
+# The home page shows live figures; they are counted at most once every five minutes.
+HOME_COUNTS_KEY = "home-counts"
+HOME_COUNTS_SECONDS = 300
+
+
+def home_counts():
+    counts = cache.get(HOME_COUNTS_KEY)
+    if counts is None:
+        public_units = Unit.objects.filter(status=Unit.Status.VALIDATED, is_hidden=False)
+        counts = {
+            "units": public_units.count(),
+            "attestations": Attestation.objects.filter(
+                unit__in=public_units,
+                level=Attestation.Level.VALIDATED,
+                status=Attestation.Status.VALIDATED,
+                is_withdrawn=False,
+                is_hidden=False,
+            ).count(),
+            "authors": Author.objects.count(),
+        }
+        cache.set(HOME_COUNTS_KEY, counts, HOME_COUNTS_SECONDS)
+    return counts
+
+
+def home_showcase():
+    """One public entry with a chosen, human-validated example, quoted on the home page."""
+    attestation = (
+        Attestation.objects.filter(
+            is_example=True,
+            is_withdrawn=False,
+            is_hidden=False,
+            level=Attestation.Level.VALIDATED,
+            status=Attestation.Status.VALIDATED,
+            unit__status=Unit.Status.VALIDATED,
+            unit__is_hidden=False,
+        )
+        .select_related("unit", "passage__edition__work__author")
+        .first()
+    )
+    if attestation is None:
+        return None
+    attestation.quotation = quotation(list(attestation.tokens.all()))
+    return attestation
+
+
 def home(request):
-    return render(request, "core/home.html")
+    return render(request, "core/home.html", {"counts": home_counts(), "showcase": home_showcase()})
 
 
 # The appearance choices kept in a cookie: light, dark, or following the system.

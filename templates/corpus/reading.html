@@ -13,6 +13,7 @@
     {% if work.form == "verse" %}<p class="note"><span class="badge poetry-mark">{% translate "poésie" %}</span> {% translate "Poésie : ne fait pas norme pour la prose." %}</p>{% endif %}
 
     <div class="reading-toolbar">
+      <p class="reading-scale" data-scale data-label="{% translate 'Taille du texte' %}"></p>
       {% if translation_links %}
       <p class="reading-choice">
         {% if translation %}{% translate "Traduction en regard :" %}{% else %}{% translate "Afficher la traduction :" %}{% endif %}
