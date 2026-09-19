@@ -4,8 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from accounts.roles import is_administrator
 from phraseology.models import Kind
@@ -35,6 +36,26 @@ TRAINING_AGENTS = [
 
 def home(request):
     return render(request, "core/home.html")
+
+
+# The appearance choices kept in a cookie: light, dark, or following the system.
+THEME_CHOICES = ("light", "auto", "dark")
+
+
+@require_POST
+def theme(request):
+    """Remember the appearance choice in a cookie; no account and no script needed."""
+    value = request.POST.get("theme")
+    if value not in THEME_CHOICES:
+        value = "auto"
+    next_url = request.POST.get("next", "/")
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        next_url = "/"
+    response = redirect(next_url)
+    response.set_cookie("theme", value, max_age=60 * 60 * 24 * 365, samesite="Lax")
+    return response
 
 
 def _legal_page(request, template, **context):

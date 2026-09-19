@@ -23,18 +23,45 @@ class HomePageTests(TestCase):
     def test_renders_in_french_by_default(self):
         response = self.client.get(reverse("core:home"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '<html lang="fr">')
+        self.assertContains(response, '<html lang="fr" data-theme="auto">')
         self.assertContains(response, "Traduire en latin")
 
     def test_renders_in_english_when_the_browser_asks(self):
         response = self.client.get(reverse("core:home"), headers={"accept-language": "en"})
-        self.assertContains(response, '<html lang="en">')
+        self.assertContains(response, '<html lang="en" data-theme="auto">')
         self.assertContains(response, "Translating into Latin")
 
     def test_language_switch_remembers_the_choice(self):
         response = self.client.post(reverse("set_language"), {"language": "en", "next": "/"})
         self.assertRedirects(response, "/", fetch_redirect_response=False)
         self.assertEqual(response.cookies["django_language"].value, "en")
+
+
+class ThemeTests(TestCase):
+    """The appearance choice is kept in a cookie, without account and without script."""
+
+    def test_theme_choice_is_kept_in_a_cookie(self):
+        response = self.client.post(reverse("core:theme"), {"theme": "dark", "next": "/"})
+        self.assertRedirects(response, "/", fetch_redirect_response=False)
+        self.assertEqual(response.cookies["theme"].value, "dark")
+
+    def test_unknown_theme_falls_back_to_auto(self):
+        response = self.client.post(reverse("core:theme"), {"theme": "neon", "next": "/"})
+        self.assertEqual(response.cookies["theme"].value, "auto")
+
+    def test_redirect_never_leaves_the_site(self):
+        response = self.client.post(
+            reverse("core:theme"), {"theme": "dark", "next": "https://example.org/"}
+        )
+        self.assertRedirects(response, "/", fetch_redirect_response=False)
+
+    def test_page_carries_the_chosen_theme(self):
+        self.client.cookies["theme"] = "dark"
+        response = self.client.get(reverse("core:home"))
+        self.assertContains(response, 'data-theme="dark"')
+
+    def test_get_is_refused(self):
+        self.assertEqual(self.client.get(reverse("core:theme")).status_code, 405)
 
 
 class TrainingReservationTests(TestCase):

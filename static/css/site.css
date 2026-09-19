@@ -1,28 +1,67 @@
 :root {
-  --ground: #eef1ec;
-  --surface: #fbfcfa;
-  --ink: #17201c;
-  --ink-2: #4f5c56;
-  --rule: #d3dad4;
-  --accent: #2b6f62;
+  --ground: #eceee7;
+  --surface: #fafbf8;
+  --surface-2: #f2f4ee;
+  --ink: #1b241f;
+  --ink-2: #55635b;
+  --ink-3: #7c8a81;
+  --rule: #d5dbd3;
+  --rule-strong: #b9c3ba;
+  --accent: #215c4c;
+  --accent-soft: #dceae4;
   --on-accent: #ffffff;
+  --gold: #9a7422;
+  --gold-soft: #f4e6bf;
+  --amber: #8a6212;
+  --amber-soft: #f5e8c9;
   --danger: #a8392b;
+  --danger-soft: #f3ddd8;
   --highlight: #f2dd9b;
   --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light dark;
 }
 
+html[data-theme="dark"] {
+  --ground: #101613;
+  --surface: #18201c;
+  --surface-2: #1e2723;
+  --ink: #e4eae5;
+  --ink-2: #a6b3ab;
+  --ink-3: #7e8c83;
+  --rule: #2c3732;
+  --rule-strong: #3d4a44;
+  --accent: #7cc8b1;
+  --accent-soft: #1e322b;
+  --on-accent: #0d1512;
+  --gold: #d9b45e;
+  --gold-soft: #33290f;
+  --amber: #dcb862;
+  --amber-soft: #33290f;
+  --danger: #f0907f;
+  --danger-soft: #3a211c;
+  --highlight: #5b4916;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #111715;
-    --surface: #18201d;
-    --ink: #e3e9e4;
-    --ink-2: #a2b0a9;
-    --rule: #2b3632;
-    --accent: #6cc0ac;
+  html[data-theme="auto"] {
+    --ground: #101613;
+    --surface: #18201c;
+    --surface-2: #1e2723;
+    --ink: #e4eae5;
+    --ink-2: #a6b3ab;
+    --ink-3: #7e8c83;
+    --rule: #2c3732;
+    --rule-strong: #3d4a44;
+    --accent: #7cc8b1;
+    --accent-soft: #1e322b;
     --on-accent: #0d1512;
+    --gold: #d9b45e;
+    --gold-soft: #33290f;
+    --amber: #dcb862;
+    --amber-soft: #33290f;
     --danger: #f0907f;
+    --danger-soft: #3a211c;
     --highlight: #5b4916;
   }
 }
@@ -53,7 +92,6 @@ a {
   outline-offset: 2px;
 }
 
-.site-header,
 .site-main,
 .site-footer {
   max-width: 960px;
@@ -63,14 +101,73 @@ a {
 }
 
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.header-inner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--rule);
+  gap: 8px 12px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 10px 24px;
+}
+
+/* The theme choice: light, dark or following the system. */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+}
+
+.theme-toggle button {
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+.theme-toggle button:first-of-type {
+  border-radius: 999px 0 0 999px;
+}
+
+.theme-toggle button:last-of-type {
+  border-radius: 0 999px 999px 0;
+}
+
+.theme-toggle button + button {
+  margin-left: -1px;
+}
+
+.theme-toggle button.is-current {
+  position: relative;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .brand {
@@ -78,6 +175,14 @@ a {
   font-size: 1.25rem;
   color: var(--ink);
   text-decoration: none;
+}
+
+/* A discreet gold mark in front of the site name. */
+.brand::before {
+  content: "❧";
+  margin-right: 8px;
+  font-size: 0.9em;
+  color: var(--gold);
 }
 
 .lang {
@@ -502,11 +607,42 @@ blockquote {
 
 .badge {
   display: inline-block;
-  padding: 0 7px;
+  padding: 1px 9px;
   font-size: 0.78rem;
+  font-weight: 600;
   color: var(--ink-2);
+  background: var(--surface-2);
   border: 1px solid var(--rule);
   border-radius: 999px;
+}
+
+/* Status badges share one palette across the site: green when validated,
+   amber while proposed or waiting, red when contested, gold for verse. */
+.status-validated,
+.neologism-badge {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+.status-proposed {
+  color: var(--amber);
+  background: var(--amber-soft);
+  border-color: transparent;
+}
+
+.status-contested,
+.review-badge {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-color: transparent;
+}
+
+.poetry-mark {
+  color: var(--gold);
+  background: var(--gold-soft);
+  border-color: transparent;
+  font-style: normal;
 }
 
 .author-block {
@@ -737,8 +873,9 @@ article > h2 {
   display: grid;
   grid-template-columns: 2.2rem minmax(0, 1fr) minmax(0, 1fr);
   gap: 4px 20px;
-  padding: 10px 0;
+  padding: 10px 12px;
   border-top: 1px solid var(--rule);
+  border-radius: 8px;
 }
 
 .bitext-row.paragraph-start {
@@ -755,6 +892,13 @@ article > h2 {
 .bitext-source,
 .bitext-latin {
   margin: 0;
+}
+
+.bitext-source {
+  font-family: var(--serif);
+  font-size: 1.12rem;
+  line-height: 1.7;
+  cursor: text;
 }
 
 .bitext-latin {
@@ -836,6 +980,12 @@ article > h2 {
   resize: vertical;
 }
 
+.bitext textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
 .editor-actions {
   position: sticky;
   bottom: 0;
@@ -867,8 +1017,10 @@ article > h2 {
   font-size: 0.9rem;
 }
 
+/* The sentence being translated: a gold wash and a gold bar on the left. */
 .bitext-row.is-active {
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  background: var(--gold-soft);
+  box-shadow: inset 3px 0 0 var(--gold);
 }
 
 .save-status {
@@ -907,15 +1059,16 @@ article > h2 {
 
 .editor-panel {
   position: sticky;
-  top: 16px;
+  top: 64px;
   display: grid;
   gap: 16px;
-  max-height: calc(100vh - 32px);
+  max-height: calc(100vh - 88px);
   overflow: auto;
   padding: 16px;
   background: var(--surface);
   border: 1px solid var(--rule);
-  border-radius: 8px;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgb(27 36 31 / 6%), 0 4px 14px rgb(27 36 31 / 6%);
 }
 
 .editor-panel h2 {
@@ -1056,11 +1209,6 @@ article > h2 {
 .strength {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-}
-
-.review-badge {
-  color: var(--danger);
-  border-color: var(--danger);
 }
 
 .small-link {
@@ -1453,18 +1601,80 @@ article > h2 {
   gap: 6px;
 }
 
-.status-validated {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.status-contested {
-  color: var(--danger);
-  border-color: var(--danger);
-}
-
 .unit-section {
   margin-top: 32px;
+}
+
+/* The unit detail page: the entry is a card, its reference form underlined in gold. */
+.unit {
+  padding: 28px 32px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(27 36 31 / 6%), 0 4px 14px rgb(27 36 31 / 6%);
+}
+
+.unit > h1 {
+  margin: 4px 0 12px;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1.3;
+}
+
+.unit > h1 .form-mark-words {
+  padding: 0 1px 2px;
+  background: none;
+  border-bottom: 2px solid var(--gold);
+  border-radius: 0;
+}
+
+.unit .facts {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px 32px;
+  margin: 24px 0 0;
+}
+
+.unit .facts > div {
+  display: block;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+}
+
+.unit .facts dt {
+  margin-bottom: 4px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.unit .facts dd[lang="la"] {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+
+.unit .unit-section {
+  margin-top: 0;
+  padding: 24px 0 4px;
+  border-top: 1px solid var(--rule);
+}
+
+.unit .unit-section h2 {
+  margin-bottom: 12px;
+  font-size: 1.3rem;
+}
+
+.unit .evidence {
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-top: 0;
+  border-radius: 8px;
+}
+
+@media (max-width: 600px) {
+  .unit {
+    padding: 20px 18px;
+  }
 }
 
 .senses {
@@ -1591,8 +1801,8 @@ article > h2 {
   font-family: var(--sans);
   font-size: 0.85em;
   font-style: normal;
-  color: var(--accent);
-  border: 1px dashed var(--accent);
+  color: var(--gold);
+  border: 1px dashed var(--gold);
   border-radius: 3px;
 }
 
@@ -1654,8 +1864,6 @@ article > h2 {
 }
 
 .neologism-badge {
-  color: var(--accent);
-  border-color: var(--accent);
   font-style: italic;
 }
 
@@ -2041,11 +2249,19 @@ article > h2 {
 }
 
 .reading-toolbar {
+  position: sticky;
+  top: 58px;
+  z-index: 20;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 32px;
+  padding: 8px 14px;
   font-size: 0.92rem;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
 }
 
 .reading-choice {
@@ -2108,19 +2324,26 @@ article > h2 {
   display: grid;
   grid-template-columns: minmax(0, 42rem);
   gap: 8px 48px;
-  padding: 6px 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+/* Following a sentence across both columns: the row answers to the pointer. */
+.reading-row:hover {
+  background: var(--surface-2);
 }
 
 .with-translation .reading-row {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  padding: 12px 0;
+  padding: 12px 10px;
   border-top: 1px solid var(--rule);
+  border-radius: 0;
 }
 
 .reading-latin {
   font-family: var(--serif);
-  font-size: 1.15rem;
-  line-height: 1.75;
+  font-size: 1.18rem;
+  line-height: 1.8;
 }
 
 .reading-translation {
@@ -2140,7 +2363,7 @@ article > h2 {
 }
 
 .reading-passage {
-  scroll-margin-top: 24px;
+  scroll-margin-top: 130px;
 }
 
 .reading-passage:target {
@@ -2169,6 +2392,11 @@ article > h2 {
   .reading-translation {
     padding-left: 12px;
     border-left: 2px solid var(--rule);
+  }
+
+  /* On a narrow screen the header is taller: the toolbar stops sticking. */
+  .reading-toolbar {
+    position: static;
   }
 }
 
