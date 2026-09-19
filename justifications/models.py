@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from corpus.models import Passage, Token
 from moderation.models import ModeratedContent
 from moderation.registry import can_view, register
-from translations.models import TranslatedSegment, is_version_author, version_visible_to
+from translations.models import TranslatedSegment, is_version_writer, version_visible_to
 
 
 def locate_excerpt(text, excerpt, start):
@@ -290,7 +290,7 @@ class Evidence(ModeratedContent):
 def justification_visible_to(user, justification):
     """Others see a justification once a step of the published version has brought it out."""
     version = justification.translated_segment.version
-    if is_version_author(user, version):
+    if is_version_writer(user, version):
         return True
     return version.is_published and justification.step_id is not None
 

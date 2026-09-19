@@ -33,7 +33,7 @@
 
   {% if drafts %}
   <h2>{% translate "Vos brouillons" %}</h2>
-  <p class="note">{% translate "Visibles de vous seul, jusqu’à leur publication." %}</p>
+  <p class="note">{% translate "Vos versions et celles dont vous êtes co-auteur, visibles de leurs seuls auteurs jusqu’à leur publication." %}</p>
   <ul class="item-list">
     {% for version in drafts %}{% include "translations/version_item.html" %}{% endfor %}
   </ul>

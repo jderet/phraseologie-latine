@@ -3,6 +3,8 @@
 from accounts.roles import is_reviewer
 from moderation.registry import can_view, is_owner
 
+from .models import is_version_writer
+
 
 def can_edit(user, obj):
     """The owner of a content, or a reviewer, may change its information."""
@@ -26,7 +28,12 @@ def can_propose_source(user, source):
 
 
 def can_translate(user, version):
-    """Only its author writes the Latin of a version."""
+    """Its author and co-authors write the Latin of a version."""
+    return user.is_active and is_version_writer(user, version) and can_view(user, version)
+
+
+def can_manage(user, version):
+    """Only its author publishes a version, changes its settings and chooses its co-authors."""
     return user.is_active and is_owner(user, version) and can_view(user, version)
 
 
@@ -45,16 +52,16 @@ def can_copy(user, step):
 
 
 def can_propose(user, version):
-    """Anyone but its author may propose changes to a published version; its author decides."""
+    """Anyone but its writers may propose changes to a published version; they decide."""
     return can_challenge(user, version)
 
 
 def can_challenge(user, version):
-    """Anyone but its author may contest the choices of a published version."""
+    """Anyone but its writers may contest the choices of a published version."""
     return (
         user.is_authenticated
         and user.is_active
         and version.is_published
         and not version.is_hidden
-        and user.pk != version.author_id
+        and not is_version_writer(user, version)
     )

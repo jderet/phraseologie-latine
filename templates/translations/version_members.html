@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Co-auteurs" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a>{% if is_writer or version.is_published %} · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a>{% endif %}</p>
+  <h1>{% translate "Co-auteurs" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Les co-auteurs écrivent le latin de la version, créent des étapes, justifient et décident des
+    propositions de modifications ; ils voient le brouillon. L’auteur seul publie la version,
+    change son style et choisit ses co-auteurs. Chaque phrase garde le nom de qui l’a écrite.
+  {% endblocktranslate %}</p>
+
+  {% if own and own.status == "invited" %}
+  <div class="notice notice-info invitation">
+    <p>{% blocktranslate with name=own.invited_by.public_name %}{{ name }} vous invite à écrire cette version avec lui ou elle.{% endblocktranslate %}</p>
+    <form method="post" action="{% url 'translations:member_answer' own.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button" name="decision" value="accept">{% translate "Accepter" %}</button>
+      <button type="submit" class="button button-quiet" name="decision" value="decline">{% translate "Refuser" %}</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <ul class="item-list">
+    <li>
+      <span><a class="item-title" href="{{ version.author.get_absolute_url }}">{{ version.author.public_name }}</a> <span class="badge">{% translate "auteur" %}</span></span>
+    </li>
+    {% for member in members %}
+    <li>
+      <span><a class="item-title" href="{{ member.user.get_absolute_url }}">{{ member.user.public_name }}</a> <span class="badge{% if member.is_active %} state-open{% endif %}">{{ member.get_status_display }}</span></span>
+      <span class="muted">{% if member.is_active %}{% blocktranslate with date=member.decided_at|date:"j F Y" %}depuis le {{ date }}{% endblocktranslate %}{% else %}{% blocktranslate with date=member.invited_at|date:"j F Y" %}invité le {{ date }}{% endblocktranslate %}{% endif %}</span>
+      {% if can_manage or member.user_id == user.pk and member.is_active %}
+      <form method="post" action="{% url 'translations:member_remove' member.pk %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit" class="link-button">{% if member.user_id == user.pk %}{% translate "Quitter la version" %}{% elif member.is_active %}{% translate "Retirer" %}{% else %}{% translate "Annuler l’invitation" %}{% endif %}</button>
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% if form %}
+  <h2>{% translate "Inviter un co-auteur" %}</h2>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% translate "Inviter" %}</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

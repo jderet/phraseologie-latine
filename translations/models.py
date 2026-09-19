@@ -432,11 +432,25 @@ class TranslationProject(ModeratedContent):
 
 class VersionQuerySet(models.QuerySet):
     def visible_to(self, user):
-        """Published versions that are not hidden, and the user's own versions (rule 8)."""
+        """Published versions that are not hidden, and the versions the user writes: their own
+        and those they co-author (rule 8)."""
         published = Q(state=TranslationVersion.State.PUBLISHED, is_hidden=False)
         if not user.is_authenticated:
             return self.filter(published)
-        return self.filter(published | Q(author=user))
+        return self.filter(published | Q(author=user) | Q(pk__in=coauthored_by(user))).distinct()
+
+    def written_by(self, user):
+        """Versions the user writes: their own and those they co-author."""
+        if not user.is_authenticated:
+            return self.none()
+        return self.filter(Q(author=user) | Q(pk__in=coauthored_by(user)))
+
+
+def coauthored_by(user):
+    """Ids of the versions the user co-authors."""
+    return VersionMember.objects.filter(user=user, status=VersionMember.Status.ACTIVE).values(
+        "version_id"
+    )
 
 
 class TranslationVersion(ModeratedContent):
@@ -796,12 +810,99 @@ class ProposedSentence(ModeratedContent):
         return self.decision == self.Decision.PENDING
 
 
+class VersionMember(ModeratedContent):
+    """A co-author of a version, invited by its author.
+
+    A co-author writes the working text, creates steps, justifies and decides on proposals, and
+    sees the draft; the author alone publishes, changes the settings and removes co-authors.
+    """
+
+    class Status(models.TextChoices):
+        INVITED = "invited", _("invité")
+        ACTIVE = "active", _("co-auteur")
+        DECLINED = "declined", _("invitation refusée")
+        REMOVED = "removed", _("retiré")
+
+    version = models.ForeignKey(
+        TranslationVersion,
+        on_delete=models.PROTECT,
+        related_name="members",
+        verbose_name=_("version"),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="version_memberships",
+        verbose_name=_("co-auteur"),
+    )
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        editable=False,
+        verbose_name=_("invité par"),
+    )
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.INVITED, editable=False
+    )
+    invited_at = models.DateTimeField(_("invité le"), default=timezone.now, editable=False)
+    decided_at = models.DateTimeField(_("réponse le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("co-auteur d’une version")
+        verbose_name_plural = _("co-auteurs d’une version")
+        ordering = ["version", "invited_at", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["version", "user"], name="translations_one_membership"),
+        ]
+
+    def __str__(self):
+        return gettext("%(name)s, co-auteur de %(version)s") % {
+            "name": self.user.public_name,
+            "version": self.version,
+        }
+
+    def get_absolute_url(self):
+        return reverse("translations:version_members", args=[self.version_id])
+
+    @property
+    def is_active(self):
+        return self.status == self.Status.ACTIVE
+
+
 def version_visible_to(user, version):
-    return version.is_published or is_version_author(user, version)
+    return version.is_published or is_version_writer(user, version)
 
 
 def is_version_author(user, version):
     return user.is_authenticated and user.pk == version.author_id
+
+
+def version_writer_ids(version):
+    """Ids of the author and the co-authors of a version."""
+    return {
+        version.author_id,
+        *version.members.filter(status=VersionMember.Status.ACTIVE).values_list(
+            "user_id", flat=True
+        ),
+    }
+
+
+def is_version_writer(user, version):
+    """The author of a version, or one of its co-authors: they write and see the working text."""
+    if not user.is_authenticated:
+        return False
+    if user.pk == version.author_id:
+        return True
+    cache = getattr(version, "_writer_ids", None)
+    if cache is None:
+        cache = set(
+            version.members.filter(status=VersionMember.Status.ACTIVE).values_list(
+                "user_id", flat=True
+            )
+        )
+        version._writer_ids = cache
+    return user.pk in cache
 
 
 def source_proposal_visible_to(user, proposal):
@@ -813,7 +914,7 @@ def source_proposal_visible_to(user, proposal):
 
 def step_visible_to(user, step):
     version = step.version
-    if is_version_author(user, version):
+    if is_version_writer(user, version):
         return True
     return version.is_published and (not step.during_draft or version.shows_draft_steps)
 
@@ -853,7 +954,7 @@ register(
     owner_field="version.author",
     text_fields=("text",),
     # The working text stays private: others see the text of the steps (rule 8).
-    visible_to=lambda user, translated: is_version_author(user, translated.version),
+    visible_to=lambda user, translated: is_version_writer(user, translated.version),
     counts_toward_limit=False,
     not_reverted=("written_by",),
 )
@@ -881,4 +982,16 @@ register(
     visible_to=lambda user, proposed: version_visible_to(user, proposed.proposal.version),
     counts_toward_limit=False,
     not_reverted=("decision", "decided_at"),
+)
+register(
+    VersionMember,
+    owner_field="version.author",
+    # The author of the version, the person invited, and the public once they co-author a
+    # published version.
+    visible_to=lambda user, member: (
+        is_version_author(user, member.version)
+        or (user.is_authenticated and user.pk == member.user_id)
+        or (member.is_active and version_visible_to(user, member.version))
+    ),
+    not_reverted=("status", "decided_at"),
 )

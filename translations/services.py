@@ -23,6 +23,7 @@ from .models import (
     TranslationProject,
     TranslationVersion,
     VersionStep,
+    is_version_writer,
 )
 from .permissions import can_change_source, can_copy, can_propose, can_propose_source
 from .segmentation import MAX_SENTENCE_LENGTH, MAX_SENTENCES, to_lines
@@ -475,9 +476,12 @@ def save_translation(version, segment, text, author, written_by=None):
     """Save the Latin of one sentence of a version; return None when nothing changed.
 
     ``written_by`` credits someone else with the new Latin: the author of an accepted proposal.
+    A co-author who writes a sentence is credited with it.
     """
-    if author.pk != version.author_id:
+    if not is_version_writer(author, version):
         raise PermissionDenied
+    if written_by is None and author.pk != version.author_id:
+        written_by = author
     # Checked in the database: the sentence may have been removed since it was loaded.
     if (
         not Segment.objects.current()
@@ -537,14 +541,14 @@ def create_proposal(proposal, author, texts):
 
 @transaction.atomic
 def decide_sentence(proposed, user, accept):
-    """The author of the version accepts or refuses a proposed sentence (Q36).
+    """The author of the version, or a co-author, accepts or refuses a proposed sentence.
 
     An accepted sentence replaces the working text, in the name of whoever proposed it; the
     public sees it at the next step. The proposal closes once every sentence is decided.
     """
     proposal = ChangeProposal.objects.select_for_update().get(pk=proposed.proposal_id)
     version = proposal.version
-    if user.pk != version.author_id:
+    if not is_version_writer(user, version):
         raise PermissionDenied
     if not proposal.is_open:
         raise ValidationError(gettext("Cette proposition est close."), code="closed")
@@ -686,11 +690,11 @@ def _record_step(version, author, message, source=None):
 def create_step(version, author, message):
     """Freeze the working text of a version with a message, like a Git commit.
 
-    Only the author of the version may; the public then sees this step, and the justifications
-    written since the previous one.
+    Only the author of the version and its co-authors may; the public then sees this step, and
+    the justifications written since the previous one.
     """
     version = TranslationVersion.objects.select_for_update().get(pk=version.pk)
-    if author.pk != version.author_id:
+    if not is_version_writer(author, version):
         raise PermissionDenied
     message = normalize_sentence(message)
     if not message:

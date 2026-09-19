@@ -489,7 +489,7 @@ def challenge_detail(request, pk):
             parts=excerpt_parts(challenge),
             close_form=ChallengeCloseForm() if challenge.is_open and is_reviewer(user) else None,
             can_withdraw=challenge.is_open and user.pk == challenge.author_id,
-            can_justify=challenge.is_open and user.pk == translated.version.author_id,
+            can_justify=challenge.is_open and can_translate(user, translated.version),
         ),
     )
 

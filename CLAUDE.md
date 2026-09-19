@@ -109,6 +109,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | texte de travail (phrase) | `TranslatedSegment` |
 | étape, phrase d'une étape | `VersionStep`, `StepSentence` |
 | version copiée | `TranslationVersion.copied_from` |
+| co-auteur d'une version | `VersionMember` |
 | proposition de modifications, phrase proposée | `ChangeProposal`, `ProposedSentence` |
 | style déclaré | `style` |
 | justification, preuve | `Justification`, `Evidence` |
@@ -124,7 +125,7 @@ Le détail est dans la section 7 du [modèle de données](docs/modele-de-donnees
 
 - Les annotations humaines pointent vers des identifiants de mots stables.
 - Une attestation automatique n'est jamais présentée comme validée ; toute mention d'absence indique la version du corpus.
-- Un brouillon n'est visible que de son auteur, y compris dans l'API et les exports.
+- Un brouillon n'est visible que de son auteur et de ses co-auteurs, y compris dans l'API et les exports.
 - Aucun texte source sans licence compatible ; aucune ressource sous droits stockée.
 - Toute modification de contenu crée une révision ; supprimer un compte anonymise ses contributions.
 

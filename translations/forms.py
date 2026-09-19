@@ -270,3 +270,11 @@ class ReferenceForm(forms.Form):
         self.fields["version"].queryset = project.versions.filter(
             state=TranslationVersion.State.PUBLISHED, is_hidden=False
         )
+
+
+class InviteForm(forms.Form):
+    name = forms.CharField(
+        label=_("Nom affiché ou numéro de profil"),
+        max_length=80,
+        help_text=_("La personne invitée accepte ou refuse ; elle voit alors votre brouillon."),
+    )

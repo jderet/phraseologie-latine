@@ -196,7 +196,7 @@ Terminé quand un testeur a créé `{liquide}`, écrit *{liquide} sūmere* au de
 Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le GitHub de la traduction latine », avec les fonctions avancées des logiciels professionnels de traduction, sans encombrer l'écran d'un nouveau venu. Co-auteurs invités (qui modifie Q36 et la règle 8) et notifications sur le site seulement, choix du même jour.
 
 - [x] Page de projet à onglets (aperçu, comparer, propositions), encadré « Premiers pas » refermable, page d'aide « Traduire ici »
-- [ ] Co-auteurs d'une version : invitation, acceptation, écriture à plusieurs ; l'auteur seul publie
+- [x] Co-auteurs d'une version : invitation, acceptation, écriture à plusieurs ; l'auteur seul publie
 - [ ] Notifications sur le site : cloche, page, mentions @nom
 - [ ] Suivre un projet, une version ou un texte source
 - [ ] Étoiles sur les versions publiées, tri des projets et des versions

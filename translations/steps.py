@@ -13,7 +13,7 @@ from django.db.models import Q
 from django.utils.translation import gettext, ngettext
 
 from .diffs import word_diff
-from .models import Segment, StepSentence, TranslatedSegment, is_version_author
+from .models import Segment, StepSentence, TranslatedSegment, is_version_writer
 from .sources import EDIT, INSERT, MERGE, SPLIT, Carried, SourceHistory
 
 
@@ -64,10 +64,10 @@ def shown_sentences(user, version, step=None):
     """(step, {segment id: sentence}) of the text the user sees; a sentence has ``text`` and
     ``written_by``.
 
-    With no step asked, the author sees the working text (the step is then None) and others
-    the latest public step, if any.
+    With no step asked, the author and co-authors see the working text (the step is then
+    None), and others the latest public step, if any.
     """
-    if step is None and is_version_author(user, version):
+    if step is None and is_version_writer(user, version):
         return None, {item.segment_id: item for item in version.segments.current()}
     if step is None:
         step = public_step(version)
@@ -79,7 +79,7 @@ def shown_sentences(user, version, step=None):
 def shown_text(user, translated):
     """The Latin of a translated sentence as the user sees it (see ``shown_sentences``)."""
     version = translated.version
-    if is_version_author(user, version):
+    if is_version_writer(user, version):
         return translated.text
     step = public_step(version)
     return sentence_at(step, translated.segment_id) if step else ""

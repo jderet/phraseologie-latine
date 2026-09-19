@@ -41,6 +41,7 @@ from .forms import (
     TranslationTextForm,
     VersionForm,
 )
+from .members import active_members
 from .models import (
     ChangeProposal,
     ProposedSentence,
@@ -48,13 +49,14 @@ from .models import (
     SourceText,
     TranslationProject,
     TranslationVersion,
-    is_version_author,
+    is_version_writer,
 )
 from .permissions import (
     can_challenge,
     can_change_source,
     can_copy,
     can_edit,
+    can_manage,
     can_propose,
     can_propose_source,
     can_translate,
@@ -753,8 +755,17 @@ def _version(user, pk):
 
 
 def _own_version(user, pk):
+    """A version the user writes, as its author or a co-author."""
     version = _version(user, pk)
     if not can_translate(user, version):
+        raise PermissionDenied
+    return version
+
+
+def _managed_version(user, pk):
+    """A version the user authored: only its author publishes it or changes its settings."""
+    version = _version(user, pk)
+    if not can_manage(user, version):
         raise PermissionDenied
     return version
 
@@ -844,8 +855,8 @@ def _rows(user, version, step=None):
 
 
 def _source_changed_since(user, version):
-    """The latest step of the user's own version, if the source text has changed since."""
-    if not is_version_author(user, version):
+    """The latest step of a version the user writes, if the source text has changed since."""
+    if not is_version_writer(user, version):
         return None
     latest = latest_step(version)
     if latest is None or latest.source_state >= version.project.source_text.state:
@@ -875,7 +886,7 @@ def version_detail(request, pk):
     user = request.user
     version = _version(user, pk)
     step, rows = _rows(user, version)
-    is_author = is_version_author(user, version)
+    is_author = is_version_writer(user, version)
     copy_step = step or public_step(version)
     if copy_step is not None:
         copy_step.version = version
@@ -893,6 +904,8 @@ def version_detail(request, pk):
             "waiting_count": waiting_justifications(version).count() if is_author else 0,
             "is_author": is_author,
             "can_translate": can_translate(user, version),
+            "can_manage": can_manage(user, version),
+            "members": active_members(version),
             "is_reference": version.pk == version.project.reference_version_id,
             "can_challenge": step is not None and can_challenge(user, version),
             "copy_step": copy_step if copy_step and can_copy(user, copy_step) else None,
@@ -1076,7 +1089,7 @@ def translation_save(request, pk, segment_pk):
 @login_required
 @require_http_methods(["GET", "POST"])
 def version_settings(request, pk):
-    version = _own_version(request.user, pk)
+    version = _managed_version(request.user, pk)
     form = VersionForm(request.POST or None, instance=version, user=request.user)
     if request.method == "POST" and form.is_valid():
         _saved_message(request, save_with_revision(form.save(commit=False), request.user))
@@ -1091,7 +1104,7 @@ def version_settings(request, pk):
 @login_required
 @require_http_methods(["GET", "POST"])
 def version_publish(request, pk):
-    version = _own_version(request.user, pk)
+    version = _managed_version(request.user, pk)
     if version.is_published:
         messages.info(request, _("Cette version est déjà publiée."))
         return redirect(version)

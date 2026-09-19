@@ -82,6 +82,9 @@ urlpatterns = [
         name="proposed_sentence_decide",
     ),
     path("versions/<int:pk>/style/", views.version_settings, name="version_settings"),
+    path("versions/<int:pk>/co-auteurs/", workshop_views.version_members, name="version_members"),
+    path("co-auteurs/<int:pk>/repondre/", workshop_views.member_answer, name="member_answer"),
+    path("co-auteurs/<int:pk>/retirer/", workshop_views.member_remove, name="member_remove"),
     path("versions/<int:pk>/publier/", views.version_publish, name="version_publish"),
     path(
         "versions/<int:pk>/export/bilingue.txt",
