@@ -56,7 +56,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 
 | Application | Rôle | État |
 |---|---|---|
-| `accounts` | utilisateurs, rôles, limites des nouveaux comptes | connexion par e-mail, inscription, rôles, limites |
+| `accounts` | utilisateurs, rôles, limites des nouveaux comptes | connexion par e-mail, inscription, rôles, limites ; tableau de bord des administrateurs (`/tableau-de-bord/`, `accounts/dashboard.py`) ; inscription sans e-mail en local par `SIGNUP_SKIP_EMAIL_VERIFICATION` |
 | `core` | pages générales | page d'accueil |
 | `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | noyau importé et analysé (LatinCy), lecture continue par pages (`corpus/reading.py`) avec traduction en regard, recherche par forme et par lemme (jusqu'à cinq mots) et par construction (une fiche cherchée par son schéma, `phraseology/search_terms.py`), exports TEI et CoNLL-U d'un passage ou d'une œuvre avec sa phraséologie (`corpus/exports.py`) |
 | `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements, discussions, avis indicatifs |

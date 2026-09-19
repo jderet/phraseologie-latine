@@ -39,3 +39,4 @@ class Throttle:
 LOGIN_FAILURES = Throttle("login", limit=5, period=15 * 60)
 ACTIVATION_EMAILS = Throttle("activation", limit=3, period=60 * 60)
 RESET_EMAILS = Throttle("reset", limit=3, period=60 * 60)
+ADMIN_PASSWORD_CHANGES = Throttle("admin-password", limit=10, period=60 * 60)

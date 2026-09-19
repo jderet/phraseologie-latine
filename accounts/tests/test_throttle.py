@@ -1,6 +1,6 @@
 from django.core import mail
 from django.core.cache import cache
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from accounts.throttle import ACTIVATION_EMAILS, LOGIN_FAILURES, RESET_EMAILS
@@ -64,6 +64,7 @@ class LoginThrottleTests(ThrottleTestCase):
         )
 
 
+@override_settings(SIGNUP_SKIP_EMAIL_VERIFICATION=False)
 class EmailThrottleTests(ThrottleTestCase):
     def test_signing_up_again_resends_the_link_a_few_times_only(self):
         for _attempt in range(ACTIVATION_EMAILS.limit + 2):

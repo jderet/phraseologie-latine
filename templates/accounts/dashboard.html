@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Tableau de bord" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{% translate "Tableau de bord" %}</h1>
+
+  <h2>{% translate "Chiffres clés" %}</h2>
+  <dl class="facts">
+    <div><dt>{% translate "Comptes actifs" %}</dt><dd>{{ figures.active_users }}</dd></div>
+    <div><dt>{% translate "Comptes en attente d’activation" %}</dt><dd>{{ figures.pending_users }}</dd></div>
+    <div><dt>{% translate "Nouveaux comptes (7 jours)" %}</dt><dd>{{ figures.new_users }}</dd></div>
+    <div><dt>{% translate "Fiches (hors brouillons)" %}</dt><dd>{{ figures.units }}</dd></div>
+    <div><dt>{% translate "Attestations validées" %}</dt><dd>{{ figures.validated_attestations }}</dd></div>
+    <div><dt>{% translate "Versions publiées" %}</dt><dd>{{ figures.published_versions }}</dd></div>
+    <div><dt>{% translate "Justifications" %}</dt><dd>{{ figures.justifications }}</dd></div>
+  </dl>
+
+  <h2>{% translate "Files d’attente" %}</h2>
+  <ul class="actions">
+    <li><a href="{% url 'moderation:report_queue' %}">{% translate "Signalements ouverts" %}</a> : {{ queues.reports }}</li>
+    <li><a href="{% url 'phraseology:reviewer' %}">{% translate "Fiches proposées à valider" %}</a> : {{ queues.units }}</li>
+    <li><a href="{% url 'phraseology:candidate_list' %}">{% translate "Candidats à examiner" %}</a> : {{ queues.candidates }}</li>
+    <li><a href="{% url 'justifications:challenge_list' %}">{% translate "Contestations ouvertes" %}</a> : {{ queues.challenges }}</li>
+    <li>{% translate "Propositions de modification du texte ouvertes" %} : {{ queues.source_proposals }}</li>
+    <li>{% translate "Propositions de modifications de versions ouvertes" %} : {{ queues.change_proposals }}</li>
+  </ul>
+
+  <h2>{% translate "État technique" %}</h2>
+  <dl class="facts">
+    <div><dt>{% translate "Couche d’analyse par défaut" %}</dt><dd>{{ technical.layer|default:"—" }}</dd></div>
+    <div><dt>{% translate "Version du corpus" %}</dt><dd>{{ technical.corpus_version }}</dd></div>
+    <div><dt>{% translate "Limite quotidienne des nouveaux comptes" %}</dt><dd>{{ technical.daily_limit }}</dd></div>
+    <div><dt>{% translate "Validation des inscriptions par e-mail" %}</dt><dd>{% if technical.skip_email_verification %}{% translate "désactivée (essais en local)" %}{% else %}{% translate "active" %}{% endif %}</dd></div>
+    <div><dt>{% translate "Dernière sauvegarde" %}</dt><dd>{{ technical.last_backup|date:"j F Y H:i"|default:"—" }}</dd></div>
+  </dl>
+
+  <h2>{% translate "Activité récente" %}</h2>
+  <div class="table-scroll">
+    <table class="changes">
+      <thead><tr><th scope="col">{% translate "Date" %}</th><th scope="col">{% translate "Auteur" %}</th><th scope="col">{% translate "Action" %}</th><th scope="col">{% translate "Contenu" %}</th></tr></thead>
+      <tbody>
+        {% for revision in activity.revisions %}
+        <tr><td>{{ revision.created_at|date:"j M Y H:i" }}</td><td>{{ revision.author }}</td><td>{{ revision.get_action_display }}</td><td>{{ revision.content_type.name }} n° {{ revision.object_id }}</td></tr>
+        {% empty %}
+        <tr><td colspan="4">{% translate "Aucune révision." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <h3>{% translate "Recherches infructueuses les plus fréquentes" %}</h3>
+  <ul>
+    {% for search in activity.negative_searches %}<li lang="la">{{ search.expression }} <span class="muted">({{ search.count }})</span></li>{% empty %}<li>—</li>{% endfor %}
+  </ul>
+
+  <h2 id="comptes">{% translate "Comptes" %}</h2>
+  <form method="get" action="#comptes" class="filter-form">
+    <div class="field">
+      <label for="q">{% translate "Nom ou adresse e-mail" %}</label>
+      <input type="search" id="q" name="q" value="{{ query }}">
+    </div>
+    <button type="submit" class="button button-quiet">{% translate "Chercher" %}</button>
+  </form>
+  <div class="table-scroll">
+    <table class="changes">
+      <thead><tr>
+        <th scope="col">{% translate "Nom" %}</th><th scope="col">{% translate "Adresse e-mail" %}</th><th scope="col">{% translate "Rôles" %}</th>
+        <th scope="col">{% translate "État" %}</th><th scope="col">{% translate "Inscription" %}</th><th scope="col">{% translate "Dernière connexion" %}</th><th scope="col">{% translate "Mot de passe" %}</th>
+      </tr></thead>
+      <tbody>
+        {% for account, roles in rows %}
+        <tr>
+          <td>{{ account.public_name }}</td>
+          <td>{% if not account.anonymized_at %}{{ account.email }}{% endif %}</td>
+          <td>{{ roles|join:", "|default:"—" }}{% if account.is_superuser %} ({% translate "superutilisateur" %}){% endif %}</td>
+          <td>{% if account.anonymized_at %}{% translate "anonymisé" %}{% elif account.is_active %}{% translate "actif" %}{% else %}{% translate "en attente" %}{% endif %}</td>
+          <td>{{ account.date_joined|date:"j M Y" }}</td>
+          <td>{{ account.last_login|date:"j M Y"|default:"—" }}</td>
+          <td>{% if not account.anonymized_at %}
+            <a href="{% url 'accounts:dashboard_set_password' account.pk %}">{% translate "Définir" %}</a>
+            {% if account.is_active %}
+            <form method="post" action="{% url 'accounts:dashboard_reset_link' account.pk %}">{% csrf_token %}<button type="submit" class="link-button">{% translate "Envoyer un lien" %}</button></form>
+            {% endif %}
+          {% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <nav class="pager" aria-label="{% translate 'Pages' %}">
+    {% if page.has_previous %}<a rel="prev" href="{% querystring page=page.previous_page_number %}#comptes">{% translate "Page précédente" %}</a>{% endif %}
+    {% if page.has_next %}<a rel="next" href="{% querystring page=page.next_page_number %}#comptes">{% translate "Page suivante" %}</a>{% endif %}
+  </nav>
+</section>
+{% endblock %}

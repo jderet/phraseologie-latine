@@ -193,6 +193,8 @@ Terminé quand un testeur a créé `{liquide}`, écrit *{liquide} sūmere* au de
 
 ## Ouverture publique
 
+- [x] Tableau de bord des administrateurs : chiffres clés, files d'attente, activité récente, état technique, comptes (nouveau mot de passe ou lien de réinitialisation)
+- [x] Inscription sans e-mail d'activation pour les essais en local (`SIGNUP_SKIP_EMAIL_VERIFICATION`), refusée par `check --deploy`
 - [ ] Conditions de la section 7 du cahier des charges remplies
 - [ ] Choisir l'hébergeur, le nom de domaine et le service d'envoi des e-mails
 - [ ] Serveur européen, sauvegardes copiées hors du serveur, restauration testée sur le serveur

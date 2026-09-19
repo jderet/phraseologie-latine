@@ -2,7 +2,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 from django.views.generic import TemplateView
 
-from . import views
+from . import admin_views, views
 from .forms import PasswordResetForm
 
 app_name = "accounts"
@@ -66,4 +66,15 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("contributeurs/<int:pk>/", views.profile, name="profile"),
+    path("tableau-de-bord/", admin_views.dashboard_page, name="dashboard"),
+    path(
+        "tableau-de-bord/comptes/<int:pk>/mot-de-passe/",
+        admin_views.set_password,
+        name="dashboard_set_password",
+    ),
+    path(
+        "tableau-de-bord/comptes/<int:pk>/lien/",
+        admin_views.send_reset_link,
+        name="dashboard_reset_link",
+    ),
 ]

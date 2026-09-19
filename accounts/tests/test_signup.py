@@ -26,6 +26,7 @@ def activation_path(message):
     return re.search(r"https?://[^/\s]+(/compte/activation/\S+/)", message.body).group(1)
 
 
+@override_settings(SIGNUP_SKIP_EMAIL_VERIFICATION=False)
 class SignupTests(TestCase):
     def test_signup_page_renders(self):
         response = self.client.get(reverse("accounts:signup"))
@@ -70,6 +71,7 @@ class SignupTests(TestCase):
         self.assertEqual(self.client.get(activation_path(mail.outbox[1])).status_code, 200)
 
 
+@override_settings(SIGNUP_SKIP_EMAIL_VERIFICATION=False)
 class ActivationTests(TestCase):
     def setUp(self):
         self.client.post(reverse("accounts:signup"), SIGNUP)

@@ -25,6 +25,9 @@
           <a href="{% url 'phraseology:reviewer' %}">{% translate "Relecture" %}</a>
           <a href="{% url 'moderation:report_queue' %}">{% translate "Signalements" %}</a>
           {% endif %}
+          {% if user|is_administrator %}
+          <a href="{% url 'accounts:dashboard' %}">{% translate "Tableau de bord" %}</a>
+          {% endif %}
           <a href="{% url 'phraseology:annotator' %}">{% translate "Mes annotations" %}</a>
           <a href="{% url 'notebook:notebook' %}">{% translate "Mon carnet" %}</a>
           <a href="{% url 'accounts:account' %}">{% translate "Mon compte" %}</a>
