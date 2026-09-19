@@ -27,6 +27,10 @@ class ContainsTests(PhraseologyTestCase):
                 True
             ),
             ("gero -obj-> res; res -amod-> publicus", "gero -obj-> res; res -(nmod)-> hic"): True,
+            # A word given a case in the smaller schema has it in the larger one.
+            ("causa:abl -nmod-> res; res -amod-> publicus", "causa -nmod-> res"): True,
+            ("causa -nmod-> res; res -amod-> publicus", "causa:abl -nmod-> res"): False,
+            ("causa:abl -nmod-> res; res -amod-> publicus", "causa:abl -nmod-> res"): True,
             # The same schema is no part of itself.
             ("res -amod-> publicus", "res -amod-> publicus"): False,
         }
@@ -122,7 +126,16 @@ class ComponentsTests(PhraseologyTestCase):
         )
         self.assertEqual(
             units[2]["edges"],
-            [{"head": "res", "relations": ["amod"], "dependent": "publicus", "optional": False}],
+            [
+                {
+                    "head": "res",
+                    "relations": ["amod"],
+                    "dependent": "publicus",
+                    "optional": False,
+                    "head_case": "",
+                    "dependent_case": "",
+                }
+            ],
         )
         self.assertEqual(
             self.client.get(url, {"fiche": "bene"}).json()["units"][0]["status"], "proposée"

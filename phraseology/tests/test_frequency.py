@@ -133,6 +133,15 @@ class PrepositionalPhraseTests(PhraseologyTestCase):
         self.assertEqual(self.count("redigo -sp-> in; in -reg:abl-> memoria"), 1)
         self.assertEqual(self.count("redigo -sp-> in; in -reg-> memoria"), 2)
 
+    def test_the_case_of_any_word(self):
+        self.assertEqual(self.count("mereor -obl|nmod|advmod-> res"), 3)
+        self.assertEqual(self.count("mereor -obl|nmod|advmod-> res:abl"), 2)
+        # The case of the root: the word the schema is looked for by.
+        self.assertEqual(self.count("res -amod-> publicus"), 1)
+        self.assertEqual(self.count("res:abl -amod-> publicus"), 1)
+        self.assertEqual(self.count("res:acc -amod-> publicus"), 0)
+        self.assertEqual(self.count("redigo -sp-> in; in -reg-> memoria:acc"), 1)
+
     def test_a_phrase_alone_and_an_open_regime(self):
         self.assertEqual(self.count("de -reg-> res"), 3)
         edges = parse_schema("mereor -sp-> de; de -reg-> *", slot=True)

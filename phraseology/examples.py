@@ -95,6 +95,16 @@ EXAMPLE_ABSTRACTS = (
         "Liquides que l’on boit ou que l’on verse : eau, vin, lait, boisson.",
         [{"upos": [], "feats": [], "lemmas": ["aqua", "uinum", "merum", "lac", "potio"]}],
     ),
+    (
+        "possesseur",
+        "nom ou pronom au génitif, ou adjectif possessif",
+        "Celui à qui l’on rapporte une chose : Caesaris, eius, meā, uestrā. L’analyse rattache "
+        "le génitif par nmod, l’adjectif possessif par det.",
+        [
+            {"upos": ["NOUN", "PROPN", "PRON"], "feats": ["Case=Gen"], "lemmas": []},
+            {"upos": [], "feats": [], "lemmas": ["meus", "tuus", "suus", "noster", "uester"]},
+        ],
+    ),
 )
 
 EXAMPLES = (
@@ -367,6 +377,19 @@ EXAMPLES += (
         construction="aquam, uinum sumere",
         realizations=(("aquam sumere", BASE), ("uinum sumere", BASE)),
         reference=("Gaffiot", "s. v. sumo"),
+        status=PROPOSED,
+    ),
+    Example(
+        "{possesseur} causā",
+        Kind.OPEN_SLOT,
+        "pour, en vue de, dans l’intérêt de",
+        (("fr", "pour (quelqu’un, quelque chose)"), ("en", "for the sake of")),
+        # The possessive adjective depends on causa by det, the genitive by nmod; causa in the
+        # ablative leaves out causam Caesaris, « the case of Caesar ».
+        schema="causa:abl -nmod|det-> {possesseur}",
+        construction="causā après le génitif ou l’adjectif possessif : Caesaris, meā causā",
+        realizations=(("Caesaris causā", BASE), ("meā causā", BASE)),
+        reference=("Gaffiot", "s. v. causa"),
         status=PROPOSED,
     ),
 )

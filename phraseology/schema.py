@@ -9,7 +9,9 @@ may have alternatives separated by "|": ``gero -obj|nsubj:pass-> bellum`` also f
 missing; when it is there, its preposition has its regime. A query may leave one dependent
 open, written ``*``: ``capio -obj-> *`` finds every object of *capio*. A word between braces is
 an abstract word, a class of words (see abstract.py): ``sumo -obj-> {liquide}``; it is never
-the root, which is looked for by its lemma.
+the root, which is looked for by its lemma. Any word may be given its case after a colon:
+``causa:abl -nmod|det-> {possesseur}`` finds *Caesaris causa*, not *causam Caesaris*; the case
+is written once and holds wherever the word is.
 
 A prepositional phrase is written with the preposition first, unlike Universal Dependencies:
 ``redigo -sp-> in; in -reg-> memoria``; the case of the regime may be given, as in
@@ -18,7 +20,7 @@ A prepositional phrase is written with the preposition first, unlike Universal D
 """
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_noop, pgettext_lazy
@@ -89,14 +91,32 @@ CASE_CHOICES = (
     ("acc", pgettext_lazy("cas", "accusatif")),
     ("abl", pgettext_lazy("cas", "ablatif")),
 )
+# The cases a word of a schema may be given: causa:abl.
+NODE_CASES = {
+    "nom": "Nom",
+    "voc": "Voc",
+    "acc": "Acc",
+    "gen": "Gen",
+    "dat": "Dat",
+    "abl": "Abl",
+}
+NODE_CASE_CHOICES = (
+    ("nom", pgettext_lazy("cas", "nominatif")),
+    ("voc", pgettext_lazy("cas", "vocatif")),
+    ("acc", pgettext_lazy("cas", "accusatif")),
+    ("gen", pgettext_lazy("cas", "génitif")),
+    ("dat", pgettext_lazy("cas", "datif")),
+    ("abl", pgettext_lazy("cas", "ablatif")),
+)
 MAX_RELATIONS = 4
 # An open dependent, in queries only.
 SLOT = "*"
 
 EDGE_PATTERN = re.compile(
-    r"^(?P<head>[^\W\d_]+|\{[^{}]*\})\s*[-—–]\s*"
+    r"^(?P<head>[^\W\d_]+|\{[^{}]*\})(?:\s*:\s*(?P<head_case>[a-zA-Z]+))?\s*[-—–]\s*"
     r"(?:\(\s*(?P<optional>[a-zA-Z:|\s]+?)\s*\)|(?P<relations>[a-zA-Z:|\s]+?))"
-    r"\s*(?:->|→)\s*(?P<dependent>[^\W\d_]+|\*|\{[^{}]*\})$"
+    r"\s*(?:->|→)\s*(?P<dependent>[^\W\d_]+|\*|\{[^{}]*\})"
+    r"(?:\s*:\s*(?P<dependent_case>[a-zA-Z]+))?$"
 )
 
 
@@ -124,18 +144,29 @@ class Edge:
     dependent: str
     # The expression exists without this relation and what depends on it.
     optional: bool = False
+    # The cases given to the two words, "abl" for causa:abl; a word has the same everywhere.
+    head_case: str = ""
+    dependent_case: str = ""
 
     @property
     def written_relations(self):
         relations = "|".join(self.relations)
         return f"({relations})" if self.optional else relations
 
+    @property
+    def written_head(self):
+        return f"{self.head}:{self.head_case}" if self.head_case else self.head
+
+    @property
+    def written_dependent(self):
+        return f"{self.dependent}:{self.dependent_case}" if self.dependent_case else self.dependent
+
     def __str__(self):
-        return f"{self.head} -{self.written_relations}-> {self.dependent}"
+        return f"{self.written_head} -{self.written_relations}-> {self.written_dependent}"
 
     @property
     def label(self):
-        return f"{self.head} —{self.written_relations}→ {self.dependent}"
+        return f"{self.written_head} —{self.written_relations}→ {self.written_dependent}"
 
     @property
     def kind(self):
@@ -191,7 +222,7 @@ def parse_schema(text, slot=False):
             gettext("Un schéma compte au plus %(limit)d relations.") % {"limit": MAX_RELATIONS},
             code="too_many",
         )
-    edges = []
+    edges, cases = [], {}
     for part in parts:
         match = EDGE_PATTERN.match(part)
         if match is None:
@@ -210,7 +241,10 @@ def parse_schema(text, slot=False):
         dependent = dependent if dependent == SLOT else _node(dependent)
         optional = match["optional"] is not None
         relations = _relations(match["optional"] if optional else match["relations"])
-        edges.append(Edge(_node(match["head"]), relations, dependent, optional))
+        head = _node(match["head"])
+        edges.append(Edge(head, relations, dependent, optional))
+        for node, case in ((head, match["head_case"]), (dependent, match["dependent_case"])):
+            _note_case(cases, node, case)
     if sum(edge.dependent == SLOT for edge in edges) > 1:
         raise ValidationError(gettext("Un schéma n’a qu’une case vide."), code="two_slots")
     abstract = [edge.dependent for edge in edges if is_abstract(edge.dependent)]
@@ -222,11 +256,60 @@ def parse_schema(text, slot=False):
             ),
             code="two_abstract",
         )
-    edges = _as_tree(_from_analysis(edges))
+    edges = _with_cases(_as_tree(_from_analysis(edges)), cases)
     _check_phrases(edges)
+    for edge in edges:
+        subtype = edge.relations[0].partition(":")[2] if edge.kind == REGIME else ""
+        if subtype and edge.dependent_case and edge.dependent_case != subtype:
+            raise ValidationError(
+                gettext("« %(node)s » ne peut pas avoir deux cas.") % {"node": edge.dependent},
+                code="two_cases",
+            )
     _check_optional(edges)
     _check_root(edges)
     return edges
+
+
+def _note_case(cases, node, case):
+    """Record the case written for a word; raise ValidationError if unknown or contradicted."""
+    if not case:
+        return
+    case = case.lower()
+    if case not in NODE_CASES:
+        raise ValidationError(
+            gettext(
+                "Cas inconnu : « %(case)s ». Écrivez nom, voc, acc, gen, dat ou abl après le mot : "
+                "causa:abl."
+            )
+            % {"case": case},
+            code="node_case",
+        )
+    if cases.setdefault(node, case) != case:
+        raise ValidationError(
+            gettext("« %(node)s » ne peut pas avoir deux cas.") % {"node": node},
+            code="two_cases",
+        )
+
+
+def _with_cases(edges, cases):
+    """The relations with the case of each word wherever the word is."""
+    return [
+        replace(
+            edge, head_case=cases.get(edge.head, ""), dependent_case=cases.get(edge.dependent, "")
+        )
+        for edge in edges
+    ]
+
+
+def node_cases(edges):
+    """The cases given to the words of a schema: {"causa": "abl"}."""
+    cases = {}
+    for edge in edges:
+        if edge.head_case:
+            cases[edge.head] = edge.head_case
+        if edge.dependent_case:
+            cases[edge.dependent] = edge.dependent_case
+    return cases
 
 
 def _from_analysis(edges):
@@ -367,7 +450,8 @@ def corpus_edges(edges):
     written as the analysis writes them are kept.
     """
     regimes = {edge.head: edge.dependent for edge in edges if edge.kind == REGIME}
-    written, cases = [], {}
+    written = []
+    cases = {node: NODE_CASES[case] for node, case in node_cases(edges).items()}
     for edge in edges:
         if edge.kind == PHRASE:
             written.append(

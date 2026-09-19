@@ -24,6 +24,8 @@ class SchemaDrawingPagesTests(PhraseologyTestCase):
         self.assertContains(page, 'data-label-optional="facultatif"')
         self.assertContains(page, f'data-abstracts-url="{reverse("phraseology:schema_abstracts")}"')
         self.assertContains(page, 'class="schema-abstract-input"')
+        self.assertContains(page, '<select class="schema-word-case-select">')
+        self.assertContains(page, '<option value="gen">génitif</option>')
 
     def test_the_creation_page_draws_the_schema(self):
         self.client.force_login(self.other)

@@ -107,6 +107,24 @@ class SchemaTests(SimpleTestCase):
         written, _cases = corpus_edges(edges)
         self.assertEqual(written[0].head, "causa")
 
+    def test_the_case_of_a_word(self):
+        edges = parse_schema("Causa : ABL -nmod|det-> {possesseur}")
+        self.assertEqual(format_schema(edges), "causa:abl -nmod|det-> {possesseur}")
+        self.assertEqual(edges[0].label, "causa:abl —nmod|det→ {possesseur}")
+        self.assertEqual(corpus_edges(edges)[1], {"causa": "Abl"})
+        # Written once, the case holds wherever the word is.
+        edges = parse_schema("capio -obj-> consilium:acc; consilium -amod-> bonus")
+        self.assertEqual(
+            format_schema(edges), "capio -obj-> consilium:acc; consilium:acc -amod-> bonus"
+        )
+        self.assertEqual(format_schema(parse_schema(format_schema(edges))), format_schema(edges))
+        # The noun of a phrase written as the analysis gives it keeps its case.
+        edges = parse_schema("mereor -obl-> res:abl; res -case-> de")
+        self.assertEqual(format_schema(edges), "mereor -sp-> de; de -reg-> res:abl")
+        self.assertEqual(corpus_edges(edges)[1], {"res": "Abl"})
+        edges = parse_schema("capio -obj-> *:gen", slot=True)
+        self.assertEqual(corpus_edges(edges)[1], {"*": "Gen"})
+
     def test_invalid_schemas(self):
         cases = {
             "capio obj consilium": "syntax",
@@ -133,6 +151,9 @@ class SchemaTests(SimpleTestCase):
             "sumo -obj-> {}": "abstract_name",
             "sumo -obj-> {liquide}; sumo -obl-> {liquide}": "two_abstract",
             "sumo -obj-> {liquide": "syntax",
+            "causa:loc -nmod-> {possesseur}": "node_case",
+            "capio -obj-> consilium:acc; consilium:gen -amod-> bonus": "two_cases",
+            "in -reg:acc-> memoria:abl": "two_cases",
         }
         for text, code in cases.items():
             with self.subTest(text=text), self.assertRaises(ValidationError) as caught:

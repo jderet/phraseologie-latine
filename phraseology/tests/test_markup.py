@@ -229,7 +229,16 @@ class FormHelpTests(PhraseologyTestCase):
         )
         self.assertEqual(
             suggestion["edges"],
-            [{"head": "res", "relations": ["amod"], "dependent": "publicus", "optional": False}],
+            [
+                {
+                    "head": "res",
+                    "relations": ["amod"],
+                    "dependent": "publicus",
+                    "optional": False,
+                    "head_case": "",
+                    "dependent_case": "",
+                }
+            ],
         )
         self.assertEqual([part["name"] for part in data["parts"]], [""])
 

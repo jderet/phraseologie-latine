@@ -202,7 +202,7 @@ class DeletionTests(ExampleTestCase):
             delete_examples()
         self.assertEqual(caught.exception.links, {"abstract_words": 1})
         Unit.objects.filter(pk=self.unit.pk).update(schema="")
-        self.assertEqual(delete_examples()["abstract_words"], 1)
+        self.assertEqual(delete_examples()["abstract_words"], len(EXAMPLE_ABSTRACTS))
         self.assertFalse(AbstractWord.objects.exists())
 
     def test_a_link_from_another_content_stops_the_deletion(self):

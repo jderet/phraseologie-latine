@@ -187,9 +187,9 @@ Demandée par le porteur le 16 septembre 2026 : noter qu'une relation peut manqu
 - [x] Fréquence et relevé à recalculer quand un mot abstrait change ; fiche validée avec des mots abstraits validés
 - [x] Dessin : mot abstrait écrit dans la forme ou choisi dans le panneau d'un mot
 - [x] API, export, documentation, fiches d'exemple
-- [ ] Préciser le cas de la racine d'un schéma (*causā* à l'ablatif), pour que `{possesseur} causā` ne trouve pas *causam Caesaris*
+- [x] Cas d'un mot du schéma, écrit après deux-points (`causa:abl`), racine comprise, pour que `{possesseur} causā` ne trouve pas *causam Caesaris* ; choix du cas dans le panneau d'un mot
 
-Terminé quand un testeur a créé `{liquide}`, écrit *{liquide} sūmere* au dessin et vu la fiche repérée dans *aquam sumpsit*, et dessiné *bellum cum aliquō gerere* avec le syntagme facultatif.
+Terminé quand un testeur a créé `{liquide}`, écrit *{liquide} sūmere* au dessin et vu la fiche repérée dans *aquam sumpsit*, dessiné *bellum cum aliquō gerere* avec le syntagme facultatif, et trouvé *meā causā* et *Caesaris causā* par `causa:abl -nmod|det-> {possesseur}`.
 
 ## Ouverture publique
 

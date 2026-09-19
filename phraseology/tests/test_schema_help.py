@@ -73,7 +73,14 @@ class CheckSchemaTests(AnalysedCorpusTestCase):
         self.assertEqual(result["text"], "capio -obj-> consilium; consilium -amod-> bonus")
         self.assertEqual(
             result["edges"][0],
-            {"head": "capio", "relations": ["obj"], "dependent": "consilium", "optional": False},
+            {
+                "head": "capio",
+                "relations": ["obj"],
+                "dependent": "consilium",
+                "optional": False,
+                "head_case": "",
+                "dependent_case": "",
+            },
         )
         self.assertEqual(result["errors"], [])
         self.assertNotIn("core", result)

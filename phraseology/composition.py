@@ -12,7 +12,7 @@ from operator import or_
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
-from .schema import SLOT, base, parse_schema, required_edges, schema_lemmas
+from .schema import SLOT, base, node_cases, parse_schema, required_edges, schema_lemmas
 from .spotting import visible_units
 
 MAX_COMPONENTS = 6
@@ -40,10 +40,13 @@ def contains(outer, inner):
     """Whether every relation of the schema ``inner`` is one of ``outer``, which has more.
 
     Only required relations count: an optional one neither makes a unit part of another nor
-    keeps it out.
+    keeps it out. A word given a case in ``inner`` has it in ``outer``.
     """
     outer, inner = required_edges(outer), required_edges(inner)
     if not inner or len(inner) >= len(outer):
+        return False
+    outer_cases = node_cases(outer)
+    if any(outer_cases.get(node) != case for node, case in node_cases(inner).items()):
         return False
     relations = {(edge.head, edge.dependent): edge.relations for edge in outer}
     return all(
@@ -69,8 +72,14 @@ def components(user, edges):
     lemmas = [lemma for lemma in schema_lemmas(edges) if lemma != SLOT]
     if len(edges) < 2:
         return []
-    # A schema is stored from its root, which is one of these lemmas.
-    starts = reduce(or_, (Q(schema__startswith=f"{lemma} -") for lemma in lemmas))
+    # A schema is stored from its root, which is one of these lemmas, maybe with its case.
+    starts = reduce(
+        or_,
+        (
+            Q(schema__startswith=f"{lemma} -") | Q(schema__startswith=f"{lemma}:")
+            for lemma in lemmas
+        ),
+    )
     units = visible_units(user).filter(starts).order_by("reference_form", "pk")
     found = [
         Component(unit, inner) for unit, inner in _with_schemas(units) if contains(edges, inner)

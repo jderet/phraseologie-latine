@@ -19,8 +19,9 @@
   const SVG = "http://www.w3.org/2000/svg";
   // An optional relation is written between parentheses: gero -(sp)-> cum; an abstract word,
   // a class of words, between braces: sumo -obj-> {liquide}.
+  // Any word may be given its case after a colon: causa:abl.
   const EDGE =
-    /^(\p{L}+|\{[^{}]*\})\s*[-—–]\s*(?:\(\s*([a-zA-Z:|\s]+?)\s*\)|([a-zA-Z:|\s]+?))\s*(?:->|→)\s*(\p{L}+|\*|\{[^{}]*\})$/u;
+    /^(\p{L}+|\{[^{}]*\})(?:\s*:\s*([a-zA-Z]+))?\s*[-—–]\s*(?:\(\s*([a-zA-Z:|\s]+?)\s*\)|([a-zA-Z:|\s]+?))\s*(?:->|→)\s*(\p{L}+|\*|\{[^{}]*\})(?:\s*:\s*([a-zA-Z]+))?$/u;
   // A word of a reference form, or an abstract word.
   const WORD = /\{[^{}]*\}|\p{L}+/gu;
   // A unit named in a reference form, then its words there: [rēs pūblica;rem pūblicam].
@@ -100,13 +101,15 @@
       if (!match) {
         return null;
       }
-      const optional = match[2] !== undefined;
-      const relations = (optional ? match[2] : match[3]).split("|").map((relation) => relation.trim().toLowerCase());
+      const optional = match[3] !== undefined;
+      const relations = (optional ? match[3] : match[4]).split("|").map((relation) => relation.trim().toLowerCase());
       triples.push({
         head: normalizeNode(match[1]),
-        dependent: match[4] === SLOT ? SLOT : normalizeNode(match[4]),
+        dependent: match[5] === SLOT ? SLOT : normalizeNode(match[5]),
         relations: [...new Set(relations.filter(Boolean))],
         optional,
+        head_case: (match[2] || "").toLowerCase(),
+        dependent_case: (match[6] || "").toLowerCase(),
       });
     }
     return triples;
@@ -178,6 +181,7 @@
     const wordPanel = builder.querySelector(".schema-word-panel");
     const lemmaInput = wordPanel.querySelector(".schema-lemma-input");
     const abstractInput = wordPanel.querySelector(".schema-abstract-input");
+    const wordCaseSelect = wordPanel.querySelector(".schema-word-case-select");
     const abstractResults = wordPanel.querySelector(".schema-abstract-results");
     const addInput = builder.querySelector(".schema-add-input");
     const markerId = `schema-arrow-${index}`;
@@ -225,6 +229,12 @@
       return word.slot ? SLOT : word.lemma;
     }
 
+    // A word as the written schema gives it, with its case: causa:abl.
+    function nodeOf(key) {
+      const word = byKey(key);
+      return word.case ? `${lemmaOf(key)}:${word.case}` : lemmaOf(key);
+    }
+
     function isLinked(key) {
       return edges.some((edge) => edge.head === key || edge.dependent === key);
     }
@@ -255,6 +265,8 @@
         dependent: lemmaOf(edge.dependent),
         relations: edge.relations,
         optional: edge.optional,
+        head_case: byKey(edge.head).case || "",
+        dependent_case: byKey(edge.dependent).case || "",
       }));
     }
 
@@ -284,6 +296,22 @@
         }
         return found.get(lemma);
       };
+      // The case of a word is written once and holds wherever it is.
+      const cases = new Map();
+      triples.forEach((triple) => {
+        [
+          [triple.head, triple.head_case],
+          [triple.dependent, triple.dependent_case],
+        ].forEach(([lemma, wordCase]) => {
+          if (wordCase) {
+            cases.set(lemma, wordCase);
+          }
+        });
+      });
+      triples.forEach((triple) => {
+        wordFor(triple.head).case = cases.get(triple.head) || "";
+        wordFor(triple.dependent).case = cases.get(triple.dependent) || "";
+      });
       edges = triples.map((triple) => ({
         head: wordFor(triple.head).key,
         dependent: wordFor(triple.dependent).key,
@@ -323,7 +351,7 @@
       return orderedEdges()
         .map((edge) => {
           const relations = edge.relations.join("|");
-          return `${lemmaOf(edge.head)} -${edge.optional ? `(${relations})` : relations}-> ${lemmaOf(edge.dependent)}`;
+          return `${nodeOf(edge.head)} -${edge.optional ? `(${relations})` : relations}-> ${nodeOf(edge.dependent)}`;
         })
         .join("; ");
     }
@@ -588,6 +616,7 @@
       wordPanel.querySelector(".schema-lemma-other").hidden = fixed;
       wordPanel.querySelector(".schema-abstract").hidden = fixed;
       lemmaInput.value = "";
+      wordCaseSelect.value = word.case || "";
       abstractInput.value = "";
       abstractResults.replaceChildren();
       abstractResults.hidden = true;
@@ -608,6 +637,13 @@
       render();
       write();
       focusWord(key);
+    }
+
+    // The case a word is looked for in, or any case.
+    function setWordCase(key, wordCase) {
+      byKey(key).case = wordCase;
+      render();
+      write();
     }
 
     // A word of the drawing stands for an abstract word: its lemma is the name between braces.
@@ -742,6 +778,8 @@
             dependent: edge.dependent,
             relations: [...edge.relations],
             optional: Boolean(edge.optional),
+            head_case: edge.head_case || "",
+            dependent_case: edge.dependent_case || "",
           });
         } else if (existing.head !== edge.head) {
           say(labels.labelInsertConflict.replace("%s", edge.dependent));
@@ -1162,7 +1200,7 @@
       token.append(form);
       const hints = [];
       if (!word.slot) {
-        const lemma = element("span", "schema-lemma", word.lemma);
+        const lemma = element("span", "schema-lemma", word.case ? `${word.lemma}:${word.case}` : word.lemma);
         lemma.lang = isAbstract(word.lemma) ? "fr" : "la";
         if (word.lemmas.length > 1) {
           lemma.append(element("span", "schema-dot", "•"));
@@ -1490,6 +1528,11 @@
     wordPanel.querySelector(".schema-lemma-set").addEventListener("click", () => setLemma(shownWord, lemmaInput.value));
     wordPanel.querySelector(".schema-word-remove").addEventListener("click", () => removeWord(shownWord));
     wordPanel.querySelector(".schema-abstract-search").addEventListener("click", searchAbstracts);
+    wordCaseSelect.addEventListener("change", () => {
+      if (shownWord) {
+        setWordCase(shownWord, wordCaseSelect.value);
+      }
+    });
     builder.querySelector(".schema-add-word").addEventListener("click", addWord);
     builder.querySelector(".schema-insert-search").addEventListener("click", searchUnits);
     const addSlot = builder.querySelector(".schema-add-slot");

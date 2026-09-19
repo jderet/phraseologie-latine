@@ -128,6 +128,8 @@ def _edges_as_json(edges):
             "relations": list(edge.relations),
             "dependent": edge.dependent,
             "optional": edge.optional,
+            "head_case": edge.head_case,
+            "dependent_case": edge.dependent_case,
         }
         for edge in edges
     ]

@@ -115,6 +115,14 @@
       <label>{% translate "Autre lemme" %} <input type="text" class="schema-lemma-input" lang="la" spellcheck="false" autocomplete="off" maxlength="60"></label>
       <button type="button" class="button button-quiet schema-lemma-set">{% translate "Choisir" %}</button>
     </p>
+    <p class="schema-word-case">
+      <label>{% translate "Cas" %}
+        <select class="schema-word-case-select">
+          <option value="">{% translate "tous les cas" %}</option>
+          {% for case in builder.node_cases %}<option value="{{ case.code }}">{{ case.label }}</option>{% endfor %}
+        </select>
+      </label>
+    </p>
     <p class="schema-abstract">
       <label>{% translate "ou un mot abstrait" %} <input type="text" class="schema-abstract-input" spellcheck="false" autocomplete="off" maxlength="40"></label>
       <button type="button" class="button button-quiet schema-abstract-search">{% translate "Chercher" %}</button>

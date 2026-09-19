@@ -5,7 +5,7 @@ import json
 from django import forms
 from django.urls import reverse
 
-from .schema import CASE_CHOICES, MAX_RELATIONS, RELATION_CHOICES
+from .schema import CASE_CHOICES, MAX_RELATIONS, NODE_CASE_CHOICES, RELATION_CHOICES
 
 
 class SchemaWidget(forms.TextInput):
@@ -50,5 +50,8 @@ class SchemaWidget(forms.TextInput):
             "common": [relation for relation in relations if relation["common"]],
             "others": [relation for relation in relations if not relation["common"]],
             "cases": [{"code": code, "label": str(label)} for code, label in CASE_CHOICES],
+            "node_cases": [
+                {"code": code, "label": str(label)} for code, label in NODE_CASE_CHOICES
+            ],
         }
         return context
