@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n static %}
+{% load i18n static workshop_tags %}
 
 {% block title %}{% translate "Traduire" %} · {{ project.title }} · {{ block.super }}{% endblock %}
 
@@ -9,26 +9,30 @@
 <section>
   <p class="eyebrow"><a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a> · <a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
   <h1>{% translate "Traduire" %}</h1>
-  <p class="lede">{% if version.is_draft %}{% translate "Brouillon visible de vous seul." %}{% else %}{% translate "Version publiée : le public voit la dernière étape. Vos modifications restent privées jusqu’à la prochaine étape." %}{% endif %}</p>
-  <p class="note">{% blocktranslate asvar progress with done=translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{{ progress|capfirst }}</p>
+  <p class="lede">{% if version.is_draft %}{% if has_members %}{% translate "Brouillon visible de son auteur et de ses co-auteurs." %}{% else %}{% translate "Brouillon visible de vous seul." %}{% endif %}{% else %}{% translate "Version publiée : le public voit la dernière étape. Vos modifications restent privées jusqu’à la prochaine étape." %}{% endif %}</p>
+  {% first_steps "editor" %}
   {% include "translations/source_changed_notice.html" %}
+
+  <div class="editor-toolbar">
+    {% include "translations/editor_progress.html" %}
+    <div class="toolbar-menus">
+      {% include "translations/editor_menus.html" %}
+    </div>
+  </div>
 
   <div class="editor-layout">
     <form method="post" class="editor-form" id="editor"
           data-label-saving="{% translate 'Enregistrement…' %}"
           data-label-saved="{% translate 'Enregistré' %}"
           data-label-error="{% translate 'Échec de l’enregistrement : vérifiez la connexion, puis réessayez.' %}"
-          data-label-units-error="{% translate 'Les unités connues n’ont pas pu être chargées.' %}">
+          data-label-units-error="{% translate 'Les unités connues n’ont pas pu être chargées.' %}"
+          data-label-load-error="{% translate 'Ce panneau n’a pas pu être chargé.' %}"
+          data-label-loading="{% translate 'Chargement…' %}">
       {% csrf_token %}
-      <p class="note editor-help">{% blocktranslate trimmed %}
-        Une voyelle suivie de = prend un macron : a= donne ā (tapez = une seconde fois pour
-        revenir à a=). Entrée passe à la phrase suivante ; chaque phrase est enregistrée dès que
-        vous la quittez.
-      {% endblocktranslate %}</p>
       <ol class="bitext">
         {% for row in rows %}
-        <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}">
-          <span class="bitext-number">{{ row.number }}</span>
+        <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}" data-segment="{{ row.segment.pk }}"{% for name, value in row.data.items %} data-{{ name }}="{{ value }}"{% endfor %}>
+          <span class="bitext-number">{{ row.number }}{% include "translations/editor_badges.html" %}</span>
           <label class="bitext-source" for="s{{ row.segment.pk }}" lang="{{ source.language }}">{{ row.segment.text }}</label>
           <div class="bitext-latin">
             <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false" data-segment="{{ row.segment.pk }}" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
@@ -36,6 +40,8 @@
             {% include "translations/source_changed.html" %}
           </div>
         </li>
+        {% empty %}
+        <li class="note">{% translate "Aucune phrase ne correspond à ce filtre." %} <a href="{% url 'translations:version_edit' version.pk %}">{% translate "Montrer toutes les phrases" %}</a></li>
         {% endfor %}
       </ol>
       <div class="macron-bar" id="macron-bar" role="toolbar" aria-label="{% translate 'Voyelles longues' %}" hidden>
@@ -48,9 +54,12 @@
       </div>
     </form>
 
-    <aside class="editor-panel" aria-label="{% translate 'Justifications et corpus' %}">
-      <section class="panel-section" aria-labelledby="panel-justifications">
-        <h2 id="panel-justifications">{% translate "Justifications" %}</h2>
+    <aside class="editor-panel" aria-label="{% translate 'Outils de la phrase' %}">
+      <div class="panel-tabs" role="tablist" aria-label="{% translate 'Outils de la phrase' %}" hidden>
+        {% for tab in panel_tabs %}<button type="button" role="tab" id="tab-{{ tab.name }}" aria-controls="panel-{{ tab.name }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" data-tab="{{ tab.name }}" title="{{ tab.label }} (Alt+{{ forloop.counter }})">{{ tab.label }}</button>{% endfor %}
+      </div>
+      <section class="panel-tab" role="tabpanel" id="panel-justifications" aria-labelledby="tab-justifications" data-tab="justifications">
+        <h2 class="panel-heading">{% translate "Justifications" %}</h2>
         <p class="note panel-hint">{% translate "Placez-vous sur une phrase ; sélectionnez des mots latins pour justifier ce choix." %}</p>
         {% for row in rows %}
         <div class="row-panel" data-segment="{{ row.segment.pk }}" hidden>
@@ -73,13 +82,21 @@
         </div>
         {% endfor %}
       </section>
-      <h2 id="panel-corpus">{% translate "Corpus" %}</h2>
-      <form method="get" action="{% url 'corpus:search' %}" target="_blank" class="panel-search" data-fragment-url="{% url 'corpus:search_fragment' %}">
-        {% include "corpus/panel_terms.html" with form=search_form %}
-        <div class="field">{{ search_form.scope.as_field_group }}</div>
-        <button type="submit" class="button">{% translate "Chercher" %}</button>
-      </form>
-      <div class="panel-results" aria-live="polite"></div>
+      {% for tab in panel_tabs %}{% if tab.fragment_url %}
+      <section class="panel-tab" role="tabpanel" id="panel-{{ tab.name }}" aria-labelledby="tab-{{ tab.name }}" data-tab="{{ tab.name }}" data-fragment-url="{{ tab.fragment_url }}" aria-live="polite">
+        <h2 class="panel-heading">{{ tab.label }}</h2>
+        <div class="panel-body"><p class="note">{{ tab.hint }}</p></div>
+      </section>
+      {% endif %}{% endfor %}
+      <section class="panel-tab" role="tabpanel" id="panel-corpus" aria-labelledby="tab-corpus" data-tab="corpus">
+        <h2 class="panel-heading">{% translate "Corpus" %}</h2>
+        <form method="get" action="{% url 'corpus:search' %}" target="_blank" class="panel-search" data-fragment-url="{% url 'corpus:search_fragment' %}">
+          {% include "corpus/panel_terms.html" with form=search_form %}
+          <div class="field">{{ search_form.scope.as_field_group }}</div>
+          <button type="submit" class="button">{% translate "Chercher" %}</button>
+        </form>
+        <div class="panel-results" aria-live="polite"></div>
+      </section>
     </aside>
   </div>
 </section>

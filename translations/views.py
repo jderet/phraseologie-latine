@@ -27,6 +27,7 @@ from moderation.registry import can_view
 from moderation.services import save_with_revision
 
 from .diffs import word_diff
+from .editor import panel_tabs, row_data
 from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
@@ -979,6 +980,8 @@ def version_create(request, project_pk):
 def version_edit(request, pk):
     version = _own_version(request.user, pk)
     _step, rows = _rows(request.user, version)
+    for row in rows:
+        row["data"] = row_data(row)
     if request.method == "POST":
         changes = []
         for row in rows:
@@ -1016,6 +1019,8 @@ def version_edit(request, pk):
         "translations/version_edit.html",
         {
             "search_form": SearchForm(initial=PANEL_SEARCH_DEFAULTS),
+            "panel_tabs": panel_tabs(version),
+            "has_members": active_members(version).exists(),
             "source_step": _source_changed_since(request.user, version),
             "version": version,
             "project": version.project,

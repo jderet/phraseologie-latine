@@ -1,0 +1,10 @@
+{% load i18n %}<details class="toolbar-menu">
+  <summary>{% translate "Outils" %}</summary>
+  <ul class="menu-list">
+    <li><a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></li>
+    <li><a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a></li>
+    <li><a href="{% url 'translations:step_compare' version.pk %}?a=travail">{% translate "Différences depuis la dernière étape" %}</a></li>
+    <li><a href="{% url 'translations:version_members' version.pk %}">{% translate "Co-auteurs" %}</a></li>
+    <li><a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "Exporter en TMX" %}</a></li>
+  </ul>
+</details>

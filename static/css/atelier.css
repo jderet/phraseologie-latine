@@ -356,3 +356,139 @@
 .item-list + .form {
   margin-top: 28px;
 }
+
+/* Editor: a slim toolbar above the sentences, folded menus */
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 20px;
+  margin-top: 18px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--sans);
+}
+
+.editor-progress {
+  margin: 0;
+}
+
+.toolbar-menus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toolbar-menu {
+  position: relative;
+}
+
+.toolbar-menu > summary {
+  padding: 4px 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.toolbar-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.toolbar-menu > summary::after {
+  content: " ▾";
+  color: var(--ink-3);
+}
+
+.toolbar-menu[open] > summary {
+  border-color: var(--accent);
+}
+
+.toolbar-menu > :not(summary) {
+  position: absolute;
+  right: 0;
+  z-index: 20;
+  min-width: 16rem;
+  max-width: min(26rem, 90vw);
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 14%);
+}
+
+.menu-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+/* Editor: tabs of the side panel */
+
+.panel-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: -6px -6px 4px;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--sans);
+}
+
+.panel-tabs button {
+  padding: 6px 9px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.panel-tabs button:hover {
+  color: var(--ink);
+}
+
+.panel-tabs button[aria-selected="true"] {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.panel-tab {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.panel-tab[hidden] {
+  display: none;
+}
+
+.panel-heading {
+  font-size: 1.1rem;
+}
+
+/* The tabs already name the section: headings are for readers without the script. */
+.panel-tabs:not([hidden]) ~ .panel-tab .panel-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.panel-body {
+  display: grid;
+  gap: 8px;
+  font-size: 0.93rem;
+}

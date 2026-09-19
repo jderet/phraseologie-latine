@@ -1,6 +1,8 @@
-// Translation editor: saves each sentence when it is left, types macrons, searches the corpus
-// and prepares justifications. Without this script the page still works: the form saves every
-// sentence at once, and justifications are reached from the page of the version.
+// Translation editor: saves each sentence when it is left, types macrons, searches the corpus,
+// prepares justifications and shows the tools of the active sentence in the tabs of the side
+// panel. Without this script the page still works: the form saves every sentence at once, the
+// panel shows its sections one after the other, and justifications are reached from the page
+// of the version.
 (() => {
   "use strict";
 
@@ -63,6 +65,7 @@
       if (response.ok) {
         showStatus(field, labels.labelSaved);
         showUnits(field);
+        forgetSentence(field);
       } else {
         showStatus(field, data.errors.join(" "), true);
       }
@@ -157,6 +160,129 @@
       panelHint.hidden = true;
     }
     showUnits(field);
+    loadTab(currentTab);
+  }
+
+  // Tabs of the side panel: one section at a time, the choice kept for the next visit.
+  const tabList = document.querySelector(".panel-tabs");
+  const tabButtons = tabList ? [...tabList.querySelectorAll("[role=tab]")] : [];
+  const tabPanels = [...document.querySelectorAll(".panel-tab")];
+  const TAB_KEY = "editor-tab";
+  let currentTab = tabButtons.length ? tabButtons[0].dataset.tab : null;
+  // Fragments already loaded, by tab and sentence; a saved sentence forgets its own.
+  const loaded = new Map();
+
+  function readStoredTab() {
+    try {
+      return window.localStorage.getItem(TAB_KEY);
+    } catch {
+      return null;
+    }
+  }
+
+  function storeTab(name) {
+    try {
+      window.localStorage.setItem(TAB_KEY, name);
+    } catch {
+      // Storage may be refused: the tab is simply not remembered.
+    }
+  }
+
+  function showTab(name, focus = false) {
+    const button = tabButtons.find((candidate) => candidate.dataset.tab === name);
+    if (!button) {
+      return;
+    }
+    currentTab = name;
+    for (const candidate of tabButtons) {
+      const selected = candidate === button;
+      candidate.setAttribute("aria-selected", String(selected));
+      candidate.tabIndex = selected ? 0 : -1;
+    }
+    for (const panel of tabPanels) {
+      panel.hidden = panel.dataset.tab !== name;
+    }
+    storeTab(name);
+    if (focus) {
+      button.focus();
+    }
+    loadTab(name);
+  }
+
+  function segmentOf(field) {
+    return field ? field.dataset.segment : null;
+  }
+
+  // Loads the fragment of a tab for the active sentence. The HTML is rendered and escaped by
+  // the server, as for the corpus search results.
+  async function loadTab(name, force = false) {
+    const panel = tabPanels.find((candidate) => candidate.dataset.tab === name);
+    const segment = segmentOf(activeField);
+    if (!panel || !panel.dataset.fragmentUrl || !segment) {
+      return;
+    }
+    const key = `${name}:${segment}`;
+    const body = panel.querySelector(".panel-body");
+    if (!force && loaded.get(key) === "done" && body.dataset.segment === segment) {
+      return;
+    }
+    body.setAttribute("aria-busy", "true");
+    body.textContent = labels.labelLoading;
+    body.dataset.segment = segment;
+    try {
+      const url = panel.dataset.fragmentUrl.replace("{segment}", segment);
+      const response = await fetch(url, { credentials: "same-origin" });
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      const html = await response.text();
+      if (body.dataset.segment === segment) {
+        body.innerHTML = html;
+        loaded.set(key, "done");
+      }
+    } catch {
+      body.textContent = labels.labelLoadError;
+      loaded.delete(key);
+    } finally {
+      body.removeAttribute("aria-busy");
+    }
+  }
+
+  function forgetSentence(field) {
+    const segment = segmentOf(field);
+    for (const key of [...loaded.keys()]) {
+      if (key.endsWith(`:${segment}`)) {
+        loaded.delete(key);
+      }
+    }
+    if (field === activeField) {
+      loadTab(currentTab, true);
+    }
+  }
+
+  if (tabList && tabButtons.length) {
+    tabList.hidden = false;
+    tabList.addEventListener("click", (event) => {
+      const button = event.target.closest("[role=tab]");
+      if (button) {
+        showTab(button.dataset.tab);
+      }
+    });
+    tabList.addEventListener("keydown", (event) => {
+      const index = tabButtons.indexOf(document.activeElement);
+      if (index < 0 || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+        return;
+      }
+      event.preventDefault();
+      let next = index;
+      if (event.key === "ArrowLeft") next = (index - 1 + tabButtons.length) % tabButtons.length;
+      if (event.key === "ArrowRight") next = (index + 1) % tabButtons.length;
+      if (event.key === "Home") next = 0;
+      if (event.key === "End") next = tabButtons.length - 1;
+      showTab(tabButtons[next].dataset.tab, true);
+    });
+    const stored = readStoredTab();
+    showTab(tabButtons.some((button) => button.dataset.tab === stored) ? stored : currentTab);
   }
 
   for (const field of fields) {

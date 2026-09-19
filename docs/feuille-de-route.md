@@ -207,7 +207,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 
 ## Étape 15 : l'éditeur professionnel
 
-- [ ] Panneau à onglets et barre d'outils repliée dans l'éditeur
+- [x] Panneau à onglets et barre d'outils repliée dans l'éditeur
 - [ ] Statut de chaque phrase (à traduire, brouillon, traduite, relue) et progression en couleurs
 - [ ] Filtres des phrases et recherche dans l'éditeur
 - [ ] Raccourcis clavier et leur aide
