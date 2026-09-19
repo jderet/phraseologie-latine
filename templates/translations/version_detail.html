@@ -70,24 +70,32 @@
     </div>
     {% endif %}
   </dl>
-  {% if can_translate %}
-  <p class="form-links">
-    <a class="button" href="{% url 'translations:version_edit' version.pk %}">{% translate "Traduire" %}</a>
-    <a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a>
-    {% if can_manage %}<a href="{% url 'translations:version_settings' version.pk %}">{% translate "Modifier le style" %}</a>{% endif %}
-    {% if version.is_published %}<a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer les versions" %}</a>{% endif %}
-    {% if version.is_draft and can_manage %}<a href="{% url 'translations:version_publish' version.pk %}">{% translate "Publier" %}</a>{% endif %}
-  </p>
-  {% endif %}
-  {% if copy_step %}
-  <p class="form-links"><a href="{% url 'translations:version_copy' version.pk copy_step.number %}">{% translate "Partir de cette version" %}</a> <span class="muted">{% translate "pour rédiger votre propre version à partir de son texte" %}</span></p>
-  {% endif %}
-  {% if can_propose or open_proposal_count %}
-  <p class="form-links">{% if can_propose %}<a href="{% url 'translations:proposal_create' version.pk %}">{% translate "Proposer des modifications" %}</a>{% endif %}
-    <a href="{% url 'translations:proposal_list' version.pk %}">{% blocktranslate count counter=open_proposal_count %}{{ counter }} proposition ouverte{% plural %}{{ counter }} propositions ouvertes{% endblocktranslate %}</a></p>
-  {% endif %}
-  <p class="form-links"><a href="{% url 'translations:version_comments' version.pk %}">{% translate "Commentaires des phrases" %}</a> <a href="{% url 'translations:version_stats' version.pk %}">{% translate "Statistiques" %}</a> <a href="{% url 'translations:version_network' version.pk %}">{% translate "Réseau des copies" %}</a> <a href="{% url 'translations:version_blame' version.pk %}">{% translate "Qui a écrit quoi" %}</a></p>
-  <p class="export-links">{% translate "Exporter :" %} <a href="{% url 'translations:version_export_text' version.pk %}">{% translate "texte bilingue" %}</a> · <a href="{% url 'translations:version_export_print' version.pk %}">{% translate "version imprimable avec notes (PDF)" %}</a> · <a href="{% url 'translations:version_export_tei' version.pk %}">TEI</a> · <a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "mémoire de traduction (TMX)" %}</a></p>
+  <div class="version-actions">
+    {% if can_translate %}<a class="button" href="{% url 'translations:version_edit' version.pk %}">{% translate "Traduire" %}</a>{% endif %}
+    {% if version.is_draft and can_manage %}<a class="button button-quiet" href="{% url 'translations:version_publish' version.pk %}">{% translate "Publier" %}</a>{% endif %}
+    {% if copy_step %}<a class="button button-quiet" href="{% url 'translations:version_copy' version.pk copy_step.number %}" title="{% translate 'pour rédiger votre propre version à partir de son texte' %}">{% translate "Partir de cette version" %}</a>{% endif %}
+    {% if can_propose %}<a class="button button-quiet" href="{% url 'translations:proposal_create' version.pk %}">{% translate "Proposer des modifications" %}</a>{% endif %}
+    {% if open_proposal_count %}<a href="{% url 'translations:proposal_list' version.pk %}">{% blocktranslate count counter=open_proposal_count %}{{ counter }} proposition ouverte{% plural %}{{ counter }} propositions ouvertes{% endblocktranslate %}</a>{% endif %}
+    <details class="toolbar-menu more-menu">
+      <summary>{% translate "Plus" %}</summary>
+      <ul class="menu-list">
+        {% if can_translate %}<li><a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></li>{% endif %}
+        {% if can_manage %}<li><a href="{% url 'translations:version_settings' version.pk %}">{% translate "Modifier le style" %}</a></li>{% endif %}
+        <li><a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a></li>
+        {% if version.is_published %}<li><a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer les versions" %}</a></li>{% endif %}
+        <li><a href="{% url 'translations:proposal_list' version.pk %}">{% translate "Propositions de modifications" %}</a></li>
+        <li><a href="{% url 'translations:version_comments' version.pk %}">{% translate "Commentaires des phrases" %}</a></li>
+        <li><a href="{% url 'translations:version_blame' version.pk %}">{% translate "Qui a écrit quoi" %}</a></li>
+        <li><a href="{% url 'translations:version_network' version.pk %}">{% translate "Réseau des copies" %}</a></li>
+        <li><a href="{% url 'translations:version_stats' version.pk %}">{% translate "Statistiques" %}</a></li>
+        <li class="menu-separator">{% translate "Exporter :" %}</li>
+        <li><a href="{% url 'translations:version_export_text' version.pk %}">{% translate "texte bilingue" %}</a></li>
+        <li><a href="{% url 'translations:version_export_print' version.pk %}">{% translate "version imprimable avec notes (PDF)" %}</a></li>
+        <li><a href="{% url 'translations:version_export_tei' version.pk %}">TEI</a></li>
+        <li><a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "mémoire de traduction (TMX)" %}</a></li>
+      </ul>
+    </details>
+  </div>
   {% moderation_links version %}
 
   <h2>{% translate "Texte et traduction" %}</h2>
