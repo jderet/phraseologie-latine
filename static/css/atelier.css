@@ -567,3 +567,69 @@
 .bitext-row:not(.is-active):not(:hover) .row-actions {
   visibility: hidden;
 }
+
+/* Editor: search and filters of the sentences, keyboard shortcuts */
+
+.toolbar-menus {
+  align-items: center;
+}
+
+.editor-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.editor-filter input[type="search"] {
+  width: 14rem;
+  max-width: 60vw;
+  padding: 4px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.editor-filter select {
+  padding: 4px 6px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.bitext-row[hidden] {
+  display: none;
+}
+
+.shortcuts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 6px 0;
+  font-size: 0.88rem;
+}
+
+.shortcuts dt {
+  white-space: nowrap;
+}
+
+.shortcuts dd {
+  margin: 0;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 4px;
+  border: 1px solid var(--rule-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  font: 0.8rem var(--sans);
+  text-align: center;
+}

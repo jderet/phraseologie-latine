@@ -1,6 +1,7 @@
 """What the editor shows around the sentences: the tabs of its side panel, the menus of its
 toolbar, and what each row carries for the filters and badges."""
 
+import unicodedata
 from dataclasses import dataclass
 
 from django.urls import reverse
@@ -77,3 +78,42 @@ def status_counts(rows):
         )
         offset += share
     return items
+
+
+# Filters of the sentences: name in the address, label, test on a row.
+FILTERS = {
+    "a-traduire": (_("à traduire"), lambda row: row["data"]["status"] == TODO),
+    "brouillons": (_("brouillons"), lambda row: row["data"]["status"] == "draft"),
+    "non-relues": (
+        _("traduites mais pas relues"),
+        lambda row: row["data"]["status"] in ("draft", "translated"),
+    ),
+    "source-modifiee": (
+        _("texte source modifié"),
+        lambda row: row["data"]["source-changed"] == "1",
+    ),
+}
+
+
+def fold(text):
+    """Text compared by the search of the editor: no accents, macrons or case."""
+    decomposed = unicodedata.normalize("NFD", text or "")
+    return "".join(char for char in decomposed if not unicodedata.combining(char)).casefold()
+
+
+def filter_rows(rows, name, query):
+    """The rows a filter and a search keep; the numbers of the sentences do not change."""
+    test = FILTERS.get(name, (None, None))[1]
+    needle = fold(query).strip()
+    kept = []
+    for row in rows:
+        if test is not None and not test(row):
+            continue
+        if needle and needle not in fold(row["segment"].text) and needle not in fold(row["text"]):
+            continue
+        kept.append(row)
+    return kept
+
+
+def filter_choices():
+    return [(name, label) for name, (label, _test) in FILTERS.items()]

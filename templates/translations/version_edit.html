@@ -34,7 +34,7 @@
           data-status-reviewed="{% translate 'relue' %}">
       {% csrf_token %}
       <ol class="bitext">
-        {% for row in rows %}
+        {% for row in shown_rows %}
         <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}" data-segment="{{ row.segment.pk }}"{% for name, value in row.data.items %} data-{{ name }}="{{ value }}"{% endfor %}>
           <span class="bitext-number">{{ row.number }}{% include "translations/editor_badges.html" %}</span>
           <label class="bitext-source" for="s{{ row.segment.pk }}" lang="{{ source.language }}">{{ row.segment.text }}</label>

@@ -386,17 +386,130 @@
     for (const name of ["select", "keyup", "mouseup"]) {
       field.addEventListener(name, () => followSelection(field));
     }
-    field.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" || event.shiftKey || event.isComposing) {
-        return;
-      }
+    field.addEventListener("keydown", (event) => handleKey(field, event));
+  }
+
+  // Sentences the filters leave visible, in order.
+  function visibleFields() {
+    return fields.filter((candidate) => !candidate.closest(".bitext-row").hidden);
+  }
+
+  function move(field, step) {
+    const shown = visibleFields();
+    const next = shown[shown.indexOf(field) + step];
+    if (next) {
+      next.focus();
+      next.closest(".bitext-row").scrollIntoView({ block: "nearest" });
+      return true;
+    }
+    return false;
+  }
+
+  // Keyboard shortcuts, as in translation software; « ? » in the toolbar lists them.
+  async function handleKey(field, event) {
+    if (event.isComposing) {
+      return;
+    }
+    const command = event.ctrlKey || event.metaKey;
+    if (event.key === "Enter" && command) {
       event.preventDefault();
-      const next = fields[fields.indexOf(field) + 1];
-      if (next) {
-        next.focus();
-      } else {
+      const done = await markStatus(field, event.shiftKey ? "reviewed" : "translated");
+      if (done) {
+        move(field, 1);
+      }
+      return;
+    }
+    if (event.key === "Enter" && !event.shiftKey && !event.altKey) {
+      event.preventDefault();
+      if (!move(field, 1)) {
         save(field);
       }
+      return;
+    }
+    if (event.altKey && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      event.preventDefault();
+      move(field, event.key === "ArrowDown" ? 1 : -1);
+      return;
+    }
+    if (event.altKey && event.shiftKey && event.code === "KeyS") {
+      event.preventDefault();
+      const source = field.closest(".bitext-row").querySelector(".bitext-source");
+      field.setRangeText(source.textContent.trim(), field.selectionStart, field.selectionEnd, "end");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+      return;
+    }
+    if (event.key === "Escape") {
+      field.blur();
+    }
+  }
+
+  // Shortcuts that work anywhere on the page: tabs of the panel and the search.
+  document.addEventListener("keydown", (event) => {
+    if (!event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+    const digit = /^Digit([1-9])$/.exec(event.code);
+    if (digit && tabButtons[Number(digit[1]) - 1]) {
+      event.preventDefault();
+      showTab(tabButtons[Number(digit[1]) - 1].dataset.tab);
+      return;
+    }
+    if (event.code === "KeyF" && searchBox) {
+      event.preventDefault();
+      searchBox.focus();
+      searchBox.select();
+    }
+  });
+
+  // Filters of the sentences, applied at once; the form still works without the script.
+  const searchBox = document.querySelector("[data-editor-search]");
+  const filterSelect = document.querySelector("[data-editor-filter]");
+  const filterCount = document.querySelector("[data-filter-count]");
+  const FILTER_TESTS = {
+    "a-traduire": (row) => row.dataset.status === "todo",
+    brouillons: (row) => row.dataset.status === "draft",
+    "non-relues": (row) => ["draft", "translated"].includes(row.dataset.status),
+    "source-modifiee": (row) => row.dataset.sourceChanged === "1",
+    commentees: (row) => Number(row.dataset.comments || 0) > 0,
+    alertes: (row) => Number(row.dataset.alerts || 0) > 0,
+  };
+
+  function fold(text) {
+    return text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  }
+
+  function applyFilters() {
+    const test = FILTER_TESTS[filterSelect ? filterSelect.value : ""];
+    const needle = searchBox ? fold(searchBox.value.trim()) : "";
+    const rows = [...editor.querySelectorAll(".bitext-row")];
+    let shown = 0;
+    for (const row of rows) {
+      const source = row.querySelector(".bitext-source").textContent;
+      const latin = row.querySelector("textarea").value;
+      const visible =
+        (!test || test(row)) && (!needle || fold(source).includes(needle) || fold(latin).includes(needle));
+      row.hidden = !visible;
+      shown += visible ? 1 : 0;
+    }
+    if (filterCount) {
+      filterCount.textContent = shown === rows.length ? "" : `${shown} / ${rows.length}`;
+    }
+  }
+
+  // Filtering at once needs every sentence on the page: a page filtered by the server keeps
+  // its form.
+  const asked = new URLSearchParams(window.location.search);
+  const pageIsFiltered = Boolean(asked.get("filtre") || asked.get("q"));
+  if (!pageIsFiltered && (searchBox || filterSelect)) {
+    const submit = document.querySelector("[data-filter-submit]");
+    if (submit) {
+      submit.hidden = true;
+    }
+    searchBox?.addEventListener("input", applyFilters);
+    filterSelect?.addEventListener("change", applyFilters);
+    searchBox?.closest("form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      applyFilters();
     });
   }
 

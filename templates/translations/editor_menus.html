@@ -1,3 +1,14 @@
+{% load i18n %}<form method="get" class="editor-filter" role="search">
+  <label class="visually-hidden" for="editor-search">{% translate "Chercher dans les phrases" %}</label>
+  <input type="search" id="editor-search" name="q" value="{{ query }}" placeholder="{% translate 'Chercher dans les phrases…' %}" data-editor-search>
+  <label class="visually-hidden" for="editor-filter">{% translate "Montrer" %}</label>
+  <select id="editor-filter" name="filtre" data-editor-filter>
+    <option value="">{% translate "toutes les phrases" %}</option>
+    {% for name, label in filters %}<option value="{{ name }}"{% if name == active_filter %} selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="button button-quiet button-small" data-filter-submit>{% translate "Filtrer" %}</button>
+  <span class="muted filter-count" aria-live="polite" data-filter-count>{% if shown_rows|length != rows|length %}{% blocktranslate with shown=shown_rows|length total=rows|length %}{{ shown }} phrases sur {{ total }}{% endblocktranslate %}{% endif %}</span>
+</form>
 {% load i18n %}<details class="toolbar-menu">
   <summary>{% translate "Outils" %}</summary>
   <ul class="menu-list">
@@ -7,4 +18,23 @@
     <li><a href="{% url 'translations:version_members' version.pk %}">{% translate "Co-auteurs" %}</a></li>
     <li><a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "Exporter en TMX" %}</a></li>
   </ul>
+</details>
+<details class="toolbar-menu">
+  <summary title="{% translate 'Raccourcis clavier' %}">?</summary>
+  <div class="shortcut-help">
+    <p class="muted">{% translate "Raccourcis clavier" %}</p>
+    <dl class="shortcuts">
+      <dt><kbd>Entrée</kbd></dt><dd>{% translate "phrase suivante" %}</dd>
+      <dt><kbd>Maj</kbd>+<kbd>Entrée</kbd></dt><dd>{% translate "retour à la ligne" %}</dd>
+      <dt><kbd>Ctrl</kbd>+<kbd>Entrée</kbd></dt><dd>{% translate "marquer traduite et passer à la suivante" %}</dd>
+      <dt><kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>Entrée</kbd></dt><dd>{% translate "marquer relue et passer à la suivante" %}</dd>
+      <dt><kbd>Alt</kbd>+<kbd>↓</kbd> / <kbd>↑</kbd></dt><dd>{% translate "phrase suivante ou précédente" %}</dd>
+      <dt><kbd>Alt</kbd>+<kbd>Maj</kbd>+<kbd>S</kbd></dt><dd>{% translate "recopier la phrase source (noms propres, nombres)" %}</dd>
+      <dt><kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd></dt><dd>{% translate "onglets du panneau de droite" %}</dd>
+      <dt><kbd>Alt</kbd>+<kbd>F</kbd></dt><dd>{% translate "chercher dans les phrases" %}</dd>
+      <dt><kbd>Échap</kbd></dt><dd>{% translate "quitter la phrase" %}</dd>
+      <dt><kbd>a</kbd><kbd>=</kbd></dt><dd>{% translate "ā (macron), et de même pour les autres voyelles" %}</dd>
+    </dl>
+    <p class="note">{% translate "Sur Mac, Ctrl peut être remplacé par ⌘ et Alt s’appelle ⌥." %}</p>
+  </div>
 </details>

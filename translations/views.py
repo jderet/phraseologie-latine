@@ -27,7 +27,7 @@ from moderation.registry import can_view
 from moderation.services import save_with_revision
 
 from .diffs import word_diff
-from .editor import panel_tabs, row_data, status_counts
+from .editor import filter_choices, filter_rows, panel_tabs, row_data, status_counts
 from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
@@ -1014,6 +1014,9 @@ def version_edit(request, pk):
                 messages.info(request, _("Aucune modification."))
             return redirect("translations:version_edit", version.pk)
         messages.error(request, _("Rien n’est enregistré : corrigez les phrases signalées."))
+    active_filter = request.GET.get("filtre", "")
+    query = request.GET.get("q", "")[:200]
+    shown = filter_rows(rows, active_filter, query)
     return render(
         request,
         "translations/version_edit.html",
@@ -1021,6 +1024,10 @@ def version_edit(request, pk):
             "search_form": SearchForm(initial=PANEL_SEARCH_DEFAULTS),
             "panel_tabs": panel_tabs(version),
             "status_counts": status_counts(rows),
+            "shown_rows": shown,
+            "filters": filter_choices(),
+            "active_filter": active_filter,
+            "query": query,
             "has_members": active_members(version).exists(),
             "source_step": _source_changed_since(request.user, version),
             "version": version,

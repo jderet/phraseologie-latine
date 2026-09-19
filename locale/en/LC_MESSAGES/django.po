@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 14:17+0200\n"
+"POT-Creation-Date: 2026-09-19 14:22+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -439,7 +439,7 @@ msgstr "The new version of the guide is published."
 #: templates/base.html:17 templates/corpus/correction_list.html:8
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
 #: templates/corpus/work.html:8 templates/translations/help.html:66
-#: templates/translations/version_edit.html:100 translations/editor.py:30
+#: templates/translations/version_edit.html:100 translations/editor.py:31
 msgid "Corpus"
 msgstr "Corpus"
 
@@ -2950,7 +2950,7 @@ msgstr "to avoid"
 
 #: phraseology/models.py:48 templates/translations/editor_badges.html:1
 #: templates/translations/version_detail.html:38
-#: templates/translations/version_edit.html:32 translations/editor.py:58
+#: templates/translations/version_edit.html:32 translations/editor.py:59
 #: translations/models.py:460 translations/models.py:552
 msgid "brouillon"
 msgstr "draft"
@@ -4634,7 +4634,7 @@ msgid "Versions publiées"
 msgstr "Published versions"
 
 #: templates/accounts/dashboard.html:18 templates/translations/help.html:64
-#: templates/translations/version_edit.html:70 translations/editor.py:29
+#: templates/translations/version_edit.html:70 translations/editor.py:30
 msgid "Justifications"
 msgstr "Justifications"
 
@@ -4889,7 +4889,7 @@ msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
 #: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:7
-#: templates/base.html:15 translations/views.py:1068
+#: templates/base.html:15 translations/views.py:1075
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -7257,6 +7257,7 @@ msgstr "Name or label"
 #: templates/phraseology/candidate_list.html:38
 #: templates/phraseology/neologism_list.html:31
 #: templates/phraseology/unit_list.html:36
+#: templates/translations/editor_menus.html:9
 msgid "Filtrer"
 msgstr "Filter"
 
@@ -9073,27 +9074,49 @@ msgid "(phrase effacée)"
 msgstr "(sentence erased)"
 
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:31 translations/editor.py:57
+#: templates/translations/version_edit.html:31 translations/editor.py:58
+#: translations/editor.py:85
 msgid "à traduire"
 msgstr "to translate"
 
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:33 translations/editor.py:59
+#: templates/translations/version_edit.html:33 translations/editor.py:60
 #: translations/models.py:553
 msgid "traduite"
 msgstr "translated"
 
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:34 translations/editor.py:60
+#: templates/translations/version_edit.html:34 translations/editor.py:61
 #: translations/models.py:554
 msgid "relue"
 msgstr "reviewed"
 
 #: templates/translations/editor_menus.html:2
+msgid "Chercher dans les phrases"
+msgstr "Search the sentences"
+
+#: templates/translations/editor_menus.html:3
+msgid "Chercher dans les phrases…"
+msgstr "Search the sentences…"
+
+#: templates/translations/editor_menus.html:4
+msgid "Montrer"
+msgstr "Show"
+
+#: templates/translations/editor_menus.html:6
+msgid "toutes les phrases"
+msgstr "all sentences"
+
+#: templates/translations/editor_menus.html:10
+#, python-format
+msgid "%(shown)s phrases sur %(total)s"
+msgstr "%(shown)s sentences of %(total)s"
+
+#: templates/translations/editor_menus.html:13
 msgid "Outils"
 msgstr "Tools"
 
-#: templates/translations/editor_menus.html:4
+#: templates/translations/editor_menus.html:15
 #: templates/translations/step_create.html:4
 #: templates/translations/step_create.html:9
 #: templates/translations/step_list.html:15
@@ -9102,7 +9125,7 @@ msgstr "Tools"
 msgid "Créer une étape"
 msgstr "Create a step"
 
-#: templates/translations/editor_menus.html:5
+#: templates/translations/editor_menus.html:16
 #: templates/translations/step_compare.html:37
 #: templates/translations/step_create.html:35
 #: templates/translations/step_detail.html:47
@@ -9111,11 +9134,11 @@ msgstr "Create a step"
 msgid "Historique des étapes"
 msgstr "History of steps"
 
-#: templates/translations/editor_menus.html:6
+#: templates/translations/editor_menus.html:17
 msgid "Différences depuis la dernière étape"
 msgstr "Differences since the last step"
 
-#: templates/translations/editor_menus.html:7
+#: templates/translations/editor_menus.html:18
 #: templates/translations/help.html:49
 #: templates/translations/version_detail.html:42
 #: templates/translations/version_members.html:4
@@ -9123,9 +9146,58 @@ msgstr "Differences since the last step"
 msgid "Co-auteurs"
 msgstr "Co-authors"
 
-#: templates/translations/editor_menus.html:8
+#: templates/translations/editor_menus.html:19
 msgid "Exporter en TMX"
 msgstr "Export as TMX"
+
+#: templates/translations/editor_menus.html:23
+#: templates/translations/editor_menus.html:25
+msgid "Raccourcis clavier"
+msgstr "Keyboard shortcuts"
+
+#: templates/translations/editor_menus.html:27
+msgid "phrase suivante"
+msgstr "next sentence"
+
+#: templates/translations/editor_menus.html:28
+msgid "retour à la ligne"
+msgstr "new line"
+
+#: templates/translations/editor_menus.html:29
+msgid "marquer traduite et passer à la suivante"
+msgstr "mark as translated and go to the next one"
+
+#: templates/translations/editor_menus.html:30
+msgid "marquer relue et passer à la suivante"
+msgstr "mark as reviewed and go to the next one"
+
+#: templates/translations/editor_menus.html:31
+msgid "phrase suivante ou précédente"
+msgstr "next or previous sentence"
+
+#: templates/translations/editor_menus.html:32
+msgid "recopier la phrase source (noms propres, nombres)"
+msgstr "copy the source sentence (proper names, numbers)"
+
+#: templates/translations/editor_menus.html:33
+msgid "onglets du panneau de droite"
+msgstr "tabs of the right-hand panel"
+
+#: templates/translations/editor_menus.html:34
+msgid "chercher dans les phrases"
+msgstr "search the sentences"
+
+#: templates/translations/editor_menus.html:35
+msgid "quitter la phrase"
+msgstr "leave the sentence"
+
+#: templates/translations/editor_menus.html:36
+msgid "ā (macron), et de même pour les autres voyelles"
+msgstr "ā (macron), and likewise for the other vowels"
+
+#: templates/translations/editor_menus.html:38
+msgid "Sur Mac, Ctrl peut être remplacé par ⌘ et Alt s’appelle ⌥."
+msgstr "On a Mac, Ctrl may be replaced by ⌘, and Alt is called ⌥."
 
 #: templates/translations/first_steps.html:2
 msgid "Premiers pas"
@@ -10736,6 +10808,18 @@ msgstr[1] ""
 "Your draft has %(counter)s steps. Unless you agree, the public will only see "
 "the publication step."
 
+#: translations/editor.py:86
+msgid "brouillons"
+msgstr "drafts"
+
+#: translations/editor.py:88
+msgid "traduites mais pas relues"
+msgstr "translated but not reviewed"
+
+#: translations/editor.py:92
+msgid "texte source modifié"
+msgstr "source text changed"
+
 #: translations/exports.py:22
 #, python-format
 msgid "Version latine de %(author)s, style déclaré : %(style)s."
@@ -11784,7 +11868,7 @@ msgstr ""
 msgid "Ajouter les phrases"
 msgstr "Add the sentences"
 
-#: translations/views.py:567 translations/views.py:1395
+#: translations/views.py:567 translations/views.py:1402
 msgid "La proposition est envoyée."
 msgstr "The proposal is sent."
 
@@ -11796,7 +11880,7 @@ msgstr "The proposal is adopted: the text is changed."
 msgid "La proposition est refusée."
 msgstr "The proposal is refused."
 
-#: translations/views.py:579 translations/views.py:1524
+#: translations/views.py:579 translations/views.py:1531
 msgid "La proposition est retirée."
 msgstr "The proposal is withdrawn."
 
@@ -11835,27 +11919,27 @@ msgstr[1] "%(count)d sentences saved."
 msgid "Rien n’est enregistré : corrigez les phrases signalées."
 msgstr "Nothing was saved: correct the sentences marked below."
 
-#: translations/views.py:1159
+#: translations/views.py:1166
 msgid "Cette version est déjà publiée."
 msgstr "This version is already published."
 
-#: translations/views.py:1174
+#: translations/views.py:1181
 msgid "La version est publiée."
 msgstr "The version has been published."
 
-#: translations/views.py:1282
+#: translations/views.py:1289
 msgid "La copie est créée : c’est votre brouillon, visible de vous seul."
 msgstr "The copy is created: it is your draft, visible to you only."
 
-#: translations/views.py:1508
+#: translations/views.py:1515
 msgid "La phrase est acceptée : elle entre dans votre texte de travail."
 msgstr "The sentence is accepted: it enters your working text."
 
-#: translations/views.py:1511
+#: translations/views.py:1518
 msgid "La phrase est refusée."
 msgstr "The sentence is refused."
 
-#: translations/views.py:1558
+#: translations/views.py:1565
 #, python-format
 msgid "L’étape %(number)d est créée."
 msgstr "Step %(number)d is created."
