@@ -96,6 +96,14 @@
         <div class="panel-body"><p class="note">{{ tab.hint }}</p></div>
       </section>
       {% endif %}{% endfor %}
+      <section class="panel-tab" role="tabpanel" id="panel-concordance" aria-labelledby="tab-concordance" data-tab="concordance">
+        <h2 class="panel-heading">{% translate "Concordance" %}</h2>
+        <form method="get" action="{% url 'translations:concordance' %}" target="_blank" class="panel-search" data-fragment-url="{% url 'translations:concordance' %}?fragment=1">
+          {% include "translations/concordance_fields.html" with side="latin" %}
+          <button type="submit" class="button">{% translate "Chercher" %}</button>
+        </form>
+        <div class="panel-results" aria-live="polite"></div>
+      </section>
       <section class="panel-tab" role="tabpanel" id="panel-corpus" aria-labelledby="tab-corpus" data-tab="corpus">
         <h2 class="panel-heading">{% translate "Corpus" %}</h2>
         <form method="get" action="{% url 'corpus:search' %}" target="_blank" class="panel-search" data-fragment-url="{% url 'corpus:search_fragment' %}">

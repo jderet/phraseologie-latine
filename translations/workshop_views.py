@@ -15,6 +15,7 @@ from moderation.services import save_with_revision
 
 from . import members as member_services
 from . import topics as topic_services
+from .concordance import LATIN, SOURCE, highlight, search
 from .forms import InviteForm, TopicForm
 from .models import Topic, TranslationProject, TranslationVersion, VersionMember, is_version_writer
 from .permissions import can_edit, can_manage
@@ -297,3 +298,26 @@ def topic_status(request, pk, number):
     topic_services.set_topic_status(topic, request.user, open_)
     messages.success(request, _("Le sujet est rouvert.") if open_ else _("Le sujet est fermé."))
     return redirect(topic)
+
+
+# Concordance of the translations
+
+
+@require_GET
+def concordance(request):
+    """Where a word appears in the published versions, Latin and source side by side.
+
+    With ``fragment``, only the results, for the side panel of the editor.
+    """
+    query = request.GET.get("q", "")[:200]
+    side = request.GET.get("cote") if request.GET.get("cote") == SOURCE else LATIN
+    results, exceeded = search(query, side)
+    for result in results:
+        result["latin_marked"] = highlight(result["latin"], query) if side == LATIN else None
+        result["source_marked"] = (
+            highlight(result["segment"].text, query) if side == SOURCE else None
+        )
+    context = {"query": query, "side": side, "results": results, "exceeded": exceeded}
+    if request.GET.get("fragment"):
+        return render(request, "translations/concordance_results.html", context)
+    return render(request, "translations/concordance.html", context)

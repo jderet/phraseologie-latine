@@ -567,16 +567,23 @@
     }
   });
 
-  // Corpus search in the side panel; the results are HTML rendered and escaped by the server.
-  const search = document.querySelector(".editor-panel .panel-search");
-  const results = document.querySelector(".panel-results");
-  if (search && results) {
+  // Searches in the side panel (corpus, concordance); the results are HTML rendered and
+  // escaped by the server.
+  for (const search of document.querySelectorAll(".editor-panel .panel-search")) {
+    const results = search.parentElement.querySelector(".panel-results");
+    if (!results) {
+      continue;
+    }
     search.addEventListener("submit", async (event) => {
       event.preventDefault();
       const query = new URLSearchParams(new FormData(search));
+      const url = new URL(search.dataset.fragmentUrl, window.location.href);
+      for (const [name, value] of query) {
+        url.searchParams.append(name, value);
+      }
       results.setAttribute("aria-busy", "true");
       try {
-        const response = await fetch(`${search.dataset.fragmentUrl}?${query}`, { credentials: "same-origin" });
+        const response = await fetch(url, { credentials: "same-origin" });
         results.innerHTML = await response.text();
       } catch {
         results.textContent = labels.labelError;

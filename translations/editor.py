@@ -34,6 +34,7 @@ def panel_tabs(version):
             _("Le latin déjà écrit pour cette phrase et pour des phrases ressemblantes."),
             _fragment("translations:editor_memory", version),
         ),
+        PanelTab("concordance", _("Concordance")),
         PanelTab("corpus", _("Corpus")),
     ]
 

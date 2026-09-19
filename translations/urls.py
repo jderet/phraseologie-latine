@@ -66,6 +66,7 @@ urlpatterns = [
         workshop_views.topic_status,
         name="topic_status",
     ),
+    path("traduction/concordance/", workshop_views.concordance, name="concordance"),
     path("traduction/aide/", workshop_views.help_page, name="help"),
     path("traduction/premiers-pas/", workshop_views.hide_first_steps, name="hide_first_steps"),
     path("projets/<int:pk>/reference/", views.project_reference, name="project_reference"),

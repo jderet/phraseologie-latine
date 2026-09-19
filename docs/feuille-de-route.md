@@ -213,7 +213,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Raccourcis clavier et leur aide
 - [x] Mémoire de traduction : phrases ressemblantes déjà traduites
 - [x] Autres versions de la même phrase
-- [ ] Concordance dans les traductions publiées
+- [x] Concordance dans les traductions publiées
 - [ ] Glossaire du projet, surligné dans l'éditeur
 - [ ] Commentaires par phrase, résolus ou non
 - [ ] Historique d'une phrase, avec retour à un texte antérieur

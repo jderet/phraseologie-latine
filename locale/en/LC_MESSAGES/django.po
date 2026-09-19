@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 14:26+0200\n"
+"POT-Creation-Date: 2026-09-19 14:31+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -439,7 +439,7 @@ msgstr "The new version of the guide is published."
 #: templates/base.html:17 templates/corpus/correction_list.html:8
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
 #: templates/corpus/work.html:8 templates/translations/help.html:66
-#: templates/translations/version_edit.html:100 translations/editor.py:37
+#: templates/translations/version_edit.html:108 translations/editor.py:38
 msgid "Corpus"
 msgstr "Corpus"
 
@@ -1875,7 +1875,7 @@ msgstr "Save the justification"
 #: justifications/views.py:289 phraseology/views.py:514
 #: phraseology/views.py:660 phraseology/views.py:1722 phraseology/views.py:1918
 #: translations/views.py:135 translations/views.py:728
-#: translations/views.py:1014 translations/workshop_views.py:281
+#: translations/views.py:1014 translations/workshop_views.py:282
 msgid "Aucune modification."
 msgstr "No change."
 
@@ -2952,7 +2952,7 @@ msgstr "to avoid"
 #: phraseology/models.py:48 templates/translations/editor_badges.html:1
 #: templates/translations/panel_memory.html:6
 #: templates/translations/version_detail.html:38
-#: templates/translations/version_edit.html:32 translations/editor.py:65
+#: templates/translations/version_edit.html:32 translations/editor.py:66
 #: translations/models.py:467 translations/models.py:559
 msgid "brouillon"
 msgstr "draft"
@@ -4746,7 +4746,9 @@ msgstr "Name or e-mail address"
 #: templates/phraseology/schema_search.html:24
 #: templates/phraseology/widgets/schema.html:128
 #: templates/phraseology/widgets/schema.html:144
-#: templates/translations/version_edit.html:104
+#: templates/translations/concordance.html:13
+#: templates/translations/version_edit.html:103
+#: templates/translations/version_edit.html:112
 msgid "Chercher"
 msgstr "Search"
 
@@ -5418,8 +5420,8 @@ msgstr "Search"
 
 #: templates/base.html:20 templates/corpus/reading.html:193
 #: templates/justifications/challenge_list.html:8
-#: templates/translations/help.html:8 templates/translations/source_list.html:8
-#: translations/apps.py:7
+#: templates/translations/concordance.html:8 templates/translations/help.html:8
+#: templates/translations/source_list.html:8 translations/apps.py:7
 msgid "Traduction"
 msgstr "Translation"
 
@@ -9075,20 +9077,78 @@ msgstr "Source text"
 msgid "(phrase effacée)"
 msgstr "(sentence erased)"
 
+#: templates/translations/concordance.html:4
+#: templates/translations/concordance.html:9
+#: templates/translations/project_list.html:13
+msgid "Concordance des traductions"
+msgstr "Concordance of the translations"
+
+#: templates/translations/concordance.html:10
+msgid ""
+"Comment les versions publiées ont-elles rendu un mot, ou traduit-on une "
+"expression latine ? Chaque phrase paraît avec sa phrase source, telle que le "
+"public la voit."
+msgstr ""
+"How did the published versions render a word, or where does a Latin "
+"expression come from? Each sentence appears with its source sentence, as the "
+"public sees it."
+
+#: templates/translations/concordance.html:17
+#, python-format
+msgid ""
+"Pour le latin des auteurs, utilisez la <a href=\"%(corpus_url)s\">recherche "
+"dans le corpus</a>."
+msgstr ""
+"For the Latin of the authors, use the <a href=\"%(corpus_url)s\">corpus "
+"search</a>."
+
+#: templates/translations/concordance_fields.html:2
+msgid "Mot ou expression"
+msgstr "Word or expression"
+
+#: templates/translations/concordance_fields.html:6
+msgid "Où chercher"
+msgstr "Where to search"
+
+#: templates/translations/concordance_fields.html:7
+msgid "dans le latin"
+msgstr "in the Latin"
+
+#: templates/translations/concordance_fields.html:8
+msgid "dans les textes sources"
+msgstr "in the source texts"
+
+#: templates/translations/concordance_results.html:1
+msgid "La recherche a pris trop de temps : précisez-la."
+msgstr "The search took too long: make it more precise."
+
+#: templates/translations/concordance_results.html:3
+#, python-format
+msgid "%(counter)s phrase trouvée dans les versions publiées."
+msgid_plural "%(counter)s phrases trouvées dans les versions publiées."
+msgstr[0] "%(counter)s sentence found in the published versions."
+msgstr[1] "%(counter)s sentences found in the published versions."
+
+#: templates/translations/concordance_results.html:9
+#: templates/translations/panel_memory.html:7
+#: templates/translations/panel_memory.html:21
+msgid "Insérer à la sélection"
+msgstr "Insert at the selection"
+
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:31 translations/editor.py:64
-#: translations/editor.py:91
+#: templates/translations/version_edit.html:31 translations/editor.py:65
+#: translations/editor.py:92
 msgid "à traduire"
 msgstr "to translate"
 
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:33 translations/editor.py:66
+#: templates/translations/version_edit.html:33 translations/editor.py:67
 #: translations/models.py:560
 msgid "traduite"
 msgstr "translated"
 
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:34 translations/editor.py:67
+#: templates/translations/version_edit.html:34 translations/editor.py:68
 #: translations/models.py:561
 msgid "relue"
 msgstr "reviewed"
@@ -9459,11 +9519,6 @@ msgstr "In the other versions"
 msgid "Reprendre"
 msgstr "Use"
 
-#: templates/translations/panel_memory.html:7
-#: templates/translations/panel_memory.html:21
-msgid "Insérer à la sélection"
-msgstr "Insert at the selection"
-
 #: templates/translations/panel_memory.html:10
 msgid "Aucune autre version n’a encore traduit cette phrase."
 msgstr "No other version has translated this sentence yet."
@@ -9642,6 +9697,10 @@ msgstr ""
 #: templates/translations/source_list.html:9
 msgid "Textes à traduire"
 msgstr "Texts to translate"
+
+#: templates/translations/project_list.html:13
+msgid "Aide"
+msgstr "Help"
 
 #: templates/translations/project_list.html:13
 msgid "Pour lancer un projet, choisissez d’abord un texte."
@@ -10672,6 +10731,10 @@ msgstr "Known units in this sentence"
 msgid "Voir les unités repérées"
 msgstr "See the units found"
 
+#: templates/translations/version_edit.html:100 translations/editor.py:37
+msgid "Concordance"
+msgstr "Concordance"
+
 #: templates/translations/version_form.html:4
 #: templates/translations/version_form.html:10
 msgid "Modifier le style déclaré"
@@ -10854,15 +10917,15 @@ msgid ""
 "Le latin déjà écrit pour cette phrase et pour des phrases ressemblantes."
 msgstr "The Latin already written for this sentence and for similar sentences."
 
-#: translations/editor.py:92
+#: translations/editor.py:93
 msgid "brouillons"
 msgstr "drafts"
 
-#: translations/editor.py:94
+#: translations/editor.py:95
 msgid "traduites mais pas relues"
 msgstr "translated but not reviewed"
 
-#: translations/editor.py:98
+#: translations/editor.py:99
 msgid "texte source modifié"
 msgstr "source text changed"
 
@@ -11990,40 +12053,40 @@ msgstr "The sentence is refused."
 msgid "L’étape %(number)d est créée."
 msgstr "Step %(number)d is created."
 
-#: translations/workshop_views.py:111
+#: translations/workshop_views.py:112
 #, python-format
 msgid "%(name)s est invité : il ou elle doit accepter l’invitation."
 msgstr "%(name)s is invited: they must accept the invitation."
 
-#: translations/workshop_views.py:150
+#: translations/workshop_views.py:151
 msgid "Vous êtes co-auteur de cette version."
 msgstr "You are a co-author of this version."
 
-#: translations/workshop_views.py:152
+#: translations/workshop_views.py:153
 msgid "L’invitation est refusée."
 msgstr "The invitation is declined."
 
-#: translations/workshop_views.py:166
+#: translations/workshop_views.py:167
 msgid "Vous n’êtes plus co-auteur de cette version."
 msgstr "You are no longer a co-author of this version."
 
-#: translations/workshop_views.py:168
+#: translations/workshop_views.py:169
 msgid "La personne n’est plus co-autrice de cette version."
 msgstr "This person is no longer a co-author of this version."
 
-#: translations/workshop_views.py:241
+#: translations/workshop_views.py:242
 msgid "Le sujet est ouvert."
 msgstr "The topic is open."
 
-#: translations/workshop_views.py:281
+#: translations/workshop_views.py:282
 msgid "Le sujet est modifié."
 msgstr "The topic is edited."
 
-#: translations/workshop_views.py:298
+#: translations/workshop_views.py:299
 msgid "Le sujet est rouvert."
 msgstr "The topic is reopened."
 
-#: translations/workshop_views.py:298
+#: translations/workshop_views.py:299
 msgid "Le sujet est fermé."
 msgstr "The topic is closed."
 

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Concordance des traductions" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Traduction" %}</a></p>
+  <h1>{% translate "Concordance des traductions" %}</h1>
+  <p class="lede">{% translate "Comment les versions publiées ont-elles rendu un mot, ou traduit-on une expression latine ? Chaque phrase paraît avec sa phrase source, telle que le public la voit." %}</p>
+  <form method="get" class="form concordance-form" role="search">
+    {% include "translations/concordance_fields.html" with suffix="-page" %}
+    <button type="submit" class="button">{% translate "Chercher" %}</button>
+  </form>
+  {% include "translations/concordance_results.html" %}
+  {% url 'corpus:search' as corpus_url %}
+  <p class="note">{% blocktranslate %}Pour le latin des auteurs, utilisez la <a href="{{ corpus_url }}">recherche dans le corpus</a>.{% endblocktranslate %}</p>
+</section>
+{% endblock %}

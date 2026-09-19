@@ -1,0 +1,9 @@
+{% load i18n %}<div class="field">
+  <label for="concordance-q{{ suffix }}">{% translate "Mot ou expression" %}</label>
+  <input type="search" id="concordance-q{{ suffix }}" name="q" value="{{ query }}" minlength="2" maxlength="200" required>
+</div>
+<fieldset class="field inline-choices">
+  <legend class="visually-hidden">{% translate "Où chercher" %}</legend>
+  <label><input type="radio" name="cote" value="latin"{% if side != "source" %} checked{% endif %}> {% translate "dans le latin" %}</label>
+  <label><input type="radio" name="cote" value="source"{% if side == "source" %} checked{% endif %}> {% translate "dans les textes sources" %}</label>
+</fieldset>
