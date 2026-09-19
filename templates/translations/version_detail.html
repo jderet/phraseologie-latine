@@ -46,7 +46,7 @@
     {% if version.copied_from %}
     <div>
       <dt>{% translate "Origine" %}</dt>
-      <dd><a href="{{ version.copied_from.get_absolute_url }}">{% blocktranslate with name=version.copied_from.version.author.public_name number=version.copied_from.number %}copiée de la version de {{ name }}, étape {{ number }}{% endblocktranslate %}</a></dd>
+      <dd><a href="{{ version.copied_from.get_absolute_url }}">{% blocktranslate with name=version.copied_from.version.author.public_name number=version.copied_from.number %}copiée de la version de {{ name }}, étape {{ number }}{% endblocktranslate %}</a>{% if can_translate %} · <a href="{% url 'translations:sync_copy' version.pk %}">{% translate "mettre à jour depuis l’originale" %}</a>{% endif %}</dd>
     </div>
     {% endif %}
     <div>

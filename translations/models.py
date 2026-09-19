@@ -506,6 +506,16 @@ class TranslationVersion(ModeratedContent):
         related_name="copies",
         verbose_name=_("copiée de l’étape"),
     )
+    # The step of the original up to which the copy took its changes (``copied_from`` at first).
+    synced_to = models.ForeignKey(
+        "VersionStep",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("mise à jour jusqu’à l’étape"),
+    )
 
     objects = VersionQuerySet.as_manager()
 
@@ -1210,7 +1220,7 @@ register(
     owner_field="author",
     text_fields=("style_note",),
     visible_to=version_visible_to,
-    not_reverted=("state", "published_at", "shows_draft_steps", "copied_from"),
+    not_reverted=("state", "published_at", "shows_draft_steps", "copied_from", "synced_to"),
 )
 register(
     TranslatedSegment,

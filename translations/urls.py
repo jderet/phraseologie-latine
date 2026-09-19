@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import editor_views, views, workshop_views
+from . import collab_views, editor_views, views, workshop_views
 
 app_name = "translations"
 
@@ -143,6 +143,7 @@ urlpatterns = [
         editor_views.quality_reset,
         name="quality_reset",
     ),
+    path("versions/<int:pk>/mise-a-jour/", collab_views.sync_copy, name="sync_copy"),
     path("versions/<int:pk>/etapes/", views.step_list, name="step_list"),
     path("versions/<int:pk>/etapes/nouvelle/", views.step_create, name="step_create"),
     path("versions/<int:pk>/etapes/comparer/", views.step_compare, name="step_compare"),

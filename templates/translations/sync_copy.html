@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Mettre la copie à jour" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Mettre la copie à jour" %}</h1>
+  <p class="lede">{% blocktranslate trimmed with name=original.author.public_name number=base.number %}
+    Ce que la version de {{ name }} a changé depuis son étape {{ number }}, que vous avez copiée
+    ou reprise en dernier. Cochez les phrases à reprendre : elles entrent dans votre texte de
+    travail, au nom de qui les a écrites.
+  {% endblocktranslate %}</p>
+  {% if changes %}
+  <form method="post">
+    {% csrf_token %}
+    <ol class="quality-list">
+      {% for change in changes %}
+      <li>
+        <label class="replace-choice"><input type="checkbox" name="phrase" value="{{ change.segment.pk }}"{% if change.is_clean %} checked{% endif %}> {% blocktranslate with number=change.number %}Phrase {{ number }}{% endblocktranslate %}{% if not change.is_clean %} <span class="badge">{% translate "vous l’avez aussi modifiée" %}</span>{% endif %}</label>
+        <p class="muted">{{ change.segment.text }}</p>
+        <p class="word-diff" lang="la">{% include "translations/word_diff.html" with chunks=change.chunks %}</p>
+        {% if not change.is_clean %}<p class="muted" lang="la">{% translate "Votre texte :" %} {{ change.mine|default:"—" }}</p>{% endif %}
+        {% if change.written_by %}<p class="muted">{% blocktranslate with name=change.written_by.public_name %}écrite par {{ name }}{% endblocktranslate %}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+    <button type="submit" class="button">{% translate "Reprendre les phrases cochées" %}</button>
+  </form>
+  {% else %}
+  <p class="notice notice-info">{% if latest %}{% blocktranslate with number=latest.number %}Votre copie est à jour : l’originale n’a rien changé qui vous manque jusqu’à son étape {{ number }}.{% endblocktranslate %}{% else %}{% translate "L’originale n’a pas d’étape publique." %}{% endif %}</p>
+  {% endif %}
+</section>
+{% endblock %}
