@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Revenir à une étape" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ step.get_absolute_url }}">{% blocktranslate with number=step.number %}Étape {{ number }}{% endblocktranslate %}</a></p>
+  <h1>{% blocktranslate with number=step.number %}Revenir à l’étape {{ number }}{% endblocktranslate %}</h1>
+  <p class="lede">{% translate "Le texte de travail reprend le latin de cette étape, phrase par phrase. Rien n’est effacé de l’historique ; le public ne voit le changement qu’à votre prochaine étape." %}</p>
+  {% if rows %}
+  <ol class="quality-list">
+    {% for segment, number, current, restored, writer, chunks in rows %}
+    <li>
+      <p class="muted">{% blocktranslate %}Phrase {{ number }}{% endblocktranslate %} · {{ segment.text }}</p>
+      <p class="word-diff" lang="la">{% include "translations/word_diff.html" %}</p>
+    </li>
+    {% endfor %}
+  </ol>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="button">{% blocktranslate count counter=rows|length %}Rétablir {{ counter }} phrase{% plural %}Rétablir {{ counter }} phrases{% endblocktranslate %}</button>
+    <a href="{{ step.get_absolute_url }}">{% translate "Annuler" %}</a>
+  </form>
+  {% else %}
+  <p class="notice notice-info">{% translate "Le texte de travail est déjà celui de cette étape." %}</p>
+  {% endif %}
+</section>
+{% endblock %}

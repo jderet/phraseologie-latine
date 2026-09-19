@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 15:07+0200\n"
+"POT-Creation-Date: 2026-09-19 15:08+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -1886,7 +1886,7 @@ msgstr "Save the justification"
 
 #: justifications/views.py:289 phraseology/views.py:514
 #: phraseology/views.py:660 phraseology/views.py:1722 phraseology/views.py:1918
-#: translations/collab_views.py:144 translations/views.py:140
+#: translations/collab_views.py:150 translations/views.py:140
 #: translations/views.py:733 translations/views.py:1032
 #: translations/workshop_views.py:290 translations/workshop_views.py:400
 msgid "Aucune modification."
@@ -4885,6 +4885,7 @@ msgstr "Delete permanently"
 #: templates/accounts/delete.html:19 templates/accounts/password_change.html:14
 #: templates/phraseology/widgets/schema.html:107
 #: templates/translations/source_sentence_form.html:30
+#: templates/translations/step_restore.html:23
 msgid "Annuler"
 msgstr "Cancel"
 
@@ -9248,7 +9249,7 @@ msgstr "Create a step"
 #: templates/translations/editor_menus.html:19
 #: templates/translations/step_compare.html:37
 #: templates/translations/step_create.html:35
-#: templates/translations/step_detail.html:59
+#: templates/translations/step_detail.html:60
 #: templates/translations/step_list.html:4
 #: templates/translations/step_list.html:9
 msgid "Historique des étapes"
@@ -9349,6 +9350,7 @@ msgstr "Overview"
 #: templates/translations/find_replace.html:23
 #: templates/translations/propose_to_original.html:22
 #: templates/translations/quality_report.html:25
+#: templates/translations/step_restore.html:15
 #: templates/translations/sync_copy.html:21
 #: templates/translations/topic_detail.html:20
 #: templates/translations/version_comments.html:14
@@ -10546,6 +10548,7 @@ msgstr "To"
 #: templates/translations/step_compare.html:30
 #: templates/translations/step_detail.html:9
 #: templates/translations/step_list.html:20
+#: templates/translations/step_restore.html:8
 #, python-format
 msgid "Étape %(number)s"
 msgstr "Step %(number)s"
@@ -10669,35 +10672,39 @@ msgstr "bilingual text"
 msgid "version imprimable avec notes (PDF)"
 msgstr "printable version with notes (PDF)"
 
-#: templates/translations/step_detail.html:46
+#: templates/translations/step_detail.html:45
+msgid "Revenir à cette étape"
+msgstr "Go back to this step"
+
+#: templates/translations/step_detail.html:47
 msgid "Étiqueter cette étape"
 msgstr "Label this step"
 
-#: templates/translations/step_detail.html:50
+#: templates/translations/step_detail.html:51
 msgid "Enregistrer l’étiquette"
 msgstr "Save the label"
 
-#: templates/translations/step_detail.html:55
+#: templates/translations/step_detail.html:56
 msgid "Étape précédente"
 msgstr "Previous step"
 
-#: templates/translations/step_detail.html:56
+#: templates/translations/step_detail.html:57
 msgid "Étape suivante"
 msgstr "Next step"
 
-#: templates/translations/step_detail.html:57
+#: templates/translations/step_detail.html:58
 msgid "Ce qui a changé à cette étape"
 msgstr "What changed at this step"
 
-#: templates/translations/step_detail.html:58
+#: templates/translations/step_detail.html:59
 msgid "Partir de cette étape"
 msgstr "Start from this step"
 
-#: templates/translations/step_detail.html:65
+#: templates/translations/step_detail.html:66
 msgid "Voir ce qu’a changé cette étape"
 msgstr "See what this step changed"
 
-#: templates/translations/step_detail.html:70
+#: templates/translations/step_detail.html:71
 #: templates/translations/version_detail.html:93
 msgid "Texte et traduction"
 msgstr "Text and translation"
@@ -10734,6 +10741,36 @@ msgstr "Compare with another step"
 #: templates/translations/step_list.html:32
 msgid "Aucune étape pour l’instant."
 msgstr "No step yet."
+
+#: templates/translations/step_restore.html:4
+msgid "Revenir à une étape"
+msgstr "Go back to a step"
+
+#: templates/translations/step_restore.html:9
+#, python-format
+msgid "Revenir à l’étape %(number)s"
+msgstr "Go back to step %(number)s"
+
+#: templates/translations/step_restore.html:10
+msgid ""
+"Le texte de travail reprend le latin de cette étape, phrase par phrase. Rien "
+"n’est effacé de l’historique ; le public ne voit le changement qu’à votre "
+"prochaine étape."
+msgstr ""
+"The working text takes back the Latin of this step, sentence by sentence. "
+"Nothing is erased from the history; the public sees the change only at your "
+"next step."
+
+#: templates/translations/step_restore.html:22
+#, python-format
+msgid "Rétablir %(counter)s phrase"
+msgid_plural "Rétablir %(counter)s phrases"
+msgstr[0] "Restore %(counter)s sentence"
+msgstr[1] "Restore %(counter)s sentences"
+
+#: templates/translations/step_restore.html:26
+msgid "Le texte de travail est déjà celui de cette étape."
+msgstr "The working text is already that of this step."
 
 #: templates/translations/sync_copy.html:10
 #, python-format
@@ -11371,36 +11408,51 @@ msgid ""
 msgstr ""
 "Number of sentence saves per day, visible to the authors of the version only."
 
-#: translations/collab_views.py:30 translations/collab_views.py:67
+#: translations/collab_views.py:36 translations/collab_views.py:73
 msgid "Cette version n’est pas une copie."
 msgstr "This version is not a copy."
 
-#: translations/collab_views.py:39
+#: translations/collab_views.py:45
 #, python-format
 msgid "%(count)d phrase reprise de l’originale."
 msgid_plural "%(count)d phrases reprises de l’originale."
 msgstr[0] "%(count)d sentence taken from the original."
 msgstr[1] "%(count)d sentences taken from the original."
 
-#: translations/collab_views.py:71
+#: translations/collab_views.py:77
 msgid "Vous ne pouvez pas proposer de modifications à l’originale."
 msgstr "You cannot propose changes to the original."
 
-#: translations/collab_views.py:89
+#: translations/collab_views.py:95
 msgid "La proposition est envoyée à l’auteur de l’originale."
 msgstr "The proposal is sent to the author of the original."
 
-#: translations/collab_views.py:113
+#: translations/collab_views.py:119
 msgid "Choisissez un avis."
 msgstr "Choose an opinion."
 
-#: translations/collab_views.py:129
+#: translations/collab_views.py:135
 msgid "Votre relecture est publiée."
 msgstr "Your review is published."
 
-#: translations/collab_views.py:144
+#: translations/collab_views.py:150
 msgid "L’étiquette est enregistrée."
 msgstr "The label is saved."
+
+#: translations/collab_views.py:169
+#, python-format
+msgid ""
+"%(count)d phrase revient au texte de l’étape. Créez une étape pour le "
+"publier."
+msgid_plural ""
+"%(count)d phrases reviennent au texte de l’étape. Créez une étape pour le "
+"publier."
+msgstr[0] ""
+"%(count)d sentence goes back to the text of the step. Create a step to "
+"publish it."
+msgstr[1] ""
+"%(count)d sentences go back to the text of the step. Create a step to "
+"publish it."
 
 #: translations/comments.py:36 translations/editor_views.py:156
 msgid "Écrivez un commentaire."

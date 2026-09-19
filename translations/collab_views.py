@@ -17,7 +17,13 @@ from .forms import ProposalForm, ProposalReviewForm, StepLabelForm
 from .models import ChangeProposal  # noqa: F401 - the form builds one
 from .permissions import can_propose
 from .services import create_proposal, review_proposal
-from .sync import differences_with_original, take_upstream, upstream_changes
+from .sync import (
+    differences_with_original,
+    restore_preview,
+    restore_step,
+    take_upstream,
+    upstream_changes,
+)
 from .views import _contribute, _own_version, _proposal
 
 
@@ -146,3 +152,35 @@ def step_label(request, pk, number):
     else:
         messages.error(request, " ".join(form.errors.get("label", [])))
     return redirect(step)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def step_restore(request, pk, number):
+    """Show what going back to a step would change in the working text, then do it."""
+    version = _own_version(request.user, pk)
+    step = get_object_or_404(version.steps, number=number)
+    step.version = version
+    if request.method == "POST":
+        count = restore_step(request.user, version, step)
+        messages.success(
+            request,
+            ngettext(
+                "%(count)d phrase revient au texte de l’étape. Créez une étape pour le publier.",
+                "%(count)d phrases reviennent au texte de l’étape. Créez une étape pour le "
+                "publier.",
+                count,
+            )
+            % {"count": count},
+        )
+        return redirect("translations:version_edit", version.pk)
+    return render(
+        request,
+        "translations/step_restore.html",
+        {
+            "version": version,
+            "project": version.project,
+            "step": step,
+            "rows": restore_preview(version, step),
+        },
+    )

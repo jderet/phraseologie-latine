@@ -227,7 +227,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Proposer à l'originale depuis sa copie
 - [x] Revue phrase par phrase des propositions, avis de relecture
 - [x] Étiquettes d'étape (éditions)
-- [ ] Revenir à une étape
+- [x] Revenir à une étape
 - [ ] Réseau des copies
 - [ ] Vue « qui a écrit quoi »
 

@@ -42,6 +42,7 @@
   </dl>
   <p class="export-links">{% translate "Exporter cette étape :" %} <a href="{% url 'translations:version_export_text' version.pk %}?etape={{ step.number }}">{% translate "texte bilingue" %}</a> · <a href="{% url 'translations:version_export_print' version.pk %}?etape={{ step.number }}">{% translate "version imprimable avec notes (PDF)" %}</a> · <a href="{% url 'translations:version_export_tei' version.pk %}?etape={{ step.number }}">TEI</a> · <a href="{% url 'translations:version_export_tmx' version.pk %}?etape={{ step.number }}">TMX</a></p>
   {% if can_label %}
+  <p class="form-links"><a href="{% url 'translations:step_restore' version.pk step.number %}">{% translate "Revenir à cette étape" %}</a></p>
   <details class="step-tools">
     <summary>{% translate "Étiqueter cette étape" %}</summary>
     <form method="post" action="{% url 'translations:step_label' version.pk step.number %}" class="form">

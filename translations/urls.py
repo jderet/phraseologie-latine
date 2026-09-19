@@ -155,6 +155,11 @@ urlpatterns = [
     path("versions/<int:pk>/etapes/<int:number>/", views.step_detail, name="step"),
     path("versions/<int:pk>/etapes/<int:number>/copier/", views.version_copy, name="version_copy"),
     path(
+        "versions/<int:pk>/etapes/<int:number>/revenir/",
+        collab_views.step_restore,
+        name="step_restore",
+    ),
+    path(
         "versions/<int:pk>/etapes/<int:number>/etiquette/",
         collab_views.step_label,
         name="step_label",
