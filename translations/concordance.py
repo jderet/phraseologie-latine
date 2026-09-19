@@ -42,6 +42,7 @@ def _in_latin(needle):
             text__icontains=needle,
             step__in=VersionStep.objects.public(),
             step__version__project__is_hidden=False,
+            step__version__project__source_text__is_hidden=False,
         )
         .select_related("step__version__project", "step__version__author", "segment")
         .order_by("-step__created_at", "-pk")[:MAX_SCANNED]

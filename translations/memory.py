@@ -73,7 +73,12 @@ def _latin_of(user, candidate):
     versions = (
         TranslationVersion.objects.filter(project__source_text_id=candidate.source_text_id)
         .filter(
-            Q(state=TranslationVersion.State.PUBLISHED, is_hidden=False)
+            Q(
+                state=TranslationVersion.State.PUBLISHED,
+                is_hidden=False,
+                project__is_hidden=False,
+                project__source_text__is_hidden=False,
+            )
             | Q(pk__in=TranslationVersion.objects.written_by(user).values("pk"))
         )
         .select_related("author", "project")
