@@ -68,7 +68,8 @@ class Unit(ModeratedContent):
         blank=True,
         help_text=_(
             "Lemmes et relations syntaxiques, le mot qui régit d’abord : capio -obj-> consilium. "
-            "Plusieurs relations se séparent par « ; », des variantes par « | »."
+            "Plusieurs relations se séparent par « ; », des variantes par « | ». Une relation "
+            "facultative s’écrit entre parenthèses : gero -(sp)-> cum."
         ),
     )
     construction = models.CharField(

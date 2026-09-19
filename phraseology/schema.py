@@ -4,8 +4,10 @@ A schema is written one relation at a time, the governing lemma first:
 ``capio -obj-> consilium``. Several relations are separated by ";" and form a tree. A relation
 may have alternatives separated by "|": ``gero -obj|nsubj:pass-> bellum`` also finds the passive
 *bellum geritur*. A relation without subtype also matches its subtypes: ``obl`` matches
-``obl:arg``. A query may leave one dependent open, written ``*``: ``capio -obj-> *`` finds every
-object of *capio*.
+``obl:arg``. A relation written between parentheses is optional: in
+``gero -obj-> bellum; gero -(sp)-> cum; cum -reg-> aliquis`` the phrase *cum aliquo* may be
+missing; when it is there, its preposition has its regime. A query may leave one dependent
+open, written ``*``: ``capio -obj-> *`` finds every object of *capio*.
 
 A prepositional phrase is written with the preposition first, unlike Universal Dependencies:
 ``redigo -sp-> in; in -reg-> memoria``; the case of the regime may be given, as in
@@ -88,8 +90,9 @@ MAX_RELATIONS = 4
 SLOT = "*"
 
 EDGE_PATTERN = re.compile(
-    r"^(?P<head>[^\W\d_]+)\s*[-—–]\s*(?P<relations>[a-zA-Z:|\s]+?)\s*(?:->|→)\s*"
-    r"(?P<dependent>[^\W\d_]+|\*)$"
+    r"^(?P<head>[^\W\d_]+)\s*[-—–]\s*"
+    r"(?:\(\s*(?P<optional>[a-zA-Z:|\s]+?)\s*\)|(?P<relations>[a-zA-Z:|\s]+?))"
+    r"\s*(?:->|→)\s*(?P<dependent>[^\W\d_]+|\*)$"
 )
 
 
@@ -103,13 +106,20 @@ class Edge:
     head: str
     relations: tuple[str, ...]
     dependent: str
+    # The expression exists without this relation and what depends on it.
+    optional: bool = False
+
+    @property
+    def written_relations(self):
+        relations = "|".join(self.relations)
+        return f"({relations})" if self.optional else relations
 
     def __str__(self):
-        return f"{self.head} -{'|'.join(self.relations)}-> {self.dependent}"
+        return f"{self.head} -{self.written_relations}-> {self.dependent}"
 
     @property
     def label(self):
-        return f"{self.head} —{'|'.join(self.relations)}→ {self.dependent}"
+        return f"{self.head} —{self.written_relations}→ {self.dependent}"
 
     @property
     def kind(self):
@@ -182,11 +192,14 @@ def parse_schema(text, slot=False):
                 gettext("La case vide * ne sert qu’à chercher : écrivez un lemme."), code="slot"
             )
         dependent = dependent if dependent == SLOT else normalize(dependent)
-        edges.append(Edge(normalize(match["head"]), _relations(match["relations"]), dependent))
+        optional = match["optional"] is not None
+        relations = _relations(match["optional"] if optional else match["relations"])
+        edges.append(Edge(normalize(match["head"]), relations, dependent, optional))
     if sum(edge.dependent == SLOT for edge in edges) > 1:
         raise ValidationError(gettext("Un schéma n’a qu’une case vide."), code="two_slots")
     edges = _as_tree(_from_analysis(edges))
     _check_phrases(edges)
+    _check_optional(edges)
     return edges
 
 
@@ -212,10 +225,10 @@ def _from_analysis(edges):
         ):
             continue
         rewritten.remove(mark)
-        rewritten.append(Edge(preposition, (REGIME,), noun))
+        rewritten.append(Edge(preposition, (REGIME,), noun, mark.optional))
         if heads:
             place = rewritten.index(heads[0])
-            rewritten[place] = Edge(heads[0].head, (PHRASE,), preposition)
+            rewritten[place] = Edge(heads[0].head, (PHRASE,), preposition, heads[0].optional)
     return rewritten
 
 
@@ -277,6 +290,35 @@ def _check_phrases(edges):
                 )
 
 
+def _check_optional(edges):
+    """A schema keeps one required relation; a phrase, not its regime, is marked optional."""
+    if edges and not required_edges(edges):
+        raise ValidationError(
+            gettext("Une relation au moins est obligatoire : ôtez une paire de parenthèses."),
+            code="all_optional",
+        )
+    for edge in edges:
+        if edge.optional and edge.kind == REGIME:
+            raise ValidationError(
+                gettext(
+                    "Le régime suit sa préposition : c’est le syntagme prépositionnel qui se "
+                    "marque facultatif, -(sp)->."
+                ),
+                code="optional_regime",
+            )
+
+
+def required_edges(edges):
+    """The relations every occurrence has: not optional, nor under an optional relation."""
+    dropped, required = set(), []
+    for edge in edges:
+        if edge.optional or edge.head in dropped:
+            dropped.add(edge.dependent)
+        else:
+            required.append(edge)
+    return required
+
+
 def corpus_edges(edges):
     """The schema as the analysis writes it: (relations from the root, {lemma: case}).
 
@@ -289,7 +331,9 @@ def corpus_edges(edges):
     written, cases = [], {}
     for edge in edges:
         if edge.kind == PHRASE:
-            written.append(Edge(edge.head, PHRASE_RELATIONS, regimes[edge.dependent]))
+            written.append(
+                Edge(edge.head, PHRASE_RELATIONS, regimes[edge.dependent], edge.optional)
+            )
         elif edge.kind == REGIME:
             written.append(Edge(edge.dependent, (CASE,), edge.head))
             subtype = edge.relations[0].partition(":")[2]

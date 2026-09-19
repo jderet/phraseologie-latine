@@ -1,7 +1,14 @@
 from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase
 
-from phraseology.schema import Edge, corpus_edges, format_schema, parse_schema, schema_lemmas
+from phraseology.schema import (
+    Edge,
+    corpus_edges,
+    format_schema,
+    parse_schema,
+    required_edges,
+    schema_lemmas,
+)
 
 
 class SchemaTests(SimpleTestCase):
@@ -58,6 +65,32 @@ class SchemaTests(SimpleTestCase):
         self.assertEqual((format_schema(written), cases), ("* -case-> de", {}))
         self.assertEqual(corpus_edges(written), (written, {}))
 
+    def test_an_optional_relation_is_written_between_parentheses(self):
+        edges = parse_schema("gero -obj-> bellum; gero - ( sp ) -> cum; cum -reg-> aliquis")
+        self.assertEqual(
+            format_schema(edges), "gero -obj-> bellum; gero -(sp)-> cum; cum -reg-> aliquis"
+        )
+        self.assertEqual([edge.optional for edge in edges], [False, True, False])
+        self.assertEqual(edges[1].label, "gero —(sp)→ cum")
+        self.assertEqual(format_schema(parse_schema(format_schema(edges))), format_schema(edges))
+
+    def test_the_required_relations_leave_out_what_hangs_on_an_optional_one(self):
+        edges = parse_schema("gero -obj-> bellum; gero -(sp)-> cum; cum -reg-> aliquis")
+        self.assertEqual(format_schema(required_edges(edges)), "gero -obj-> bellum")
+        edges = parse_schema("capio -obj-> consilium; consilium -(amod)-> bonus")
+        self.assertEqual(format_schema(required_edges(edges)), "capio -obj-> consilium")
+
+    def test_an_optional_phrase_written_as_the_analysis_gives_it(self):
+        edges = parse_schema("gero -obj-> bellum; gero -(obl)-> aliquis; aliquis -case-> cum")
+        self.assertEqual(
+            format_schema(edges), "gero -obj-> bellum; gero -(sp)-> cum; cum -reg-> aliquis"
+        )
+        written, _cases = corpus_edges(edges)
+        self.assertEqual(
+            format_schema(written),
+            "gero -obj-> bellum; gero -(obl|nmod)-> aliquis; aliquis -case-> cum",
+        )
+
     def test_invalid_schemas(self):
         cases = {
             "capio obj consilium": "syntax",
@@ -73,6 +106,10 @@ class SchemaTests(SimpleTestCase):
             "mereor -sp-> de; de -amod-> res": "no_regime",
             "mereor -obj-> de; de -reg-> res": "regime",
             "in -reg-> memoria; in -advmod-> non": "regime",
+            "capio -(obj)-> consilium": "all_optional",
+            "gero -(obj)-> bellum; gero -(sp)-> cum; cum -reg-> aliquis": "all_optional",
+            "gero -obj-> bellum; gero -sp-> cum; cum -(reg)-> aliquis": "optional_regime",
+            "capio -(obj-> consilium": "syntax",
         }
         for text, code in cases.items():
             with self.subTest(text=text), self.assertRaises(ValidationError) as caught:
