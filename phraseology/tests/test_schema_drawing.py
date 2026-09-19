@@ -20,6 +20,8 @@ class SchemaDrawingPagesTests(PhraseologyTestCase):
         self.assertContains(page, 'data-label-lemma-of="Lemme de « %s »"')
         self.assertContains(page, RELATION_OPTION)
         self.assertNotContains(page, 'value="root"')
+        self.assertContains(page, 'class="schema-optional-box"')
+        self.assertContains(page, 'data-label-optional="facultatif"')
 
     def test_the_creation_page_draws_the_schema(self):
         self.client.force_login(self.other)
@@ -38,6 +40,16 @@ class SchemaDrawingPagesTests(PhraseologyTestCase):
         page = self.client.get(reverse("phraseology:unit_edit", args=[self.unit.pk]))
         self.assertDraws(page)
         self.assertContains(page, 'value="capio -obj|nsubj:pass-&gt; consilium"')
+
+    def test_an_optional_relation_written_without_script(self):
+        self.unit.schema = "capio -obj-> consilium; consilium -(amod)-> bonus"
+        self.unit.save()
+        self.client.force_login(self.author)
+        page = self.client.get(reverse("phraseology:unit_edit", args=[self.unit.pk]))
+        self.assertContains(page, 'value="capio -obj-&gt; consilium; consilium -(amod)-&gt; bonus"')
+        page = self.client.get(self.unit.get_absolute_url())
+        self.assertContains(page, "consilium —(amod)→ bonus")
+        self.assertContains(page, '<span class="schema-edge-optional" lang="fr">facultatif</span>')
 
     def test_the_schema_search_draws_with_an_open_slot(self):
         page = self.client.get(reverse("phraseology:schema_search"), {"schema": "capio -obj-> *"})

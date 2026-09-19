@@ -64,10 +64,17 @@ class CheckSchemaTests(AnalysedCorpusTestCase):
         result = check_schema("consilium -amod-> bonus; Capiō —obj → cōnsilium")
         self.assertEqual(result["text"], "capio -obj-> consilium; consilium -amod-> bonus")
         self.assertEqual(
-            result["edges"][0], {"head": "capio", "relations": ["obj"], "dependent": "consilium"}
+            result["edges"][0],
+            {"head": "capio", "relations": ["obj"], "dependent": "consilium", "optional": False},
         )
         self.assertEqual(result["errors"], [])
         self.assertNotIn("core", result)
+
+    def test_an_optional_relation(self):
+        result = check_schema("capio -obj-> consilium; consilium -(amod)-> bonus", count=True)
+        self.assertEqual(result["text"], "capio -obj-> consilium; consilium -(amod)-> bonus")
+        self.assertIs(result["edges"][1]["optional"], True)
+        self.assertEqual(result["core"], 3)
 
     def test_errors(self):
         self.assertIn(

@@ -121,7 +121,8 @@ class ComponentsTests(PhraseologyTestCase):
             ["de re publica bene mereri", "rem publicam gerere", "res publica"],
         )
         self.assertEqual(
-            units[2]["edges"], [{"head": "res", "relations": ["amod"], "dependent": "publicus"}]
+            units[2]["edges"],
+            [{"head": "res", "relations": ["amod"], "dependent": "publicus", "optional": False}],
         )
         self.assertEqual(
             self.client.get(url, {"fiche": "bene"}).json()["units"][0]["status"], "proposée"

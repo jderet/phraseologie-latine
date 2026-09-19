@@ -69,7 +69,12 @@ def lemma_choices(word, layer=None):
 
 def _edges_as_json(edges):
     return [
-        {"head": edge.head, "relations": list(edge.relations), "dependent": edge.dependent}
+        {
+            "head": edge.head,
+            "relations": list(edge.relations),
+            "dependent": edge.dependent,
+            "optional": edge.optional,
+        }
         for edge in edges
     ]
 

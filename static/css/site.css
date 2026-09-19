@@ -1850,6 +1850,17 @@ article > h2 {
   stroke-dasharray: 5 4;
 }
 
+/* An optional relation: the expression exists without it. */
+.schema-arc-line.is-optional {
+  stroke-dasharray: 1 4;
+  stroke-linecap: round;
+}
+
+.schema-edge-optional {
+  font-style: italic;
+  color: var(--ink-2);
+}
+
 .schema-arc-hit {
   fill: none;
   stroke: transparent;

@@ -155,7 +155,8 @@ class FormHelpTests(PhraseologyTestCase):
             ("rēs pūblica", "rem pūblicam", "validée"),
         )
         self.assertEqual(
-            suggestion["edges"], [{"head": "res", "relations": ["amod"], "dependent": "publicus"}]
+            suggestion["edges"],
+            [{"head": "res", "relations": ["amod"], "dependent": "publicus", "optional": False}],
         )
         self.assertEqual([part["name"] for part in data["parts"]], [""])
 

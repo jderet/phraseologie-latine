@@ -17,7 +17,8 @@
   // Units a search looks for by their schema at once, as the server allows.
   const MAX_CONSTRUCTIONS = 3;
   const SVG = "http://www.w3.org/2000/svg";
-  const EDGE = /^(\p{L}+)\s*[-—–]\s*([a-zA-Z:|\s]+?)\s*(?:->|→)\s*(\p{L}+|\*)$/u;
+  // An optional relation is written between parentheses: gero -(sp)-> cum.
+  const EDGE = /^(\p{L}+)\s*[-—–]\s*(?:\(\s*([a-zA-Z:|\s]+?)\s*\)|([a-zA-Z:|\s]+?))\s*(?:->|→)\s*(\p{L}+|\*)$/u;
   // A unit named in a reference form, then its words there: [rēs pūblica;rem pūblicam].
   const MARK = /\[([^[\];]*);([^[\];]*)\]/g;
 
@@ -87,11 +88,13 @@
       if (!match) {
         return null;
       }
-      const relations = match[2].split("|").map((relation) => relation.trim().toLowerCase());
+      const optional = match[2] !== undefined;
+      const relations = (optional ? match[2] : match[3]).split("|").map((relation) => relation.trim().toLowerCase());
       triples.push({
         head: normalizeLatin(match[1]),
-        dependent: match[3] === SLOT ? SLOT : normalizeLatin(match[3]),
+        dependent: match[4] === SLOT ? SLOT : normalizeLatin(match[4]),
         relations: [...new Set(relations.filter(Boolean))],
+        optional,
       });
     }
     return triples;
@@ -142,6 +145,8 @@
     const passiveBox = linkPanel.querySelector(".schema-passive-box");
     const caseRow = linkPanel.querySelector(".schema-case");
     const caseSelect = linkPanel.querySelector(".schema-case-select");
+    const optionalRow = linkPanel.querySelector(".schema-optional");
+    const optionalBox = linkPanel.querySelector(".schema-optional-box");
     const componentBox = builder.querySelector(".schema-components");
     const componentList = builder.querySelector(".schema-component-list");
     const insertInput = builder.querySelector(".schema-insert-input");
@@ -232,6 +237,7 @@
         head: lemmaOf(edge.head),
         dependent: lemmaOf(edge.dependent),
         relations: edge.relations,
+        optional: edge.optional,
       }));
     }
 
@@ -265,6 +271,7 @@
         head: wordFor(triple.head).key,
         dependent: wordFor(triple.dependent).key,
         relations: [...triple.relations],
+        optional: Boolean(triple.optional),
       }));
       // A word added for a lemma the reference form now gives is no longer needed.
       words = words.filter(
@@ -297,7 +304,10 @@
 
     function writtenSchema() {
       return orderedEdges()
-        .map((edge) => `${lemmaOf(edge.head)} -${edge.relations.join("|")}-> ${lemmaOf(edge.dependent)}`)
+        .map((edge) => {
+          const relations = edge.relations.join("|");
+          return `${lemmaOf(edge.head)} -${edge.optional ? `(${relations})` : relations}-> ${lemmaOf(edge.dependent)}`;
+        })
         .join("; ");
     }
 
@@ -324,11 +334,12 @@
       return option ? option.dataset.short : code;
     }
 
-    function relationText(relations) {
+    function relationText(relations, optional) {
       const passive = relations.includes(OBJECT) && relations.includes(PASSIVE);
       const shown = passive ? relations.filter((relation) => relation !== PASSIVE) : relations;
       const text = shown.map(relationName).join(` ${labels.labelOr} `);
-      return passive ? `${text} (${labels.labelPassive})` : text;
+      const notes = [passive ? labels.labelPassive : "", optional ? labels.labelOptional : ""].filter(Boolean);
+      return notes.length ? `${text} (${notes.join(", ")})` : text;
     }
 
     function ensureOption(select, code) {
@@ -344,10 +355,12 @@
       return [...variants.querySelectorAll("select")];
     }
 
-    // The passive is offered with an object, the case with a regime.
+    // The passive is offered with an object, the case with a regime; a regime follows its
+    // preposition, so that the phrase, not the regime, is optional.
     function updateChoices() {
       passiveRow.hidden = ![relationSelect, ...variantSelects()].some((select) => select.value === OBJECT);
       caseRow.hidden = relationSelect.value !== REGIME;
+      optionalRow.hidden = relationSelect.value === REGIME;
     }
 
     function addVariant(code) {
@@ -371,8 +384,9 @@
       return select;
     }
 
-    function setRelations(relations) {
+    function setRelations(relations, optional) {
       variants.replaceChildren();
+      optionalBox.checked = Boolean(optional);
       const passive = relations.includes(OBJECT) && relations.includes(PASSIVE);
       let shown = passive ? relations.filter((relation) => relation !== PASSIVE) : relations;
       const [kind, subtype] = (shown[0] || "").split(":");
@@ -446,7 +460,7 @@
         return;
       }
       pending = { head, dependent, edge: findEdge(head, dependent) };
-      setRelations(pending.edge ? pending.edge.relations : []);
+      setRelations(pending.edge ? pending.edge.relations : [], pending.edge && pending.edge.optional);
       showPair();
       say("");
       linkPanel.hidden = false;
@@ -470,6 +484,7 @@
 
     function confirmLink() {
       const relations = chosenRelations();
+      const optional = optionalBox.checked && !optionalRow.hidden;
       if (!relations.length) {
         say(labels.labelChoose);
         relationSelect.focus();
@@ -479,6 +494,7 @@
       let message = "";
       if (edge) {
         edge.relations = relations;
+        edge.optional = optional;
       } else {
         // The link the other way round gives way to this one.
         let links = edges.filter((link) => !(link.head === dependent && link.dependent === head));
@@ -494,7 +510,7 @@
           say(labels.labelTooMany);
           return;
         }
-        links.push({ head, dependent, relations });
+        links.push({ head, dependent, relations, optional });
         edges = links;
       }
       closePanels();
@@ -645,7 +661,12 @@
       for (const edge of unit.edges) {
         const existing = triples.find((triple) => triple.dependent === edge.dependent);
         if (!existing) {
-          triples.push({ head: edge.head, dependent: edge.dependent, relations: [...edge.relations] });
+          triples.push({
+            head: edge.head,
+            dependent: edge.dependent,
+            relations: [...edge.relations],
+            optional: Boolean(edge.optional),
+          });
         } else if (existing.head !== edge.head) {
           say(labels.labelInsertConflict.replace("%s", edge.dependent));
           return false;
@@ -1057,7 +1078,7 @@
           const item = element("li");
           item.append(
             button(
-              `${name(edge.head)} → ${relationText(edge.relations)} → ${name(edge.dependent)}`,
+              `${name(edge.head)} → ${relationText(edge.relations, edge.optional)} → ${name(edge.dependent)}`,
               () => openLinkPanel(edge.head, edge.dependent),
               "link-button",
             ),
@@ -1159,10 +1180,11 @@
           class: "schema-arc-label",
           "text-anchor": "middle",
         });
-        label.textContent = relationText(edge.relations);
+        label.textContent = relationText(edge.relations, edge.optional);
+        const line = edge.optional ? "schema-arc-line is-optional" : "schema-arc-line";
         group.append(
           svgElement("path", { d: path, class: "schema-arc-hit" }),
-          svgElement("path", { d: path, class: "schema-arc-line", "marker-end": `url(#${markerId})` }),
+          svgElement("path", { d: path, class: line, "marker-end": `url(#${markerId})` }),
           label,
         );
         group.addEventListener("click", () => openLinkPanel(edge.head, edge.dependent));

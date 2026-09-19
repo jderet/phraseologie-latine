@@ -28,6 +28,7 @@
   data-label-unknown="{% translate 'Absent du corpus analysé' %}"
   data-label-outside="{% translate 'Hors du schéma : relié à aucun mot' %}"
   data-label-passive="{% translate 'aussi au passif' %}"
+  data-label-optional="{% translate 'facultatif' %}"
   data-label-or="{% translate 'ou' %}"
   data-label-variant="{% translate 'Variante' %}"
   data-label-remove-variant="{% translate 'retirer' %}"
@@ -90,6 +91,7 @@
       </label>
     </p>
     <p class="schema-passive" hidden><label><input type="checkbox" class="schema-passive-box" checked> {% translate "trouver aussi le passif" %}</label></p>
+    <p class="schema-optional"><label><input type="checkbox" class="schema-optional-box"> {% translate "relation facultative" %}</label> <span class="note">{% translate "l’expression existe sans elle" %}</span></p>
     <div class="schema-variants"></div>
     <p class="schema-panel-actions">
       <button type="button" class="button schema-confirm">{% translate "Relier" %}</button>

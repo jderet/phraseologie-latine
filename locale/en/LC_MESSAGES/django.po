@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 09:02+0200\n"
+"POT-Creation-Date: 2026-09-19 09:08+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -2594,8 +2594,8 @@ msgid ""
 "». Une relation facultative s’écrit entre parenthèses : gero -(sp)-> cum."
 msgstr ""
 "Lemmas and syntactic relations, the governing word first: capio -obj-> "
-"consilium. Separate several relations with “;”, alternatives with “|”. "
-"An optional relation is written between parentheses: gero -(sp)-> cum."
+"consilium. Separate several relations with “;”, alternatives with “|”. An "
+"optional relation is written between parentheses: gero -(sp)-> cum."
 
 #: phraseology/models.py:76
 msgid "construction"
@@ -3612,10 +3612,10 @@ msgid ""
 "Le régime suit sa préposition : c’est le syntagme prépositionnel qui se "
 "marque facultatif, -(sp)->."
 msgstr ""
-"The regime follows its preposition: it is the prepositional phrase "
-"that is marked optional, -(sp)->."
+"The regime follows its preposition: it is the prepositional phrase that is "
+"marked optional, -(sp)->."
 
-#: phraseology/schema_help.py:176
+#: phraseology/schema_help.py:181
 #, python-format
 msgid "Un schéma compte au plus %(limit)d caractères."
 msgstr "A schema has at most %(limit)d characters."
@@ -4160,7 +4160,7 @@ msgid "Supprimer définitivement"
 msgstr "Delete permanently"
 
 #: templates/accounts/delete.html:19 templates/accounts/password_change.html:14
-#: templates/phraseology/widgets/schema.html:99
+#: templates/phraseology/widgets/schema.html:101
 #: templates/translations/source_sentence_form.html:30
 msgid "Annuler"
 msgstr "Cancel"
@@ -5415,7 +5415,7 @@ msgid "Source"
 msgstr "Source"
 
 #: templates/corpus/reading.html:9
-#: templates/phraseology/widgets/schema.html:112
+#: templates/phraseology/widgets/schema.html:114
 msgid "Fermer"
 msgstr "Close"
 
@@ -5684,7 +5684,7 @@ msgstr "Filters"
 #: templates/justifications/search_attestations.html:7
 #: templates/phraseology/annotate_panel.html:27
 #: templates/phraseology/schema_search.html:24
-#: templates/phraseology/widgets/schema.html:123
+#: templates/phraseology/widgets/schema.html:125
 #: templates/translations/version_edit.html:80
 msgid "Chercher"
 msgstr "Search"
@@ -6212,7 +6212,7 @@ msgstr "Highlights"
 #: templates/phraseology/neologism_detail.html:26
 #: templates/phraseology/part_actions.html:3
 #: templates/phraseology/unit_detail.html:202
-#: templates/phraseology/widgets/schema.html:33
+#: templates/phraseology/widgets/schema.html:34
 msgid "retirer"
 msgstr "withdraw"
 
@@ -6444,7 +6444,7 @@ msgstr "Candidates"
 #: templates/phraseology/candidate_detail.html:14
 #: templates/phraseology/candidate_list.html:32
 #: templates/phraseology/candidate_list.html:46
-#: templates/phraseology/widgets/schema.html:73
+#: templates/phraseology/widgets/schema.html:74
 msgid "Relation"
 msgstr "Relation"
 
@@ -7021,6 +7021,11 @@ msgid "%(counter)s attestation contestée"
 msgid_plural "%(counter)s attestations contestées"
 msgstr[0] "%(counter)s contested attestation"
 msgstr[1] "%(counter)s contested attestations"
+
+#: templates/phraseology/schema_parts.html:1
+#: templates/phraseology/widgets/schema.html:31
+msgid "facultatif"
+msgstr "optional"
 
 #: templates/phraseology/schema_search.html:4
 #: templates/phraseology/schema_search.html:9
@@ -7741,31 +7746,31 @@ msgstr "Outside the schema: linked to no word"
 msgid "aussi au passif"
 msgstr "also passive"
 
-#: templates/phraseology/widgets/schema.html:31
+#: templates/phraseology/widgets/schema.html:32
 msgid "ou"
 msgstr "or"
 
-#: templates/phraseology/widgets/schema.html:32
+#: templates/phraseology/widgets/schema.html:33
 msgid "Variante"
 msgstr "Variant"
 
-#: templates/phraseology/widgets/schema.html:34
+#: templates/phraseology/widgets/schema.html:35
 #, python-format
 msgid "« %%s » est choisi : choisissez maintenant le mot qui en dépend."
 msgstr "“%%s” is chosen: now choose the word that depends on it."
 
-#: templates/phraseology/widgets/schema.html:35
+#: templates/phraseology/widgets/schema.html:36
 msgid "Choisissez une relation."
 msgstr "Choose a relation."
 
-#: templates/phraseology/widgets/schema.html:36
+#: templates/phraseology/widgets/schema.html:37
 #, python-format
 msgid ""
 "« %%s » dépendait déjà d’un autre mot : le nouveau lien remplace l’ancien."
 msgstr ""
 "“%%s” already depended on another word: the new link replaces the old one."
 
-#: templates/phraseology/widgets/schema.html:37
+#: templates/phraseology/widgets/schema.html:38
 msgid ""
 "Ce lien ferait une boucle : un mot ne peut pas dépendre d’un mot qui dépend "
 "de lui."
@@ -7773,54 +7778,54 @@ msgstr ""
 "This link would make a loop: a word cannot depend on a word that depends on "
 "it."
 
-#: templates/phraseology/widgets/schema.html:38
+#: templates/phraseology/widgets/schema.html:39
 #, python-format
 msgid "Un schéma compte au plus %(limit)s relations."
 msgstr "A schema has at most %(limit)s relations."
 
-#: templates/phraseology/widgets/schema.html:39
+#: templates/phraseology/widgets/schema.html:40
 msgid "« n’importe quel mot » ne peut que dépendre d’un autre mot."
 msgstr "“any word” can only depend on another word."
 
-#: templates/phraseology/widgets/schema.html:40
+#: templates/phraseology/widgets/schema.html:41
 msgid "Un lemme s’écrit en un seul mot, avec des lettres seulement."
 msgstr "A lemma is a single word, written with letters only."
 
-#: templates/phraseology/widgets/schema.html:41
+#: templates/phraseology/widgets/schema.html:42
 msgid "Le serveur ne répond pas : réessayez dans un instant."
 msgstr "The server does not answer: try again in a moment."
 
-#: templates/phraseology/widgets/schema.html:42
+#: templates/phraseology/widgets/schema.html:43
 msgid "Recherche des occurrences…"
 msgstr "Looking for occurrences…"
 
-#: templates/phraseology/widgets/schema.html:43
+#: templates/phraseology/widgets/schema.html:44
 msgid "1 occurrence dans le noyau"
 msgstr "1 occurrence in the core"
 
-#: templates/phraseology/widgets/schema.html:44
+#: templates/phraseology/widgets/schema.html:45
 #, python-format
 msgid "%%s occurrences dans le noyau"
 msgstr "%%s occurrences in the core"
 
-#: templates/phraseology/widgets/schema.html:45
+#: templates/phraseology/widgets/schema.html:46
 #, python-format
 msgid "Aucune occurrence dans le noyau (corpus %%s)"
 msgstr "No occurrence in the core (corpus %%s)"
 
-#: templates/phraseology/widgets/schema.html:46
+#: templates/phraseology/widgets/schema.html:47
 msgid "Trop long à compter : le schéma est peut-être trop général."
 msgstr "Too long to count: the schema may be too general."
 
-#: templates/phraseology/widgets/schema.html:47
+#: templates/phraseology/widgets/schema.html:48
 msgid "voir"
 msgstr "see"
 
-#: templates/phraseology/widgets/schema.html:52
+#: templates/phraseology/widgets/schema.html:53
 msgid "Fiches reconnues dans la forme de référence"
 msgstr "Entries recognized in the reference form"
 
-#: templates/phraseology/widgets/schema.html:54
+#: templates/phraseology/widgets/schema.html:55
 msgid ""
 "Reliez les mots : cliquez sur le mot qui régit, puis sur le mot qui en "
 "dépend, ou tirez une flèche de l’un vers l’autre. Au clavier, Entrée sur "
@@ -7832,107 +7837,115 @@ msgstr ""
 "each of the two words. Dashed words stay outside the schema; ▾ changes the "
 "lemma of a word."
 
-#: templates/phraseology/widgets/schema.html:61
+#: templates/phraseology/widgets/schema.html:62
 msgid "Mots à relier"
 msgstr "Words to link"
 
-#: templates/phraseology/widgets/schema.html:63
+#: templates/phraseology/widgets/schema.html:64
 msgid "Écrivez d’abord la forme de référence, ou ajoutez un mot."
 msgstr "First write the reference form, or add a word."
 
-#: templates/phraseology/widgets/schema.html:63
+#: templates/phraseology/widgets/schema.html:64
 msgid "Ajoutez les mots à relier."
 msgstr "Add the words to link."
 
-#: templates/phraseology/widgets/schema.html:64
+#: templates/phraseology/widgets/schema.html:65
 msgid "Liens du schéma"
 msgstr "Links of the schema"
 
-#: templates/phraseology/widgets/schema.html:66
+#: templates/phraseology/widgets/schema.html:67
 msgid "Fiches contenues dans ce schéma :"
 msgstr "Entries within this schema:"
 
-#: templates/phraseology/widgets/schema.html:70
+#: templates/phraseology/widgets/schema.html:71
 msgid "Relation entre deux mots"
 msgstr "Relation between two words"
 
-#: templates/phraseology/widgets/schema.html:72
+#: templates/phraseology/widgets/schema.html:73
 msgid "a pour"
 msgstr "has as"
 
-#: templates/phraseology/widgets/schema.html:74
+#: templates/phraseology/widgets/schema.html:75
 msgid "— choisir la relation —"
 msgstr "— choose the relation —"
 
-#: templates/phraseology/widgets/schema.html:75
+#: templates/phraseology/widgets/schema.html:76
 msgid "Relations courantes"
 msgstr "Common relations"
 
-#: templates/phraseology/widgets/schema.html:78
+#: templates/phraseology/widgets/schema.html:79
 msgid "Plus de relations"
 msgstr "More relations"
 
-#: templates/phraseology/widgets/schema.html:85
+#: templates/phraseology/widgets/schema.html:86
 msgid "Cas du régime"
 msgstr "Case of the object"
 
-#: templates/phraseology/widgets/schema.html:87
+#: templates/phraseology/widgets/schema.html:88
 msgid "tous les cas"
 msgstr "all cases"
 
-#: templates/phraseology/widgets/schema.html:92
+#: templates/phraseology/widgets/schema.html:93
 msgid "trouver aussi le passif"
 msgstr "also find the passive"
 
-#: templates/phraseology/widgets/schema.html:95
+#: templates/phraseology/widgets/schema.html:94
+msgid "relation facultative"
+msgstr "optional relation"
+
+#: templates/phraseology/widgets/schema.html:94
+msgid "l’expression existe sans elle"
+msgstr "the expression exists without it"
+
+#: templates/phraseology/widgets/schema.html:97
 msgid "Relier"
 msgstr "Link"
 
-#: templates/phraseology/widgets/schema.html:96
+#: templates/phraseology/widgets/schema.html:98
 msgid "Inverser"
 msgstr "Reverse"
 
-#: templates/phraseology/widgets/schema.html:97
+#: templates/phraseology/widgets/schema.html:99
 msgid "Supprimer le lien"
 msgstr "Delete the link"
 
-#: templates/phraseology/widgets/schema.html:98
+#: templates/phraseology/widgets/schema.html:100
 msgid "ajouter une variante"
 msgstr "add a variant"
 
-#: templates/phraseology/widgets/schema.html:103
+#: templates/phraseology/widgets/schema.html:105
 msgid "Lemme d’un mot"
 msgstr "Lemma of a word"
 
-#: templates/phraseology/widgets/schema.html:107
+#: templates/phraseology/widgets/schema.html:109
 msgid "Autre lemme"
 msgstr "Other lemma"
 
-#: templates/phraseology/widgets/schema.html:108
+#: templates/phraseology/widgets/schema.html:110
 msgid "Choisir"
 msgstr "Choose"
 
-#: templates/phraseology/widgets/schema.html:111
+#: templates/phraseology/widgets/schema.html:113
 msgid "Retirer ce mot"
 msgstr "Remove this word"
 
-#: templates/phraseology/widgets/schema.html:117
+#: templates/phraseology/widgets/schema.html:119
 msgid "Ajouter un mot"
 msgstr "Add a word"
 
-#: templates/phraseology/widgets/schema.html:118
+#: templates/phraseology/widgets/schema.html:120
 msgid "Ajouter"
 msgstr "Add"
 
-#: templates/phraseology/widgets/schema.html:119
+#: templates/phraseology/widgets/schema.html:121
 msgid "Ajouter « n’importe quel mot »"
 msgstr "Add “any word”"
 
-#: templates/phraseology/widgets/schema.html:122
+#: templates/phraseology/widgets/schema.html:124
 msgid "Insérer une fiche"
 msgstr "Insert an entry"
 
-#: templates/phraseology/widgets/schema.html:125
+#: templates/phraseology/widgets/schema.html:127
 msgid "Fiches à insérer"
 msgstr "Entries to insert"
 
