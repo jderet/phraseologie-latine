@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from accounts.models import User
 from moderation.registry import can_view
 
-from .diffs import word_diff
+from .diffs import SAME, Chunk, word_diff
 from .sources import SourceHistory
 from .steps import carried, step_sentences
 
@@ -41,9 +41,8 @@ def sentence_history(user, version, segment):
     )
     entries, previous = [], ""
     for text, step, writer in versions_of_text:
-        entries.append(
-            Entry(text, step, writers.get(writer or version.author_id), word_diff(previous, text))
-        )
+        chunks = word_diff(previous, text) if previous else [Chunk(SAME, text)]
+        entries.append(Entry(text, step, writers.get(writer or version.author_id), chunks))
         previous = text
     return entries[::-1]
 
