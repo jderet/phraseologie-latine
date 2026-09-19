@@ -454,6 +454,8 @@ class UnitFrequency(models.Model):
     total = models.PositiveIntegerField(_("occurrences"))
     core_total = models.PositiveIntegerField(_("occurrences dans le noyau"))
     by_author = models.JSONField(_("répartition par auteur"), default=list)
+    # The rules of the abstract words of the schema when it was computed, by name.
+    abstract_state = models.JSONField(_("mots abstraits"), default=dict, blank=True)
     corpus_version = models.CharField(_("version du corpus"), max_length=200)
     computed_at = models.DateTimeField(_("calculée le"))
 
@@ -473,6 +475,8 @@ class UnitSurvey(models.Model):
         Unit, on_delete=models.CASCADE, related_name="survey", verbose_name=_("unité")
     )
     schema = models.CharField(_("schéma"), max_length=300)
+    # The rules of the abstract words of the schema when it was surveyed, by name.
+    abstract_state = models.JSONField(_("mots abstraits"), default=dict, blank=True)
     corpus_version = models.CharField(_("version du corpus"), max_length=200)
     found = models.PositiveIntegerField(_("occurrences repérées"))
     core_found = models.PositiveIntegerField(_("dont dans le noyau"), default=0)

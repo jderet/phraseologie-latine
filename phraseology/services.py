@@ -21,6 +21,8 @@ from justifications.services import attach_evidences
 from moderation.registry import can_view
 from moderation.services import post_comment, save_with_revision
 
+from .abstract import WRITTEN as ABSTRACT
+from .abstract import abstract_state
 from .frequency import count_by_author, occurrence_words, schema_matches
 from .models import (
     AbstractWord,
@@ -40,7 +42,7 @@ from .permissions import (
     can_edit_unit,
     can_withdraw_attestation,
 )
-from .schema import format_schema, writes_case
+from .schema import format_schema, schema_abstracts, writes_case
 from .spotting import refresh_unit_forms
 
 
@@ -52,10 +54,22 @@ def _check_edit(user, unit):
 # Frequency and completeness
 
 
+def is_current(record, unit):
+    """Whether a frequency or a survey was made for the present schema of the unit and the
+    present rules of its abstract words."""
+    if record is None or record.schema != unit.schema:
+        return False
+    try:
+        edges = unit.edges
+    except ValidationError:
+        return False
+    return (record.abstract_state or {}) == abstract_state(edges)
+
+
 def current_frequency(unit):
     """The computed frequency of the unit, if it was computed for its present schema."""
     frequency = UnitFrequency.objects.filter(unit=unit).first()
-    return frequency if frequency is not None and frequency.schema == unit.schema else None
+    return frequency if is_current(frequency, unit) else None
 
 
 # A count made while a page waits gives up after this time; the command refresh_units, run on
@@ -90,6 +104,7 @@ def refresh_frequency(unit, seconds=None):
             "total": sum(total for _author, total, _core in rows),
             "core_total": sum(core for _author, _total, core in rows),
             "by_author": [[author.pk, total, core] for author, total, core in rows],
+            "abstract_state": abstract_state(unit.edges),
             "corpus_version": corpus_version().label,
             "computed_at": timezone.now(),
         },
@@ -106,6 +121,8 @@ def missing_fields(unit):
         missing.append(_("le schéma"))
     elif current_frequency(unit) is None:
         missing.append(_("la fréquence, calculée pour le schéma actuel"))
+    if _unvalidated_abstracts(unit):
+        missing.append(_("des mots abstraits validés"))
     if not unit.construction:
         missing.append(_("la construction"))
     if not unit.register:
@@ -124,6 +141,21 @@ def missing_fields(unit):
     if not unit.references.active().filter(is_hidden=False).exists():
         missing.append(_("un renvoi bibliographique"))
     return missing
+
+
+def _unvalidated_abstracts(unit):
+    """The abstract words a unit names, in its schema or reference form, not yet validated."""
+    try:
+        names = set(schema_abstracts(unit.edges))
+    except ValidationError:
+        names = set()
+    names |= set(ABSTRACT.findall(unit.reference_form))
+    if not names:
+        return []
+    validated = AbstractWord.objects.filter(
+        name__in=names, status=AbstractWord.Status.VALIDATED, is_hidden=False
+    ).values_list("name", flat=True)
+    return sorted(names - set(validated))
 
 
 def _fields(missing):
@@ -478,6 +510,7 @@ def survey_unit(unit, user):
         unit=unit,
         defaults={
             "schema": unit.schema,
+            "abstract_state": abstract_state(unit.edges),
             "corpus_version": corpus_version().label,
             "found": len(occurrences),
             "core_found": sum(occurrences.values()),
@@ -770,9 +803,15 @@ def create_abstract_word(word, author):
 
 @transaction.atomic
 def update_abstract_word(word, user):
+    """Save an abstract word; the units that use it are then recognized by its new words, and
+    their frequencies are shown as no longer current until they are counted again."""
     if not can_edit_abstract_word(user, word):
         raise PermissionDenied
-    return save_with_revision(word, user)
+    revision = save_with_revision(word, user)
+    if revision is not None:
+        for unit in Unit.objects.filter(schema__contains=str(word)):
+            refresh_unit_forms(unit)
+    return revision
 
 
 @transaction.atomic

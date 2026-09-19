@@ -246,3 +246,16 @@ def check_abstract_words(edges):
     from .schema import schema_abstracts
 
     return check_abstract_names(schema_abstracts(edges))
+
+
+def abstract_state(edges):
+    """The rules of the abstract words of a schema, by name; None for a missing or hidden
+    word. A count made for other rules is no longer current."""
+    from .schema import schema_abstracts
+
+    names = schema_abstracts(edges)
+    words = _words(names) if names else {}
+    return {
+        name: None if name not in words or words[name].is_hidden else words[name].rules
+        for name in names
+    }

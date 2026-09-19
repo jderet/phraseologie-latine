@@ -6,10 +6,17 @@ from corpus.models import TokenAnalysis
 from moderation.models import Revision
 from moderation.services import hide_content, revert_to
 from phraseology.abstract import clean_name, clean_rules, rule_label, word_condition, word_lemmas
-from phraseology.models import AbstractWord
-from phraseology.services import update_abstract_word, validate_abstract_word
+from phraseology.models import AbstractWord, Unit, UnitForm
+from phraseology.services import (
+    current_frequency,
+    missing_fields,
+    refresh_frequency,
+    update_abstract_word,
+    update_unit,
+    validate_abstract_word,
+)
 
-from .factories import LIQUID, OWNER, analyze, make_abstract_word
+from .factories import LIQUID, OWNER, analyze, make_abstract_word, set_status
 from .test_frequency import AnalysedCorpusTestCase
 from .test_units import PhraseologyTestCase
 
@@ -204,3 +211,40 @@ class AbstractWordInSchemaTests(PhraseologyTestCase):
             reverse("phraseology:schema_search"), {"schema": "sumo -obj-> {ignotum}"}
         )
         self.assertContains(page, "Mot abstrait inconnu : {ignotum}.")
+
+
+class AbstractWordChangesTests(AnalysedCorpusTestCase):
+    def setUp(self):
+        super().setUp()
+        self.word = make_abstract_word(self.author, "decisio", [{"lemmas": ["consilium"]}])
+        self.unit.schema = "capio -obj-> {decisio}"
+        update_unit(self.unit, self.author)
+        refresh_frequency(self.unit)
+
+    def test_a_change_of_its_rules_makes_the_frequency_no_longer_current(self):
+        self.assertEqual(current_frequency(self.unit).total, 3)
+        forms = UnitForm.objects.filter(unit=self.unit, lemma="{decisio}")
+        self.assertFalse(forms.filter(norm="ratio").exists())
+        self.word.rules = [{"upos": [], "feats": [], "lemmas": ["consilium", "ratio"]}]
+        update_abstract_word(self.word, self.other)
+        self.assertIsNone(current_frequency(self.unit))
+        self.assertTrue(forms.filter(norm="ratio").exists())
+        self.client.force_login(self.author)
+        page = self.client.get(self.unit.get_absolute_url())
+        self.assertFalse(page.context["frequency_is_current"])
+        refresh_frequency(self.unit)
+        self.assertEqual(current_frequency(self.unit).total, 3)
+        # A new label changes nothing that is counted.
+        self.word.label = "décision"
+        update_abstract_word(self.word, self.other)
+        self.assertIsNotNone(current_frequency(self.unit))
+
+    def test_a_validated_unit_uses_validated_abstract_words(self):
+        self.assertIn("des mots abstraits validés", [str(f) for f in missing_fields(self.unit)])
+        validate_abstract_word(self.word, self.reviewer)
+        self.assertNotIn("des mots abstraits validés", [str(f) for f in missing_fields(self.unit)])
+        make_abstract_word(self.author, "nomen", [{"upos": ["NOUN"]}])
+        set_status(self.unit, Unit.Status.VALIDATED)
+        self.unit.schema = "capio -obj-> {nomen}"
+        with self.assertRaises(ValidationError):
+            update_unit(self.unit, self.author)

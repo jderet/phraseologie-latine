@@ -11,6 +11,7 @@ from .abstract import PARTS_OF_SPEECH
 from .models import Attestation, Equivalent, UnitFrequency
 from .permissions import can_edit_unit
 from .reading import shown_status
+from .services import is_current
 from .spotting import unit_attestations, visible_units
 
 EXAMPLES_SHOWN = 3
@@ -90,7 +91,7 @@ def unit_card(user, attestation, token):
         "status": shown_status(attestation),
         "senses": list(senses.prefetch_related(Prefetch("equivalents", queryset=equivalents))),
         "frequency": frequency,
-        "frequency_is_current": frequency is not None and frequency.schema == unit.schema,
+        "frequency_is_current": is_current(frequency, unit),
         "authors": authors,
         "examples": other_examples(attestation, token.passage.edition.work.author_id),
         "can_review": is_reviewer(user),
