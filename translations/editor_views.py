@@ -24,6 +24,7 @@ from .forms import SentenceCommentForm, TranslationTextForm
 from .glossary import can_propose_term, find_terms, visible_terms
 from .memory import MIN_SCORE, other_versions, similar_sentences
 from .models import GlossaryEntry, SentenceComment, TranslatedSegment
+from .sentence_history import sentence_history
 from .services import save_translation, set_sentence_status
 from .sources import SourceHistory
 from .views import _own_version, _version
@@ -221,3 +222,42 @@ def comment_post_by_number(request, pk):
     if not number.isdigit() or not 1 <= int(number) <= len(segments):
         return HttpResponseBadRequest()
     return comment_post(request, pk, segments[int(number) - 1].pk)
+
+
+@login_required
+@require_GET
+def history_panel(request, pk, segment_pk):
+    """The Latin of the sentence at each step, for the side panel of the editor."""
+    version = _own_version(request.user, pk)
+    segment = get_object_or_404(version.project.source_text.segments.current(), pk=segment_pk)
+    entries = sentence_history(request.user, version, segment)
+    current = entries[0].text if entries else ""
+    return render(
+        request,
+        "translations/panel_history.html",
+        {"version": version, "segment": segment, "entries": entries, "current": current},
+    )
+
+
+@login_required
+@require_POST
+def sentence_restore(request, pk, segment_pk):
+    """Put back in the working text the Latin a step gave to the sentence."""
+    version = _own_version(request.user, pk)
+    segment = get_object_or_404(version.project.source_text.segments.current(), pk=segment_pk)
+    number = request.POST.get("etape", "")
+    entry = next(
+        (
+            entry
+            for entry in sentence_history(request.user, version, segment)
+            if entry.step is not None and str(entry.step.number) == number
+        ),
+        None,
+    )
+    if entry is None:
+        return HttpResponseBadRequest()
+    save_translation(version, segment, entry.text, request.user, written_by=entry.written_by)
+    if _wants_json(request):
+        return JsonResponse({"text": entry.text})
+    messages.success(request, _("Le texte de l’étape est rétabli dans le texte de travail."))
+    return redirect(_editor_url(version, segment))

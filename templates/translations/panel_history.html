@@ -1,0 +1,17 @@
+{% load i18n %}<ol class="sentence-history">
+  {% for entry in entries %}
+  <li class="memory-item">
+    <p class="memory-meta muted">{% if entry.step %}<a href="{{ entry.step.get_absolute_url }}" target="_blank">{% blocktranslate with number=entry.step.number %}étape {{ number }}{% endblocktranslate %}</a> · {{ entry.step.created_at|date:"j F Y" }} · {{ entry.step.message|truncatechars:60 }}{% else %}{% translate "texte de travail" %}{% endif %}{% if entry.written_by %} · {% blocktranslate with name=entry.written_by.public_name %}écrite par {{ name }}{% endblocktranslate %}{% endif %}</p>
+    <p class="memory-latin word-diff" lang="la">{% if entry.text %}{% include "translations/word_diff.html" with chunks=entry.chunks %}{% else %}<span class="muted">{% translate "(vide)" %}</span>{% endif %}</p>
+    {% if entry.step and entry.text != current %}
+    <form method="post" action="{% url 'translations:sentence_restore' version.pk segment.pk %}" class="inline-form" data-restore-form>
+      {% csrf_token %}
+      <input type="hidden" name="etape" value="{{ entry.step.number }}">
+      <button type="submit" class="link-button">{% translate "Rétablir ce texte" %}</button>
+    </form>
+    {% endif %}
+  </li>
+  {% empty %}
+  <li class="note">{% translate "Pas encore d’historique pour cette phrase." %}</li>
+  {% endfor %}
+</ol>

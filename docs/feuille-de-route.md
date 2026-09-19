@@ -216,7 +216,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Concordance dans les traductions publiées
 - [x] Glossaire du projet, surligné dans l'éditeur
 - [x] Commentaires par phrase, résolus ou non
-- [ ] Historique d'une phrase, avec retour à un texte antérieur
+- [x] Historique d'une phrase, avec retour à un texte antérieur
 - [ ] Contrôle qualité formel (jamais le corpus, Q47)
 - [ ] Rechercher et remplacer dans le texte de travail
 - [ ] Statistiques d'une version

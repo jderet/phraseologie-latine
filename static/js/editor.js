@@ -277,6 +277,35 @@
     field.focus();
   });
 
+  // Restoring the Latin of a step: the text goes into the sentence being edited.
+  document.addEventListener("submit", async (event) => {
+    const form = event.target.closest(".editor-panel form[data-restore-form]");
+    if (!form || !activeField) {
+      return;
+    }
+    event.preventDefault();
+    const field = activeField;
+    await save(field);
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      const data = await response.json();
+      field.value = data.text;
+      states.get(field).saved = data.text;
+      setRowStatus(field, "draft");
+      forgetSentence(field);
+    } catch {
+      showStatus(field, labels.labelError, true);
+    }
+  });
+
   // Forms of the panel (comments): sent without leaving the page, then the tab is reloaded.
   document.addEventListener("submit", async (event) => {
     const form = event.target.closest(".editor-panel form[data-panel-form]");

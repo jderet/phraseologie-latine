@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 14:39+0200\n"
+"POT-Creation-Date: 2026-09-19 14:44+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -442,7 +442,7 @@ msgstr "The new version of the guide is published."
 #: templates/base.html:17 templates/corpus/correction_list.html:8
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
 #: templates/corpus/work.html:8 templates/translations/help.html:66
-#: templates/translations/version_edit.html:108 translations/editor.py:50
+#: templates/translations/version_edit.html:108 translations/editor.py:56
 msgid "Corpus"
 msgstr "Corpus"
 
@@ -2960,7 +2960,7 @@ msgstr "to avoid"
 #: phraseology/models.py:48 templates/translations/editor_badges.html:1
 #: templates/translations/panel_memory.html:6
 #: templates/translations/version_detail.html:38
-#: templates/translations/version_edit.html:32 translations/editor.py:79
+#: templates/translations/version_edit.html:32 translations/editor.py:85
 #: translations/models.py:467 translations/models.py:559
 msgid "brouillon"
 msgstr "draft"
@@ -7017,6 +7017,7 @@ msgid "Publier le message"
 msgstr "Post the message"
 
 #: templates/moderation/history.html:4 templates/moderation/links.html:1
+#: translations/editor.py:51
 msgid "Historique"
 msgstr "History"
 
@@ -9059,6 +9060,7 @@ msgid "modifiée à une étape non publique"
 msgstr "changed at a step that is not public"
 
 #: templates/translations/bitext_rows.html:9
+#: templates/translations/panel_history.html:4
 #, python-format
 msgid "écrite par %(name)s"
 msgstr "written by %(name)s"
@@ -9159,19 +9161,19 @@ msgid "Insérer à la sélection"
 msgstr "Insert at the selection"
 
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:31 translations/editor.py:78
-#: translations/editor.py:105
+#: templates/translations/version_edit.html:31 translations/editor.py:84
+#: translations/editor.py:111
 msgid "à traduire"
 msgstr "to translate"
 
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:33 translations/editor.py:80
+#: templates/translations/version_edit.html:33 translations/editor.py:86
 #: translations/models.py:560
 msgid "traduite"
 msgstr "translated"
 
 #: templates/translations/editor_badges.html:1
-#: templates/translations/version_edit.html:34 translations/editor.py:81
+#: templates/translations/version_edit.html:34 translations/editor.py:87
 #: translations/models.py:561
 msgid "relue"
 msgstr "reviewed"
@@ -9629,6 +9631,30 @@ msgstr "See the glossary or propose a term"
 msgid "Voir le glossaire"
 msgstr "See the glossary"
 
+#: templates/translations/panel_history.html:4
+#: templates/translations/proposal_detail.html:23
+#: templates/translations/step_compare.html:17
+#: templates/translations/step_compare.html:23
+#, python-format
+msgid "étape %(number)s"
+msgstr "step %(number)s"
+
+#: templates/translations/panel_history.html:4
+msgid "texte de travail"
+msgstr "working text"
+
+#: templates/translations/panel_history.html:5
+msgid "(vide)"
+msgstr "(empty)"
+
+#: templates/translations/panel_history.html:10
+msgid "Rétablir ce texte"
+msgstr "Restore this text"
+
+#: templates/translations/panel_history.html:15
+msgid "Pas encore d’historique pour cette phrase."
+msgstr "No history for this sentence yet."
+
 #: templates/translations/panel_memory.html:2
 msgid "Dans les autres versions"
 msgstr "In the other versions"
@@ -9921,13 +9947,6 @@ msgstr "Send the proposal"
 #: templates/translations/proposal_detail.html:22
 msgid "Texte de départ"
 msgstr "Starting text"
-
-#: templates/translations/proposal_detail.html:23
-#: templates/translations/step_compare.html:17
-#: templates/translations/step_compare.html:23
-#, python-format
-msgid "étape %(number)s"
-msgstr "step %(number)s"
 
 #: templates/translations/proposal_detail.html:27
 #: templates/translations/source_proposal_detail.html:34
@@ -10890,7 +10909,7 @@ msgstr "Known units in this sentence"
 msgid "Voir les unités repérées"
 msgstr "See the units found"
 
-#: templates/translations/version_edit.html:100 translations/editor.py:49
+#: templates/translations/version_edit.html:100 translations/editor.py:55
 msgid "Concordance"
 msgstr "Concordance"
 
@@ -11067,7 +11086,7 @@ msgstr[1] ""
 "Your draft has %(counter)s steps. Unless you agree, the public will only see "
 "the publication step."
 
-#: translations/comments.py:36 translations/editor_views.py:150
+#: translations/comments.py:36 translations/editor_views.py:151
 msgid "Écrivez un commentaire."
 msgstr "Write a comment."
 
@@ -11096,25 +11115,33 @@ msgstr "The terms of the project glossary found in this sentence."
 msgid "Les commentaires de cette phrase."
 msgstr "The comments on this sentence."
 
-#: translations/editor.py:106
+#: translations/editor.py:52
+msgid "Le latin de cette phrase à chaque étape."
+msgstr "The Latin of this sentence at each step."
+
+#: translations/editor.py:112
 msgid "brouillons"
 msgstr "drafts"
 
-#: translations/editor.py:108
+#: translations/editor.py:114
 msgid "traduites mais pas relues"
 msgstr "translated but not reviewed"
 
-#: translations/editor.py:112
+#: translations/editor.py:118
 msgid "avec des commentaires ouverts"
 msgstr "with open comments"
 
-#: translations/editor.py:116
+#: translations/editor.py:122
 msgid "texte source modifié"
 msgstr "source text changed"
 
-#: translations/editor_views.py:179
+#: translations/editor_views.py:180
 msgid "C’est enregistré."
 msgstr "Saved."
+
+#: translations/editor_views.py:262
+msgid "Le texte de l’étape est rétabli dans le texte de travail."
+msgstr "The text of the step is restored in the working text."
 
 #: translations/exports.py:22
 #, python-format

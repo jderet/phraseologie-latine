@@ -46,6 +46,12 @@ def panel_tabs(version):
             _("Les commentaires de cette phrase."),
             _fragment("translations:editor_comments", version),
         ),
+        PanelTab(
+            "history",
+            _("Historique"),
+            _("Le latin de cette phrase à chaque étape."),
+            _fragment("translations:editor_history", version),
+        ),
         PanelTab("concordance", _("Concordance")),
         PanelTab("corpus", _("Corpus")),
     ]
