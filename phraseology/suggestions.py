@@ -16,7 +16,7 @@ from justifications.services import corpus_evidence
 from .frequency import occurrence_words, schema_matches
 from .models import Attestation, Unit
 from .permissions import can_edit_unit
-from .schema import parse_schema, schema_lemmas
+from .schema import parse_schema, required_edges, schema_lemmas
 from .services import add_attestations, record_automatic_attestations
 from .spotting import visible_units
 
@@ -72,7 +72,8 @@ def page_suggestions(user, passages, token_ids, layer):
             edges = parse_schema(unit.schema)
         except ValidationError:
             continue
-        if not set(schema_lemmas(edges)) <= lemmas or not can_edit_unit(user, unit):
+        needed = set(schema_lemmas(required_edges(edges)))
+        if not needed <= lemmas or not can_edit_unit(user, unit):
             continue
         roots = list(
             schema_matches(edges, layer)

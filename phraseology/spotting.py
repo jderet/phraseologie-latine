@@ -18,7 +18,7 @@ from corpus.search import default_layer, quotation
 from corpus.text import normalize, tokenize
 
 from .models import Attestation, Unit, UnitForm
-from .schema import schema_lemmas
+from .schema import required_edges, schema_lemmas
 
 # The words of a unit may lie this many words apart, for each word beyond the first.
 SPAN_PER_WORD = 5
@@ -53,7 +53,8 @@ def refresh_unit_forms(unit):
     layer = default_layer()
     rows = []
     if unit.schema and layer is not None:
-        for lemma in schema_lemmas(unit.edges):
+        # The words of an optional relation are not needed to recognize the unit.
+        for lemma in schema_lemmas(required_edges(unit.edges)):
             norms = lemma_forms(lemma, layer)
             rows += [UnitForm(unit=unit, lemma=lemma, norm=norm) for norm in sorted(norms)]
     else:

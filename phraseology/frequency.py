@@ -38,10 +38,13 @@ def _relation_condition(relations):
 
 
 def _dependents(lemma, edges, layer, cases):
-    """Conditions on the analysis of a word: it governs the dependents of ``lemma``."""
+    """Conditions on the analysis of a word: it governs the required dependents of ``lemma``.
+
+    An optional relation, and what depends on it, is not required.
+    """
     conditions = []
     for edge in edges:
-        if edge.head != lemma:
+        if edge.head != lemma or edge.optional:
             continue
         dependents = TokenAnalysis.objects.filter(
             _relation_condition(edge.relations),
@@ -74,8 +77,9 @@ def occurrence_parts(roots, edges, layer):
     """For each occurrence, the (word, part) of each lemma of the schema, and word positions.
 
     ``roots`` are (word, part, position) of the governing word of each occurrence; for each
-    relation of the schema, the first dependent in the text is kept. A few queries serve
-    any number of occurrences.
+    relation of the schema, the first dependent in the text is kept; the words of an optional
+    relation are there when the occurrence has them. A few queries serve any number of
+    occurrences.
     """
     edges, cases = corpus_edges(edges)
     roots = list(roots)

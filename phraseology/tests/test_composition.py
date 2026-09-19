@@ -18,6 +18,15 @@ class ContainsTests(PhraseologyTestCase):
             ("redigo -sp-> in; in -reg:abl-> memoria", "in -reg-> memoria"): True,
             ("redigo -sp-> in; in -reg:abl-> memoria", "in -reg:acc-> memoria"): False,
             ("gero -obj-> res; res -amod-> publicus", "res -amod-> publicus"): True,
+            # Only required relations count.
+            ("gero -obj-> res; res -(amod)-> publicus", "res -amod-> publicus"): False,
+            ("gero -obj-> bellum; gero -(sp)-> cum; cum -reg-> aliquis", "gero -obj-> bellum"): (
+                False
+            ),
+            ("gero -obj-> res; gero -(advmod)-> bene; res -amod-> publicus", "gero -obj-> res"): (
+                True
+            ),
+            ("gero -obj-> res; res -amod-> publicus", "gero -obj-> res; res -(nmod)-> hic"): True,
             # The same schema is no part of itself.
             ("res -amod-> publicus", "res -amod-> publicus"): False,
         }

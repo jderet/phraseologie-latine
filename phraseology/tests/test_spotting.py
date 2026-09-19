@@ -43,6 +43,12 @@ class SpottingTests(SpottingTestCase):
         self.assertEqual(self.spotted("Consilium a b c d cepit."), [self.unit])
         self.assertEqual(self.spotted("Consilium a b c d e f g cepit."), [])
 
+    def test_the_word_of_an_optional_relation_is_not_needed(self):
+        self.unit.schema = "capio -obj-> consilium; consilium -(amod)-> bonus"
+        update_unit(self.unit, self.author)
+        self.assertEqual(self.forms("bonus"), set())
+        self.assertEqual(self.spotted("Consilium cepit."), [self.unit])
+
     def test_drafts_are_found_by_their_creator_only(self):
         self.assertEqual(self.spotted("Consilium cepit.", self.other), [])
         set_status(self.unit, Unit.Status.PROPOSED)

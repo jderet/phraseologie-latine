@@ -54,6 +54,14 @@ class SchemaMatchesTests(AnalysedCorpusTestCase):
         (match,) = schema_matches(edges, self.layer)
         self.assertEqual(occurrence_tokens(match, edges, self.layer), list(self.good_words))
 
+    def test_an_optional_relation_is_not_required(self):
+        edges = parse_schema("capio -obj-> consilium; consilium -(amod)-> bonus")
+        matches = schema_matches(edges, self.layer)
+        self.assertEqual(matches.count(), 3)
+        words = [occurrence_tokens(match, edges, self.layer) for match in matches]
+        self.assertIn(list(self.good_words), words)
+        self.assertEqual(sorted(len(found) for found in words), [2, 2, 3])
+
     def test_count_by_author(self):
         matches = schema_matches(parse_schema("capio -obj|nsubj:pass-> consilium"), self.layer)
         rows = [(author.cts_id, total, core) for author, total, core in count_by_author(matches)]
@@ -82,6 +90,9 @@ class PrepositionalPhraseTests(PhraseologyTestCase):
             if number == 1:
                 cls.phrase_words = (de, re, meritus)
                 analyze(cls.layer, words[2], "publicus", "amod", re, upos="ADJ")
+            if forms[-2] == "bene":
+                analyze(cls.layer, words[-2], "bene", "advmod", meritus, upos="ADV")
+                cls.well_words = getattr(cls, "well_words", ()) + (words,)
         for number, (noun, case) in enumerate((("memoriam", "Acc"), ("memoria", "Abl")), start=4):
             _passage, (in_, memoria, redegit) = make_passage(
                 ("In", noun, "redegit."), reference=f"3.{number}"
@@ -109,6 +120,16 @@ class PrepositionalPhraseTests(PhraseologyTestCase):
         edges = parse_schema("mereor -sp-> de; de -reg-> *", slot=True)
         matches = schema_matches(edges, self.layer)
         self.assertEqual(slot_fillers(matches, edges, self.layer), [("res", 2)])
+
+    def test_an_optional_phrase_keeps_its_regime(self):
+        edges = parse_schema("mereor -advmod-> bene; mereor -(sp)-> de; de -reg:abl-> res")
+        matches = schema_matches(edges, self.layer)
+        self.assertEqual(matches.count(), 2)
+        words = {match.token_id: occurrence_tokens(match, edges, self.layer) for match in matches}
+        (de, re, _publica, bene, meritus), (*_phrase, bene_2, meritus_2) = self.well_words
+        # The regime of the first phrase is in the ablative; the second has no case given.
+        self.assertEqual(words[meritus.pk], [de, re, bene, meritus])
+        self.assertEqual(words[meritus_2.pk], [bene_2, meritus_2])
 
     def test_the_words_of_an_occurrence(self):
         edges = parse_schema("mereor -sp-> de; de -reg:abl-> res")

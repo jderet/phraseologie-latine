@@ -12,7 +12,7 @@ from operator import or_
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
-from .schema import SLOT, base, parse_schema, schema_lemmas
+from .schema import SLOT, base, parse_schema, required_edges, schema_lemmas
 from .spotting import visible_units
 
 MAX_COMPONENTS = 6
@@ -37,7 +37,12 @@ def _same_relation(first, second):
 
 
 def contains(outer, inner):
-    """Whether every relation of the schema ``inner`` is one of ``outer``, which has more."""
+    """Whether every relation of the schema ``inner`` is one of ``outer``, which has more.
+
+    Only required relations count: an optional one neither makes a unit part of another nor
+    keeps it out.
+    """
+    outer, inner = required_edges(outer), required_edges(inner)
     if not inner or len(inner) >= len(outer):
         return False
     relations = {(edge.head, edge.dependent): edge.relations for edge in outer}
