@@ -144,6 +144,11 @@ urlpatterns = [
         name="quality_reset",
     ),
     path("versions/<int:pk>/mise-a-jour/", collab_views.sync_copy, name="sync_copy"),
+    path(
+        "versions/<int:pk>/proposer-a-l-originale/",
+        collab_views.propose_to_original,
+        name="propose_to_original",
+    ),
     path("versions/<int:pk>/etapes/", views.step_list, name="step_list"),
     path("versions/<int:pk>/etapes/nouvelle/", views.step_create, name="step_create"),
     path("versions/<int:pk>/etapes/comparer/", views.step_compare, name="step_compare"),

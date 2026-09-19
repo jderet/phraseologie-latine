@@ -54,3 +54,18 @@ class SyncTests(TranslationTestCase):
         self.client.force_login(self.reviewer)
         url = reverse("translations:sync_copy", args=[self.copy.pk])
         self.assertEqual(self.client.get(url).status_code, 404)
+
+
+class ProposeToOriginalTests(SyncTests):
+    def test_differences_become_a_proposal(self):
+        self.client.force_login(self.other)
+        url = reverse("translations:propose_to_original", args=[self.copy.pk])
+        page = self.client.get(url)
+        self.assertEqual(len(page.context["rows"]), 1)
+        response = self.client.post(
+            url, {"phrase": [self.second.pk], "explanation": "Le pronom insiste."}
+        )
+        proposal = self.original.proposals.get()
+        self.assertRedirects(response, proposal.get_absolute_url())
+        self.assertEqual(proposal.author, self.other)
+        self.assertEqual(proposal.sentences.get().text, "Domi nos manemus.")

@@ -224,7 +224,7 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 ## Étape 16 : collaborer entre versions
 
 - [x] Mettre sa copie à jour d'après l'originale
-- [ ] Proposer à l'originale depuis sa copie
+- [x] Proposer à l'originale depuis sa copie
 - [ ] Revue phrase par phrase des propositions, avis de relecture
 - [ ] Étiquettes d'étape (éditions)
 - [ ] Revenir à une étape

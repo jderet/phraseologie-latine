@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Proposer à l’originale" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Proposer à l’originale" %}</h1>
+  <p class="lede">{% blocktranslate trimmed with name=original.author.public_name %}
+    Les phrases où votre texte de travail diffère de la version de {{ name }}, telle que le public
+    la voit. Gardez cochées celles à proposer et expliquez vos choix : l’auteur de l’originale
+    acceptera ou refusera chaque phrase.
+  {% endblocktranslate %}</p>
+  {% if rows %}
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <ol class="quality-list">
+      {% for segment, number, theirs, mine, chunks in rows %}
+      <li>
+        <label class="replace-choice"><input type="checkbox" name="phrase" value="{{ segment.pk }}" checked> {% blocktranslate %}Phrase {{ number }}{% endblocktranslate %}</label>
+        <p class="muted">{{ segment.text }}</p>
+        <p class="word-diff" lang="la">{% include "translations/word_diff.html" %}</p>
+      </li>
+      {% endfor %}
+    </ol>
+    {{ form.explanation.as_field_group }}
+    <button type="submit" class="button">{% translate "Envoyer la proposition" %}</button>
+  </form>
+  {% else %}
+  <p class="notice notice-info">{% translate "Votre texte ne diffère pas de l’originale : rien à proposer." %}</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 14:58+0200\n"
+"POT-Creation-Date: 2026-09-19 15:00+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -9265,6 +9265,10 @@ msgid "Mettre la copie à jour"
 msgstr "Update the copy"
 
 #: templates/translations/editor_menus.html:23
+msgid "Proposer mes changements à l’originale"
+msgstr "Propose my changes to the original"
+
+#: templates/translations/editor_menus.html:24
 #: templates/translations/help.html:49
 #: templates/translations/version_detail.html:42
 #: templates/translations/version_members.html:4
@@ -9272,56 +9276,56 @@ msgstr "Update the copy"
 msgid "Co-auteurs"
 msgstr "Co-authors"
 
-#: templates/translations/editor_menus.html:24
+#: templates/translations/editor_menus.html:25
 msgid "Exporter en TMX"
 msgstr "Export as TMX"
 
-#: templates/translations/editor_menus.html:28
-#: templates/translations/editor_menus.html:30
+#: templates/translations/editor_menus.html:29
+#: templates/translations/editor_menus.html:31
 msgid "Raccourcis clavier"
 msgstr "Keyboard shortcuts"
 
-#: templates/translations/editor_menus.html:32
+#: templates/translations/editor_menus.html:33
 msgid "phrase suivante"
 msgstr "next sentence"
 
-#: templates/translations/editor_menus.html:33
+#: templates/translations/editor_menus.html:34
 msgid "retour à la ligne"
 msgstr "new line"
 
-#: templates/translations/editor_menus.html:34
+#: templates/translations/editor_menus.html:35
 msgid "marquer traduite et passer à la suivante"
 msgstr "mark as translated and go to the next one"
 
-#: templates/translations/editor_menus.html:35
+#: templates/translations/editor_menus.html:36
 msgid "marquer relue et passer à la suivante"
 msgstr "mark as reviewed and go to the next one"
 
-#: templates/translations/editor_menus.html:36
+#: templates/translations/editor_menus.html:37
 msgid "phrase suivante ou précédente"
 msgstr "next or previous sentence"
 
-#: templates/translations/editor_menus.html:37
+#: templates/translations/editor_menus.html:38
 msgid "recopier la phrase source (noms propres, nombres)"
 msgstr "copy the source sentence (proper names, numbers)"
 
-#: templates/translations/editor_menus.html:38
+#: templates/translations/editor_menus.html:39
 msgid "onglets du panneau de droite"
 msgstr "tabs of the right-hand panel"
 
-#: templates/translations/editor_menus.html:39
+#: templates/translations/editor_menus.html:40
 msgid "chercher dans les phrases"
 msgstr "search the sentences"
 
-#: templates/translations/editor_menus.html:40
+#: templates/translations/editor_menus.html:41
 msgid "quitter la phrase"
 msgstr "leave the sentence"
 
-#: templates/translations/editor_menus.html:41
+#: templates/translations/editor_menus.html:42
 msgid "ā (macron), et de même pour les autres voyelles"
 msgstr "ā (macron), and likewise for the other vowels"
 
-#: templates/translations/editor_menus.html:43
+#: templates/translations/editor_menus.html:44
 msgid "Sur Mac, Ctrl peut être remplacé par ⌘ et Alt s’appelle ⌥."
 msgstr "On a Mac, Ctrl may be replaced by ⌘, and Alt is called ⌥."
 
@@ -9339,6 +9343,7 @@ msgid "Aperçu"
 msgstr "Overview"
 
 #: templates/translations/find_replace.html:23
+#: templates/translations/propose_to_original.html:22
 #: templates/translations/quality_report.html:25
 #: templates/translations/sync_copy.html:21
 #: templates/translations/topic_detail.html:20
@@ -9981,6 +9986,7 @@ msgstr "Compare"
 #: templates/translations/proposal_create.html:8
 #: templates/translations/proposal_detail.html:8
 #: templates/translations/proposal_list.html:8
+#: templates/translations/propose_to_original.html:8
 #: templates/translations/step_compare.html:8
 #: templates/translations/step_create.html:8
 #: templates/translations/step_detail.html:8
@@ -10007,6 +10013,7 @@ msgstr ""
 "accepted sentence will stay in your name."
 
 #: templates/translations/proposal_create.html:31
+#: templates/translations/propose_to_original.html:29
 #: templates/translations/source_sentences.html:46
 msgid "Envoyer la proposition"
 msgstr "Send the proposal"
@@ -10088,6 +10095,26 @@ msgstr[1] "%(counter)s proposed sentences"
 #: templates/translations/version_item.html:3
 msgid "masquée"
 msgstr "hidden"
+
+#: templates/translations/propose_to_original.html:4
+#: templates/translations/propose_to_original.html:9
+msgid "Proposer à l’originale"
+msgstr "Propose to the original"
+
+#: templates/translations/propose_to_original.html:10
+#, python-format
+msgid ""
+"Les phrases où votre texte de travail diffère de la version de %(name)s, "
+"telle que le public la voit. Gardez cochées celles à proposer et expliquez "
+"vos choix : l’auteur de l’originale acceptera ou refusera chaque phrase."
+msgstr ""
+"The sentences where your working text differs from the version of %(name)s "
+"as the public sees it. Keep ticked those to propose and explain your "
+"choices: the author of the original will accept or refuse each sentence."
+
+#: templates/translations/propose_to_original.html:32
+msgid "Votre texte ne diffère pas de l’originale : rien à proposer."
+msgstr "Your text does not differ from the original: nothing to propose."
 
 #: templates/translations/quality_report.html:10
 msgid ""
@@ -10903,6 +10930,10 @@ msgstr "copied from the version by %(name)s, step %(number)s"
 msgid "mettre à jour depuis l’originale"
 msgstr "update from the original"
 
+#: templates/translations/version_detail.html:49
+msgid "proposer mes changements à l’originale"
+msgstr "propose my changes to the original"
+
 #: templates/translations/version_detail.html:53
 msgid "Dernière étape"
 msgstr "Latest step"
@@ -11286,16 +11317,24 @@ msgid ""
 msgstr ""
 "Number of sentence saves per day, visible to the authors of the version only."
 
-#: translations/collab_views.py:21
+#: translations/collab_views.py:28 translations/collab_views.py:65
 msgid "Cette version n’est pas une copie."
 msgstr "This version is not a copy."
 
-#: translations/collab_views.py:30
+#: translations/collab_views.py:37
 #, python-format
 msgid "%(count)d phrase reprise de l’originale."
 msgid_plural "%(count)d phrases reprises de l’originale."
 msgstr[0] "%(count)d sentence taken from the original."
 msgstr[1] "%(count)d sentences taken from the original."
+
+#: translations/collab_views.py:69
+msgid "Vous ne pouvez pas proposer de modifications à l’originale."
+msgstr "You cannot propose changes to the original."
+
+#: translations/collab_views.py:87
+msgid "La proposition est envoyée à l’auteur de l’originale."
+msgstr "The proposal is sent to the author of the original."
 
 #: translations/comments.py:36 translations/editor_views.py:156
 msgid "Écrivez un commentaire."

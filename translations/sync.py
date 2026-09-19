@@ -108,16 +108,18 @@ def take_upstream(user, version, segment_ids):
 
 
 def differences_with_original(user, version):
-    """Sentences where the working text of a copy differs from the latest public step of its
-    original, among the sentences of that step: [(segment, number, original, mine, chunks)]."""
+    """Sentences the copy changed itself and that differ from the latest public step of its
+    original, among the sentences of that step: [(segment, number, original, mine, chunks)].
+
+    A sentence only the original changed since the copy is left out: it is not a proposal."""
     if not is_version_writer(user, version) or version.copied_from_id is None:
         raise PermissionDenied
-    original = version.copied_from.version
-    latest = public_step(original)
+    latest, base = upstream(version)
     if latest is None:
         return None, []
     history = SourceHistory(version.project.source_text)
-    frozen = {segment_id: item.text for segment_id, item in carried(step_sentences(latest)).items()}
+    theirs_now = {key: item.text for key, item in carried(step_sentences(latest)).items()}
+    at_base = {key: item.text for key, item in _texts(history, base).items()}
     working = {
         item.segment_id: item.text
         for item in TranslatedSegment.objects.current().filter(version=version)
@@ -126,7 +128,7 @@ def differences_with_original(user, version):
     for number, segment in enumerate(history.segments_at(latest.source_state), start=1):
         if segment.removed_in is not None:
             continue
-        theirs, mine = frozen.get(segment.pk, ""), working.get(segment.pk, "")
-        if mine and mine != theirs:
+        theirs, mine = theirs_now.get(segment.pk, ""), working.get(segment.pk, "")
+        if mine and mine != theirs and mine != at_base.get(segment.pk, ""):
             rows.append((segment, number, theirs, mine, word_diff(theirs, mine)))
     return latest, rows
