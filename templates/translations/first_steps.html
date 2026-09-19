@@ -1,0 +1,24 @@
+{% load i18n %}{% if not hidden %}<aside class="first-steps" aria-labelledby="first-steps-title">
+  <h2 id="first-steps-title">{% translate "Premiers pas" %}</h2>
+  {% if where == "editor" %}
+  <ol>
+    <li>{% translate "Écrivez le latin en face de chaque phrase : il s’enregistre tout seul." %}</li>
+    <li>{% translate "Quand un passage vous satisfait, créez une étape : c’est ce que le public verra." %}</li>
+    <li>{% translate "Le panneau de droite garde les outils : justifications, corpus et le reste, un onglet à la fois." %}</li>
+  </ol>
+  {% else %}
+  <ol>
+    <li>{% translate "Chacun rédige sa propre version latine du texte, en brouillon, puis la publie." %}</li>
+    <li>{% translate "Comparez les versions phrase par phrase, copiez-en une pour repartir d’elle, ou proposez des modifications à son auteur." %}</li>
+    <li>{% translate "Justifiez vos choix par le corpus : chaque tour peut renvoyer aux auteurs qui l’emploient." %}</li>
+  </ol>
+  {% endif %}
+  <div class="first-steps-actions">
+    <a href="{% url 'translations:help' %}">{% translate "Tout savoir sur la traduction ici" %}</a>
+    <form method="post" action="{% url 'translations:hide_first_steps' %}" class="inline-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="link-button">{% translate "Ne plus afficher" %}</button>
+    </form>
+  </div>
+</aside>{% endif %}

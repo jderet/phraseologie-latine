@@ -191,6 +191,53 @@ Demandée par le porteur le 16 septembre 2026 : noter qu'une relation peut manqu
 
 Terminé quand un testeur a créé `{liquide}`, écrit *{liquide} sūmere* au dessin et vu la fiche repérée dans *aquam sumpsit*, dessiné *bellum cum aliquō gerere* avec le syntagme facultatif, et trouvé *meā causā* et *Caesaris causā* par `causa:abl -nmod|det-> {possesseur}`.
 
+## Étape 14 : la vie d'un projet, à la manière de GitHub
+
+Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le GitHub de la traduction latine », avec les fonctions avancées des logiciels professionnels de traduction, sans encombrer l'écran d'un nouveau venu. Co-auteurs invités (qui modifie Q36 et la règle 8) et notifications sur le site seulement, choix du même jour.
+
+- [x] Page de projet à onglets (aperçu, comparer, propositions), encadré « Premiers pas » refermable, page d'aide « Traduire ici »
+- [ ] Co-auteurs d'une version : invitation, acceptation, écriture à plusieurs ; l'auteur seul publie
+- [ ] Notifications sur le site : cloche, page, mentions @nom
+- [ ] Suivre un projet, une version ou un texte source
+- [ ] Étoiles sur les versions publiées, tri des projets et des versions
+- [ ] Fil d'activité d'un projet et d'un contributeur
+- [ ] Profil du contributeur : contributions et calendrier d'activité
+- [ ] Page « Mon atelier »
+- [ ] Sujets d'un projet : étiquettes, ouverts ou fermés, discussion, références #n
+
+## Étape 15 : l'éditeur professionnel
+
+- [ ] Panneau à onglets et barre d'outils repliée dans l'éditeur
+- [ ] Statut de chaque phrase (à traduire, brouillon, traduite, relue) et progression en couleurs
+- [ ] Filtres des phrases et recherche dans l'éditeur
+- [ ] Raccourcis clavier et leur aide
+- [ ] Mémoire de traduction : phrases ressemblantes déjà traduites
+- [ ] Autres versions de la même phrase
+- [ ] Concordance dans les traductions publiées
+- [ ] Glossaire du projet, surligné dans l'éditeur
+- [ ] Commentaires par phrase, résolus ou non
+- [ ] Historique d'une phrase, avec retour à un texte antérieur
+- [ ] Contrôle qualité formel (jamais le corpus, Q47)
+- [ ] Rechercher et remplacer dans le texte de travail
+- [ ] Statistiques d'une version
+
+## Étape 16 : collaborer entre versions
+
+- [ ] Mettre sa copie à jour d'après l'originale
+- [ ] Proposer à l'originale depuis sa copie
+- [ ] Revue phrase par phrase des propositions, avis de relecture
+- [ ] Étiquettes d'étape (éditions)
+- [ ] Revenir à une étape
+- [ ] Réseau des copies
+- [ ] Vue « qui a écrit quoi »
+
+## Étape 17 : échanger avec les outils professionnels
+
+- [ ] Export XLIFF d'une version
+- [ ] Import XLIFF dans le texte de travail
+- [ ] Mémoire personnelle importée d'un fichier TMX
+- [ ] Glossaire exporté en CSV et TBX ; API et export complet
+
 ## Ouverture publique
 
 - [x] Tableau de bord des administrateurs : chiffres clés, files d'attente, activité récente, état technique, comptes (nouveau mot de passe ou lien de réinitialisation)

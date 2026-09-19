@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Traduire ici" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<article class="help-page">
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Traduction" %}</a></p>
+  <h1>{% translate "Traduire ici" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    On traduit à plusieurs des textes modernes vers le latin. Chacun rédige sa version, la
+    justifie par le corpus, et l’améliore avec les autres, comme on améliore du code sur GitHub.
+  {% endblocktranslate %}</p>
+
+  <nav class="help-toc" aria-label="{% translate 'Sommaire' %}">
+    <a href="#commencer">{% translate "Commencer" %}</a>
+    <a href="#etapes">{% translate "Étapes et historique" %}</a>
+    <a href="#ensemble">{% translate "Travailler ensemble" %}</a>
+    <a href="#outils">{% translate "Outils de l’éditeur" %}</a>
+    <a href="#echanges">{% translate "Échanger des fichiers" %}</a>
+  </nav>
+
+  <section id="commencer" aria-labelledby="help-start">
+    <h2 id="help-start">{% translate "Commencer" %}</h2>
+    <dl class="help-terms">
+      <dt>{% translate "Texte source" %}</dt>
+      <dd>{% translate "Le texte à traduire, découpé en phrases, sous une licence libre ou dans le domaine public." %}</dd>
+      <dt>{% translate "Projet" %}</dt>
+      <dd>{% translate "Réunit les versions latines d’un même texte. Son créateur choisit la version de référence." %}</dd>
+      <dt>{% translate "Version" %}</dt>
+      <dd>{% translate "Votre latin, dans le style que vous déclarez (cicéronien, livien…). Elle reste un brouillon, visible de vous seul, jusqu’à ce que vous la publiiez." %}</dd>
+    </dl>
+    <p>{% translate "Dans l’éditeur, la phrase source est à gauche, votre latin au milieu, les outils à droite. Chaque phrase s’enregistre quand vous la quittez. Une voyelle suivie de = prend un macron : a= donne ā." %}</p>
+  </section>
+
+  <section id="etapes" aria-labelledby="help-steps">
+    <h2 id="help-steps">{% translate "Étapes et historique" %}</h2>
+    <p>{% translate "Ce que vous tapez est votre texte de travail, privé. Quand un passage vous satisfait, créez une étape avec un message : c’est l’équivalent d’un commit. Le public voit la dernière étape d’une version publiée ; chaque étape garde une adresse fixe, que l’on peut citer." %}</p>
+    <p>{% translate "L’historique montre ce que chaque étape a changé, mot à mot, et qui a écrit chaque phrase." %}</p>
+  </section>
+
+  <section id="ensemble" aria-labelledby="help-together">
+    <h2 id="help-together">{% translate "Travailler ensemble" %}</h2>
+    <dl class="help-terms">
+      <dt>{% translate "Copier une version" %}</dt>
+      <dd>{% translate "Partez de la version publiée de quelqu’un d’autre pour faire la vôtre : sa provenance reste indiquée (comme un fork)." %}</dd>
+      <dt>{% translate "Proposer des modifications" %}</dt>
+      <dd>{% translate "Proposez un autre latin pour quelques phrases de la version d’un autre ; son auteur accepte ou refuse chaque phrase (comme une pull request)." %}</dd>
+      <dt>{% translate "Contester" %}</dt>
+      <dd>{% translate "Contestez un choix de traduction avec des contre-exemples ; un relecteur tranche après discussion." %}</dd>
+    </dl>
+  </section>
+
+  <section id="outils" aria-labelledby="help-tools">
+    <h2 id="help-tools">{% translate "Outils de l’éditeur" %}</h2>
+    <p>{% translate "Les outils avancés restent repliés : ouvrez-les quand vous en avez besoin, dans le panneau de droite ou le menu « Outils »." %}</p>
+    <dl class="help-terms">
+      <dt>{% translate "Justifications" %}</dt>
+      <dd>{% translate "Sélectionnez des mots latins et reliez-les à des attestations du corpus, une règle de grammaire ou un dictionnaire." %}</dd>
+      <dt>{% translate "Corpus" %}</dt>
+      <dd>{% translate "Cherchez un mot ou une construction chez les auteurs sans quitter la page." %}</dd>
+    </dl>
+  </section>
+
+  <section id="echanges" aria-labelledby="help-exchange">
+    <h2 id="help-exchange">{% translate "Échanger des fichiers" %}</h2>
+    <p>{% translate "Chaque version s’exporte en texte bilingue, en TEI, en TMX (mémoire de traduction) et en page imprimable." %}</p>
+  </section>
+</article>
+{% endblock %}

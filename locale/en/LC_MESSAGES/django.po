@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 12:47+0200\n"
+"POT-Creation-Date: 2026-09-19 13:22+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -14,6 +14,229 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Projet"
+msgstr "Project"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "retenir la langue choisie ;"
+msgstr "remembering the chosen language;"
+
+msgid ""
+"ne plus montrer l’encadré « Premiers pas » de la traduction, une fois fermé."
+msgstr ""
+"no longer showing the “First steps” box of the translation area, once closed."
+
+msgid "Premiers pas"
+msgstr "First steps"
+
+msgid "Écrivez le latin en face de chaque phrase : il s’enregistre tout seul."
+msgstr "Write the Latin next to each sentence: it saves itself."
+
+msgid ""
+"Quand un passage vous satisfait, créez une étape : c’est ce que le public "
+"verra."
+msgstr ""
+"When a passage satisfies you, create a step: that is what the public will "
+"see."
+
+msgid ""
+"Le panneau de droite garde les outils : justifications, corpus et le reste, "
+"un onglet à la fois."
+msgstr ""
+"The right-hand panel holds the tools: justifications, corpus and the rest, "
+"one tab at a time."
+
+msgid ""
+"Chacun rédige sa propre version latine du texte, en brouillon, puis la "
+"publie."
+msgstr ""
+"Everyone writes their own Latin version of the text, as a draft, then "
+"publishes it."
+
+msgid ""
+"Comparez les versions phrase par phrase, copiez-en une pour repartir d’elle, "
+"ou proposez des modifications à son auteur."
+msgstr ""
+"Compare the versions sentence by sentence, copy one to start from it, or "
+"propose changes to its author."
+
+msgid ""
+"Justifiez vos choix par le corpus : chaque tour peut renvoyer aux auteurs "
+"qui l’emploient."
+msgstr ""
+"Justify your choices with the corpus: each turn of phrase can point to the "
+"authors who use it."
+
+msgid "Tout savoir sur la traduction ici"
+msgstr "All about translating here"
+
+msgid "Ne plus afficher"
+msgstr "Do not show again"
+
+msgid "Traduire ici"
+msgstr "Translating here"
+
+msgid ""
+"On traduit à plusieurs des textes modernes vers le latin. Chacun rédige sa "
+"version, la justifie par le corpus, et l’améliore avec les autres, comme on "
+"améliore du code sur GitHub."
+msgstr ""
+"Here, modern texts are translated into Latin together. Everyone writes their "
+"version, justifies it with the corpus, and improves it with others, as code "
+"is improved on GitHub."
+
+msgid "Sommaire"
+msgstr "Contents"
+
+msgid "Commencer"
+msgstr "Getting started"
+
+msgid "Étapes et historique"
+msgstr "Steps and history"
+
+msgid "Travailler ensemble"
+msgstr "Working together"
+
+msgid "Outils de l’éditeur"
+msgstr "Editor tools"
+
+msgid "Échanger des fichiers"
+msgstr "Exchanging files"
+
+msgid ""
+"Le texte à traduire, découpé en phrases, sous une licence libre ou dans le "
+"domaine public."
+msgstr ""
+"The text to translate, split into sentences, under a free licence or in the "
+"public domain."
+
+msgid ""
+"Réunit les versions latines d’un même texte. Son créateur choisit la version "
+"de référence."
+msgstr ""
+"Gathers the Latin versions of one text. Its creator chooses the reference "
+"version."
+
+msgid ""
+"Votre latin, dans le style que vous déclarez (cicéronien, livien…). Elle "
+"reste un brouillon, visible de vous seul, jusqu’à ce que vous la publiiez."
+msgstr ""
+"Your Latin, in the style you declare (Ciceronian, Livian…). It stays a "
+"draft, visible to you alone, until you publish it."
+
+msgid ""
+"Dans l’éditeur, la phrase source est à gauche, votre latin au milieu, les "
+"outils à droite. Chaque phrase s’enregistre quand vous la quittez. Une "
+"voyelle suivie de = prend un macron : a= donne ā."
+msgstr ""
+"In the editor, the source sentence is on the left, your Latin in the middle, "
+"the tools on the right. Each sentence is saved when you leave it. A vowel "
+"followed by = takes a macron: a= gives ā."
+
+msgid ""
+"Ce que vous tapez est votre texte de travail, privé. Quand un passage vous "
+"satisfait, créez une étape avec un message : c’est l’équivalent d’un commit. "
+"Le public voit la dernière étape d’une version publiée ; chaque étape garde "
+"une adresse fixe, que l’on peut citer."
+msgstr ""
+"What you type is your working text, which is private. When a passage "
+"satisfies you, create a step with a message: the equivalent of a commit. The "
+"public sees the latest step of a published version; each step keeps a fixed "
+"address that can be cited."
+
+msgid ""
+"L’historique montre ce que chaque étape a changé, mot à mot, et qui a écrit "
+"chaque phrase."
+msgstr ""
+"The history shows what each step changed, word by word, and who wrote each "
+"sentence."
+
+msgid "Copier une version"
+msgstr "Copying a version"
+
+msgid ""
+"Partez de la version publiée de quelqu’un d’autre pour faire la vôtre : sa "
+"provenance reste indiquée (comme un fork)."
+msgstr ""
+"Start from someone else’s published version to make your own: its origin "
+"stays shown (like a fork)."
+
+msgid "Proposer des modifications"
+msgstr "Proposing changes"
+
+msgid ""
+"Proposez un autre latin pour quelques phrases de la version d’un autre ; son "
+"auteur accepte ou refuse chaque phrase (comme une pull request)."
+msgstr ""
+"Propose other Latin for a few sentences of someone else’s version; its "
+"author accepts or refuses each sentence (like a pull request)."
+
+msgid "Contester"
+msgstr "Contesting"
+
+msgid ""
+"Contestez un choix de traduction avec des contre-exemples ; un relecteur "
+"tranche après discussion."
+msgstr ""
+"Contest a translation choice with counter-examples; a reviewer decides after "
+"discussion."
+
+msgid ""
+"Les outils avancés restent repliés : ouvrez-les quand vous en avez besoin, "
+"dans le panneau de droite ou le menu « Outils »."
+msgstr ""
+"The advanced tools stay folded: open them when you need them, in the right-"
+"hand panel or the “Tools” menu."
+
+msgid ""
+"Sélectionnez des mots latins et reliez-les à des attestations du corpus, une "
+"règle de grammaire ou un dictionnaire."
+msgstr ""
+"Select Latin words and link them to attestations from the corpus, a grammar "
+"rule or a dictionary."
+
+msgid ""
+"Cherchez un mot ou une construction chez les auteurs sans quitter la page."
+msgstr ""
+"Search the authors for a word or a construction without leaving the page."
+
+msgid ""
+"Chaque version s’exporte en texte bilingue, en TEI, en TMX (mémoire de "
+"traduction) et en page imprimable."
+msgstr ""
+"Each version can be exported as bilingual text, TEI, TMX (translation "
+"memory) and a printable page."
+
+msgid ""
+"Propositions de modifications faites aux versions publiées de ce projet. "
+"L’auteur de chaque version accepte ou refuse chaque phrase proposée."
+msgstr ""
+"Change proposals made to the published versions of this project. The author "
+"of each version accepts or refuses each proposed sentence."
+
+msgid "Sections du projet"
+msgstr "Project sections"
+
+msgid "Aperçu"
+msgstr "Overview"
+
+msgid "Comparer"
+msgstr "Compare"
+
+msgid "Propositions"
+msgstr "Proposals"
+
+msgid "Aucune proposition pour l’instant."
+msgstr "No proposal yet."
+
+msgid "pour la version de %(name)s"
+msgstr "for the version of %(name)s"
+
+msgid "Propositions de modification du texte source"
+msgstr "Proposed changes to the source text"
 
 #: accounts/admin.py:16
 msgid "Profil"
@@ -262,9 +485,10 @@ msgid "La nouvelle version du guide est publiée."
 msgstr "The new version of the guide is published."
 
 #: corpus/apps.py:7 corpus/forms.py:111 phraseology/forms.py:539
-#: templates/base.html:16 templates/corpus/correction_list.html:8
+#: templates/base.html:17 templates/corpus/correction_list.html:8
 #: templates/corpus/index.html:4 templates/corpus/index.html:8
-#: templates/corpus/work.html:8 templates/translations/version_edit.html:76
+#: templates/corpus/work.html:8 templates/translations/help.html:60
+#: templates/translations/version_edit.html:76
 msgid "Corpus"
 msgstr "Corpus"
 
@@ -894,7 +1118,7 @@ msgid "ordre"
 msgstr "order"
 
 #: corpus/models.py:166 corpus/models.py:294
-#: templates/translations/project_compare.html:22
+#: templates/translations/project_compare.html:23
 msgid "référence"
 msgstr "reference"
 
@@ -2337,7 +2561,7 @@ msgstr ""
 "Unknown abstract word: %(names)s. Propose it first in the list of abstract "
 "words."
 
-#: phraseology/apps.py:7 templates/base.html:18 templates/core/guide.html:8
+#: phraseology/apps.py:7 templates/base.html:19 templates/core/guide.html:8
 #: templates/phraseology/abstract_word_list.html:8
 #: templates/phraseology/candidate_list.html:8
 #: templates/phraseology/figures.html:8
@@ -4349,7 +4573,7 @@ msgid "Indiquez l’expression cherchée."
 msgstr "Give the expression searched for."
 
 #: templates/accounts/account.html:4 templates/accounts/account.html:8
-#: templates/base.html:42 templates/notebook/notebook.html:8
+#: templates/base.html:43 templates/notebook/notebook.html:8
 #: templates/phraseology/annotator.html:8
 msgid "Mon compte"
 msgstr "My account"
@@ -4430,7 +4654,7 @@ msgid "Créer un compte"
 msgstr "Create an account"
 
 #: templates/accounts/dashboard.html:4 templates/accounts/dashboard.html:8
-#: templates/accounts/dashboard_password.html:8 templates/base.html:38
+#: templates/accounts/dashboard_password.html:8 templates/base.html:39
 msgid "Tableau de bord"
 msgstr "Dashboard"
 
@@ -4460,11 +4684,11 @@ msgid "Attestations validées"
 msgstr "Validated attestations"
 
 #: templates/accounts/dashboard.html:17
-#: templates/translations/project_detail.html:41
+#: templates/translations/project_detail.html:42
 msgid "Versions publiées"
 msgstr "Published versions"
 
-#: templates/accounts/dashboard.html:18
+#: templates/accounts/dashboard.html:18 templates/translations/help.html:58
 #: templates/translations/version_edit.html:53
 msgid "Justifications"
 msgstr "Justifications"
@@ -4587,7 +4811,7 @@ msgstr "Name"
 msgid "État"
 msgstr "Status"
 
-#: templates/accounts/dashboard.html:70 templates/base.html:49
+#: templates/accounts/dashboard.html:70 templates/base.html:50
 msgid "Inscription"
 msgstr "Sign up"
 
@@ -4719,7 +4943,7 @@ msgstr "Activate your account"
 
 #: templates/accounts/email/activation_subject.txt:1
 #: templates/accounts/email/password_reset_subject.txt:1 templates/base.html:7
-#: templates/base.html:14 translations/views.py:1007
+#: templates/base.html:15 translations/views.py:1007
 msgid "Phraséologie latine"
 msgstr "Latin Phraseology"
 
@@ -4740,7 +4964,7 @@ msgstr ""
 "message: your password stays the same."
 
 #: templates/accounts/login.html:4 templates/accounts/login.html:8
-#: templates/base.html:48
+#: templates/base.html:49
 msgid "Connexion"
 msgstr "Log in"
 
@@ -4873,7 +5097,7 @@ msgstr ""
 "Nothing received? Check your spam folder, or sign up again with the same "
 "address: a new link will be sent to you."
 
-#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:80
+#: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:81
 msgid "Données ouvertes"
 msgstr "Open data"
 
@@ -4993,11 +5217,11 @@ msgstr ""
 "under the same licence (CC BY-SA 4.0). Each item gives the public name of "
 "its author. The code of the site is under the AGPL-3.0 licence."
 
-#: templates/base.html:15
+#: templates/base.html:16
 msgid "Navigation principale"
 msgstr "Main navigation"
 
-#: templates/base.html:17 templates/corpus/search.html:4
+#: templates/base.html:18 templates/corpus/search.html:4
 #: templates/phraseology/collocation_profile.html:8
 #: templates/phraseology/negative_search_detail.html:19
 #: templates/phraseology/negative_search_list.html:17
@@ -5005,82 +5229,83 @@ msgstr "Main navigation"
 msgid "Recherche"
 msgstr "Search"
 
-#: templates/base.html:19 templates/corpus/reading.html:193
+#: templates/base.html:20 templates/corpus/reading.html:193
 #: templates/justifications/challenge_list.html:8
-#: templates/translations/source_list.html:8 translations/apps.py:7
+#: templates/translations/help.html:8 templates/translations/source_list.html:8
+#: translations/apps.py:7
 msgid "Traduction"
 msgstr "Translation"
 
-#: templates/base.html:26
+#: templates/base.html:27
 msgid "Apparence"
 msgstr "Appearance"
 
-#: templates/base.html:27
+#: templates/base.html:28
 msgid "Clair"
 msgstr "Light"
 
-#: templates/base.html:28
+#: templates/base.html:29
 msgid "Auto"
 msgstr "Auto"
 
-#: templates/base.html:29
+#: templates/base.html:30
 msgid "Sombre"
 msgstr "Dark"
 
-#: templates/base.html:31 templates/core/terms.html:27
+#: templates/base.html:32 templates/core/terms.html:27
 msgid "Compte"
 msgstr "Account"
 
-#: templates/base.html:34
+#: templates/base.html:35
 msgid "Relecture"
 msgstr "Review"
 
-#: templates/base.html:35 templates/moderation/report_queue.html:4
+#: templates/base.html:36 templates/moderation/report_queue.html:4
 msgid "Signalements"
 msgstr "Reports"
 
-#: templates/base.html:40 templates/phraseology/annotator.html:4
+#: templates/base.html:41 templates/phraseology/annotator.html:4
 #: templates/phraseology/annotator.html:9
 msgid "Mes annotations"
 msgstr "My annotations"
 
-#: templates/base.html:41 templates/notebook/highlight_panel.html:2
+#: templates/base.html:42 templates/notebook/highlight_panel.html:2
 #: templates/notebook/list_panel.html:2 templates/notebook/note_panel.html:2
 #: templates/notebook/notebook.html:4 templates/notebook/notebook.html:9
 #: templates/notebook/panel_page.html:4
 msgid "Mon carnet"
 msgstr "My notebook"
 
-#: templates/base.html:45
+#: templates/base.html:46
 msgid "Déconnexion"
 msgstr "Log out"
 
-#: templates/base.html:55 templates/translations/source_detail.html:22
+#: templates/base.html:56 templates/translations/source_detail.html:22
 msgid "Langue"
 msgstr "Language"
 
-#: templates/base.html:62
+#: templates/base.html:63
 msgid "Changer"
 msgstr "Change"
 
-#: templates/base.html:80
+#: templates/base.html:81
 msgid "Code sous licence AGPL-3.0 · contributions sous licence CC BY-SA 4.0"
 msgstr "Code under AGPL-3.0 · contributions under CC BY-SA 4.0"
 
-#: templates/base.html:80
+#: templates/base.html:81
 msgid "Code source"
 msgstr "Source code"
 
-#: templates/base.html:81 templates/core/legal_notice.html:4
+#: templates/base.html:82 templates/core/legal_notice.html:4
 #: templates/core/legal_notice.html:9
 msgid "Mentions légales"
 msgstr "Legal notice"
 
-#: templates/base.html:81
+#: templates/base.html:82
 msgid "Confidentialité"
 msgstr "Privacy"
 
-#: templates/base.html:81 templates/core/terms.html:4
+#: templates/base.html:82 templates/core/terms.html:4
 #: templates/core/terms.html:9
 msgid "Conditions d’utilisation"
 msgstr "Terms of use"
@@ -5528,15 +5753,11 @@ msgstr ""
 msgid "protéger les formulaires contre les envois frauduleux ;"
 msgstr "protecting forms against forged submissions;"
 
-#: templates/core/privacy.html:108
-msgid "retenir la langue choisie."
-msgstr "remembering the chosen language."
-
-#: templates/core/privacy.html:113
+#: templates/core/privacy.html:114
 msgid "Vos droits"
 msgstr "Your rights"
 
-#: templates/core/privacy.html:114
+#: templates/core/privacy.html:115
 #, python-format
 msgid ""
 "Vous pouvez accéder à vos données, les rectifier, en demander l’effacement "
@@ -5555,7 +5776,7 @@ msgstr ""
 "example the erasure of personal data contained in a contribution, write to "
 "%(email)s."
 
-#: templates/core/privacy.html:122
+#: templates/core/privacy.html:123
 msgid ""
 "Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser "
 "une réclamation à la CNIL (<a href=\"https://www.cnil.fr/\">www.cnil.fr</a>)."
@@ -6081,10 +6302,6 @@ msgstr "Apply"
 #: templates/corpus/reading.html:76
 msgid "Revenir aux réglages par défaut"
 msgstr "Back to the default settings"
-
-#: templates/corpus/reading.html:83
-msgid "Sommaire"
-msgstr "Contents"
 
 #: templates/corpus/reading.html:91
 msgid "Légende"
@@ -8608,7 +8825,7 @@ msgid "Proposer une correction"
 msgstr "Propose a correction"
 
 #: templates/translations/bitext_rows.html:8
-#: templates/translations/project_compare.html:38
+#: templates/translations/project_compare.html:39
 #: templates/translations/version_print.html:33
 msgid "non traduite"
 msgstr "not translated"
@@ -8641,12 +8858,8 @@ msgstr "Challenged: “%(excerpt)s”"
 msgid "une justification est attendue"
 msgstr "a justification is expected"
 
-#: templates/translations/bitext_rows.html:20
-msgid "Contester"
-msgstr "Challenge"
-
-#: templates/translations/comparison.html:2
-#: templates/translations/project_detail.html:17
+#: templates/translations/comparison.html:2 templates/translations/help.html:26
+#: templates/translations/project_detail.html:19
 #: templates/translations/source_detail.html:8
 msgid "Texte source"
 msgstr "Source text"
@@ -8657,18 +8870,22 @@ msgid "(phrase effacée)"
 msgstr "(sentence erased)"
 
 #: templates/translations/project_compare.html:4
-#: templates/translations/project_compare.html:9
-#: templates/translations/project_detail.html:27
 #: templates/translations/version_detail.html:65
 msgid "Comparer les versions"
 msgstr "Compare the versions"
 
-#: templates/translations/project_compare.html:11
-#: templates/translations/project_detail.html:47
+#: templates/translations/project_compare.html:8
+#: templates/translations/project_detail.html:8
+#: templates/translations/project_proposals.html:8
+msgid "Projet de traduction"
+msgstr "Translation project"
+
+#: templates/translations/project_compare.html:12
+#: templates/translations/project_detail.html:48
 msgid "Aucune version publiée pour l’instant."
 msgstr "No published version yet."
 
-#: templates/translations/project_compare.html:13
+#: templates/translations/project_compare.html:14
 msgid ""
 "Les versions publiées, alignées phrase par phrase, chacune dans sa dernière "
 "étape. La version de référence, choisie par le créateur du projet, vient en "
@@ -8678,32 +8895,28 @@ msgstr ""
 "step. The reference version, chosen by the creator of the project, comes "
 "first."
 
-#: templates/translations/project_compare.html:20
+#: templates/translations/project_compare.html:21
 msgid "Versions affichées"
 msgstr "Versions shown"
 
-#: templates/translations/project_compare.html:22
+#: templates/translations/project_compare.html:23
 msgid "votre brouillon"
 msgstr "your draft"
 
-#: templates/translations/project_compare.html:22
+#: templates/translations/project_compare.html:23
 #: templates/translations/step_compare.html:24
 msgid "votre texte de travail"
 msgstr "your working text"
 
-#: templates/translations/project_compare.html:25
+#: templates/translations/project_compare.html:26
 msgid "Afficher"
 msgstr "Show"
 
-#: templates/translations/project_compare.html:39
+#: templates/translations/project_compare.html:40
 msgid "d’après un texte source antérieur"
 msgstr "from an earlier source text"
 
-#: templates/translations/project_detail.html:8
-msgid "Projet de traduction"
-msgstr "Translation project"
-
-#: templates/translations/project_detail.html:18
+#: templates/translations/project_detail.html:20
 #: templates/translations/source_list.html:22
 #, python-format
 msgid "%(counter)s phrase"
@@ -8711,40 +8924,40 @@ msgid_plural "%(counter)s phrases"
 msgstr[0] "%(counter)s sentence"
 msgstr[1] "%(counter)s sentences"
 
-#: templates/translations/project_detail.html:21
+#: templates/translations/project_detail.html:23
 msgid "Lancé par"
 msgstr "Started by"
 
-#: templates/translations/project_detail.html:26
+#: templates/translations/project_detail.html:28
 #: templates/translations/version_form.html:4
 #: templates/translations/version_form.html:12
 msgid "Rédiger une version"
 msgstr "Write a version"
 
-#: templates/translations/project_detail.html:28
+#: templates/translations/project_detail.html:29
 #: templates/translations/project_form.html:4
 #: templates/translations/project_form.html:10
 msgid "Modifier le projet"
 msgstr "Edit the project"
 
-#: templates/translations/project_detail.html:29
+#: templates/translations/project_detail.html:30
 msgid "Modifier le texte à traduire"
 msgstr "Change the text to translate"
 
-#: templates/translations/project_detail.html:29
+#: templates/translations/project_detail.html:30
 #: templates/translations/source_detail.html:42
 msgid "Proposer des modifications du texte"
 msgstr "Propose changes to the text"
 
-#: templates/translations/project_detail.html:34
+#: templates/translations/project_detail.html:35
 msgid "Vos brouillons"
 msgstr "Your drafts"
 
-#: templates/translations/project_detail.html:35
+#: templates/translations/project_detail.html:36
 msgid "Visibles de vous seul, jusqu’à leur publication."
 msgstr "Visible to you only, until they are published."
 
-#: templates/translations/project_detail.html:43
+#: templates/translations/project_detail.html:44
 msgid ""
 "Vous avez créé ce projet : c’est vous qui choisissez la version de référence."
 msgstr "You created this project: you choose the reference version."
@@ -8812,13 +9025,14 @@ msgstr "started by %(name)s"
 msgid "Aucun projet pour l’instant."
 msgstr "No project yet."
 
-#: templates/translations/proposal_create.html:4
-#: templates/translations/proposal_create.html:9
-#: templates/translations/proposal_list.html:15
-#: templates/translations/source_proposal_list.html:12
-#: templates/translations/version_detail.html:73
-msgid "Proposer des modifications"
-msgstr "Propose changes"
+#: templates/translations/project_proposals.html:18
+#: templates/translations/proposal_detail.html:9
+#: templates/translations/proposal_list.html:20
+#: templates/translations/source_proposal_detail.html:9
+#: templates/translations/source_proposal_list.html:17
+#, python-format
+msgid "Proposition de %(name)s"
+msgstr "Proposal by %(name)s"
 
 #: templates/translations/proposal_create.html:8
 #: templates/translations/proposal_detail.html:8
@@ -8848,18 +9062,6 @@ msgstr ""
 #: templates/translations/source_sentences.html:46
 msgid "Envoyer la proposition"
 msgstr "Send the proposal"
-
-#: templates/translations/proposal_detail.html:8
-msgid "Propositions"
-msgstr "Proposals"
-
-#: templates/translations/proposal_detail.html:9
-#: templates/translations/proposal_list.html:20
-#: templates/translations/source_proposal_detail.html:9
-#: templates/translations/source_proposal_list.html:17
-#, python-format
-msgid "Proposition de %(name)s"
-msgstr "Proposal by %(name)s"
 
 #: templates/translations/proposal_detail.html:21
 msgid "Texte de départ"
@@ -8953,11 +9155,6 @@ msgstr[1] "%(counter)s proposed sentences"
 #: templates/translations/version_item.html:3
 msgid "masquée"
 msgstr "hidden"
-
-#: templates/translations/proposal_list.html:24
-#: templates/translations/source_proposal_list.html:21
-msgid "Aucune proposition pour l’instant."
-msgstr "No proposal yet."
 
 #: templates/translations/source_changed.html:1
 msgid "Texte source changé depuis la dernière étape. Avant :"
@@ -9293,10 +9490,6 @@ msgstr "(no text)"
 #: templates/translations/step_compare.html:21
 msgid "À"
 msgstr "To"
-
-#: templates/translations/step_compare.html:27
-msgid "Comparer"
-msgstr "Compare"
 
 #: templates/translations/step_compare.html:30
 #: templates/translations/step_detail.html:9

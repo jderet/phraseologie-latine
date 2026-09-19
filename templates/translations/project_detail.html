@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n moderation_tags %}
+{% load i18n moderation_tags workshop_tags %}
 
 {% block title %}{{ project.title }} · {{ block.super }}{% endblock %}
 
@@ -10,6 +10,8 @@
   {% if project.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
   {% endif %}
+  {% project_tabs project "overview" %}
+  {% first_steps "project" %}
   {% if project.description %}<p class="lede">{{ project.description|linebreaksbr }}</p>{% endif %}
 
   <dl class="facts">
@@ -24,7 +26,6 @@
   </dl>
   <p class="form-links">
     {% if user.is_authenticated and not project.is_hidden %}<a class="button" href="{% url 'translations:version_create' project.pk %}">{% translate "Rédiger une version" %}</a>{% endif %}
-    {% if published %}<a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer les versions" %}</a>{% endif %}
     {% if can_edit %}<a href="{% url 'translations:project_edit' project.pk %}">{% translate "Modifier le projet" %}</a>{% endif %}
     {% if can_change_source %}<a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Modifier le texte à traduire" %}</a>{% elif can_propose_source %}<a href="{% url 'translations:source_sentences' source.pk %}">{% translate "Proposer des modifications du texte" %}</a>{% endif %}
   </p>

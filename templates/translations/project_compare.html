@@ -1,12 +1,13 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n workshop_tags %}
 
 {% block title %}{% translate "Comparer les versions" %} · {{ project.title }} · {{ block.super }}{% endblock %}
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
-  <h1>{% translate "Comparer les versions" %}</h1>
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <h1>{{ project.title }}</h1>
+  {% project_tabs project "compare" %}
   {% if not versions %}
   <p class="lede">{% translate "Aucune version publiée pour l’instant." %}</p>
   {% else %}

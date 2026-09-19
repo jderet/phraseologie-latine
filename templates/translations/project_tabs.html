@@ -1,0 +1,5 @@
+{% load i18n %}<nav class="workshop-tabs" aria-label="{% translate 'Sections du projet' %}">
+  <a href="{% url 'translations:project' project.pk %}"{% if active == "overview" %} aria-current="page"{% endif %}>{% translate "Aperçu" %}</a>
+  <a href="{% url 'translations:project_compare' project.pk %}"{% if active == "compare" %} aria-current="page"{% endif %}>{% translate "Comparer" %}</a>
+  <a href="{% url 'translations:project_proposals' project.pk %}"{% if active == "proposals" %} aria-current="page"{% endif %}>{% translate "Propositions" %}{% if counts.proposals %} <span class="tab-count">{{ counts.proposals }}</span>{% endif %}</a>
+</nav>
