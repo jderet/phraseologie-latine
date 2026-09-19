@@ -1,0 +1,44 @@
+{% load i18n activity_tags %}<section class="profile-section" aria-labelledby="profile-calendar">
+  <h2 id="profile-calendar">{% translate "Activité" %}</h2>
+  <p class="note">{% blocktranslate trimmed count counter=calendar.total %}
+    {{ counter }} action publique au cours de l’année.
+  {% plural %}
+    {{ counter }} actions publiques au cours de l’année.
+  {% endblocktranslate %}</p>
+  <div class="calendar-scroll">
+    <div class="activity-calendar" role="img" aria-label="{% translate 'Calendrier des actions publiques, semaine par semaine' %}">
+      {% for week in calendar.weeks %}<div class="calendar-week">{% for day in week %}<span class="calendar-day level-{{ day.level }}{% if day.count is None %} is-future{% endif %}" title="{{ day.date|date:'j F Y' }}{% if day.count is not None %} : {{ day.count }}{% endif %}"></span>{% endfor %}</div>{% endfor %}
+    </div>
+  </div>
+  <p class="calendar-legend muted" aria-hidden="true">{% translate "Moins" %} <span class="calendar-day level-0"></span><span class="calendar-day level-1"></span><span class="calendar-day level-2"></span><span class="calendar-day level-3"></span><span class="calendar-day level-4"></span> {% translate "Plus" %}</p>
+</section>
+
+<section class="profile-section" aria-labelledby="profile-versions">
+  <h2 id="profile-versions">{% translate "Versions latines publiées" %}</h2>
+  <ul class="item-list">
+    {% for version in versions %}
+    <li>
+      <a class="item-title" href="{{ version.get_absolute_url }}">{{ version.project.title }}</a>
+      <span class="muted">{{ version.get_style_display|capfirst }}{% if version.author_id != contributor.pk %} · {% blocktranslate with name=version.author.public_name %}co-auteur de la version de {{ name }}{% endblocktranslate %}{% endif %} · {{ version.published_at|date:"j F Y" }}{% if version.star_count %} · <span aria-hidden="true">★</span> {% blocktranslate count counter=version.star_count %}{{ counter }} étoile{% plural %}{{ counter }} étoiles{% endblocktranslate %}{% endif %}</span>
+    </li>
+    {% empty %}
+    <li>{% translate "Aucune version publiée." %}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% if unit_count %}
+<section class="profile-section" aria-labelledby="profile-units">
+  <h2 id="profile-units">{% blocktranslate count counter=unit_count %}{{ counter }} fiche phraséologique{% plural %}{{ counter }} fiches phraséologiques{% endblocktranslate %}</h2>
+  <ul class="inline-list">
+    {% for unit in units %}<li><a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a></li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section class="profile-section" aria-labelledby="profile-events">
+  <h2 id="profile-events">{% translate "Dernières actions" %}</h2>
+  <ul class="event-list">
+    {% for event in events %}<li>{% event_line event show_project=True %}</li>{% empty %}<li>{% translate "Aucune action publique pour l’instant." %}</li>{% endfor %}
+  </ul>
+</section>

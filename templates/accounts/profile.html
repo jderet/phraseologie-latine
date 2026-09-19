@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n activity_tags %}
 
 {% block title %}{{ profile_user.public_name }} · {{ block.super }}{% endblock %}
 
@@ -25,6 +25,7 @@
     </div>
     {% endif %}
   </dl>
-  <p class="note">{% translate "Les contributions apparaîtront ici." %}</p>
+  {% if profile_user.pk == user.pk %}<p class="note">{% blocktranslate with handle=profile_user.public_name|cut:" " %}Pour vous mentionner dans un message, on écrit @{{ handle }}.{% endblocktranslate %}</p>{% endif %}
+  {% profile_activity profile_user %}
 </section>
 {% endblock %}

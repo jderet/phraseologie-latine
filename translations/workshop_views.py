@@ -9,6 +9,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from activity.feeds import project_feed
 from moderation.registry import can_view
 
 from . import members as member_services
@@ -54,6 +55,16 @@ def project_proposals(request, pk):
             "source": project.source_text,
             "page": _paginate(request, proposals),
         },
+    )
+
+
+def project_activity(request, pk):
+    """What happened lately in a project: publications, steps, proposals, messages."""
+    project = _visible(request.user, TranslationProject.objects.select_related("source_text"), pk)
+    return render(
+        request,
+        "translations/project_activity.html",
+        {"project": project, "events": project_feed(request.user, project)},
     )
 
 

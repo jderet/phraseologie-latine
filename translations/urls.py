@@ -52,6 +52,7 @@ urlpatterns = [
         workshop_views.project_proposals,
         name="project_proposals",
     ),
+    path("projets/<int:pk>/activite/", workshop_views.project_activity, name="project_activity"),
     path("traduction/aide/", workshop_views.help_page, name="help"),
     path("traduction/premiers-pas/", workshop_views.hide_first_steps, name="hide_first_steps"),
     path("projets/<int:pk>/reference/", views.project_reference, name="project_reference"),

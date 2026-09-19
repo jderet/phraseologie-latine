@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 13:45+0200\n"
+"POT-Creation-Date: 2026-09-19 13:48+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -200,7 +200,9 @@ msgid "Votre compte est supprimé. Vos contributions restent, sans votre nom."
 msgstr ""
 "Your account has been deleted. Your contributions remain, without your name."
 
-#: activity/apps.py:7
+#: activity/apps.py:7 templates/activity/profile_activity.html:2
+#: templates/translations/project_activity.html:4
+#: templates/translations/project_tabs.html:5
 msgid "Activité"
 msgstr "Activity"
 
@@ -4975,8 +4977,9 @@ msgid "Membre depuis"
 msgstr "Member since"
 
 #: templates/accounts/profile.html:28
-msgid "Les contributions apparaîtront ici."
-msgstr "Contributions will appear here."
+#, python-format
+msgid "Pour vous mentionner dans un message, on écrit @%(handle)s."
+msgstr "To mention you in a message, people write @%(handle)s."
 
 #: templates/accounts/signup.html:9
 msgid ""
@@ -5101,14 +5104,35 @@ msgstr ""
 "To mention someone in a message, write @ followed by their displayed name "
 "without spaces, for instance @MarcusTullius."
 
-#: templates/activity/star_button.html:3
-msgid "Étoilée"
-msgstr "Starred"
+#: templates/activity/profile_activity.html:3
+#, python-format
+msgid "%(counter)s action publique au cours de l’année."
+msgid_plural "%(counter)s actions publiques au cours de l’année."
+msgstr[0] "%(counter)s public action over the year."
+msgstr[1] "%(counter)s public actions over the year."
 
-#: templates/activity/star_button.html:3
-msgid "Étoiler"
-msgstr "Star"
+#: templates/activity/profile_activity.html:9
+msgid "Calendrier des actions publiques, semaine par semaine"
+msgstr "Calendar of public actions, week by week"
 
+#: templates/activity/profile_activity.html:13
+msgid "Moins"
+msgstr "Less"
+
+#: templates/activity/profile_activity.html:13
+msgid "Plus"
+msgstr "More"
+
+#: templates/activity/profile_activity.html:17
+msgid "Versions latines publiées"
+msgstr "Published Latin versions"
+
+#: templates/activity/profile_activity.html:22
+#, python-format
+msgid "co-auteur de la version de %(name)s"
+msgstr "co-author of the version of %(name)s"
+
+#: templates/activity/profile_activity.html:22
 #: templates/activity/star_button.html:4
 #: templates/translations/project_list.html:24
 #: templates/translations/version_item.html:3
@@ -5117,6 +5141,34 @@ msgid "%(counter)s étoile"
 msgid_plural "%(counter)s étoiles"
 msgstr[0] "%(counter)s star"
 msgstr[1] "%(counter)s stars"
+
+#: templates/activity/profile_activity.html:25
+msgid "Aucune version publiée."
+msgstr "No published version."
+
+#: templates/activity/profile_activity.html:32
+#, python-format
+msgid "%(counter)s fiche phraséologique"
+msgid_plural "%(counter)s fiches phraséologiques"
+msgstr[0] "%(counter)s phraseological entry"
+msgstr[1] "%(counter)s phraseological entries"
+
+#: templates/activity/profile_activity.html:40
+msgid "Dernières actions"
+msgstr "Latest actions"
+
+#: templates/activity/profile_activity.html:42
+#: templates/translations/project_activity.html:13
+msgid "Aucune action publique pour l’instant."
+msgstr "No public action yet."
+
+#: templates/activity/star_button.html:3
+msgid "Étoilée"
+msgstr "Starred"
+
+#: templates/activity/star_button.html:3
+msgid "Étoiler"
+msgstr "Star"
 
 #: templates/api/data.html:4 templates/api/data.html:8 templates/base.html:82
 msgid "Données ouvertes"
@@ -9131,16 +9183,25 @@ msgstr ""
 "Each version can be exported as bilingual text, TEI, TMX (translation "
 "memory) and a printable page."
 
-#: templates/translations/project_compare.html:4
-#: templates/translations/version_detail.html:72
-msgid "Comparer les versions"
-msgstr "Compare the versions"
-
+#: templates/translations/project_activity.html:8
 #: templates/translations/project_compare.html:8
 #: templates/translations/project_detail.html:8
 #: templates/translations/project_proposals.html:8
 msgid "Projet de traduction"
 msgstr "Translation project"
+
+#: templates/translations/project_activity.html:11
+msgid ""
+"Les dernières actions publiques du projet. Suivez le projet pour les "
+"recevoir dans vos notifications."
+msgstr ""
+"The latest public actions of the project. Follow the project to receive them "
+"in your notifications."
+
+#: templates/translations/project_compare.html:4
+#: templates/translations/version_detail.html:72
+msgid "Comparer les versions"
+msgstr "Compare the versions"
 
 #: templates/translations/project_compare.html:12
 #: templates/translations/project_detail.html:50
@@ -11479,26 +11540,29 @@ msgstr "The sentence is refused."
 msgid "L’étape %(number)d est créée."
 msgstr "Step %(number)d is created."
 
-#: translations/workshop_views.py:97
+#: translations/workshop_views.py:108
 #, python-format
 msgid "%(name)s est invité : il ou elle doit accepter l’invitation."
 msgstr "%(name)s is invited: they must accept the invitation."
 
-#: translations/workshop_views.py:136
+#: translations/workshop_views.py:147
 msgid "Vous êtes co-auteur de cette version."
 msgstr "You are a co-author of this version."
 
-#: translations/workshop_views.py:138
+#: translations/workshop_views.py:149
 msgid "L’invitation est refusée."
 msgstr "The invitation is declined."
 
-#: translations/workshop_views.py:152
+#: translations/workshop_views.py:163
 msgid "Vous n’êtes plus co-auteur de cette version."
 msgstr "You are no longer a co-author of this version."
 
-#: translations/workshop_views.py:154
+#: translations/workshop_views.py:165
 msgid "La personne n’est plus co-autrice de cette version."
 msgstr "This person is no longer a co-author of this version."
+
+#~ msgid "Les contributions apparaîtront ici."
+#~ msgstr "Contributions will appear here."
 
 #, fuzzy
 #~| msgid "Copier une version"

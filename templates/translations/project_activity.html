@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n activity_tags workshop_tags %}
+
+{% block title %}{% translate "Activité" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <h1>{{ project.title }}</h1>
+  {% project_tabs project "activity" %}
+  <p class="note">{% translate "Les dernières actions publiques du projet. Suivez le projet pour les recevoir dans vos notifications." %}</p>
+  <ul class="event-list">
+    {% for event in events %}<li>{% event_line event %}</li>{% empty %}<li>{% translate "Aucune action publique pour l’instant." %}</li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}

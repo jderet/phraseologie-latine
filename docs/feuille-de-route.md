@@ -200,8 +200,8 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Notifications sur le site : cloche, page, mentions @nom
 - [x] Suivre un projet, une version ou un texte source
 - [x] Étoiles sur les versions publiées, tri des projets et des versions
-- [ ] Fil d'activité d'un projet et d'un contributeur
-- [ ] Profil du contributeur : contributions et calendrier d'activité
+- [x] Fil d'activité d'un projet et d'un contributeur
+- [x] Profil du contributeur : contributions et calendrier d'activité
 - [ ] Page « Mon atelier »
 - [ ] Sujets d'un projet : étiquettes, ouverts ou fermés, discussion, références #n
 

@@ -2,4 +2,5 @@
   <a href="{% url 'translations:project' project.pk %}"{% if active == "overview" %} aria-current="page"{% endif %}>{% translate "Aperçu" %}</a>
   <a href="{% url 'translations:project_compare' project.pk %}"{% if active == "compare" %} aria-current="page"{% endif %}>{% translate "Comparer" %}</a>
   <a href="{% url 'translations:project_proposals' project.pk %}"{% if active == "proposals" %} aria-current="page"{% endif %}>{% translate "Propositions" %}{% if counts.proposals %} <span class="tab-count">{{ counts.proposals }}</span>{% endif %}</a>
+  <a href="{% url 'translations:project_activity' project.pk %}"{% if active == "activity" %} aria-current="page"{% endif %}>{% translate "Activité" %}</a>
 </nav>

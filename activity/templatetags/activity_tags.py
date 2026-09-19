@@ -70,3 +70,35 @@ def star_counts(versions):
         .values_list("version_id", "count")
     )
     return dict(rows)
+
+
+@register.inclusion_tag("activity/profile_activity.html", takes_context=True)
+def profile_activity(context, contributor):
+    """Contributions of a person that the reader may see, and their calendar of activity."""
+    from phraseology.models import Unit
+    from translations.models import TranslationVersion
+
+    from ..feeds import activity_calendar, contributor_feed
+
+    user = context.get("user")
+    versions = list(
+        TranslationVersion.objects.written_by(contributor)
+        .filter(state=TranslationVersion.State.PUBLISHED, is_hidden=False)
+        .select_related("project", "author")
+        .order_by("-published_at")[:20]
+    )
+    stars = star_counts(versions)
+    for version in versions:
+        version.star_count = stars.get(version.pk, 0)
+    units = Unit.objects.filter(created_by=contributor, is_hidden=False).exclude(
+        status=Unit.Status.DRAFT
+    )
+    return {
+        "user": user,
+        "contributor": contributor,
+        "versions": versions,
+        "unit_count": units.count(),
+        "units": units.order_by("-pk")[:10],
+        "events": contributor_feed(user, contributor),
+        "calendar": activity_calendar(contributor),
+    }
