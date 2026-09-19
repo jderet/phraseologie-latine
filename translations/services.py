@@ -26,6 +26,7 @@ from .models import (
     TranslationProject,
     TranslationVersion,
     VersionStep,
+    is_maintainer,
     is_version_writer,
     version_writer_ids,
 )
@@ -474,14 +475,23 @@ def _carry_working_texts(removed_ids, carrier, editor):
         save_with_revision(translated, editor, comment=gettext("Texte source changé"))
 
 
+@transaction.atomic
 def create_project(project, author):
+    """Create a project and its main version, a draft written by its creator."""
     project.created_by = author
     save_with_revision(project, author)
+    main = create_version(
+        TranslationVersion(project=project, variant_status=TranslationVersion.VariantStatus.MAIN),
+        author,
+    )
+    TranslationProject.objects.filter(pk=project.pk).update(main_version=main)
+    project.main_version = main
     auto_follow(author, project)
     return project
 
 
 def create_version(version, author):
+    """Create a version: the main version of a new project, or a variant (open by default)."""
     version.author = author
     version.state = TranslationVersion.State.DRAFT
     save_with_revision(version, author)
@@ -557,6 +567,9 @@ def create_proposal(proposal, author, texts):
     step = public_step(version)
     if step is None or not can_propose(author, version):
         raise PermissionDenied
+    variant = proposal.from_version
+    if variant is not None:
+        _check_variant_proposal(variant, version, author)
     frozen = step_sentences(step)
     changed = []
     for segment, text in sorted(texts.items(), key=lambda item: item[0].position):
@@ -626,7 +639,78 @@ def decide_sentence(proposed, user, accept):
         proposal.closed_at = timezone.now()
         save_with_revision(proposal, user, comment=gettext("Proposition close"))
         record(user, Verb.PROPOSAL_CLOSED, proposal, recipients=[proposal.author_id])
+        if proposal.from_version_id is not None:
+            _close_variant(proposal, user)
     return proposed
+
+
+def _check_variant_proposal(variant, main, author):
+    """A variant sends its sentences to the main version of its project, one proposal at a time,
+    from its writers."""
+    if (
+        not variant.is_open_variant
+        or variant.project_id != main.project_id
+        or not main.is_main
+        or not is_version_writer(author, variant)
+    ):
+        raise PermissionDenied
+    if variant.sent_proposals.filter(status=ChangeProposal.Status.OPEN).exists():
+        raise ValidationError(
+            gettext("Une proposition de cette variante attend déjà une décision."),
+            code="already_open",
+        )
+
+
+def _close_variant(proposal, user):
+    """Once its proposal is decided, a variant is merged if a sentence was accepted, set aside
+    otherwise; it is no longer written."""
+    variant = TranslationVersion.objects.select_for_update().get(pk=proposal.from_version_id)
+    if not variant.is_open_variant:
+        return
+    accepted = proposal.sentences.filter(decision=ProposedSentence.Decision.ACCEPTED).exists()
+    variant.variant_status = (
+        TranslationVersion.VariantStatus.MERGED
+        if accepted
+        else TranslationVersion.VariantStatus.SET_ASIDE
+    )
+    variant.closed_at = timezone.now()
+    save_with_revision(variant, user, comment=variant.get_variant_status_display())
+
+
+@transaction.atomic
+def set_aside_variant(variant, user, reason):
+    """The maintainers set an open variant aside, with a reason, without a proposal.
+
+    Its open proposal, if any, is closed with it. Return the revision.
+    """
+    variant = TranslationVersion.objects.select_for_update().get(pk=variant.pk)
+    if not variant.is_open_variant or not is_maintainer(user, variant.project):
+        raise PermissionDenied
+    reason = normalize_sentence(reason)
+    if not reason:
+        raise ValidationError(
+            gettext("Expliquez pourquoi cette variante est écartée."), code="no_reason"
+        )
+    now = timezone.now()
+    for proposal in variant.sent_proposals.filter(status=ChangeProposal.Status.OPEN):
+        for proposed in proposal.sentences.filter(decision=ProposedSentence.Decision.PENDING):
+            proposed.decision = ProposedSentence.Decision.REFUSED
+            proposed.decided_at = now
+            save_with_revision(proposed, user, comment=proposed.get_decision_display())
+        proposal.status = ChangeProposal.Status.CLOSED
+        proposal.closed_at = now
+        save_with_revision(proposal, user, comment=gettext("Variante écartée"))
+    variant.variant_status = TranslationVersion.VariantStatus.SET_ASIDE
+    variant.closed_at = now
+    revision = save_with_revision(variant, user, comment=reason)
+    record(
+        user,
+        Verb.VARIANT_SET_ASIDE,
+        variant,
+        recipients=version_writer_ids(variant),
+        mention_text=reason,
+    )
+    return revision
 
 
 @transaction.atomic
@@ -650,9 +734,9 @@ def withdraw_proposal(proposal, user):
 
 @transaction.atomic
 def copy_version(step, version, author):
-    """Start one's own draft version from a public step of a published version, like a fork.
+    """Start a variant, a draft, from a public step of the main version, like a fork.
 
-    ``version`` carries the declared style. Each copied sentence stays credited to whoever
+    Each copied sentence stays credited to whoever
     wrote it, until the new author rewrites it; justifications are not copied. The Latin of
     the step is carried to the current source text.
     """
@@ -679,9 +763,8 @@ def copy_version(step, version, author):
             written_by_id=None if writer_id == author.pk else writer_id,
         )
         save_with_revision(translated, author)
-    message = gettext("Copie de la version de %(author)s, étape %(number)d") % {
-        "author": source.author.public_name,
-        "number": step.number,
+    message = gettext("Variante partie de la traduction principale, étape %(number)d") % {
+        "number": step.number
     }
     _record_step(version, author, message, history.source_text)
     return version
@@ -780,26 +863,6 @@ def create_step(version, author, message):
     step = _record_step(version, author, message, source)
     record(author, Verb.STEP_CREATED, step, recipients=version_writer_ids(version))
     return step
-
-
-@transaction.atomic
-def set_reference_version(project, version, user):
-    """The creator of a project chooses its reference version among published ones (T6).
-
-    ``version`` None removes the reference. Return None when nothing changed.
-    """
-    project = TranslationProject.objects.select_for_update().get(pk=project.pk)
-    if user.pk != project.created_by_id:
-        raise PermissionDenied
-    if version is not None and (
-        version.project_id != project.pk or not version.is_published or version.is_hidden
-    ):
-        raise ValidationError(
-            gettext("La version de référence doit être une version publiée de ce projet."),
-            code="invalid_reference",
-        )
-    project.reference_version = version
-    return save_with_revision(project, user, comment=gettext("Choix de la version de référence"))
 
 
 @transaction.atomic

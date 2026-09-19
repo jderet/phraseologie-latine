@@ -5,7 +5,7 @@
 
 {% block content %}
 <article>
-  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a></p>
   <h1>{% blocktranslate with number=step.number %}Étape {{ number }}{% endblocktranslate %}</h1>
   {% if step.label %}<p><span class="badge edition-badge">{{ step.label }}</span></p>{% endif %}
   <p class="lede">{{ step.message }}</p>

@@ -2,6 +2,8 @@ import xml.etree.ElementTree as ET
 
 from django.urls import reverse
 
+from accounts.roles import CONTRIBUTOR
+from accounts.tests.factories import make_user
 from activity.models import Star
 from translations import glossary, members, topics
 from translations.models import GlossaryEntry, Topic
@@ -21,9 +23,11 @@ class OpenDataTests(TranslationTestCase):
             GlossaryEntry(project=self.project, source_term="maison", latin_term="domus"),
             self.author,
         )
+        # Proposed by someone who is not a maintainer: it waits for a decision.
+        passer_by = make_user(email="passer-by@example.org", role=CONTRIBUTOR, is_confirmed=True)
         glossary.propose_term(
             GlossaryEntry(project=self.project, source_term="pluie", latin_term="imber"),
-            self.other,
+            passer_by,
         )
         topics.open_topic(Topic(project=self.project, title="Temps", body="?"), self.other)
 

@@ -6,7 +6,7 @@
   <li>
     <p class="concordance-source" lang="{{ result.segment.source_text.language }}">{% if result.source_marked %}{{ result.source_marked }}{% else %}{{ result.segment.text }}{% endif %}</p>
     <p class="concordance-latin" lang="la">{% if result.latin_marked %}{{ result.latin_marked }}{% else %}{{ result.latin }}{% endif %}</p>
-    <p class="muted concordance-meta"><a href="{{ result.step.get_absolute_url }}">{{ result.version.project.title }}</a> · {{ result.version.author.public_name }} · {{ result.version.get_style_display }}{% if result.latin %} · <button type="button" class="link-button" data-use-latin="{{ result.latin }}" data-mode="insert">{% translate "Insérer à la sélection" %}</button>{% endif %}</p>
+    <p class="muted concordance-meta"><a href="{{ result.step.get_absolute_url }}">{{ result.version.project.title }}</a> · {{ result.version.author.public_name }} · {{ result.version.project.get_style_display }}{% if result.latin %} · <button type="button" class="link-button" data-use-latin="{{ result.latin }}" data-mode="insert">{% translate "Insérer à la sélection" %}</button>{% endif %}</p>
   </li>
   {% endfor %}
 </ul>

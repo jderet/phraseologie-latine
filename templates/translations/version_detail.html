@@ -6,11 +6,21 @@
 {% block content %}
 <article>
   <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
-  <h1>{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</h1>
+  <h1>{{ version.display_name }}</h1>
   <div class="page-actions">{% star_button version %}{% follow_button version %}</div>
-  {% if is_reference %}<p><span class="badge reference-badge">{% translate "version de référence" %}</span></p>{% endif %}
+  <p><span class="badge variant-badge variant-{{ version.variant_status|default:'main' }}">{{ version.get_variant_status_display }}</span>{% if version.is_closed %} <span class="muted">{% blocktranslate with date=version.closed_at|date:"j F Y" %}le {{ date }}{% endblocktranslate %}</span>{% endif %}</p>
   {% if version.is_draft %}
-  <p class="notice notice-info">{% if members %}{% translate "Brouillon : cette version n’est visible que de son auteur et de ses co-auteurs." %}{% else %}{% translate "Brouillon : cette version n’est visible que de vous." %}{% endif %}</p>
+  <p class="notice notice-info">{% if version.is_main %}{% translate "Brouillon : la traduction n’est visible que de ses mainteneurs jusqu’à sa publication." %}{% elif members %}{% translate "Brouillon : cette variante n’est visible que de son auteur et de ses co-auteurs." %}{% else %}{% translate "Brouillon : cette variante n’est visible que de vous." %}{% endif %}</p>
+  {% endif %}
+  {% if version.is_open_variant and can_translate and version.copied_from %}
+  <p class="notice notice-info">{% if open_sent_proposal %}{% blocktranslate trimmed %}
+    Votre proposition attend la décision des mainteneurs : ils acceptent ou refusent chaque phrase, puis la variante est close.
+  {% endblocktranslate %} <a href="{{ open_sent_proposal.get_absolute_url }}">{% translate "Voir la proposition" %}</a>{% else %}{% blocktranslate trimmed %}
+    Une variante propose d’autres phrases pour la traduction principale. Quand elle est prête, envoyez-la aux mainteneurs : ils acceptent ou refusent chaque phrase, puis la variante est close.
+  {% endblocktranslate %} <a href="{% url 'translations:propose_to_original' version.pk %}">{% translate "Envoyer la variante" %}</a>{% endif %}</p>
+  {% endif %}
+  {% if version.is_closed %}
+  <p class="notice">{% translate "Cette variante est close : elle se lit toujours, mais ne s’écrit plus. Pour proposer d’autres phrases, partez de nouveau de la traduction principale." %}</p>
   {% endif %}
   {% if version.is_hidden %}
   <p class="notice">{% translate "Ce contenu est masqué à la suite d’un signalement." %}</p>
@@ -30,8 +40,8 @@
 
   <dl class="facts">
     <div>
-      <dt>{% translate "Style déclaré" %}</dt>
-      <dd>{{ version.get_style_display|capfirst }}{% if version.style_note %} ({{ version.style_note }}){% endif %}</dd>
+      <dt>{% translate "Style du projet" %}</dt>
+      <dd>{{ version.project.get_style_display|capfirst }}{% if version.project.style_note %} ({{ version.project.style_note }}){% endif %}</dd>
     </div>
     <div>
       <dt>{% translate "État" %}</dt>
@@ -39,14 +49,14 @@
     </div>
     {% if members or can_manage %}
     <div>
-      <dt>{% translate "Co-auteurs" %}</dt>
+      <dt>{% if version.is_main %}{% translate "Mainteneurs" %}{% else %}{% translate "Co-auteurs" %}{% endif %}</dt>
       <dd>{% for member in members %}<a href="{{ member.user.get_absolute_url }}">{{ member.user.public_name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}{% translate "aucun" %}{% endfor %}{% if can_manage or is_author %} · <a href="{% url 'translations:version_members' version.pk %}">{% if can_manage %}{% translate "inviter ou retirer" %}{% else %}{% translate "voir" %}{% endif %}</a>{% endif %}</dd>
     </div>
     {% endif %}
     {% if version.copied_from %}
     <div>
       <dt>{% translate "Origine" %}</dt>
-      <dd><a href="{{ version.copied_from.get_absolute_url }}">{% blocktranslate with name=version.copied_from.version.author.public_name number=version.copied_from.number %}copiée de la version de {{ name }}, étape {{ number }}{% endblocktranslate %}</a>{% if can_translate %} · <a href="{% url 'translations:sync_copy' version.pk %}">{% translate "mettre à jour depuis l’originale" %}</a> · <a href="{% url 'translations:propose_to_original' version.pk %}">{% translate "proposer mes changements à l’originale" %}</a>{% endif %}</dd>
+      <dd><a href="{{ version.copied_from.get_absolute_url }}">{% blocktranslate with number=version.copied_from.number %}partie de la traduction principale, étape {{ number }}{% endblocktranslate %}</a>{% if can_translate %} · <a href="{% url 'translations:sync_copy' version.pk %}">{% translate "mettre à jour depuis la traduction principale" %}</a>{% endif %}</dd>
     </div>
     {% endif %}
     <div>
@@ -73,20 +83,19 @@
   <div class="version-actions">
     {% if can_translate %}<a class="button" href="{% url 'translations:version_edit' version.pk %}">{% translate "Traduire" %}</a>{% endif %}
     {% if version.is_draft and can_manage %}<a class="button button-quiet" href="{% url 'translations:version_publish' version.pk %}">{% translate "Publier" %}</a>{% endif %}
-    {% if copy_step %}<a class="button button-quiet" href="{% url 'translations:version_copy' version.pk copy_step.number %}" title="{% translate 'pour rédiger votre propre version à partir de son texte' %}">{% translate "Partir de cette version" %}</a>{% endif %}
+    {% if copy_step %}<a class="button button-quiet" href="{% url 'translations:version_copy' version.pk copy_step.number %}" title="{% translate 'pour proposer d’autres phrases à partir de son texte' %}">{% translate "Proposer une variante" %}</a>{% endif %}
     {% if can_propose %}<a class="button button-quiet" href="{% url 'translations:proposal_create' version.pk %}">{% translate "Proposer des modifications" %}</a>{% endif %}
     {% if open_proposal_count %}<a href="{% url 'translations:proposal_list' version.pk %}">{% blocktranslate count counter=open_proposal_count %}{{ counter }} proposition ouverte{% plural %}{{ counter }} propositions ouvertes{% endblocktranslate %}</a>{% endif %}
     <details class="toolbar-menu more-menu">
       <summary>{% translate "Plus" %}</summary>
       <ul class="menu-list">
         {% if can_translate %}<li><a href="{% url 'translations:step_create' version.pk %}">{% translate "Créer une étape" %}</a></li>{% endif %}
-        {% if can_manage %}<li><a href="{% url 'translations:version_settings' version.pk %}">{% translate "Modifier le style" %}</a></li>{% endif %}
         <li><a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a></li>
-        {% if version.is_published %}<li><a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer les versions" %}</a></li>{% endif %}
+        {% if version.is_published %}<li><a href="{% url 'translations:project_compare' project.pk %}">{% translate "Comparer avec les variantes" %}</a></li>{% endif %}
         <li><a href="{% url 'translations:proposal_list' version.pk %}">{% translate "Propositions de modifications" %}</a></li>
         <li><a href="{% url 'translations:version_comments' version.pk %}">{% translate "Commentaires des phrases" %}</a></li>
         <li><a href="{% url 'translations:version_blame' version.pk %}">{% translate "Qui a écrit quoi" %}</a></li>
-        <li><a href="{% url 'translations:version_network' version.pk %}">{% translate "Réseau des copies" %}</a></li>
+        <li><a href="{% url 'translations:version_network' version.pk %}">{% translate "Variantes et écarts" %}</a></li>
         <li><a href="{% url 'translations:version_stats' version.pk %}">{% translate "Statistiques" %}</a></li>
         <li class="menu-separator">{% translate "Exporter :" %}</li>
         <li><a href="{% url 'translations:version_export_text' version.pk %}">{% translate "texte bilingue" %}</a></li>
@@ -97,6 +106,16 @@
       </ul>
     </details>
   </div>
+  {% if can_set_aside %}
+  <details class="set-aside">
+    <summary>{% translate "Écarter cette variante" %}</summary>
+    <form method="post" action="{% url 'translations:variant_set_aside' version.pk %}" class="form">
+      {% csrf_token %}
+      {{ set_aside_form }}
+      <button type="submit" class="button button-quiet">{% translate "Écarter la variante" %}</button>
+    </form>
+  </details>
+  {% endif %}
   {% moderation_links version %}
 
   <h2>{% translate "Texte et traduction" %}</h2>

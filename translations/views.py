@@ -35,10 +35,10 @@ from .forms import (
     ProposalForm,
     ProposalReviewForm,
     PublishForm,
-    ReferenceForm,
     SentenceEditForm,
     SentenceInsertForm,
     SentenceSplitForm,
+    SetAsideForm,
     SourceProposalForm,
     SourceStateForm,
     SourceTextEditForm,
@@ -46,17 +46,18 @@ from .forms import (
     StepForm,
     StepLabelForm,
     TranslationTextForm,
-    VersionForm,
 )
 from .glossary import find_terms, marked_text, visible_terms
 from .members import active_members
 from .models import (
     ChangeProposal,
     ProposedSentence,
+    Segment,
     SourceProposal,
     SourceText,
     TranslationProject,
     TranslationVersion,
+    is_maintainer,
     is_version_writer,
 )
 from .permissions import (
@@ -80,14 +81,13 @@ from .services import (
     create_proposal,
     create_source_text,
     create_step,
-    create_version,
     decide_sentence,
     publish_version,
     rebase_source_proposal,
     refuse_source_proposal,
     save_translation,
     send_source_proposal,
-    set_reference_version,
+    set_aside_variant,
     undo_proposal_operation,
     withdraw_proposal,
     withdraw_source_proposal,
@@ -145,14 +145,101 @@ def _saved_message(request, revision):
 # Source texts
 
 
+# Orders of the texts on the page « Traduction »: newest, latest public activity of a project,
+# most stars on the published versions of their projects.
+TEXT_ORDERS = {
+    "recents": ("-created_at", "-pk"),
+    "activite": (F("last_activity").desc(nulls_last=True), "-created_at", "-pk"),
+    "etoiles": ("-star_count", "-created_at", "-pk"),
+}
+
+
 def source_list(request):
+    """The page « Traduction »: each text with its projects and the progress of their
+    translation (choice of 19 September 2026)."""
+    order = request.GET.get("tri") if request.GET.get("tri") in TEXT_ORDERS else "recents"
+    last_event = (
+        Event.objects.filter(project__source_text=OuterRef("pk"), is_public=True)
+        .order_by("-created_at")
+        .values("created_at")[:1]
+    )
+    stars = (
+        Star.objects.filter(
+            version__project__source_text=OuterRef("pk"),
+            version__project__is_hidden=False,
+            version__state=TranslationVersion.State.PUBLISHED,
+            version__is_hidden=False,
+        )
+        .order_by()
+        .values("version__project__source_text")
+        .annotate(total=Count("pk"))
+        .values("total")
+    )
     texts = (
         SourceText.objects.filter(is_hidden=False)
         .select_related("added_by")
-        .annotate(segment_count=Count("segments", filter=Q(segments__removed_in__isnull=True)))
-        .order_by("-created_at", "-pk")
+        .annotate(
+            segment_count=Count("segments", filter=Q(segments__removed_in__isnull=True)),
+            last_activity=Subquery(last_event),
+            star_count=Coalesce(Subquery(stars), 0),
+        )
+        .order_by(*TEXT_ORDERS[order])
     )
-    return render(request, "translations/source_list.html", {"page": _paginate(request, texts)})
+    page = _paginate(request, texts)
+    projects = _project_summaries(
+        request.user,
+        TranslationProject.objects.filter(is_hidden=False, source_text__in=list(page)),
+    )
+    by_text = defaultdict(list)
+    for project in projects:
+        by_text[project.source_text_id].append(project)
+    for text in page:
+        text.project_list = by_text.get(text.pk, [])
+    return render(request, "translations/source_list.html", {"page": page, "order": order})
+
+
+def _project_summaries(user, projects):
+    """Projects with the progress of their main version, as the user sees it, and the number
+    of open variants the user may see."""
+    projects = list(
+        projects.select_related("main_version__author", "source_text").order_by("created_at", "pk")
+    )
+    variants = dict(
+        TranslationVersion.objects.visible_to(user)
+        .filter(
+            project__in=projects,
+            variant_status=TranslationVersion.VariantStatus.OPEN,
+            is_hidden=False,
+        )
+        .order_by()
+        .values("project")
+        .annotate(total=Count("pk", distinct=True))
+        .values_list("project", "total")
+    )
+    counts = dict(
+        Segment.objects.current()
+        .filter(source_text__in={project.source_text_id for project in projects})
+        .order_by()
+        .values("source_text")
+        .annotate(total=Count("pk"))
+        .values_list("source_text", "total")
+    )
+    for project in projects:
+        main = project.main_version
+        project.segment_count = counts.get(project.source_text_id, 0)
+        project.open_variant_count = variants.get(project.pk, 0)
+        project.main_visible = main is not None and can_view(user, main)
+        project.translated_count = 0
+        if project.main_visible:
+            main.project = project
+            _step, sentences = shown_sentences(user, main)
+            project.translated_count = sum(1 for sentence in sentences.values() if sentence.text)
+        project.percent = (
+            round(100 * project.translated_count / project.segment_count)
+            if project.segment_count
+            else 0
+        )
+    return projects
 
 
 def source_detail(request, pk):
@@ -163,7 +250,7 @@ def source_detail(request, pk):
         {
             "source": source,
             "segments": source.segments.current(),
-            "projects": source.projects.filter(is_hidden=False).select_related("created_by"),
+            "projects": _project_summaries(request.user, source.projects.filter(is_hidden=False)),
             "can_edit": can_edit(request.user, source),
             "can_change": can_change_source(request.user, source),
             "may_propose": can_propose_source(request.user, source),
@@ -602,48 +689,9 @@ def source_proposal_act(request, pk, action):
 # Projects
 
 
-# Orders of the list of projects: newest, most starred, latest public activity.
-PROJECT_ORDERS = {
-    "recents": ("-created_at", "-pk"),
-    "etoiles": ("-star_count", "-created_at", "-pk"),
-    "activite": (F("last_activity").desc(nulls_last=True), "-created_at", "-pk"),
-}
-
-
 def project_list(request):
-    published = Q(versions__state=TranslationVersion.State.PUBLISHED, versions__is_hidden=False)
-    order = request.GET.get("tri") if request.GET.get("tri") in PROJECT_ORDERS else "recents"
-    stars = (
-        Star.objects.filter(
-            version__project=OuterRef("pk"),
-            version__state=TranslationVersion.State.PUBLISHED,
-            version__is_hidden=False,
-        )
-        .order_by()
-        .values("version__project")
-        .annotate(total=Count("pk"))
-        .values("total")
-    )
-    last_event = (
-        Event.objects.filter(project=OuterRef("pk"), is_public=True)
-        .order_by("-created_at")
-        .values("created_at")[:1]
-    )
-    projects = (
-        TranslationProject.objects.filter(is_hidden=False, source_text__is_hidden=False)
-        .select_related("source_text", "created_by")
-        .annotate(
-            published_count=Count("versions", filter=published, distinct=True),
-            star_count=Coalesce(Subquery(stars), 0),
-            last_activity=Subquery(last_event),
-        )
-        .order_by(*PROJECT_ORDERS[order])
-    )
-    return render(
-        request,
-        "translations/project_list.html",
-        {"page": _paginate(request, projects), "order": order},
-    )
+    """The projects are shown with their text, on the page « Traduction »."""
+    return redirect("translations:source_list", permanent=True)
 
 
 @login_required
@@ -656,43 +704,78 @@ def project_create(request, source_pk):
         project.source_text = source
         project, saved = _contribute(request, create_project, project, request.user)
         if saved:
-            messages.success(request, _("Le projet est créé."))
-            return redirect(project)
+            messages.success(
+                request,
+                _("Le projet est créé : sa traduction reste un brouillon jusqu’à sa publication."),
+            )
+            return redirect("translations:version_edit", project.main_version.pk)
     return render(request, "translations/project_form.html", {"form": form, "source": source})
 
 
 def project_detail(request, pk):
+    """The translation of the project, its maintainers and its variants."""
+    user = request.user
     project = _visible(
-        request.user, TranslationProject.objects.select_related("source_text", "created_by"), pk
+        user, TranslationProject.objects.select_related("source_text", "created_by"), pk
     )
-    versions = list(
-        project.versions.visible_to(request.user).select_related(
-            "author", "copied_from__version__author"
+    [summary] = _project_summaries(user, TranslationProject.objects.filter(pk=project.pk))
+    main = summary.main_version if summary.main_visible else None
+    variants = list(
+        project.versions.visible_to(user)
+        .exclude(variant_status=TranslationVersion.VariantStatus.MAIN)
+        .select_related("author", "copied_from__version__author")
+        .prefetch_related(
+            Prefetch(
+                "sent_proposals",
+                queryset=ChangeProposal.objects.filter(
+                    status=ChangeProposal.Status.OPEN, is_hidden=False
+                ),
+                to_attr="open_proposals",
+            )
         )
+        .order_by("-created_at", "-pk")
     )
-    stars = star_counts(versions)
-    for version in versions:
-        _step, sentences = shown_sentences(request.user, version)
-        version.translated_count = sum(1 for sentence in sentences.values() if sentence.text)
-        version.star_count = stars.get(version.pk, 0)
-    by_stars = request.GET.get("tri") == "etoiles"
-    if by_stars:
-        versions.sort(key=lambda version: -version.star_count)
+    stars = star_counts(variants)
+    for variant in variants:
+        _step, sentences = shown_sentences(user, variant)
+        variant.translated_count = sum(1 for sentence in sentences.values() if sentence.text)
+        variant.star_count = stars.get(variant.pk, 0)
+    copy_step = None
+    if main is not None and main.is_published:
+        copy_step = public_step(main)
+        if copy_step is not None:
+            copy_step.version = main
+            if not can_copy(user, copy_step):
+                copy_step = None
     return render(
         request,
         "translations/project_detail.html",
         {
             "project": project,
             "source": project.source_text,
-            "segment_count": project.source_text.segments.current().count(),
-            "published": [version for version in versions if version.is_published],
-            "drafts": [version for version in versions if version.is_draft],
-            "can_edit": can_edit(request.user, project),
-            "can_change_source": can_change_source(request.user, project.source_text),
-            "can_propose_source": can_propose_source(request.user, project.source_text),
-            "reference_id": project.reference_version_id,
-            "is_creator": request.user.pk == project.created_by_id,
-            "by_stars": by_stars,
+            "summary": summary,
+            "main": main,
+            "maintainers": (
+                [project.main_version.author, *(m.user for m in active_members(main))]
+                if main is not None
+                else []
+            ),
+            "segment_count": summary.segment_count,
+            "open_variants": [variant for variant in variants if variant.is_open_variant],
+            "closed_variants": [variant for variant in variants if variant.is_closed],
+            "open_proposal_count": (
+                main.proposals.filter(status=ChangeProposal.Status.OPEN, is_hidden=False).count()
+                if main is not None
+                else 0
+            ),
+            "copy_step": copy_step,
+            "can_translate_main": main is not None and can_translate(user, main),
+            "can_publish_main": main is not None and main.is_draft and can_manage(user, main),
+            "can_manage_main": main is not None and can_manage(user, main),
+            "is_maintainer": is_maintainer(user, project),
+            "can_edit": can_edit(user, project),
+            "can_change_source": can_change_source(user, project.source_text),
+            "can_propose_source": can_propose_source(user, project.source_text),
         },
     )
 
@@ -718,28 +801,9 @@ def project_edit(request, pk):
     )
 
 
-@login_required
-@require_POST
-def project_reference(request, pk):
-    project = _visible(request.user, TranslationProject.objects.all(), pk)
-    if request.user.pk != project.created_by_id:
-        raise PermissionDenied
-    form = ReferenceForm(request.POST, project=project)
-    if not form.is_valid():
-        messages.error(request, _("Choisissez une version publiée de ce projet."))
-        return redirect(project)
-    version = form.cleaned_data["version"]
-    if set_reference_version(project, version, request.user) is None:
-        messages.info(request, _("Aucune modification."))
-    elif version is None:
-        messages.success(request, _("Le projet n’a plus de version de référence."))
-    else:
-        messages.success(request, _("La version de référence est choisie."))
-    return redirect(project)
-
-
 def project_compare(request, pk):
-    """The versions of a project aligned sentence by sentence, the reference version first.
+    """The versions of a project aligned sentence by sentence: the main version first, then
+    the open variants, then the closed ones.
 
     Each version shows its latest public step; the author's own versions, their working text.
     The Latin of a step is carried to the current source text.
@@ -748,7 +812,8 @@ def project_compare(request, pk):
     versions = sorted(
         project.versions.visible_to(request.user).select_related("author"),
         key=lambda version: (
-            version.pk != project.reference_version_id,
+            not version.is_main,
+            version.is_closed,
             version.is_draft,
             version.published_at or version.created_at,
         ),
@@ -787,7 +852,7 @@ def project_compare(request, pk):
             "versions": versions,
             "shown": shown,
             "rows": rows,
-            "reference_id": project.reference_version_id,
+            "main_id": project.main_version_id,
         },
     )
 
@@ -960,7 +1025,13 @@ def version_detail(request, pk):
                 if can_view(user, _with_version(edition, version))
             ],
             "members": active_members(version),
-            "is_reference": version.pk == version.project.reference_version_id,
+            "can_set_aside": version.is_open_variant
+            and is_maintainer(user, version.project)
+            and can_view(user, version),
+            "set_aside_form": SetAsideForm(user=user),
+            "open_sent_proposal": version.sent_proposals.filter(
+                status=ChangeProposal.Status.OPEN, is_hidden=False
+            ).first(),
             "can_challenge": step is not None and can_challenge(user, version),
             "copy_step": copy_step if copy_step and can_copy(user, copy_step) else None,
             "can_propose": step is not None and can_propose(user, version),
@@ -972,18 +1043,28 @@ def version_detail(request, pk):
     )
 
 
-@login_required
-@require_http_methods(["GET", "POST"])
 def version_create(request, project_pk):
+    """A project has one main version; other versions are variants, started from it."""
     project = get_object_or_404(TranslationProject, pk=project_pk, is_hidden=False)
-    form = VersionForm(request.POST or None, user=request.user)
-    if request.method == "POST" and form.is_valid():
-        version = form.save(commit=False)
-        version.project = project
-        version, saved = _contribute(request, create_version, version, request.user)
-        if saved:
-            return redirect("translations:version_edit", version.pk)
-    return render(request, "translations/version_form.html", {"form": form, "project": project})
+    return redirect(project)
+
+
+@login_required
+@require_POST
+def variant_set_aside(request, pk):
+    """The maintainers set an open variant aside, with a reason."""
+    version = _version(request.user, pk)
+    form = SetAsideForm(request.POST, user=request.user)
+    if not form.is_valid():
+        messages.error(request, _("Expliquez pourquoi cette variante est écartée."))
+        return redirect(version)
+    try:
+        set_aside_variant(version, request.user, form.cleaned_data["reason"])
+    except ValidationError as error:
+        messages.error(request, " ".join(error.messages))
+        return redirect(version)
+    messages.success(request, _("La variante est écartée."))
+    return redirect(version.project)
 
 
 @login_required
@@ -1207,21 +1288,6 @@ def translation_save(request, pk, segment_pk):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-def version_settings(request, pk):
-    version = _managed_version(request.user, pk)
-    form = VersionForm(request.POST or None, instance=version, user=request.user)
-    if request.method == "POST" and form.is_valid():
-        _saved_message(request, save_with_revision(form.save(commit=False), request.user))
-        return redirect(version)
-    return render(
-        request,
-        "translations/version_form.html",
-        {"form": form, "project": version.project, "version": version},
-    )
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
 def version_publish(request, pk):
     version = _managed_version(request.user, pk)
     if version.is_published:
@@ -1333,30 +1399,25 @@ def step_detail(request, pk, number):
 @login_required
 @require_http_methods(["GET", "POST"])
 def version_copy(request, pk, number):
-    """Start one's own draft version from a public step of a published version."""
+    """Start a variant, a private draft, from a public step of the main version."""
     source = _version(request.user, pk)
     step = get_object_or_404(source.steps, number=number)
     step.version = source
     if not can_copy(request.user, step):
         raise Http404
-    form = VersionForm(
-        request.POST or None,
-        user=request.user,
-        initial={"style": source.style, "style_note": source.style_note},
-    )
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST":
         version, saved = _contribute(
-            request, copy_version, step, form.save(commit=False), request.user
+            request, copy_version, step, TranslationVersion(), request.user
         )
         if saved:
             messages.success(
-                request, _("La copie est créée : c’est votre brouillon, visible de vous seul.")
+                request, _("La variante est créée : c’est votre brouillon, visible de vous seul.")
             )
             return redirect("translations:version_edit", version.pk)
     return render(
         request,
         "translations/version_copy.html",
-        {"form": form, "source": source, "step": step, "project": source.project},
+        {"source": source, "step": step, "project": source.project},
     )
 
 

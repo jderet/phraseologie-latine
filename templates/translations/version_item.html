@@ -1,16 +1,4 @@
 {% load i18n %}<li>
-  <span><a class="item-title" href="{{ version.get_absolute_url }}">{{ version.author.public_name }}</a>{% if version.pk == reference_id %} <span class="badge reference-badge">{% translate "version de référence" %}</span>{% endif %}</span>
-  <span class="muted">{{ version.get_style_display|capfirst }}{% if version.style_note %} ({{ version.style_note }}){% endif %} · {% blocktranslate with done=version.translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{% if version.published_at %} · {% blocktranslate with date=version.published_at|date:"j F Y" %}publiée le {{ date }}{% endblocktranslate %}{% endif %}{% if version.copied_from %} · {% blocktranslate with name=version.copied_from.version.author.public_name %}copiée de la version de {{ name }}{% endblocktranslate %}{% endif %}{% if version.star_count %} · <span aria-hidden="true">★</span> {% blocktranslate count counter=version.star_count %}{{ counter }} étoile{% plural %}{{ counter }} étoiles{% endblocktranslate %}{% endif %}{% if version.is_hidden %} · {% translate "masquée" %}{% endif %}</span>
-  {% if is_creator and version.is_published and not version.is_hidden %}
-  <form method="post" action="{% url 'translations:project_reference' project.pk %}" class="inline-form">
-    {% csrf_token %}
-    {% if version.pk == reference_id %}
-    <input type="hidden" name="version" value="">
-    <button type="submit" class="link-button">{% translate "Retirer le statut de référence" %}</button>
-    {% else %}
-    <input type="hidden" name="version" value="{{ version.pk }}">
-    <button type="submit" class="link-button">{% translate "Choisir comme version de référence" %}</button>
-    {% endif %}
-  </form>
-  {% endif %}
+  <span><a class="item-title" href="{{ version.get_absolute_url }}">{{ version.display_name }}</a> <span class="badge variant-badge variant-{{ version.variant_status|default:'main' }}">{{ version.get_variant_status_display }}</span></span>
+  <span class="muted">{% blocktranslate with done=version.translated_count total=segment_count %}phrases traduites : {{ done }} sur {{ total }}{% endblocktranslate %}{% if version.is_draft %} · {% translate "brouillon" %}{% elif version.published_at %} · {% blocktranslate with date=version.published_at|date:"j F Y" %}publiée le {{ date }}{% endblocktranslate %}{% endif %}{% if version.closed_at %} · {% blocktranslate with date=version.closed_at|date:"j F Y" %}close le {{ date }}{% endblocktranslate %}{% endif %}{% if version.star_count %} · <span aria-hidden="true">★</span> {% blocktranslate count counter=version.star_count %}{{ counter }} étoile{% plural %}{{ counter }} étoiles{% endblocktranslate %}{% endif %}{% if version.is_hidden %} · {% translate "masquée" %}{% endif %}{% for proposal in version.open_proposals %} · <a href="{{ proposal.get_absolute_url }}">{% translate "proposition à trancher" %}</a>{% endfor %}</span>
 </li>

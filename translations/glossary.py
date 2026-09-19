@@ -1,6 +1,6 @@
 """Glossary of a project: agreed renderings of source terms, found and marked in the sentences.
 
-Any active account proposes a term; the creator of the project or a reviewer adopts or rejects
+Any active account proposes a term; the maintainers of the project or a reviewer adopt or reject
 it. Terms are matched as whole words, whatever the case and the accents."""
 
 import re
@@ -16,7 +16,7 @@ from accounts.roles import is_reviewer
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
-from .models import GlossaryEntry
+from .models import GlossaryEntry, is_maintainer
 
 
 def can_propose_term(user, project):
@@ -27,12 +27,12 @@ def can_decide_term(user, project):
     return (
         user.is_authenticated
         and user.is_active
-        and (user.pk == project.created_by_id or is_reviewer(user))
+        and (is_maintainer(user, project) or is_reviewer(user))
     )
 
 
 def can_change_term(user, entry):
-    """The creator of the project and reviewers change any term; its author, until decided."""
+    """The maintainers of the project and reviewers change any term; its author, until decided."""
     if can_decide_term(user, entry.project):
         return True
     return (

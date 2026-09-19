@@ -51,7 +51,7 @@ def sync_copy(request, pk):
     """What the original changed since the copy, to take sentence by sentence."""
     version = _own_version(request.user, pk)
     if version.copied_from_id is None:
-        messages.info(request, _("Cette version n’est pas une copie."))
+        messages.info(request, _("Cette variante n’est pas partie de la traduction principale."))
         return redirect(version)
     latest, changes = upstream_changes(request.user, version)
     if request.method == "POST":
@@ -60,8 +60,8 @@ def sync_copy(request, pk):
         messages.success(
             request,
             ngettext(
-                "%(count)d phrase reprise de l’originale.",
-                "%(count)d phrases reprises de l’originale.",
+                "%(count)d phrase reprise de la traduction principale.",
+                "%(count)d phrases reprises de la traduction principale.",
                 taken,
             )
             % {"count": taken},
@@ -88,11 +88,11 @@ def propose_to_original(request, pk):
     user = request.user
     version = _own_version(user, pk)
     if version.copied_from_id is None:
-        messages.info(request, _("Cette version n’est pas une copie."))
+        messages.info(request, _("Cette variante n’est pas partie de la traduction principale."))
         return redirect(version)
     original = version.copied_from.version
     if not can_propose(user, original) or not can_view(user, original):
-        messages.error(request, _("Vous ne pouvez pas proposer de modifications à l’originale."))
+        messages.error(request, _("Vous ne pouvez pas envoyer cette variante."))
         return redirect(version)
     step, rows = differences_with_original(user, version)
     form = ProposalForm(request.POST or None, user=user)
@@ -103,15 +103,15 @@ def propose_to_original(request, pk):
         }
         proposal = form.save(commit=False)
         proposal.version = original
+        if version.is_open_variant and original.is_main:
+            proposal.from_version = version
         try:
             proposal, saved = _contribute(request, create_proposal, proposal, user, texts)
         except ValidationError as error:
             form.add_error(None, error)
         else:
             if saved:
-                messages.success(
-                    request, _("La proposition est envoyée à l’auteur de l’originale.")
-                )
+                messages.success(request, _("La proposition est envoyée aux mainteneurs."))
                 return redirect(proposal)
     return render(
         request,

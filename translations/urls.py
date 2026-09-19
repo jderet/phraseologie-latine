@@ -86,7 +86,6 @@ urlpatterns = [
     path("traduction/concordance/", workshop_views.concordance, name="concordance"),
     path("traduction/aide/", workshop_views.help_page, name="help"),
     path("traduction/premiers-pas/", workshop_views.hide_first_steps, name="hide_first_steps"),
-    path("projets/<int:pk>/reference/", views.project_reference, name="project_reference"),
     path(
         "projets/<int:project_pk>/nouvelle-version/",
         views.version_create,
@@ -183,7 +182,7 @@ urlpatterns = [
         views.proposed_sentence_decide,
         name="proposed_sentence_decide",
     ),
-    path("versions/<int:pk>/style/", views.version_settings, name="version_settings"),
+    path("versions/<int:pk>/ecarter/", views.variant_set_aside, name="variant_set_aside"),
     path("versions/<int:pk>/co-auteurs/", workshop_views.version_members, name="version_members"),
     path("co-auteurs/<int:pk>/repondre/", workshop_views.member_answer, name="member_answer"),
     path("co-auteurs/<int:pk>/retirer/", workshop_views.member_remove, name="member_remove"),

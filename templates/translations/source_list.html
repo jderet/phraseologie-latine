@@ -1,25 +1,41 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% translate "Textes à traduire" %} · {{ block.super }}{% endblock %}
+{% block title %}{% translate "Traduction" %} · {{ block.super }}{% endblock %}
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Traduction" %}</a></p>
-  <h1>{% translate "Textes à traduire" %}</h1>
+  <h1>{% translate "Traduction" %}</h1>
   <p class="lede">{% blocktranslate trimmed %}
-    Textes en langue moderne, du domaine public ou sous licence libre, découpés en phrases.
-    Chaque texte peut faire l’objet de projets de traduction vers le latin.
+    Des textes en langue moderne, du domaine public ou sous licence libre, découpés en phrases.
+    Chaque texte peut être traduit en latin par un ou plusieurs projets ; un projet vise une seule
+    traduction, dans un style commun, que ses mainteneurs écrivent et que chacun peut enrichir
+    par des variantes.
   {% endblocktranslate %}</p>
-  {% if user.is_authenticated %}
-  <p class="actions"><a class="button" href="{% url 'translations:source_create' %}">{% translate "Ajouter un texte" %}</a></p>
-  {% endif %}
+  <p class="actions">{% if user.is_authenticated %}<a class="button" href="{% url 'translations:source_create' %}">{% translate "Ajouter un texte" %}</a> {% endif %}<a href="{% url 'justifications:challenge_list' %}">{% translate "Contestations" %}</a> <a href="{% url 'translations:concordance' %}">{% translate "Concordance des traductions" %}</a> <a href="{% url 'translations:help' %}">{% translate "Aide" %}</a></p>
 
-  <ul class="item-list">
+  <nav class="workshop-tabs sort-tabs" aria-label="{% translate 'Ordre' %}">
+    <a href="?tri=recents"{% if order == "recents" %} aria-current="page"{% endif %}>{% translate "Textes les plus récents" %}</a>
+    <a href="?tri=activite"{% if order == "activite" %} aria-current="page"{% endif %}>{% translate "Activité récente" %}</a>
+    <a href="?tri=etoiles"{% if order == "etoiles" %} aria-current="page"{% endif %}>{% translate "Les plus étoilés" %}</a>
+  </nav>
+  <ul class="item-list text-list">
     {% for source in page %}
-    <li>
-      <a class="item-title" href="{{ source.get_absolute_url }}">{{ source.title }}</a>
-      <span class="muted">{% if source.author %}{{ source.author }} · {% endif %}{{ source.get_language_display }} · {{ source.get_license_display }} · {% blocktranslate count counter=source.segment_count %}{{ counter }} phrase{% plural %}{{ counter }} phrases{% endblocktranslate %}</span>
+    <li class="text-card">
+      <div class="text-card-head">
+        <a class="item-title" href="{{ source.get_absolute_url }}">{{ source.title }}</a>
+        <span class="muted">{% if source.author %}{{ source.author }} · {% endif %}{{ source.get_language_display }} · {% blocktranslate count counter=source.segment_count %}{{ counter }} phrase{% plural %}{{ counter }} phrases{% endblocktranslate %}{% if source.star_count %} · <span aria-hidden="true">★</span> {% blocktranslate count counter=source.star_count %}{{ counter }} étoile{% plural %}{{ counter }} étoiles{% endblocktranslate %}{% endif %}</span>
+      </div>
+      <ul class="project-rows">
+        {% for project in source.project_list %}
+        {% include "translations/project_row.html" %}
+        {% empty %}
+        <li class="project-row is-empty"><span class="muted">{% translate "Aucune traduction pour l’instant." %}</span></li>
+        {% endfor %}
+        {% if user.is_authenticated %}
+        <li class="project-row project-row-new"><a href="{% url 'translations:project_create' source.pk %}">{% if source.project_list %}{% translate "+ Lancer une autre traduction" %}{% else %}{% translate "+ Lancer la traduction" %}{% endif %}</a></li>
+        {% endif %}
+      </ul>
     </li>
     {% empty %}
     <li>{% translate "Aucun texte pour l’instant." %}</li>

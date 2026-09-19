@@ -5,7 +5,7 @@
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a></p>
   <h1>{% translate "Commentaires des phrases" %}</h1>
   <p class="lede">{% if version.is_draft %}{% translate "Brouillon : ces commentaires ne sont visibles que de ses auteurs." %}{% else %}{% translate "Remarques et questions sur les phrases de cette version ; ses auteurs les marquent résolues quand elles sont traitées." %}{% endif %}</p>
   {% regroup comments by number as by_sentence %}

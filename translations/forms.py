@@ -13,7 +13,6 @@ from .models import (
     SourceText,
     Topic,
     TranslationProject,
-    TranslationVersion,
     VersionStep,
 )
 from .segmentation import MAX_SENTENCE_LENGTH, MAX_SENTENCES, from_lines
@@ -99,20 +98,12 @@ class SourceTextForm(SourceTextEditForm):
 
 
 class ProjectForm(ContributionForm):
-    link_fields = ("title", "description")
+    link_fields = ("title", "description", "style_note")
 
     class Meta:
         model = TranslationProject
-        fields = ("title", "description")
+        fields = ("title", "style", "style_note", "description")
         widgets = {"description": forms.Textarea(attrs={"rows": 5})}
-
-
-class VersionForm(ContributionForm):
-    link_fields = ("style_note",)
-
-    class Meta:
-        model = TranslationVersion
-        fields = ("style", "style_note")
 
 
 class StepLabelForm(ContributionForm):
@@ -271,16 +262,24 @@ class SourceProposalForm(ContributionForm):
         fields = ("explanation",)
 
 
-class ReferenceForm(forms.Form):
-    """A published version of the project, or nothing to remove the reference."""
+class SetAsideForm(forms.Form):
+    """Why the maintainers set a variant aside."""
 
-    version = forms.ModelChoiceField(queryset=TranslationVersion.objects.none(), required=False)
+    reason = forms.CharField(
+        label=_("Motif"),
+        max_length=500,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("Visible de l’auteur de la variante."),
+    )
 
-    def __init__(self, *args, project, **kwargs):
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
         super().__init__(*args, **kwargs)
-        self.fields["version"].queryset = project.versions.filter(
-            state=TranslationVersion.State.PUBLISHED, is_hidden=False
-        )
+
+    def clean_reason(self):
+        reason = self.cleaned_data["reason"]
+        check_text_for_links(self.user, reason)
+        return reason
 
 
 class InviteForm(forms.Form):

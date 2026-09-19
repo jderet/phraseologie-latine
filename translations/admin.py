@@ -25,8 +25,8 @@ class SourceTextAdmin(ReadOnlyAdmin):
 
 @admin.register(TranslationProject)
 class TranslationProjectAdmin(ReadOnlyAdmin):
-    list_display = ("title", "source_text", "created_by", "created_at", "is_hidden")
-    list_filter = ("is_hidden",)
+    list_display = ("title", "source_text", "style", "created_by", "created_at", "is_hidden")
+    list_filter = ("style", "is_hidden")
     search_fields = ("title",)
 
 
@@ -34,5 +34,5 @@ class TranslationProjectAdmin(ReadOnlyAdmin):
 class TranslationVersionAdmin(ReadOnlyAdmin):
     """Drafts are private: the admin lists versions without showing their Latin."""
 
-    list_display = ("project", "author", "style", "state", "published_at", "is_hidden")
-    list_filter = ("state", "style", "is_hidden")
+    list_display = ("project", "author", "variant_status", "state", "published_at", "is_hidden")
+    list_filter = ("state", "variant_status", "is_hidden")

@@ -2984,3 +2984,60 @@ details.fold > summary h2 {
   text-decoration-thickness: 1px;
   text-underline-offset: 6px;
 }
+
+/* Page « Traduction »: each text with its projects. */
+
+.text-card {
+  gap: 8px;
+}
+
+.text-card-head {
+  display: grid;
+  gap: 2px;
+}
+
+.project-rows {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 0 1rem;
+  list-style: none;
+  border-left: 2px solid var(--rule);
+}
+
+.project-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+}
+
+.project-row-name {
+  flex: 1 1 16rem;
+}
+
+.project-row .project-row-progress {
+  flex: 0 0 13rem;
+}
+
+.project-row-progress progress {
+  width: 8rem;
+  vertical-align: middle;
+  accent-color: var(--accent);
+}
+
+.variant-badge.variant-main,
+.variant-badge.variant-merged {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.variant-badge.variant-open {
+  color: var(--amber);
+  background: var(--amber-soft);
+  border-color: transparent;
+}
+
+.set-aside {
+  margin-top: 16px;
+}

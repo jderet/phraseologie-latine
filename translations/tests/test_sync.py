@@ -14,7 +14,7 @@ class SyncTests(TranslationTestCase):
         self.original = make_published_version(self.author, self.project)
         self.copy = copy_version(
             public_step(self.original),
-            TranslationVersion(style=self.original.style),
+            TranslationVersion(),
             self.other,
         )
         save_translation(self.original, self.first, "Imber cadit.", self.author)

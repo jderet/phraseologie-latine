@@ -5,7 +5,7 @@
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{% url 'translations:project_list' %}">{% translate "Projet de traduction" %}</a></p>
+  <p class="eyebrow"><a href="{% url 'translations:source_list' %}">{% translate "Traduction" %}</a> · <a href="{{ project.source_text.get_absolute_url }}">{{ project.source_text.title }}</a></p>
   <h1>{{ project.title }}</h1>
   {% project_tabs project "glossary" %}
   <p class="note">{% blocktranslate trimmed %}

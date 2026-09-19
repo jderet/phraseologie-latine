@@ -5,7 +5,7 @@
 
 {% block content %}
 <section>
-  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a></p>
   <h1>{% translate "Différences entre étapes" %}</h1>
   <p class="lede">{% translate "Les phrases qui ont changé, mot à mot : en barré ce qui a été retiré, en surligné ce qui a été ajouté." %}</p>
 

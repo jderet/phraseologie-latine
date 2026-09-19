@@ -238,6 +238,18 @@ Demandée par le porteur le 19 septembre 2026 : faire de la traduction « le Git
 - [x] Mémoire personnelle importée d'un fichier TMX
 - [x] Glossaire exporté en CSV et TBX ; API et export complet
 
+## Étape 18 : les textes d'abord, une traduction par projet
+
+Choix du 19 septembre 2026 : le style appartient au projet, qui vise une seule traduction ; les autres versions sont des variantes à trancher.
+
+- [x] Modèle : style et traduction principale sur le projet, statut des variantes, reprise des données existantes
+- [x] Services et permissions : traduction principale créée avec le projet, variantes copiées de la seule traduction principale, mainteneurs (glossaire, sujets)
+- [x] Variantes : envoi aux mainteneurs, clôture (fusionnée ou écartée), écartée avec un motif
+- [x] Page « Traduction » centrée sur les textes (avancement, variantes ouvertes, tris) ; l'ancienne liste des projets y renvoie
+- [x] Page du projet réorganisée (traduction, mainteneurs, variantes ouvertes et closes) ; comparaison
+- [x] API et exports : style du projet, rôle et statut des versions
+- [x] Documentation et traductions anglaises
+
 ## Ouverture publique
 
 - [x] Tableau de bord des administrateurs : chiffres clés, files d'attente, activité récente, état technique, comptes (nouveau mot de passe ou lien de réinitialisation)
