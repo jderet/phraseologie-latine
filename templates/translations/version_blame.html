@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qui a écrit quoi" %} · {{ version }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% blocktranslate with name=version.author.public_name %}Version de {{ name }}{% endblocktranslate %}</a></p>
+  <h1>{% translate "Qui a écrit quoi" %}</h1>
+  <p class="lede">{% if step %}{% blocktranslate with number=step.number %}Chaque phrase de l’étape {{ number }}, avec la personne qui l’a écrite.{% endblocktranslate %}{% else %}{% translate "Chaque phrase du texte de travail, avec la personne qui l’a écrite." %}{% endif %}</p>
+  <ul class="blame-legend">
+    {% for item in legend %}<li><span class="writer-swatch writer-{{ item.color }}" aria-hidden="true"></span> <a href="{{ item.user.get_absolute_url }}">{{ item.user.public_name }}</a> <span class="muted">{% blocktranslate count counter=item.count with percent=item.percent %}{{ counter }} phrase, {{ percent }} %{% plural %}{{ counter }} phrases, {{ percent }} %{% endblocktranslate %}</span></li>{% endfor %}
+  </ul>
+  <ol class="bitext blame">
+    {% for row in rows %}
+    <li class="bitext-row{% if row.writer %} writer-{{ row.color }}{% endif %}">
+      <span class="bitext-number">{{ row.number }}</span>
+      <p class="bitext-source">{{ row.segment.text }}</p>
+      <div class="bitext-latin"><p lang="la">{{ row.saved|default:"—" }}</p>{% if row.writer %}<p class="row-origin">{{ row.writer.public_name }}</p>{% endif %}</div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

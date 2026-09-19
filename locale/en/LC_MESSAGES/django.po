@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phraseologie-latine 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 15:12+0200\n"
+"POT-Creation-Date: 2026-09-19 15:14+0200\n"
 "PO-Revision-Date: 2026-09-13 21:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -9250,7 +9250,7 @@ msgstr "Create a step"
 #: templates/translations/editor_menus.html:19
 #: templates/translations/step_compare.html:37
 #: templates/translations/step_create.html:35
-#: templates/translations/step_detail.html:60
+#: templates/translations/step_detail.html:63
 #: templates/translations/step_list.html:4
 #: templates/translations/step_list.html:9
 msgid "Historique des étapes"
@@ -10000,6 +10000,7 @@ msgstr "Compare"
 #: templates/translations/step_detail.html:8
 #: templates/translations/step_list.html:8
 #: templates/translations/sync_copy.html:8
+#: templates/translations/version_blame.html:8
 #: templates/translations/version_comments.html:8
 #: templates/translations/version_detail.html:9
 #: templates/translations/version_edit.html:10
@@ -10679,34 +10680,38 @@ msgid "Revenir à cette étape"
 msgstr "Go back to this step"
 
 #: templates/translations/step_detail.html:47
+msgid "Qui a écrit quoi à cette étape"
+msgstr "Who wrote what at this step"
+
+#: templates/translations/step_detail.html:50
 msgid "Étiqueter cette étape"
 msgstr "Label this step"
 
-#: templates/translations/step_detail.html:51
+#: templates/translations/step_detail.html:54
 msgid "Enregistrer l’étiquette"
 msgstr "Save the label"
 
-#: templates/translations/step_detail.html:56
+#: templates/translations/step_detail.html:59
 msgid "Étape précédente"
 msgstr "Previous step"
 
-#: templates/translations/step_detail.html:57
+#: templates/translations/step_detail.html:60
 msgid "Étape suivante"
 msgstr "Next step"
 
-#: templates/translations/step_detail.html:58
+#: templates/translations/step_detail.html:61
 msgid "Ce qui a changé à cette étape"
 msgstr "What changed at this step"
 
-#: templates/translations/step_detail.html:59
+#: templates/translations/step_detail.html:62
 msgid "Partir de cette étape"
 msgstr "Start from this step"
 
-#: templates/translations/step_detail.html:66
+#: templates/translations/step_detail.html:69
 msgid "Voir ce qu’a changé cette étape"
 msgstr "See what this step changed"
 
-#: templates/translations/step_detail.html:71
+#: templates/translations/step_detail.html:74
 #: templates/translations/version_detail.html:93
 msgid "Texte et traduction"
 msgstr "Text and translation"
@@ -10894,6 +10899,29 @@ msgstr "opened by %(name)s on %(date)s"
 #: templates/translations/topic_list.html:30
 msgid "Aucun sujet ici."
 msgstr "No topic here."
+
+#: templates/translations/version_blame.html:4
+#: templates/translations/version_blame.html:9
+#: templates/translations/version_detail.html:89
+#: templates/translations/version_stats.html:26
+msgid "Qui a écrit quoi"
+msgstr "Who wrote what"
+
+#: templates/translations/version_blame.html:10
+#, python-format
+msgid "Chaque phrase de l’étape %(number)s, avec la personne qui l’a écrite."
+msgstr "Each sentence of step %(number)s, with the person who wrote it."
+
+#: templates/translations/version_blame.html:10
+msgid "Chaque phrase du texte de travail, avec la personne qui l’a écrite."
+msgstr "Each sentence of the working text, with the person who wrote it."
+
+#: templates/translations/version_blame.html:12
+#, python-format
+msgid "%(counter)s phrase, %(percent)s %%"
+msgid_plural "%(counter)s phrases, %(percent)s %%"
+msgstr[0] "%(counter)s sentence, %(percent)s %%"
+msgstr[1] "%(counter)s sentences, %(percent)s %%"
 
 #: templates/translations/version_comments.html:4 translations/editor.py:45
 msgid "Commentaires"
@@ -11408,10 +11436,6 @@ msgstr "Latin words"
 #: templates/translations/version_stats.html:15
 msgid "Étapes"
 msgstr "Steps"
-
-#: templates/translations/version_stats.html:26
-msgid "Qui a écrit quoi"
-msgstr "Who wrote what"
 
 #: templates/translations/version_stats.html:29
 #, python-format

@@ -1020,3 +1020,44 @@ mark.term {
 .network-node.depth-4 { padding-left: 4.8rem; }
 .network-node.depth-5 { padding-left: 6rem; }
 .network-node.depth-6 { padding-left: 7.2rem; }
+
+/* Who wrote what: one colour per writer */
+
+.blame-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.writer-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+.blame .bitext-row {
+  border-left: 4px solid transparent;
+}
+
+.writer-0 { --writer: #2563a8; }
+.writer-1 { --writer: #b83c2b; }
+.writer-2 { --writer: #11806a; }
+.writer-3 { --writer: #7b46b0; }
+.writer-4 { --writer: #a86a12; }
+.writer-5 { --writer: #b0357a; }
+.writer-6 { --writer: #4c7a1f; }
+.writer-7 { --writer: #5a6470; }
+
+.writer-swatch[class*="writer-"] {
+  background: var(--writer);
+}
+
+.blame .bitext-row[class*="writer-"] {
+  border-left-color: var(--writer);
+  background: color-mix(in srgb, var(--writer) 6%, transparent);
+}

@@ -25,7 +25,7 @@ from .sync import (
     take_upstream,
     upstream_changes,
 )
-from .views import _contribute, _own_version, _proposal, _version
+from .views import _contribute, _export_step, _own_version, _proposal, _rows, _version
 
 
 @login_required
@@ -195,4 +195,46 @@ def version_network(request, pk):
         request,
         "translations/version_network.html",
         {"version": version, "project": version.project, "ancestors": ancestors, "nodes": nodes},
+    )
+
+
+WRITER_COLORS = 8
+
+
+def version_blame(request, pk):
+    """Each sentence of the text the user sees, marked with who wrote it, like git blame."""
+    version = _version(request.user, pk)
+    step = _export_step(request, version)
+    step, rows = _rows(request.user, version, step)
+    order, counts = {}, {}
+    for row in rows:
+        sentence = row["sentence"]
+        if not row["saved"]:
+            row["writer"] = None
+            continue
+        writer = getattr(sentence, "written_by", None) or version.author
+        order.setdefault(writer.pk, (len(order) % WRITER_COLORS, writer))
+        counts[writer.pk] = counts.get(writer.pk, 0) + 1
+        row["writer"] = writer
+        row["color"] = order[writer.pk][0]
+    total = sum(counts.values()) or 1
+    legend = [
+        {
+            "user": writer,
+            "color": color,
+            "count": counts[pk],
+            "percent": round(counts[pk] * 100 / total),
+        }
+        for pk, (color, writer) in order.items()
+    ]
+    return render(
+        request,
+        "translations/version_blame.html",
+        {
+            "version": version,
+            "project": version.project,
+            "step": step,
+            "rows": rows,
+            "legend": legend,
+        },
     )
