@@ -618,6 +618,26 @@ h2 {
   margin: 0 8px 0 0;
 }
 
+/* Long closed lists (genres, themes): one block per family, set in columns. */
+.form .choice-groups {
+  columns: 3 13rem;
+  column-gap: 24px;
+}
+
+.form .choice-groups > div {
+  break-inside: avoid;
+  margin-bottom: 14px;
+}
+
+.form .choice-groups > div > label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
 .notice {
   padding: 10px 14px;
   background: var(--surface);

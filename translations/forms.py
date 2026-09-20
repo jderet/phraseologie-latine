@@ -5,6 +5,11 @@ from django.utils.translation import ngettext
 
 from accounts.limits import check_text_for_links
 
+from .classification import (
+    GENRE_GROUPS,
+    THEME_GROUPS,
+    grouped_choices,
+)
 from .models import (
     ChangeProposal,
     GlossaryEntry,
@@ -43,6 +48,22 @@ class ContributionForm(forms.ModelForm):
 class SourceTextEditForm(ContributionForm):
     link_fields = ("title", "author")
 
+    # Closed vocabularies: what the text is, what it speaks of. The limits and the unknown
+    # codes are checked by ``SourceText.clean``.
+    genres = forms.MultipleChoiceField(
+        label=_("Genres"),
+        choices=lambda: grouped_choices(GENRE_GROUPS),
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "choice-groups"}),
+        help_text=_("Ce qu’est le texte : trois genres au plus."),
+    )
+    themes = forms.MultipleChoiceField(
+        label=_("Thèmes"),
+        choices=lambda: grouped_choices(THEME_GROUPS),
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "choice-groups"}),
+        help_text=_("Facultatif. Ce dont le texte parle : six thèmes au plus."),
+    )
+
     class Meta:
         model = SourceText
         fields = (
@@ -50,6 +71,8 @@ class SourceTextEditForm(ContributionForm):
             "author",
             "author_death_year",
             "language",
+            "genres",
+            "themes",
             "source_url",
             "license",
             "level_names",

@@ -8,6 +8,7 @@ from accounts.roles import CONTRIBUTOR, REVIEWER
 from accounts.tests.factories import make_user
 from moderation.models import Revision
 from moderation.services import hide_content
+from translations.classification import Genre, Theme
 from translations.models import License, Segment, SourceText, last_public_domain_death_year
 
 from .factories import make_source_text
@@ -23,6 +24,7 @@ class SourceTextRulesTests(TestCase):
             "language": "fr",
             "license": License.CC_BY_SA_4,
             "source_url": "https://fr.wikipedia.org/wiki/Titre",
+            "genres": [Genre.ARTICLE],
             "text": "Une phrase.",
             "added_by": self.user,
         }
@@ -82,6 +84,8 @@ class SourceTextPagesTests(TestCase):
             "language": "fr",
             "license": License.CC_BY_SA_4,
             "source_url": "https://fr.wikipedia.org/wiki/Pluie",
+            "genres": [Genre.ARTICLE],
+            "themes": [Theme.SEASONS],
             "text": "Il pleut[1]. M. Dupont reste chez lui.\nDemain, il sortira.",
             "declaration": "on",
         } | fields
