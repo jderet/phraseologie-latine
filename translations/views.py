@@ -92,7 +92,15 @@ from .services import (
     withdraw_proposal,
     withdraw_source_proposal,
 )
-from .sources import Line, SourceHistory, describe_operations, simulate
+from .sources import (
+    Line,
+    SourceHistory,
+    describe_operations,
+    outline,
+    reading_blocks,
+    simulate,
+    under,
+)
 from .steps import (
     carried,
     compare,
@@ -242,14 +250,29 @@ def _project_summaries(user, projects):
     return projects
 
 
+# A text longer than this opens on one division at a time.
+DIVISION_AT_ONCE = 300
+
+
 def source_detail(request, pk):
     source = _visible(request.user, SourceText.objects.select_related("added_by"), pk)
+    segments = list(source.segments.current())
+    divisions, places = outline(segments)
+    chosen = request.GET.get("division", "")
+    if chosen and not any(division.key == chosen for division in divisions):
+        chosen = ""
+    if not chosen and divisions and len(segments) > DIVISION_AT_ONCE:
+        chosen = divisions[0].key
     return render(
         request,
         "translations/source_detail.html",
         {
             "source": source,
-            "segments": source.segments.current(),
+            "divisions": divisions,
+            "chosen": chosen,
+            "whole": not chosen,
+            "count": sum(1 for segment in segments if not segment.level),
+            "blocks": reading_blocks(under(segments, places, chosen), places),
             "projects": _project_summaries(request.user, source.projects.filter(is_hidden=False)),
             "can_edit": can_edit(request.user, source),
             "can_change": can_change_source(request.user, source),

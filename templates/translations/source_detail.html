@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n activity_tags moderation_tags %}
+{% load i18n activity_tags moderation_tags source_tags %}
 
 {% block title %}{{ source.title }} · {{ block.super }}{% endblock %}
 
@@ -57,10 +57,29 @@
   {% endif %}
 
   <h2>{% translate "Phrases" %}</h2>
-  <ol class="segments" lang="{{ source.language }}">
-    {% for segment in segments %}
-    <li{% if segment.starts_paragraph and not forloop.first %} class="paragraph-start"{% endif %}>{{ segment.text }}</li>
+  {% if divisions %}
+  <nav class="outline" aria-label="{% translate "Sommaire" %}">
+    <ul>
+      <li class="outline-level-0"><a href="?" {% if whole %}aria-current="true"{% endif %}>{% blocktranslate trimmed count counter=count %}
+        Tout le texte ({{ counter }} phrase)
+      {% plural %}
+        Tout le texte ({{ counter }} phrases)
+      {% endblocktranslate %}</a></li>
+      {% for division in divisions %}
+      <li class="outline-level-{{ division.level }}"><a href="?division={{ division.key }}" {% if division.key == chosen %}aria-current="true"{% endif %}>{{ division.title }}</a> <span class="muted">{{ source|division_label:division }}</span></li>
+      {% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
+  <div class="segments-text" lang="{{ source.language }}">
+    {% for block in blocks %}
+    {% if block.division %}<{{ block.tag }} class="division-title division-level-{{ block.division.level }}" id="division-{{ block.division.key }}">{{ block.division.title }} <span class="muted">{{ source|division_label:block.division }}</span></{{ block.tag }}>{% endif %}
+    <ol class="segments">
+      {% for line in block.sentences %}
+      <li value="{{ line.number }}"{% if line.segment.starts_paragraph and not forloop.first %} class="paragraph-start"{% endif %}>{{ line.segment.text }}</li>
+      {% endfor %}
+    </ol>
     {% endfor %}
-  </ol>
+  </div>
 </article>
 {% endblock %}

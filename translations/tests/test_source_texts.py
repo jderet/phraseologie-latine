@@ -192,7 +192,7 @@ class SourceTextPagesTests(TestCase):
         self.assertContains(response, "Le vent")
         self.assertContains(response, "3 phrases")
         response = self.client.get(source.get_absolute_url())
-        self.assertContains(response, "<li>Nous restons à la maison.</li>", html=True)
+        self.assertContains(response, '<li value="2">Nous restons à la maison.</li>', html=True)
         self.assertContains(response, "licence libre")
         self.assertContains(response, 'rel="nofollow ugc noopener"')
         self.assertNotContains(response, reverse("translations:source_edit", args=[source.pk]))

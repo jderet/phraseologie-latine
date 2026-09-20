@@ -37,6 +37,99 @@ class Applied:
     added: list
 
 
+@dataclass(frozen=True)
+class Division:
+    """A part, a chapter or a section of a text, opened by the title of that level."""
+
+    title: str
+    level: int
+    # Its number among the divisions of the same level in the division that holds it.
+    index: int
+    # The numbers of every division it belongs to, itself last: "2.3".
+    key: str
+    # The titles of the divisions it belongs to, itself last.
+    path: tuple
+    segment_id: int = 0
+
+
+@dataclass(frozen=True)
+class Place:
+    """Where a sentence stands: the division it belongs to, and its number inside it."""
+
+    division: Division = None
+    # From 1 in each division; 0 for the title of a division.
+    number: int = 0
+
+
+def outline(segments):
+    """The divisions of a text, and where each of its sentences stands.
+
+    Return (divisions, places): the divisions in the order of the text, and {sentence id:
+    ``Place``}. The numbers of the sentences start again at 1 under every title.
+    """
+    divisions = []
+    places = {}
+    open_divisions = []
+    counters = []
+    number = 0
+    for segment in segments:
+        if not segment.level:
+            number += 1
+            places[segment.pk] = Place(open_divisions[-1] if open_divisions else None, number)
+            continue
+        level = segment.level
+        del open_divisions[level - 1 :]
+        del counters[level:]
+        counters.extend([0] * (level - len(counters)))
+        counters[level - 1] += 1
+        division = Division(
+            title=segment.text,
+            level=level,
+            index=counters[level - 1],
+            key=".".join(str(count) for count in counters),
+            path=(*(holder.title for holder in open_divisions), segment.text),
+            segment_id=segment.pk,
+        )
+        open_divisions.append(division)
+        divisions.append(division)
+        places[segment.pk] = Place(division)
+        number = 0
+    return divisions, places
+
+
+def in_division(division, key):
+    """Whether a division is the one a key names, or lies inside it."""
+    return division is not None and (division.key == key or division.key.startswith(f"{key}."))
+
+
+def under(segments, places, key):
+    """The sentences of one division, its own divisions included; all of them without a key."""
+    if not key:
+        return segments
+    return [segment for segment in segments if in_division(places[segment.pk].division, key)]
+
+
+def reading_blocks(segments, places):
+    """The sentences grouped under the title that opens them, for reading."""
+    blocks = []
+    for segment in segments:
+        if segment.level:
+            division = places[segment.pk].division
+            blocks.append(
+                {
+                    "division": division,
+                    "segment": segment,
+                    "tag": f"h{min(division.level + 2, 6)}",
+                    "sentences": [],
+                }
+            )
+            continue
+        if not blocks:
+            blocks.append({"division": None, "segment": None, "tag": "", "sentences": []})
+        blocks[-1]["sentences"].append({"number": places[segment.pk].number, "segment": segment})
+    return blocks
+
+
 def apply_operation(lines, operation):
     """Apply an operation to a list of ``Line``; raise ValidationError if it does not apply.
 
@@ -275,6 +368,10 @@ class SourceHistory:
         return {
             segment.pk: number for number, segment in enumerate(self.segments_at(state), start=1)
         }
+
+    def outline_at(self, state=None):
+        """The divisions of the text at a state, and where each sentence stands."""
+        return outline(self.segments_at(state))
 
     def carrier(self, segment):
         """The sentence that received the Latin of a removed sentence; None if not removed."""

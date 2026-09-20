@@ -25,7 +25,10 @@ def make_source_text(user, sentences=SENTENCES, **fields):
     fields.setdefault("language", "fr")
     fields.setdefault("license", License.CC_BY_SA_4)
     fields.setdefault("source_url", "https://fr.wikipedia.org/wiki/Pluie")
-    parts = [Sentence(text, starts_paragraph=index == 0) for index, text in enumerate(sentences)]
+    parts = [
+        item if isinstance(item, Sentence) else Sentence(item, starts_paragraph=index == 0)
+        for index, item in enumerate(sentences)
+    ]
     return create_source_text(SourceText(**fields), user, parts)
 
 

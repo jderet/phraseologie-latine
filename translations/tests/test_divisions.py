@@ -1,0 +1,121 @@
+"""Parts and chapters of a source text: the outline, the citations, the reading page."""
+
+from django.test import TestCase
+
+from accounts.roles import CONTRIBUTOR
+from accounts.tests.factories import make_user
+from translations.segmentation import segment
+from translations.sources import outline, reading_blocks, under
+
+from .factories import make_source_text
+
+BOOK = (
+    "# Première partie\n"
+    "## Chapitre premier\n"
+    "Il pleut. Il vente.\n"
+    "## Chapitre second\n"
+    "Le ciel est clair.\n"
+    "# Seconde partie\n"
+    "## Chapitre premier\n"
+    "Nous partons."
+)
+
+
+class OutlineTests(TestCase):
+    def setUp(self):
+        self.user = make_user(role=CONTRIBUTOR)
+        self.source = make_source_text(self.user, sentences=segment(BOOK, "fr"))
+        self.segments = list(self.source.segments.current())
+        self.divisions, self.places = outline(self.segments)
+
+    def test_divisions_are_numbered_inside_the_division_that_holds_them(self):
+        self.assertEqual(
+            [(d.key, d.level, d.index, d.title) for d in self.divisions],
+            [
+                ("1", 1, 1, "Première partie"),
+                ("1.1", 2, 1, "Chapitre premier"),
+                ("1.2", 2, 2, "Chapitre second"),
+                ("2", 1, 2, "Seconde partie"),
+                ("2.1", 2, 1, "Chapitre premier"),
+            ],
+        )
+
+    def test_the_numbers_of_the_sentences_start_again_in_each_division(self):
+        numbers = {
+            segment.text: self.places[segment.pk].number
+            for segment in self.segments
+            if not segment.level
+        }
+        self.assertEqual(
+            numbers,
+            {"Il pleut.": 1, "Il vente.": 2, "Le ciel est clair.": 1, "Nous partons.": 1},
+        )
+
+    def test_a_sentence_is_cited_by_its_division(self):
+        sentence = next(s for s in self.segments if s.text == "Il vente.")
+        self.assertEqual(self.source.citation(self.places[sentence.pk]), "Chapitre 1, phrase 2")
+        self.source.level_names = "Livre, Section"
+        self.assertEqual(self.source.citation(self.places[sentence.pk]), "Section 1, phrase 2")
+
+    def test_a_text_without_division_keeps_its_numbers(self):
+        source = make_source_text(self.user, title="Sans division")
+        segments = list(source.segments.current())
+        _, places = outline(segments)
+        self.assertEqual(source.citation(places[segments[2].pk]), "phrase 3")
+
+    def test_one_division_holds_the_divisions_inside_it(self):
+        kept = [s.text for s in under(self.segments, self.places, "1")]
+        self.assertEqual(
+            kept,
+            [
+                "Première partie",
+                "Chapitre premier",
+                "Il pleut.",
+                "Il vente.",
+                "Chapitre second",
+                "Le ciel est clair.",
+            ],
+        )
+        self.assertEqual(len(under(self.segments, self.places, "")), len(self.segments))
+
+    def test_sentences_are_grouped_under_their_title(self):
+        blocks = reading_blocks(self.segments, self.places)
+        self.assertEqual(
+            [(block["division"].title, len(block["sentences"])) for block in blocks],
+            [
+                ("Première partie", 0),
+                ("Chapitre premier", 2),
+                ("Chapitre second", 1),
+                ("Seconde partie", 0),
+                ("Chapitre premier", 1),
+            ],
+        )
+
+    def test_the_usual_names_of_the_levels(self):
+        self.assertEqual(self.source.level_label(1), "Partie")
+        self.assertEqual(self.source.level_label(3), "Section")
+        self.source.level_names = "Livre"
+        self.assertEqual(self.source.level_label(1), "Livre")
+        self.assertEqual(self.source.level_label(2), "Chapitre")
+
+
+class ReadingPageTests(TestCase):
+    def setUp(self):
+        self.user = make_user(role=CONTRIBUTOR)
+        self.source = make_source_text(self.user, sentences=segment(BOOK, "fr"))
+
+    def test_the_page_shows_the_outline_and_the_titles(self):
+        response = self.client.get(self.source.get_absolute_url())
+        self.assertContains(response, "Chapitre second")
+        self.assertContains(response, "Tout le texte (4 phrases)")
+        self.assertContains(response, "Nous partons.")
+
+    def test_one_division_at_a_time(self):
+        response = self.client.get(f"{self.source.get_absolute_url()}?division=2")
+        self.assertContains(response, "Nous partons.")
+        self.assertNotContains(response, "Il pleut.")
+
+    def test_an_unknown_division_shows_the_whole_text(self):
+        response = self.client.get(f"{self.source.get_absolute_url()}?division=9")
+        self.assertContains(response, "Il pleut.")
+        self.assertContains(response, "Nous partons.")

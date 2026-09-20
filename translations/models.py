@@ -129,6 +129,23 @@ class SourceText(ModeratedContent):
     def __str__(self):
         return self.title
 
+    def citation(self, place):
+        """« Chapitre 2, phrase 5 », or the number alone in a text without divisions."""
+        if place is None:
+            return ""
+        if place.division is None:
+            return gettext("phrase %(number)d") % {"number": place.number}
+        division = gettext("%(name)s %(index)d") % {
+            "name": self.level_label(place.division.level),
+            "index": place.division.index,
+        }
+        if not place.number:
+            return division
+        return gettext("%(division)s, phrase %(number)d") % {
+            "division": division,
+            "number": place.number,
+        }
+
     def level_label(self, level):
         """The name chosen for a level of title, or the usual one."""
         names = [name.strip() for name in self.level_names.split(",") if name.strip()]

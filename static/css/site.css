@@ -996,6 +996,56 @@ code {
   margin-top: 14px;
 }
 
+/* Parts and chapters of a source text: the outline and the titles in the text. */
+.outline ul {
+  max-width: 46rem;
+  margin: 0 0 24px;
+  padding: 10px 14px;
+  list-style: none;
+  background: var(--surface);
+  border-radius: 6px;
+}
+
+.outline li {
+  padding: 2px 0;
+}
+
+.outline-level-2 {
+  padding-left: 1.5em;
+}
+
+.outline-level-3 {
+  padding-left: 3em;
+}
+
+.outline a[aria-current] {
+  font-weight: 600;
+}
+
+.division-title {
+  max-width: 46rem;
+  margin: 28px 0 10px;
+  font-family: var(--serif);
+}
+
+.division-level-1 {
+  font-size: 1.3rem;
+}
+
+.division-level-2 {
+  font-size: 1.15rem;
+}
+
+.division-level-3 {
+  font-size: 1.05rem;
+}
+
+.division-title .muted {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
 article > h2 {
   margin-top: 40px;
 }
