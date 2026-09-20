@@ -136,6 +136,29 @@ class SourceTextPagesTests(TestCase):
         self.assertRedirects(response, source.get_absolute_url())
         self.assertEqual(source.segments.count(), 1)
 
+    def test_titles_of_divisions_are_kept_with_their_level(self):
+        self.client.force_login(self.owner)
+        url = reverse("translations:source_create")
+        pasted = "# Première partie\n## Chapitre premier\nIl pleut. Il vente."
+        response = self.client.post(url, self.form_data(text=pasted))
+        self.assertContains(response, "découpé en 2 phrases")
+        checked = response.context["form"]["text"].value()
+        self.assertEqual(
+            checked, "# Première partie\n\n## Chapitre premier\n\nIl pleut.\nIl vente."
+        )
+
+        self.client.post(url, self.form_data(text=checked, segmented="1"))
+        source = SourceText.objects.get()
+        self.assertEqual(
+            [(s.order, s.level, s.text) for s in source.segments.current()],
+            [
+                (1, 1, "Première partie"),
+                (2, 2, "Chapitre premier"),
+                (3, 0, "Il pleut."),
+                (4, 0, "Il vente."),
+            ],
+        )
+
     def test_declaration_and_license_rules_are_checked(self):
         self.client.force_login(self.owner)
         data = self.form_data(segmented="1", declaration="", source_url="")

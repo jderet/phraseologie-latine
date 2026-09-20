@@ -2,13 +2,17 @@
 
 The split is only a proposal: the person who adds a text checks it, one sentence per line,
 before saving. A line break always ends a sentence; a blank line starts a new paragraph.
+
+A line written with one to three ``#`` is the title of a division: a part, a chapter, a
+section. It is never split, and the text starts a new paragraph after it.
 """
 
 import re
 import unicodedata
 from dataclasses import dataclass
 
-MAX_SENTENCES = 500
+MAX_SENTENCES = 2000
+MAX_LEVEL = 3
 MAX_SENTENCE_LENGTH = 2000
 
 # Words that end with a period without ending the sentence, compared in lower case.
@@ -53,6 +57,9 @@ BOUNDARY = re.compile(r"[.!?…]+(?:\s?[»”\"’)\]])*(\s*)")
 INVISIBLE = re.compile(r"[\u200b\u200c\u200d\ufeff]")
 SOFT_HYPHEN = "\u00ad"
 
+# The title of a division, written in the pasted text: # part, ## chapter, ### section.
+HEADING = re.compile(rf"^(#{{1,{MAX_LEVEL}}})\s+(.*)$")
+
 OPENING_MARKS = '«“"‘(¿¡—–-[ '
 
 WORD_BEFORE = re.compile(r"([^\W\d_](?:[^\W\d_]|\.(?=[^\W\d_]))*|\d+)$")
@@ -62,6 +69,8 @@ WORD_BEFORE = re.compile(r"([^\W\d_](?:[^\W\d_]|\.(?=[^\W\d_]))*|\d+)$")
 class Sentence:
     text: str
     starts_paragraph: bool = False
+    # 0 for a sentence; 1 to MAX_LEVEL for the title of a part, a chapter or a section.
+    level: int = 0
 
 
 def _ends_sentence(text, boundary, language):
@@ -110,10 +119,22 @@ def clean_text(text):
     return "\n".join(lines)
 
 
+def _heading(line):
+    """The title of a division written on a line, or None."""
+    marks = HEADING.match(line)
+    if marks is None or not marks.group(2).strip():
+        return None
+    return Sentence(marks.group(2).strip(), starts_paragraph=True, level=len(marks.group(1)))
+
+
 def segment(text, language):
     """Sentences of a pasted text; every line break of the text ends a paragraph."""
     sentences = []
     for line in clean_text(text).split("\n"):
+        heading = _heading(line)
+        if heading is not None:
+            sentences.append(heading)
+            continue
         for index, sentence in enumerate(split_paragraph(line, language)):
             sentences.append(Sentence(sentence, starts_paragraph=index == 0))
     return sentences
@@ -128,7 +149,7 @@ def unsplit_lines(sentences, language):
     return [
         number
         for number, sentence in enumerate(sentences, start=1)
-        if len(split_paragraph(sentence.text, language)) > 1
+        if not sentence.level and len(split_paragraph(sentence.text, language)) > 1
     ]
 
 
@@ -136,9 +157,12 @@ def to_lines(sentences):
     """The editable form of a split: one sentence per line, a blank line between paragraphs."""
     lines = []
     for sentence in sentences:
-        if sentence.starts_paragraph and lines:
+        if (sentence.starts_paragraph or sentence.level) and lines:
             lines.append("")
-        lines.append(sentence.text)
+        if sentence.level:
+            lines.append(f"{'#' * sentence.level} {sentence.text}")
+        else:
+            lines.append(sentence.text)
     return "\n".join(lines)
 
 
@@ -148,6 +172,11 @@ def from_lines(text):
     new_paragraph = True
     for line in clean_text(text).split("\n"):
         if not line:
+            new_paragraph = True
+            continue
+        heading = _heading(line)
+        if heading is not None:
+            sentences.append(heading)
             new_paragraph = True
             continue
         sentences.append(Sentence(line, starts_paragraph=new_paragraph))

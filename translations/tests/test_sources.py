@@ -14,6 +14,7 @@ from translations.models import (
     SourceText,
     TranslationVersion,
 )
+from translations.segmentation import MAX_SENTENCES
 from translations.services import (
     change_source_text,
     copy_version,
@@ -117,7 +118,7 @@ class SourceChangeTests(TranslationTestCase):
         self.assertEqual(SourceChange.objects.get().author, self.reviewer)
 
     def test_a_text_keeps_within_the_limits(self):
-        self.assertRefused(insert(3, *["Encore une phrase."] * 498), "too_long")
+        self.assertRefused(insert(3, *["Encore une phrase."] * MAX_SENTENCES), "too_long")
         self.assertRefused(insert(3, "a" * 2001), "sentence_too_long")
         self.assertFalse(SourceChange.objects.exists())
 

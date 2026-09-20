@@ -63,8 +63,9 @@ class SourceTextForm(SourceTextEditForm):
         help_texts = {
             "text": _(
                 "Collez le texte : il sera découpé en phrases, que vous vérifierez avant "
-                "d’enregistrer. Les appels de note de Wikipédia ([1], [réf. nécessaire]) sont "
-                "retirés."
+                "d’enregistrer. Un titre de division s’écrit sur sa ligne, précédé de # pour "
+                "une partie, ## pour un chapitre, ### pour une section. Les appels de note de "
+                "Wikipédia ([1], [réf. nécessaire]) sont retirés."
             )
         }
         widgets = {"text": forms.Textarea(attrs={"rows": 18})}
@@ -74,7 +75,7 @@ class SourceTextForm(SourceTextEditForm):
         sentences = from_lines(text)
         if not sentences:
             raise ValidationError(_("Le texte est vide."), code="empty")
-        if len(sentences) > MAX_SENTENCES:
+        if sum(1 for sentence in sentences if not sentence.level) > MAX_SENTENCES:
             raise ValidationError(
                 ngettext(
                     "Un texte compte au plus %(limit)d phrase : découpez-le en plusieurs textes.",
@@ -193,6 +194,10 @@ class SentenceEditForm(SourceStateForm):
         text = normalize_sentence(self.cleaned_data["text"])
         if not text:
             raise ValidationError(_("Une phrase ne peut pas être vide."), code="empty")
+        if text.startswith("#"):
+            raise ValidationError(
+                _("Un titre garde son niveau : inutile d’écrire # ici."), code="heading"
+            )
         check_text_for_links(self.user, text)
         return text
 
@@ -238,6 +243,7 @@ class SentenceInsertForm(SourceStateForm):
                 "starts_paragraph": self.cleaned_data["new_paragraph"]
                 if index == 0
                 else sentence.starts_paragraph,
+                "level": sentence.level,
             }
             for index, sentence in enumerate(from_lines(self.cleaned_data["text"]))
         ]

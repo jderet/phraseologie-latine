@@ -12,9 +12,14 @@ from django.utils.translation import gettext_lazy as _
 from moderation.models import ModeratedContent
 from moderation.registry import can_view, register
 
+from .segmentation import MAX_LEVEL
+
 # A work enters the public domain on the 1 January following the 70th year after its
 # author's death.
 COPYRIGHT_YEARS = 70
+
+# The usual names of the levels of title, when a text does not choose its own.
+DEFAULT_LEVEL_NAMES = [_("Partie"), _("Chapitre"), _("Section")]
 
 
 def last_public_domain_death_year(today=None):
@@ -82,7 +87,19 @@ class SourceText(ModeratedContent):
     license = models.CharField(_("licence"), max_length=20, choices=License.choices)
     text = models.TextField(
         _("texte découpé"),
-        help_text=_("Une phrase par ligne ; une ligne vide entre deux paragraphes."),
+        help_text=_(
+            "Une phrase par ligne ; une ligne vide entre deux paragraphes ; un titre de "
+            "division sur sa ligne, précédé de #, ## ou ###."
+        ),
+    )
+    level_names = models.CharField(
+        _("noms des divisions"),
+        max_length=100,
+        blank=True,
+        help_text=_(
+            "Noms des trois niveaux de titre, séparés par des virgules : « Partie, Chapitre, "
+            "Section ». Laissé vide, ces noms-là sont employés."
+        ),
     )
     added_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -111,6 +128,13 @@ class SourceText(ModeratedContent):
 
     def __str__(self):
         return self.title
+
+    def level_label(self, level):
+        """The name chosen for a level of title, or the usual one."""
+        names = [name.strip() for name in self.level_names.split(",") if name.strip()]
+        if 1 <= level <= len(names):
+            return names[level - 1]
+        return DEFAULT_LEVEL_NAMES[level - 1] if 1 <= level <= MAX_LEVEL else ""
 
     def get_absolute_url(self):
         return reverse("translations:source", args=[self.pk])
@@ -175,6 +199,8 @@ class Segment(models.Model):
     order = models.PositiveIntegerField(_("numéro"), null=True, blank=True)
     text = models.TextField(_("phrase"))
     starts_paragraph = models.BooleanField(_("début de paragraphe"), default=False)
+    # 0 for a sentence; 1 to MAX_LEVEL for the title of a part, a chapter or a section.
+    level = models.PositiveSmallIntegerField(_("niveau de titre"), default=0)
     added_in = models.PositiveIntegerField(_("ajoutée au changement"), default=0, editable=False)
     removed_in = models.PositiveIntegerField(
         _("retirée au changement"), null=True, blank=True, editable=False

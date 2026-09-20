@@ -19,10 +19,11 @@ INSERT, EDIT, MERGE, SPLIT = "insert", "edit", "merge", "split"
 
 @dataclass(frozen=True)
 class Line:
-    """A sentence of a text being changed."""
+    """A sentence of a text being changed, or the title of a division (``level`` above 0)."""
 
     text: str
     starts_paragraph: bool = False
+    level: int = 0
 
 
 @dataclass(frozen=True)
@@ -60,7 +61,10 @@ def apply_operation(lines, operation):
             line.text for line in lines[max(start - 1, 0) : start]
         ]:
             raise _missing()
-        added = [Line(item["text"], item["starts_paragraph"]) for item in operation["sentences"]]
+        added = [
+            Line(item["text"], item["starts_paragraph"], item["level"])
+            for item in operation["sentences"]
+        ]
         if not added:
             raise ValidationError(gettext("Ajoutez au moins une phrase."), code="empty")
         removed = 0
@@ -75,7 +79,7 @@ def apply_operation(lines, operation):
             raise _missing()
         line = lines[start]
         if kind == EDIT:
-            added = [Line(operation["text"], operation["starts_paragraph"])]
+            added = [Line(operation["text"], operation["starts_paragraph"], line.level)]
             if not operation["text"]:
                 raise ValidationError(gettext("Une phrase ne peut pas être vide."), code="empty")
             if added[0] == line:
@@ -83,6 +87,11 @@ def apply_operation(lines, operation):
                     gettext("Rien n’a changé dans cette phrase."), code="unchanged"
                 )
         elif kind == MERGE:
+            if line.level or lines[start + 1].level:
+                raise ValidationError(
+                    gettext("Un titre de division ne se fusionne pas avec une phrase."),
+                    code="merge_heading",
+                )
             added = [Line(f"{line.text} {lines[start + 1].text}", line.starts_paragraph)]
         else:
             parts = operation["parts"]
@@ -98,6 +107,10 @@ def apply_operation(lines, operation):
                         "redonner la phrase. Pour changer ses mots, modifiez la phrase."
                     ),
                     code="split_changed",
+                )
+            if line.level:
+                raise ValidationError(
+                    gettext("Un titre de division ne se scinde pas."), code="split_heading"
                 )
             added = [
                 Line(part, line.starts_paragraph and index == 0) for index, part in enumerate(parts)

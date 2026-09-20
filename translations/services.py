@@ -31,7 +31,7 @@ from .models import (
     version_writer_ids,
 )
 from .permissions import can_change_source, can_copy, can_propose, can_propose_source
-from .segmentation import MAX_SENTENCE_LENGTH, MAX_SENTENCES, to_lines
+from .segmentation import MAX_LEVEL, MAX_SENTENCE_LENGTH, MAX_SENTENCES, to_lines
 from .sources import (
     EDIT,
     INSERT,
@@ -74,11 +74,17 @@ def create_source_text(source_text, author, sentences):
             order=number,
             text=sentence.text,
             starts_paragraph=sentence.starts_paragraph,
+            level=sentence.level,
         )
         for number, sentence in enumerate(sentences, start=1)
     )
     auto_follow(author, source_text)
     return source_text
+
+
+def _level(value):
+    """The level of a title, kept within the levels the split knows."""
+    return min(max(int(value or 0), 0), MAX_LEVEL)
 
 
 def normalize_operation(operation):
@@ -90,6 +96,7 @@ def normalize_operation(operation):
             {
                 "text": normalize_sentence(item["text"]),
                 "starts_paragraph": bool(item.get("starts_paragraph")),
+                "level": _level(item.get("level")),
             }
             for item in operation["sentences"]
         ]
@@ -127,8 +134,8 @@ def _with_expected(normalized, operation):
 
 
 def check_sentence_limits(lines):
-    """A changed text keeps within the limits of an added one."""
-    if len(lines) > MAX_SENTENCES:
+    """A changed text keeps within the limits of an added one; titles are not counted."""
+    if sum(1 for line in lines if not line.level) > MAX_SENTENCES:
         raise ValidationError(
             ngettext(
                 "Un texte compte au plus %(limit)d phrase.",
@@ -209,7 +216,10 @@ def _stale():
 
 
 def _current_lines(source):
-    return [Line(segment.text, segment.starts_paragraph) for segment in source.segments.current()]
+    return [
+        Line(segment.text, segment.starts_paragraph, segment.level)
+        for segment in source.segments.current()
+    ]
 
 
 def _closed_proposal():
@@ -397,7 +407,8 @@ def apply_source_operation(source, operation, author, adopted_by=None, proposal=
     history = SourceHistory(source)
     current = history.segments_at()
     applied = apply_operation(
-        [Line(segment.text, segment.starts_paragraph) for segment in current], operation
+        [Line(segment.text, segment.starts_paragraph, segment.level) for segment in current],
+        operation,
     )
     check_sentence_limits(applied.lines)
     number = source.state + 1
@@ -407,6 +418,7 @@ def apply_source_operation(source, operation, author, adopted_by=None, proposal=
             source_text=source,
             text=line.text,
             starts_paragraph=line.starts_paragraph,
+            level=line.level,
             added_in=number,
         )
         for line in applied.added

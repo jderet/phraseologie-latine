@@ -7,13 +7,22 @@
 <section class="page-medium">
   <h1>{% translate "Ajouter un texte à traduire" %}</h1>
   {% if segmented %}
-  <p class="lede">{% blocktranslate trimmed count counter=sentences|length %}
-    Le texte est découpé en {{ counter }} phrase. Vérifiez le découpage avant d’enregistrer : une
-    phrase par ligne, une ligne vide entre deux paragraphes. Il ne pourra plus changer ensuite.
-  {% plural %}
-    Le texte est découpé en {{ counter }} phrases. Vérifiez le découpage avant d’enregistrer : une
-    phrase par ligne, une ligne vide entre deux paragraphes. Il ne pourra plus changer ensuite.
-  {% endblocktranslate %}</p>
+  <p class="lede">
+    {% blocktranslate trimmed count counter=count %}
+      Le texte est découpé en {{ counter }} phrase.
+    {% plural %}
+      Le texte est découpé en {{ counter }} phrases.
+    {% endblocktranslate %}
+    {% if divisions %}{% blocktranslate trimmed count counter=divisions %}
+      Il compte {{ counter }} titre de division.
+    {% plural %}
+      Il compte {{ counter }} titres de division.
+    {% endblocktranslate %}{% endif %}
+    {% blocktranslate trimmed %}
+      Vérifiez le découpage avant d’enregistrer : une phrase par ligne, une ligne vide entre deux
+      paragraphes, un titre de division précédé de #, ## ou ###. Il ne pourra plus changer ensuite.
+    {% endblocktranslate %}
+  </p>
   {% if unsplit %}
   <p class="notice">{% blocktranslate trimmed count counter=unsplit|length with lines=unsplit|join:", " %}
     La ligne {{ lines }} contient encore plusieurs phrases : un texte collé dans cette zone n’est

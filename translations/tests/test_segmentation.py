@@ -81,6 +81,23 @@ class SegmentTests(SimpleTestCase):
         )
         self.assertEqual(len(segment(text, "fr")), 7)
 
+    def test_titles_of_divisions(self):
+        result = segment("# Première partie\nIl pleut. Il vente.\n### Note\nFin.", "fr")
+        self.assertEqual(
+            result,
+            [
+                Sentence("Première partie", starts_paragraph=True, level=1),
+                Sentence("Il pleut.", starts_paragraph=True),
+                Sentence("Il vente."),
+                Sentence("Note", starts_paragraph=True, level=3),
+                Sentence("Fin.", starts_paragraph=True),
+            ],
+        )
+
+    def test_a_mark_without_a_title_stays_a_sentence(self):
+        self.assertEqual(texts(segment("#Il pleut.", "fr")), ["#Il pleut."])
+        self.assertEqual(texts(segment("#### Trop loin.", "fr")), ["#### Trop loin."])
+
     def test_spaces_are_normalized(self):
         self.assertEqual(texts(segment("  Il   pleut.\t ", "fr")), ["Il pleut."])
 
@@ -94,6 +111,12 @@ class EditableFormTests(SimpleTestCase):
         ]
         lines = to_lines(sentences)
         self.assertEqual(lines, "Il pleut.\nNous restons.\n\nDemain.")
+        self.assertEqual(from_lines(lines), sentences)
+
+    def test_round_trip_with_titles(self):
+        sentences = segment("# Partie\nIl pleut. Il vente.\n\n## Chapitre\nFin.", "fr")
+        lines = to_lines(sentences)
+        self.assertEqual(lines, "# Partie\n\nIl pleut.\nIl vente.\n\n## Chapitre\n\nFin.")
         self.assertEqual(from_lines(lines), sentences)
 
     def test_checked_lines_are_kept_as_they_are(self):

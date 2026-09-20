@@ -264,7 +264,8 @@ def _checking(data, form):
     return {
         "form": form,
         "segmented": True,
-        "sentences": sentences,
+        "count": sum(1 for sentence in sentences if not sentence.level),
+        "divisions": sum(1 for sentence in sentences if sentence.level),
         "unsplit": unsplit_lines(sentences, data.get("language", "")),
     }
 
@@ -317,7 +318,9 @@ def source_edit(request, pk):
 
 
 def _lines(sentences):
-    return [Line(sentence.text, sentence.starts_paragraph) for sentence in sentences]
+    return [
+        Line(sentence.text, sentence.starts_paragraph, sentence.level) for sentence in sentences
+    ]
 
 
 def _shown(lines, number):
