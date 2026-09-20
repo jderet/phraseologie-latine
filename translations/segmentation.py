@@ -119,6 +119,19 @@ def segment(text, language):
     return sentences
 
 
+def unsplit_lines(sentences, language):
+    """The numbers of the checked lines that still hold several sentences.
+
+    A text pasted straight into the checking step never went through ``segment``: it stays in
+    one piece. The page warns about it and offers to split it again.
+    """
+    return [
+        number
+        for number, sentence in enumerate(sentences, start=1)
+        if len(split_paragraph(sentence.text, language)) > 1
+    ]
+
+
 def to_lines(sentences):
     """The editable form of a split: one sentence per line, a blank line between paragraphs."""
     lines = []

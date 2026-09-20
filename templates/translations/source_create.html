@@ -14,6 +14,15 @@
     Le texte est découpé en {{ counter }} phrases. Vérifiez le découpage avant d’enregistrer : une
     phrase par ligne, une ligne vide entre deux paragraphes. Il ne pourra plus changer ensuite.
   {% endblocktranslate %}</p>
+  {% if unsplit %}
+  <p class="notice">{% blocktranslate trimmed count counter=unsplit|length with lines=unsplit|join:", " %}
+    La ligne {{ lines }} contient encore plusieurs phrases : un texte collé dans cette zone n’est
+    pas découpé. Le bouton « Redécouper le texte » s’en charge.
+  {% plural %}
+    Les lignes {{ lines }} contiennent encore plusieurs phrases : un texte collé dans cette zone
+    n’est pas découpé. Le bouton « Redécouper le texte » s’en charge.
+  {% endblocktranslate %}</p>
+  {% endif %}
   {% else %}
   <p class="lede">{% blocktranslate trimmed %}
     Seuls sont acceptés les textes du domaine public (auteur mort depuis plus de 70 ans) et les
@@ -25,7 +34,15 @@
     {% csrf_token %}
     {% if segmented %}<input type="hidden" name="segmented" value="1">{% endif %}
     {{ form }}
-    <button type="submit" class="button">{% if segmented %}{% translate "Enregistrer le texte" %}{% else %}{% translate "Découper en phrases" %}{% endif %}</button>
+    {% if not segmented %}
+    <button type="submit" class="button">{% translate "Découper en phrases" %}</button>
+    {% elif unsplit %}
+    <button type="submit" name="resplit" value="1" class="button">{% translate "Redécouper le texte" %}</button>
+    <button type="submit" name="keep" value="1" class="button button-quiet">{% translate "Enregistrer quand même" %}</button>
+    {% else %}
+    <button type="submit" class="button">{% translate "Enregistrer le texte" %}</button>
+    <button type="submit" name="resplit" value="1" class="button button-quiet">{% translate "Redécouper le texte" %}</button>
+    {% endif %}
   </form>
 </section>
 {% endblock %}

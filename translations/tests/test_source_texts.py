@@ -110,6 +110,32 @@ class SourceTextPagesTests(TestCase):
         self.assertEqual(source.segments.count(), 3)
         self.assertFalse(source.segments.filter(starts_paragraph=True).exclude(order=1).exists())
 
+    def test_a_paragraph_pasted_on_the_checking_step_is_pointed_out_and_split_again(self):
+        self.client.force_login(self.owner)
+        url = reverse("translations:source_create")
+        pasted = "Il pleut. M. Dupont reste chez lui. Demain, il sortira."
+        response = self.client.post(url, self.form_data(text=pasted, segmented="1"))
+        self.assertContains(response, "découpé en 1 phrase")
+        self.assertContains(response, "contient encore plusieurs phrases")
+        self.assertFalse(SourceText.objects.exists())
+
+        response = self.client.post(url, self.form_data(text=pasted, segmented="1", resplit="1"))
+        self.assertContains(response, "découpé en 3 phrases")
+        self.assertNotContains(response, "contient encore plusieurs phrases")
+        self.assertEqual(
+            response.context["form"]["text"].value(),
+            "Il pleut.\nM. Dupont reste chez lui.\nDemain, il sortira.",
+        )
+
+    def test_an_unsplit_paragraph_is_saved_when_it_is_confirmed(self):
+        self.client.force_login(self.owner)
+        pasted = "Il pleut. M. Dupont reste chez lui. Demain, il sortira."
+        data = self.form_data(text=pasted, segmented="1", keep="1")
+        response = self.client.post(reverse("translations:source_create"), data)
+        source = SourceText.objects.get()
+        self.assertRedirects(response, source.get_absolute_url())
+        self.assertEqual(source.segments.count(), 1)
+
     def test_declaration_and_license_rules_are_checked(self):
         self.client.force_login(self.owner)
         data = self.form_data(segmented="1", declaration="", source_url="")

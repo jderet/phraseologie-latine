@@ -71,7 +71,7 @@ from .permissions import (
     can_translate,
 )
 from .qa import check_rows, ignored_alerts
-from .segmentation import from_lines, segment, to_lines
+from .segmentation import from_lines, segment, to_lines, unsplit_lines
 from .services import (
     add_proposal_operation,
     adopt_source_proposal,
@@ -258,6 +258,17 @@ def source_detail(request, pk):
     )
 
 
+def _checking(data, form):
+    """The second step: the split to check, and the lines that look like several sentences."""
+    sentences = from_lines(data.get("text", ""))
+    return {
+        "form": form,
+        "segmented": True,
+        "sentences": sentences,
+        "unsplit": unsplit_lines(sentences, data.get("language", "")),
+    }
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def source_create(request):
@@ -266,27 +277,23 @@ def source_create(request):
         form = SourceTextForm(user=request.user)
         return render(request, "translations/source_create.html", {"form": form})
     data = request.POST.copy()
-    if data.get("segmented") != "1":
+    if data.get("segmented") != "1" or data.get("resplit"):
         data["text"] = to_lines(segment(data.get("text", ""), data.get("language", "")))
         form = SourceTextForm(data, user=request.user)
-        return render(
-            request,
-            "translations/source_create.html",
-            {"form": form, "segmented": True, "sentences": from_lines(data["text"])},
-        )
+        return render(request, "translations/source_create.html", _checking(data, form))
     form = SourceTextForm(data, user=request.user)
     if form.is_valid():
+        context = _checking(data, form)
+        if context["unsplit"] and not data.get("keep"):
+            # A text pasted here was never split: the page says so before anything is saved.
+            return render(request, "translations/source_create.html", context)
         source, saved = _contribute(
             request, create_source_text, form.save(commit=False), request.user, form.sentences
         )
         if saved:
             messages.success(request, _("Le texte est ajouté."))
             return redirect(source)
-    return render(
-        request,
-        "translations/source_create.html",
-        {"form": form, "segmented": True, "sentences": from_lines(data.get("text", ""))},
-    )
+    return render(request, "translations/source_create.html", _checking(data, form))
 
 
 @login_required
