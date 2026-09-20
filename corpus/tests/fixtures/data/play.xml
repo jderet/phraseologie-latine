@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <encodingDesc>
+      <refsDecl n="CTS">
+        <cRefPattern n="line" matchPattern="(\w+)" replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div//tei:l[@n='$1'])"/>
+      </refsDecl>
+    </encodingDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="edition" n="urn:cts:latinLit:phi0119.phi001.perseus-lat2">
+        <div type="textpart" subtype="act" n="prologue">
+          <div type="textpart" subtype="scene" n="pr">
+            <sp><speaker>Mercvrivs</speaker><l n="1">Vt vos in vostris voltis mercimoniis</l></sp>
+          </div>
+        </div>
+        <div type="textpart" subtype="act" n="1">
+          <div type="textpart" subtype="scene" n="1">
+            <sp><speaker>Sosia</speaker><l n="2">Qui me alter est audacior homo,</l><l n="3">iuventutis mores qui sciam?</l></sp>
+            <sp><speaker>Mercvrivs</speaker><l n="4">Quid faciam nunc?</l></sp>
+          </div>
+          <div type="textpart" subtype="scene" n="2">
+            <sp><speaker>Ivppiter</speaker><l n="5">Inde cras quasi.</l></sp>
+          </div>
+        </div>
+      </div>
+    </body>
+  </text>
+</TEI>

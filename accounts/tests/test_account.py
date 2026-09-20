@@ -40,18 +40,16 @@ class AccountPageTests(TestCase):
         response = self.client.get(url)
         self.assertRedirects(response, f"{reverse('accounts:login')}?next={url}")
 
-    def test_update_profile_and_language(self):
+    def test_update_profile(self):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse("accounts:account"),
             {
                 "display_name": "M. Tullius Cicero",
                 "orcid": "0000-0002-1825-0097",
-                "interface_language": "en",
             },
         )
         self.assertRedirects(response, reverse("accounts:account"), fetch_redirect_response=False)
-        self.assertEqual(response.cookies["django_language"].value, "en")
         self.user.refresh_from_db()
         self.assertEqual(self.user.display_name, "M. Tullius Cicero")
         self.assertEqual(self.user.orcid, "0000-0002-1825-0097")
@@ -60,7 +58,7 @@ class AccountPageTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse("accounts:account"),
-            {"display_name": "Cicero", "orcid": "0000-0002-1825-0098", "interface_language": "fr"},
+            {"display_name": "Cicero", "orcid": "0000-0002-1825-0098"},
         )
         self.assertContains(response, "Cet identifiant ORCID n’existe pas")
 

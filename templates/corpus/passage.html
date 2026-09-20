@@ -10,6 +10,7 @@
   <p class="reading-link"><a href="{% url 'corpus:reading' work.cts_id %}?aller={{ passage.reference|urlencode }}">{% translate "Lire dans l’œuvre" %}</a> <span class="muted">{% translate "Exporter avec la phraséologie :" %} <a href="{% url 'corpus:export' work.cts_id 'tei' %}?passage={{ passage.reference|urlencode }}">TEI</a> · <a href="{% url 'corpus:export' work.cts_id 'conllu' %}?passage={{ passage.reference|urlencode }}">CoNLL-U</a></span></p>
   {% if work.form == "verse" %}<p class="note"><span class="badge poetry-mark">{% translate "poésie" %}</span> {% translate "Poésie : ne fait pas norme pour la prose." %}</p>{% endif %}
   {% if passage.heading %}<p class="passage-heading">{{ passage.heading }}</p>{% endif %}
+  {% if passage.speaker %}<p class="reading-speaker" lang="la">{{ passage.speaker }}</p>{% endif %}
   <div class="passage-text" lang="la">{% if tokens %}{% render_words tokens marks highlighted False %}{% else %}{{ passage.text }}{% endif %}</div>
   {% if page_units %}
   <p class="passage-units">{% translate "Phraséologie de ce passage :" %}

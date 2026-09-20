@@ -85,6 +85,7 @@ def import_edition(work, parsed, source_path, source_version):
                 order=order,
                 reference=item.reference,
                 heading=item.heading[:300],
+                speaker=item.speaker[:100],
                 text=item.text,
             )
             for order, item in enumerate(parsed.passages)

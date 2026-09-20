@@ -101,7 +101,7 @@ class LoginForm(ThrottledLoginMixin, auth_forms.AuthenticationForm):
 class AccountForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ("display_name", "orcid", "interface_language")
+        fields = ("display_name", "orcid")
 
 
 class DeleteAccountForm(forms.Form):

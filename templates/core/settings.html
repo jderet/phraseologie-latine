@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}{% translate "Réglages" %} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="page-narrow">
+  <h1>{% translate "Réglages" %}</h1>
+
+  <h2>{% translate "Apparence" %}</h2>
+  <form action="{% url 'core:theme' %}" method="post" class="form">
+    {% csrf_token %}
+    <input name="next" type="hidden" value="{% url 'core:settings' %}">
+    <fieldset>
+      <legend>{% translate "Thème" %}</legend>
+      <label><input type="radio" name="theme" value="light"{% if theme == 'light' %} checked{% endif %}> {% translate "Clair" %}</label>
+      <label><input type="radio" name="theme" value="auto"{% if theme == 'auto' %} checked{% endif %}> {% translate "Auto" %}</label>
+      <label><input type="radio" name="theme" value="dark"{% if theme == 'dark' %} checked{% endif %}> {% translate "Sombre" %}</label>
+    </fieldset>
+    <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+  </form>
+
+  <h2>{% translate "Langue" %}</h2>
+  <form action="{% url 'core:settings_language' %}" method="post" class="form">
+    {% csrf_token %}
+    <div>
+      <label for="language">{% translate "Langue du site" %}</label>
+      <select id="language" name="language">
+        {% get_available_languages as LANGUAGES %}
+        {% for code, name in LANGUAGES %}
+        <option value="{{ code }}"{% if code == LANGUAGE_CODE %} selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="button">{% translate "Enregistrer" %}</button>
+  </form>
+</section>
+{% endblock %}

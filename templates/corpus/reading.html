@@ -105,6 +105,7 @@
         {% for item in row.items %}
         {% for heading in item.headings %}<h2 class="reading-heading">{{ heading }}</h2>{% endfor %}
         {% if item.passage.heading %}<p class="passage-heading">{{ item.passage.heading }}</p>{% endif %}
+        {% ifchanged item.passage.speaker %}{% if item.passage.speaker %}<p class="reading-speaker" lang="la">{{ item.passage.speaker }}</p>{% endif %}{% endifchanged %}
         <span class="reading-passage{% if item.passage.review %} is-reviewed{% endif %}" id="p-{{ item.passage.reference }}"><a class="ref{% if item.quiet %} is-quiet{% endif %}" href="{{ work_url }}{{ item.passage.reference|urlencode }}/">{{ item.number }}</a>{% if item.tokens %}{% render_words item.tokens marks %}{% else %}{{ item.passage.text }} {% endif %}</span>
         {% endfor %}
       </div>

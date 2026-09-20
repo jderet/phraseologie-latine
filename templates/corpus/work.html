@@ -61,6 +61,7 @@
     {% for passage in page %}
     <li>
       {% if passage.heading %}<p class="passage-heading">{{ passage.heading }}</p>{% endif %}
+      {% ifchanged passage.speaker %}{% if passage.speaker %}<p class="reading-speaker" lang="la">{{ passage.speaker }}</p>{% endif %}{% endifchanged %}
       <a class="ref" href="{% url 'corpus:passage' work.cts_id passage.reference %}">{{ passage.reference }}</a>
       {{ passage.text }}
     </li>

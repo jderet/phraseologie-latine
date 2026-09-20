@@ -73,6 +73,26 @@ class OtherStructuresTests(SimpleTestCase):
         self.assertEqual(edition.passages[1].text, "Lucina, custos quaeque domituram freta")
         self.assertNotIn("Medea", " ".join(p.text for p in edition.passages))
 
+    def test_verse_keeps_the_speaker_out_of_the_text(self):
+        edition = read_edition(DATA / "verse.xml")
+        self.assertEqual(edition.passages[0].speaker, "Medea")
+        self.assertEqual(edition.passages[1].speaker, "Medea")
+        self.assertEqual(edition.passages[2].speaker, "")
+
+    def test_play_keeps_scenes_and_speakers(self):
+        edition = read_edition(DATA / "play.xml")
+        self.assertEqual(edition.citation_scheme, ["line"])
+        self.assertEqual([p.reference for p in edition.passages], ["1", "2", "3", "4", "5"])
+        self.assertEqual(edition.passages[0].heading, "Prologue")
+        self.assertEqual(edition.passages[0].speaker, "Mercvrivs")
+        self.assertEqual(edition.passages[1].heading, "Acte 1 · Scène 1")
+        self.assertEqual(edition.passages[1].speaker, "Sosia")
+        self.assertEqual(edition.passages[2].heading, "")
+        self.assertEqual(edition.passages[2].speaker, "Sosia")
+        self.assertEqual(edition.passages[3].speaker, "Mercvrivs")
+        self.assertEqual(edition.passages[4].heading, "Acte 1 · Scène 2")
+        self.assertEqual(edition.passages[4].speaker, "Ivppiter")
+
     def test_verse_cited_by_division_and_line(self):
         edition = read_edition(DATA / "verse_books.xml")
         self.assertEqual(edition.citation_scheme, ["poem", "line"])

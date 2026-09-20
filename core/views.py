@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from accounts.roles import is_administrator
+from accounts.views import set_language_cookie
 from corpus.models import Author
 from corpus.search import quotation
 from phraseology.models import Attestation, Kind, Unit
@@ -103,7 +104,28 @@ def theme(request):
         next_url = "/"
     response = redirect(next_url)
     response.set_cookie("theme", value, max_age=60 * 60 * 24 * 365, samesite="Lax")
+    messages.success(request, _("Votre thème est enregistré."))
     return response
+
+
+@login_required
+@require_GET
+def settings_page(request):
+    """The page where the visitor chooses the theme and the interface language."""
+    return render(request, "core/settings.html", {"theme": request.COOKIES.get("theme", "auto")})
+
+
+@login_required
+@require_POST
+def settings_language(request):
+    """Remember the chosen interface language on the account and in the cookie."""
+    language = request.POST.get("language")
+    if language not in dict(settings.LANGUAGES):
+        language = settings.LANGUAGE_CODE
+    request.user.interface_language = language
+    request.user.save(update_fields=["interface_language"])
+    messages.success(request, _("Votre langue est enregistrée."))
+    return set_language_cookie(redirect("core:settings"), language)
 
 
 def _legal_page(request, template, **context):

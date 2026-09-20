@@ -121,6 +121,48 @@ class ThemeTests(TestCase):
         self.assertEqual(self.client.get(reverse("core:theme")).status_code, 405)
 
 
+class SettingsPageTests(TestCase):
+    """The settings page gathers the theme and the interface language."""
+
+    def setUp(self):
+        self.user = make_user()
+
+    def test_requires_login(self):
+        url = reverse("core:settings")
+        response = self.client.get(url)
+        self.assertRedirects(response, f"{reverse('accounts:login')}?next={url}")
+
+    def test_shows_theme_and_language_forms(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("core:settings"))
+        self.assertContains(response, "Réglages")
+        self.assertContains(response, reverse("core:theme"))
+        self.assertContains(response, reverse("core:settings_language"))
+
+    def test_theme_change_returns_to_the_settings_page(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("core:theme"), {"theme": "dark", "next": reverse("core:settings")}
+        )
+        self.assertRedirects(response, reverse("core:settings"), fetch_redirect_response=False)
+        self.assertEqual(response.cookies["theme"].value, "dark")
+
+    def test_language_is_saved_on_the_account_and_in_the_cookie(self):
+        self.client.force_login(self.user)
+        response = self.client.post(reverse("core:settings_language"), {"language": "en"})
+        self.assertRedirects(response, reverse("core:settings"), fetch_redirect_response=False)
+        self.assertEqual(response.cookies["django_language"].value, "en")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.interface_language, "en")
+
+    def test_unknown_language_falls_back_to_the_default(self):
+        self.client.force_login(self.user)
+        response = self.client.post(reverse("core:settings_language"), {"language": "xx"})
+        self.assertRedirects(response, reverse("core:settings"), fetch_redirect_response=False)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.interface_language, settings.LANGUAGE_CODE)
+
+
 class TrainingReservationTests(TestCase):
     """The refusal of model training is readable by robots (cahier des charges, section 5)."""
 

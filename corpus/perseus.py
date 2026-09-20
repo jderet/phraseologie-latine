@@ -55,6 +55,7 @@ class ParsedPassage:
     text: str
     tokens: list[TextToken]
     heading: str = ""
+    speaker: str = ""
 
 
 @dataclass
@@ -76,7 +77,7 @@ def _join(*parts):
     return " · ".join(part for part in parts if part)
 
 
-def _passage(text, foreign_spans, reference, heading):
+def _passage(text, foreign_spans, reference, heading, speaker=""):
     tokens = []
     offset = 0
     for token in tokenize(text):
@@ -86,7 +87,7 @@ def _passage(text, foreign_spans, reference, heading):
         if not token.is_foreign and any(s < end and start < e for s, e in foreign_spans):
             token = replace(token, is_foreign=True)
         tokens.append(token)
-    return ParsedPassage(reference, text, tokens, heading)
+    return ParsedPassage(reference, text, tokens, heading, speaker)
 
 
 class TextBuilder:
@@ -146,10 +147,10 @@ class TextBuilder:
         if name in BLOCK_ELEMENTS:
             self.add_space()
 
-    def passage(self, reference, heading=""):
-        return _passage("".join(self._parts), self._foreign_spans, reference, heading)
+    def passage(self, reference, heading="", speaker=""):
+        return _passage("".join(self._parts), self._foreign_spans, reference, heading, speaker)
 
-    def milestone_passages(self, references, heading="", unit=""):
+    def milestone_passages(self, references, heading="", unit="", speaker=""):
         """Passages cut at the milestones of ``unit``, or of the first unit met.
 
         The text before the first milestone joins the first passage.
@@ -168,7 +169,11 @@ class TextBuilder:
             spans = [(s - shift, e - shift) for s, e in self._foreign_spans]
             passages.append(
                 _passage(
-                    piece, spans, ".".join([*references, number]), heading if not index else ""
+                    piece,
+                    spans,
+                    ".".join([*references, number]),
+                    heading if not index else "",
+                    speaker,
                 )
             )
         return unit, passages
@@ -310,16 +315,48 @@ def _cited_depths(replacement):
     return depths
 
 
+def _speaker(element):
+    """The name in the <speaker> of a <sp> element, with single spaces."""
+    for child in element:
+        if _name(child) == "speaker":
+            text = " ".join("".join(child.itertext()).split())
+            if text:
+                return text
+    return ""
+
+
+def _scene_heading(context):
+    """The act and scene a line opens, for a play, or nothing.
+
+    ``context`` holds the (number, subtype) of the textpart divisions around the line; only
+    the act and scene levels of a play are named, so other editions get no heading here.
+    Front matter (a division numbered « front ») is left unlabelled.
+    """
+    parts = []
+    for number, subtype in context:
+        if subtype == "act":
+            if number == "prologue":
+                parts.append("Prologue")
+            elif number.isdigit():
+                parts.append(f"Acte {number}")
+        elif subtype == "scene" and number != "pr":
+            parts.append(f"Scène {number}")
+    return " · ".join(parts)
+
+
 def _line_passages(edition, depths=()):
     """Passages of a verse edition: numbered lines; an unnumbered line joins the previous one.
 
     ``depths`` are the division levels whose numbers come before the line number, as in
-    book.line; line numbers start again in each of them.
+    book.line; line numbers start again in each of them. A play keeps the name of its speaker
+    and a heading on the first line of each scene.
     """
     groups = []
     subtypes = []
 
-    def walk(element, path):
+    def walk(element, path, speaker):
+        if _name(element) == "sp":
+            speaker = _speaker(element) or speaker
         for child in element:
             name = _name(child)
             if name in SKIPPED_ELEMENTS:
@@ -330,21 +367,26 @@ def _line_passages(edition, depths=()):
                 number = child.get("n")
                 if number or not groups or groups[-1][0] != prefix:
                     subtypes[:] = subtypes or [subtype for _number, subtype in cited]
-                    groups.append((prefix, number or "0", [child]))
+                    groups.append((prefix, number or "0", [child], tuple(path[1:]), speaker))
                 else:
                     groups[-1][2].append(child)
             elif _name(child) == "div" and child.get("type") == "textpart":
-                walk(child, [*path, (child.get("n") or "", child.get("subtype") or "")])
+                walk(child, [*path, (child.get("n") or "", child.get("subtype") or "")], speaker)
             else:
-                walk(child, path)
+                walk(child, path, speaker)
 
-    walk(edition, [("", "")])
+    walk(edition, [("", "")], "")
     passages = []
-    for prefix, number, lines in groups:
+    seen = None
+    for prefix, number, lines, context, speaker in groups:
         builder = TextBuilder()
         for line in lines:
             builder.add_element(line)
-        passages.append(builder.passage(".".join([*prefix, number])))
+        heading = "" if context == seen else _scene_heading(context)
+        passages.append(
+            builder.passage(".".join([*prefix, number]), heading=heading, speaker=speaker)
+        )
+        seen = context
     return passages, [*subtypes, "line"]
 
 

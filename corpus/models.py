@@ -165,6 +165,7 @@ class Passage(models.Model):
     order = models.PositiveIntegerField(_("ordre"))
     reference = models.CharField(_("référence"), max_length=50)
     heading = models.CharField(_("titre"), max_length=300, blank=True)
+    speaker = models.CharField(_("personnage"), max_length=100, blank=True)
     text = models.TextField(_("texte"))
 
     class Meta:
