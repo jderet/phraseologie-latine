@@ -45,8 +45,13 @@ NOTE_CALLS = re.compile(
     re.IGNORECASE,
 )
 
-# End marks, possibly followed by closing quotes or brackets, then spaces.
-BOUNDARY = re.compile(r"[.!?…]+(?:\s?[»”\"’)\]])*(\s+)")
+# End marks, possibly followed by closing quotes or brackets, then spaces. The spaces may be
+# missing: a text copied from a PDF or from a badly built page often lost them.
+BOUNDARY = re.compile(r"[.!?…]+(?:\s?[»”\"’)\]])*(\s*)")
+
+# Separators a paste may carry that Python does not read as spaces, and the soft hyphen.
+INVISIBLE = re.compile(r"[\u200b\u200c\u200d\ufeff]")
+SOFT_HYPHEN = "\u00ad"
 
 OPENING_MARKS = '«“"‘(¿¡—–-[ '
 
@@ -61,7 +66,14 @@ class Sentence:
 
 def _ends_sentence(text, boundary, language):
     following = text[boundary.end() :].lstrip(OPENING_MARKS)
-    if not following or not (following[0].isupper() or following[0].isdigit()):
+    if not following:
+        return False
+    if not boundary.group(1):
+        # No space after the mark: only an upper-case letter ends the sentence, so that a
+        # number (2.5) or a shortened reference (p.76) stays in one piece.
+        if not following[0].isupper():
+            return False
+    elif not (following[0].isupper() or following[0].isdigit()):
         return False
     marks = boundary.group()
     if not marks.startswith(".") or marks.startswith(".."):
@@ -92,6 +104,7 @@ def split_paragraph(paragraph, language):
 
 def clean_text(text):
     text = unicodedata.normalize("NFC", text).replace("\r\n", "\n").replace("\r", "\n")
+    text = INVISIBLE.sub(" ", text).replace(SOFT_HYPHEN, "")
     text = NOTE_CALLS.sub("", text)
     lines = [" ".join(line.split()) for line in text.split("\n")]
     return "\n".join(lines)

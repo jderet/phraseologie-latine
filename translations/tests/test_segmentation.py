@@ -56,6 +56,31 @@ class SegmentTests(SimpleTestCase):
         )
         self.assertEqual(texts(result), ["Paris est une ville.", "Elle compte deux fleuves."])
 
+    def test_missing_spaces_after_the_marks(self):
+        result = segment("Il vient.Elle part.Ils restent.", "fr")
+        self.assertEqual(texts(result), ["Il vient.", "Elle part.", "Ils restent."])
+
+    def test_a_mark_without_space_before_a_digit_or_a_lower_case_keeps_one_sentence(self):
+        for text in ("Il mesure 2.5 mètres.", "Voir p.76 plus loin.", "Il cite J.Dupont ici."):
+            self.assertEqual(texts(segment(text, "fr")), [text])
+
+    def test_invisible_separators_are_read_as_spaces(self):
+        result = segment("Il pleut.\u200bNous restons.\ufeff Demain.", "fr")
+        self.assertEqual(texts(result), ["Il pleut.", "Nous restons.", "Demain."])
+
+    def test_a_long_pasted_paragraph(self):
+        """The passage that was reported as staying in one piece."""
+        text = (
+            "Parmi toutes les créatures d’Allah, les Chinois ont la main la plus habile à "
+            "dessiner ; pour l’exécution de toutes sortes de travaux, il n’y a pas de peuple qui "
+            "puisse faire mieux qu’eux. Un Chinois peut confectionner des choses que personne "
+            "autre ne serait capable de faire. [Quand il a terminé un objet d’art], il l’apporte "
+            "au gouverneur et réclame une récompense (p. 76). Un jour, un Chinois peignit un épi "
+            "de blé sur un[Pg 85] moineau. «Tout homme d’expérience sait, dit-il, qu’un moineau "
+            "ne peut pas se poser. Il a donc commis une faute.» La critique fut trouvée justifiée."
+        )
+        self.assertEqual(len(segment(text, "fr")), 7)
+
     def test_spaces_are_normalized(self):
         self.assertEqual(texts(segment("  Il   pleut.\t ", "fr")), ["Il pleut."])
 
