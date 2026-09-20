@@ -103,6 +103,8 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | passage, mot | `Passage`, `Token` |
 | couche d'analyse | `AnalysisLayer` |
 | texte source, segment | `SourceText`, `Segment` |
+| titre de division (partie, chapitre, section) | `Segment.level`, écrit `#`, `##`, `###` |
+| noms des divisions d'un texte | `SourceText.level_names` |
 | changement du texte source | `SourceChange` |
 | proposition de modification du texte | `SourceProposal` |
 | projet de traduction | `TranslationProject` |

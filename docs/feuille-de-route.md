@@ -250,6 +250,18 @@ Choix du 19 septembre 2026 : le style appartient au projet, qui vise une seule t
 - [x] API et exports : style du projet, rôle et statut des versions
 - [x] Documentation et traductions anglaises
 
+## Étape 19 : des livres, avec parties et chapitres
+
+Choix du 20 septembre 2026 : les titres de division s'écrivent dans le texte collé (`#`, `##`, `###`), chaque texte nomme ses niveaux, un titre se traduit sans obligation, et une phrase se cite « Chapitre 2, phrase 5 ».
+
+- [x] Découpage en phrases résistant à un collage sans espaces ou avec des caractères invisibles
+- [x] Page d'ajout : un pavé non découpé est signalé et se redécoupe, jamais enregistré en silence
+- [x] Modèle : niveau de titre, noms des divisions, limite portée à 2 000 phrases
+- [x] Page d'un texte : sommaire, titres, numéros par chapitre, lecture division par division
+- [x] Éditeur : titres traduisibles sans obligation, filtre par division, avancement sans les titres
+- [x] Exports TEI, texte et imprimable : les titres comme titres
+- [x] Documentation et traductions anglaises
+
 ## Ouverture publique
 
 - [x] Tableau de bord des administrateurs : chiffres clés, files d'attente, activité récente, état technique, comptes (nouveau mot de passe ou lien de réinitialisation)
