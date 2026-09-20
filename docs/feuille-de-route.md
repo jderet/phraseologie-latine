@@ -257,6 +257,7 @@ Choix du 20 septembre 2026 : les titres de division s'écrivent dans le texte co
 - [x] Découpage en phrases résistant à un collage sans espaces ou avec des caractères invisibles
 - [x] Page d'ajout : un pavé non découpé est signalé et se redécoupe, jamais enregistré en silence
 - [x] Modèle : niveau de titre, noms des divisions, limite portée à 2 000 phrases
+- [x] Plan du livre montré avant l'enregistrement, avec les noms des divisions choisis, à valider ou à corriger
 - [x] Page d'un texte : sommaire, titres, numéros par chapitre, lecture division par division
 - [x] Éditeur : titres traduisibles sans obligation, filtre par division, avancement sans les titres
 - [x] Exports TEI, texte et imprimable : les titres comme titres

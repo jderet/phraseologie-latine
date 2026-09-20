@@ -997,7 +997,8 @@ code {
 }
 
 /* Parts and chapters of a source text: the outline and the titles in the text. */
-.outline ul {
+.outline ul,
+ul.outline {
   max-width: 46rem;
   margin: 0 0 24px;
   padding: 10px 14px;
@@ -1010,16 +1011,30 @@ code {
   padding: 2px 0;
 }
 
-.outline-level-2 {
+.outline li.outline-level-2 {
   padding-left: 1.5em;
 }
 
-.outline-level-3 {
+.outline li.outline-level-3 {
   padding-left: 3em;
 }
 
 .outline a[aria-current] {
   font-weight: 600;
+}
+
+.outline-preview {
+  margin: 24px 0;
+}
+
+.outline-preview h2 {
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+}
+
+.outline-preview .note {
+  max-width: 46rem;
+  margin: 0 0 10px;
 }
 
 .division-title {

@@ -61,6 +61,39 @@ class Place:
     number: int = 0
 
 
+def _walk(items):
+    """Yield (item, division, number) in the order of the text.
+
+    ``items`` are sentences, of a saved text (``Segment``) or of a pasted one (``Sentence``):
+    anything with a text and a level. The numbers start again at 1 under every title, and the
+    title of a division is given that division, with the number 0.
+    """
+    open_divisions = []
+    counters = []
+    number = 0
+    for item in items:
+        if not item.level:
+            number += 1
+            yield item, (open_divisions[-1] if open_divisions else None), number
+            continue
+        level = item.level
+        del open_divisions[level - 1 :]
+        del counters[level:]
+        counters.extend([0] * (level - len(counters)))
+        counters[level - 1] += 1
+        division = Division(
+            title=item.text,
+            level=level,
+            index=counters[level - 1],
+            key=".".join(str(count) for count in counters),
+            path=(*(holder.title for holder in open_divisions), item.text),
+            segment_id=getattr(item, "pk", 0),
+        )
+        open_divisions.append(division)
+        number = 0
+        yield item, division, 0
+
+
 def outline(segments):
     """The divisions of a text, and where each of its sentences stands.
 
@@ -69,32 +102,35 @@ def outline(segments):
     """
     divisions = []
     places = {}
-    open_divisions = []
-    counters = []
-    number = 0
-    for segment in segments:
-        if not segment.level:
-            number += 1
-            places[segment.pk] = Place(open_divisions[-1] if open_divisions else None, number)
-            continue
-        level = segment.level
-        del open_divisions[level - 1 :]
-        del counters[level:]
-        counters.extend([0] * (level - len(counters)))
-        counters[level - 1] += 1
-        division = Division(
-            title=segment.text,
-            level=level,
-            index=counters[level - 1],
-            key=".".join(str(count) for count in counters),
-            path=(*(holder.title for holder in open_divisions), segment.text),
-            segment_id=segment.pk,
-        )
-        open_divisions.append(division)
-        divisions.append(division)
-        places[segment.pk] = Place(division)
-        number = 0
+    for segment, division, number in _walk(segments):
+        if segment.level:
+            divisions.append(division)
+        places[segment.pk] = Place(division, number)
     return divisions, places
+
+
+def preview_divisions(sentences):
+    """Each division of a pasted text with the number of sentences under it, and how many
+    sentences come before the first title.
+
+    The person who adds a text checks this outline before saving: it is the only moment when
+    the hierarchy can still be rewritten freely.
+    """
+    divisions = []
+    counts = defaultdict(int)
+    before = 0
+    for sentence, division, _number in _walk(sentences):
+        if sentence.level:
+            divisions.append(division)
+            continue
+        if division is None:
+            before += 1
+            continue
+        numbers = division.key.split(".")
+        for depth in range(1, len(numbers) + 1):
+            counts[".".join(numbers[:depth])] += 1
+    rows = [{"division": division, "count": counts[division.key]} for division in divisions]
+    return rows, before
 
 
 def in_division(division, key):

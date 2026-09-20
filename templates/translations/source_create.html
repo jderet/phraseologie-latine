@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n source_tags %}
 
 {% block title %}{% translate "Ajouter un texte" %} · {{ block.super }}{% endblock %}
 
@@ -13,7 +13,7 @@
     {% plural %}
       Le texte est découpé en {{ counter }} phrases.
     {% endblocktranslate %}
-    {% if divisions %}{% blocktranslate trimmed count counter=divisions %}
+    {% if divisions %}{% blocktranslate trimmed count counter=divisions|length %}
       Il compte {{ counter }} titre de division.
     {% plural %}
       Il compte {{ counter }} titres de division.
@@ -31,6 +31,35 @@
     Les lignes {{ lines }} contiennent encore plusieurs phrases : un texte collé dans cette zone
     n’est pas découpé. Le bouton « Redécouper le texte » s’en charge.
   {% endblocktranslate %}</p>
+  {% endif %}
+  {% if divisions %}
+  <section class="outline-preview" aria-labelledby="outline-preview-title">
+    <h2 id="outline-preview-title">{% translate "Plan du livre" %}</h2>
+    <p class="note">{% blocktranslate trimmed %}
+      Vérifiez la hiérarchie avant d’enregistrer. Si elle n’est pas la bonne, corrigez les #
+      dans le texte ci-dessous, puis cliquez sur « Redécouper le texte ». Les noms des niveaux
+      se changent dans le champ « Noms des divisions ».
+    {% endblocktranslate %}</p>
+    <ul class="outline">
+      {% if before %}
+      <li class="outline-level-0"><span class="muted">{% blocktranslate trimmed count counter=before %}
+        {{ counter }} phrase avant le premier titre
+      {% plural %}
+        {{ counter }} phrases avant le premier titre
+      {% endblocktranslate %}</span></li>
+      {% endif %}
+      {% for row in divisions %}
+      <li class="outline-level-{{ row.division.level }}">
+        {{ row.division.title }}
+        <span class="muted">{{ source|division_label:row.division }} · {% blocktranslate trimmed count counter=row.count %}
+          {{ counter }} phrase
+        {% plural %}
+          {{ counter }} phrases
+        {% endblocktranslate %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
   {% endif %}
   {% else %}
   <p class="lede">{% blocktranslate trimmed %}

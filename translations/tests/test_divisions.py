@@ -6,8 +6,9 @@ from django.urls import reverse
 
 from accounts.roles import CONTRIBUTOR
 from accounts.tests.factories import make_user
+from translations.models import SourceText
 from translations.segmentation import MAX_SENTENCES, segment
-from translations.sources import outline, reading_blocks, under
+from translations.sources import outline, preview_divisions, reading_blocks, under
 
 from .factories import make_project, make_source_text, make_version
 
@@ -99,6 +100,68 @@ class OutlineTests(TestCase):
         self.source.level_names = "Livre"
         self.assertEqual(self.source.level_label(1), "Livre")
         self.assertEqual(self.source.level_label(2), "Chapitre")
+
+
+class PreviewTests(TestCase):
+    """The outline shown before a text is saved, so that the hierarchy is checked first."""
+
+    def test_each_division_counts_the_sentences_under_it(self):
+        rows, before = preview_divisions(segment(BOOK, "fr"))
+        self.assertEqual(before, 0)
+        self.assertEqual(
+            [(row["division"].key, row["division"].title, row["count"]) for row in rows],
+            [
+                ("1", "Première partie", 3),
+                ("1.1", "Chapitre premier", 2),
+                ("1.2", "Chapitre second", 1),
+                ("2", "Seconde partie", 1),
+                ("2.1", "Chapitre premier", 1),
+            ],
+        )
+
+    def test_the_sentences_before_the_first_title_are_counted_apart(self):
+        rows, before = preview_divisions(segment("Il pleut. Il vente.\n# Partie\nFin.", "fr"))
+        self.assertEqual(before, 2)
+        self.assertEqual([row["count"] for row in rows], [1])
+
+    def test_a_text_without_title_has_no_outline(self):
+        self.assertEqual(preview_divisions(segment("Il pleut. Il vente.", "fr")), ([], 2))
+
+
+class PreviewPageTests(TestCase):
+    def setUp(self):
+        self.user = make_user(role=CONTRIBUTOR)
+        self.client.force_login(self.user)
+
+    def form_data(self, **fields):
+        return {
+            "title": "Un livre",
+            "language": "fr",
+            "license": "public-domain",
+            "author_death_year": "1200",
+            "level_names": "Livre, Chapitre",
+            "text": BOOK,
+            "declaration": "on",
+        } | fields
+
+    def test_the_outline_is_shown_before_saving_with_the_chosen_names(self):
+        response = self.client.post(reverse("translations:source_create"), self.form_data())
+        self.assertContains(response, "Plan du livre")
+        self.assertContains(response, "Livre 1")
+        self.assertContains(response, "Chapitre 2")
+        self.assertContains(response, "Chapitre second")
+        self.assertFalse(SourceText.objects.exists())
+
+    def test_the_chosen_names_are_saved_with_the_text(self):
+        data = self.form_data()
+        response = self.client.post(reverse("translations:source_create"), data)
+        checked = response.context["form"]["text"].value()
+        self.client.post(
+            reverse("translations:source_create"), self.form_data(text=checked, segmented="1")
+        )
+        source = SourceText.objects.get()
+        self.assertEqual(source.level_names, "Livre, Chapitre")
+        self.assertEqual(source.level_label(1), "Livre")
 
 
 class ReadingPageTests(TestCase):

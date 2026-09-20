@@ -97,6 +97,7 @@ from .sources import (
     SourceHistory,
     describe_operations,
     outline,
+    preview_divisions,
     reading_blocks,
     simulate,
     under,
@@ -284,11 +285,15 @@ def source_detail(request, pk):
 def _checking(data, form):
     """The second step: the split to check, and the lines that look like several sentences."""
     sentences = from_lines(data.get("text", ""))
+    divisions, before = preview_divisions(sentences)
     return {
         "form": form,
         "segmented": True,
         "count": sum(1 for sentence in sentences if not sentence.level),
-        "divisions": sum(1 for sentence in sentences if sentence.level),
+        "divisions": divisions,
+        "before": before,
+        # Not saved: it only lends the names of the levels to the outline shown.
+        "source": SourceText(level_names=data.get("level_names", "")),
         "unsplit": unsplit_lines(sentences, data.get("language", "")),
     }
 

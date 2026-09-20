@@ -45,7 +45,15 @@ class SourceTextEditForm(ContributionForm):
 
     class Meta:
         model = SourceText
-        fields = ("title", "author", "author_death_year", "language", "source_url", "license")
+        fields = (
+            "title",
+            "author",
+            "author_death_year",
+            "language",
+            "source_url",
+            "license",
+            "level_names",
+        )
 
 
 class SourceTextForm(SourceTextEditForm):
