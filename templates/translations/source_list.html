@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% translate "Traduction" %} · {{ block.super }}{% endblock %}
+{% block title %}{% if page_genre %}{{ page_genre|capfirst }}{% elif page_theme %}{{ page_theme|capfirst }}{% else %}{% translate "Traduction" %}{% endif %} · {{ block.super }}{% endblock %}
 
 {% block content %}
 <section>
@@ -14,10 +14,34 @@
   {% endblocktranslate %}</p>
   <p class="actions">{% if user.is_authenticated %}<a class="button" href="{% url 'translations:source_create' %}">{% translate "Ajouter un texte" %}</a> {% endif %}<a href="{% url 'justifications:challenge_list' %}">{% translate "Contestations" %}</a> <a href="{% url 'translations:concordance' %}">{% translate "Concordance des traductions" %}</a> <a href="{% url 'translations:help' %}">{% translate "Aide" %}</a></p>
 
+  <form method="get" action="{% url 'translations:source_list' %}" class="filter-form">
+    <div class="field">
+      <label for="genre">{% translate "Genre" %}</label>
+      <select id="genre" name="genre">
+        <option value="">{% translate "tous les genres" %}</option>
+        {% for family, options in genre_groups %}<optgroup label="{{ family }}">{% for value, label in options %}<option value="{{ value }}"{% if value == genre %} selected{% endif %}>{{ label|capfirst }}</option>{% endfor %}</optgroup>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="theme">{% translate "Thème" %}</label>
+      <select id="theme" name="theme">
+        <option value="">{% translate "tous les thèmes" %}</option>
+        {% for family, options in theme_groups %}<optgroup label="{{ family }}">{% for value, label in options %}<option value="{{ value }}"{% if value == theme %} selected{% endif %}>{{ label|capfirst }}</option>{% endfor %}</optgroup>{% endfor %}
+      </select>
+    </div>
+    {% if order != "recents" %}<input type="hidden" name="tri" value="{{ order }}">{% endif %}
+    <button type="submit" class="button button-quiet">{% translate "Filtrer" %}</button>
+  </form>
+  {% if page_genre %}
+  <p class="note">{% blocktranslate with name=page_genre %}Genre : {{ name }}{% endblocktranslate %} · <a href="{% url 'translations:source_list' %}">{% translate "tous les textes" %}</a></p>
+  {% elif page_theme %}
+  <p class="note">{% blocktranslate with name=page_theme %}Thème : {{ name }}{% endblocktranslate %} · <a href="{% url 'translations:source_list' %}">{% translate "tous les textes" %}</a></p>
+  {% endif %}
+
   <nav class="workshop-tabs sort-tabs" aria-label="{% translate 'Ordre' %}">
-    <a href="?tri=recents"{% if order == "recents" %} aria-current="page"{% endif %}>{% translate "Textes les plus récents" %}</a>
-    <a href="?tri=activite"{% if order == "activite" %} aria-current="page"{% endif %}>{% translate "Activité récente" %}</a>
-    <a href="?tri=etoiles"{% if order == "etoiles" %} aria-current="page"{% endif %}>{% translate "Les plus étoilés" %}</a>
+    <a href="{% querystring tri='recents' page=None %}"{% if order == "recents" %} aria-current="page"{% endif %}>{% translate "Textes les plus récents" %}</a>
+    <a href="{% querystring tri='activite' page=None %}"{% if order == "activite" %} aria-current="page"{% endif %}>{% translate "Activité récente" %}</a>
+    <a href="{% querystring tri='etoiles' page=None %}"{% if order == "etoiles" %} aria-current="page"{% endif %}>{% translate "Les plus étoilés" %}</a>
   </nav>
   <ul class="item-list text-list">
     {% for source in page %}
@@ -25,6 +49,7 @@
       <div class="text-card-head">
         <a class="item-title" href="{{ source.get_absolute_url }}">{{ source.title }}</a>
         <span class="muted">{% if source.author %}{{ source.author }} · {% endif %}{{ source.get_language_display }} · {% blocktranslate count counter=source.segment_count %}{{ counter }} phrase{% plural %}{{ counter }} phrases{% endblocktranslate %}{% if source.star_count %} · <span aria-hidden="true">★</span> {% blocktranslate count counter=source.star_count %}{{ counter }} étoile{% plural %}{{ counter }} étoiles{% endblocktranslate %}{% endif %}</span>
+        <p class="text-tags">{% for code, name in source.genre_names %}<a class="text-tag is-genre" href="{% url 'translations:source_by_genre' code %}">{{ name }}</a> {% endfor %}{% for code, name in source.theme_names %}<a class="text-tag" href="{% url 'translations:source_by_theme' code %}">{{ name }}</a> {% endfor %}</p>
       </div>
       <ul class="project-rows">
         {% for project in source.project_list %}

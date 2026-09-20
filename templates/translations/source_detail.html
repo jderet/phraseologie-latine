@@ -23,6 +23,18 @@
       <dt>{% translate "Langue" %}</dt>
       <dd>{{ source.get_language_display|capfirst }}</dd>
     </div>
+    {% if source.genre_names %}
+    <div>
+      <dt>{% blocktranslate count counter=source.genre_names|length %}Genre{% plural %}Genres{% endblocktranslate %}</dt>
+      <dd class="text-tags">{% for code, name in source.genre_names %}<a class="text-tag is-genre" href="{% url 'translations:source_by_genre' code %}">{{ name }}</a> {% endfor %}</dd>
+    </div>
+    {% endif %}
+    {% if source.theme_names %}
+    <div>
+      <dt>{% blocktranslate count counter=source.theme_names|length %}Thème{% plural %}Thèmes{% endblocktranslate %}</dt>
+      <dd class="text-tags">{% for code, name in source.theme_names %}<a class="text-tag" href="{% url 'translations:source_by_theme' code %}">{{ name }}</a> {% endfor %}</dd>
+    </div>
+    {% endif %}
     <div>
       <dt>{% translate "Licence" %}</dt>
       <dd>{% if source.is_public_domain %}{{ source.get_license_display|capfirst }}{% else %}<a href="{{ source.license_url }}" rel="license noopener">{{ source.get_license_display }}</a> <span class="muted">({{ source.legal_status }})</span>{% endif %}</dd>

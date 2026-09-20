@@ -1833,6 +1833,39 @@ article > h2 {
   margin: 20px 0;
 }
 
+/* Genres and themes of a source text, each one leading to its own page. */
+.text-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 0;
+}
+
+.facts .text-tags {
+  margin: 0;
+}
+
+.text-tag {
+  display: inline-block;
+  padding: 0 8px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.text-tag:hover {
+  border-color: var(--rule-strong);
+  color: var(--ink);
+}
+
+.text-tag.is-genre {
+  border-color: var(--rule-strong);
+  color: var(--ink);
+}
+
 .filter-form input,
 .filter-form select {
   font: inherit;

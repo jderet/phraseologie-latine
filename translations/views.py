@@ -26,6 +26,13 @@ from justifications.models import Challenge, Justification
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
+from .classification import (
+    GENRE_GROUPS,
+    THEME_GROUPS,
+    Genre,
+    Theme,
+    grouped_choices,
+)
 from .comments import can_comment_sentence, comments_for, open_counts
 from .diffs import word_diff
 from .editor import filter_choices, filter_rows, panel_tabs, row_data, status_counts
@@ -163,9 +170,9 @@ TEXT_ORDERS = {
 }
 
 
-def source_list(request):
+def _text_page(request, genre="", theme="", page_genre=None, page_theme=None):
     """The page « Traduction »: each text with its projects and the progress of their
-    translation (choice of 19 September 2026)."""
+    translation (choice of 19 September 2026), narrowed to a genre or a theme."""
     order = request.GET.get("tri") if request.GET.get("tri") in TEXT_ORDERS else "recents"
     last_event = (
         Event.objects.filter(project__source_text=OuterRef("pk"), is_public=True)
@@ -184,9 +191,13 @@ def source_list(request):
         .annotate(total=Count("pk"))
         .values("total")
     )
+    texts = SourceText.objects.filter(is_hidden=False)
+    if genre:
+        texts = texts.filter(genres__contains=[genre])
+    if theme:
+        texts = texts.filter(themes__contains=[theme])
     texts = (
-        SourceText.objects.filter(is_hidden=False)
-        .select_related("added_by")
+        texts.select_related("added_by")
         .annotate(
             segment_count=Count("segments", filter=Q(segments__removed_in__isnull=True)),
             last_activity=Subquery(last_event),
@@ -204,7 +215,45 @@ def source_list(request):
         by_text[project.source_text_id].append(project)
     for text in page:
         text.project_list = by_text.get(text.pk, [])
-    return render(request, "translations/source_list.html", {"page": page, "order": order})
+    return render(
+        request,
+        "translations/source_list.html",
+        {
+            "page": page,
+            "order": order,
+            "genre": genre,
+            "theme": theme,
+            "genre_groups": grouped_choices(GENRE_GROUPS),
+            "theme_groups": grouped_choices(THEME_GROUPS),
+            "page_genre": page_genre,
+            "page_theme": page_theme,
+        },
+    )
+
+
+def source_list(request):
+    """All the texts, filtered by a genre and a theme chosen in the menus."""
+    genre = request.GET.get("genre", "")
+    theme = request.GET.get("theme", "")
+    return _text_page(
+        request,
+        genre=genre if genre in Genre.values else "",
+        theme=theme if theme in Theme.values else "",
+    )
+
+
+def source_by_genre(request, code):
+    """The texts of one genre, at an address one can share."""
+    if code not in Genre.values:
+        raise Http404
+    return _text_page(request, genre=code, page_genre=Genre(code).label)
+
+
+def source_by_theme(request, code):
+    """The texts of one theme, at an address one can share."""
+    if code not in Theme.values:
+        raise Http404
+    return _text_page(request, theme=code, page_theme=Theme(code).label)
 
 
 def _project_summaries(user, projects):

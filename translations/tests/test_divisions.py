@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from accounts.roles import CONTRIBUTOR
 from accounts.tests.factories import make_user
+from translations.classification import Genre
 from translations.models import SourceText
 from translations.segmentation import MAX_SENTENCES, segment
 from translations.sources import outline, preview_divisions, reading_blocks, under
@@ -139,6 +140,7 @@ class PreviewPageTests(TestCase):
             "language": "fr",
             "license": "public-domain",
             "author_death_year": "1200",
+            "genres": [Genre.NOVEL],
             "level_names": "Livre, Chapitre",
             "text": BOOK,
             "declaration": "on",
