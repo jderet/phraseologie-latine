@@ -12,6 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from moderation.models import ModeratedContent
 from moderation.registry import can_view, register
 
+from .classification import MAX_GENRES, MAX_THEMES, Genre, Theme, clean_codes, names
 from .segmentation import MAX_LEVEL
 
 # A work enters the public domain on the 1 January following the 70th year after its
@@ -76,6 +77,9 @@ class SourceText(ModeratedContent):
         ),
     )
     language = models.CharField(_("langue"), max_length=2, choices=Language.choices)
+    # Closed vocabularies (``classification``): what the text is, what it speaks of.
+    genres = models.JSONField(_("genres"), default=list, blank=True)
+    themes = models.JSONField(_("thèmes"), default=list, blank=True)
     source_url = models.URLField(
         _("adresse d’origine"),
         max_length=500,
@@ -115,6 +119,11 @@ class SourceText(ModeratedContent):
         verbose_name = _("texte source")
         verbose_name_plural = _("textes sources")
         ordering = ["-created_at", "-pk"]
+        # The texts of one genre or one theme, looked for by a list that contains its code.
+        indexes = [
+            GinIndex(name="translations_source_genres", fields=["genres"]),
+            GinIndex(name="translations_source_themes", fields=["themes"]),
+        ]
         constraints = [
             models.CheckConstraint(
                 condition=~Q(license="public-domain") | Q(author_death_year__isnull=False),
@@ -175,8 +184,25 @@ class SourceText(ModeratedContent):
             errors["source_url"] = _(
                 "Indiquez l’adresse d’origine : une licence libre demande de citer la source."
             )
+        self.genres = clean_codes(self.genres, Genre)
+        self.themes = clean_codes(self.themes, Theme)
+        if not self.genres:
+            errors["genres"] = _("Choisissez au moins un genre.")
+        elif len(self.genres) > MAX_GENRES:
+            errors["genres"] = _("Choisissez %(limit)d genres au plus.") % {"limit": MAX_GENRES}
+        if len(self.themes) > MAX_THEMES:
+            errors["themes"] = _("Choisissez %(limit)d thèmes au plus.") % {"limit": MAX_THEMES}
         if errors:
             raise ValidationError(errors)
+
+    @property
+    def genre_names(self):
+        """(code, label) pairs of its genres, to show and to link."""
+        return names(self.genres, Genre)
+
+    @property
+    def theme_names(self):
+        return names(self.themes, Theme)
 
     @property
     def is_public_domain(self):
