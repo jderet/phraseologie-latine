@@ -53,6 +53,8 @@ class SourceTextEditForm(ContributionForm):
     genres = forms.MultipleChoiceField(
         label=_("Genres"),
         choices=lambda: grouped_choices(GENRE_GROUPS),
+        # Not required here: ``SourceText.clean`` asks for a genre in its own words, once.
+        required=False,
         widget=forms.CheckboxSelectMultiple(attrs={"class": "choice-groups"}),
         help_text=_("Ce qu’est le texte : trois genres au plus."),
     )
