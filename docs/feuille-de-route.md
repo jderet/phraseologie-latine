@@ -260,6 +260,7 @@ Choix du 20 septembre 2026 : les titres de division s'écrivent dans le texte co
 - [x] Page d'un texte : sommaire, titres, numéros par chapitre, lecture division par division
 - [x] Éditeur : titres traduisibles sans obligation, filtre par division, avancement sans les titres
 - [x] Exports TEI, texte et imprimable : les titres comme titres
+- [x] Enregistrement d'un texte long : la limite du nombre de champs d'un formulaire couvre un livre entier
 - [x] Documentation et traductions anglaises
 
 ## Ouverture publique

@@ -191,6 +191,12 @@ PERSEUS_LATIN_DIR = Path(env("PERSEUS_LATIN_DIR", default=str(BASE_DIR / "canoni
 EXPORT_DIR = Path(env("EXPORT_DIR", default=str(BASE_DIR / "exports")))
 
 
+# Forms: the editor sends one field per sentence of the text, so a whole book must fit
+# (translations.segmentation.MAX_SENTENCES sentences, their titles, and the fields of the
+# form itself). Django's own limit of 1000 fields is far too low for a long text.
+DATA_UPLOAD_MAX_NUMBER_FIELDS = env.int("DATA_UPLOAD_MAX_NUMBER_FIELDS", default=6000)
+
+
 # Content Security Policy: scripts, styles, images and fonts come from the site only, no
 # page can be framed by another site, and forms post to the site only.
 SECURE_CSP = {

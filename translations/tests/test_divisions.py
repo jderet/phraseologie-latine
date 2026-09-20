@@ -1,11 +1,12 @@
 """Parts and chapters of a source text: the outline, the citations, the reading page."""
 
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.roles import CONTRIBUTOR
 from accounts.tests.factories import make_user
-from translations.segmentation import segment
+from translations.segmentation import MAX_SENTENCES, segment
 from translations.sources import outline, reading_blocks, under
 
 from .factories import make_project, make_source_text, make_version
@@ -150,3 +151,24 @@ class EditorTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.version.segments.get(segment=title).text, "Pars prima")
         self.assertEqual(self.client.get(self.url()).context["translated_count"], 0)
+
+
+class LongTextTests(TestCase):
+    """A whole book is saved in one form: Django's own limit of 1000 fields is too low."""
+
+    def test_more_fields_than_the_django_default_are_accepted(self):
+        user = make_user(role=CONTRIBUTOR)
+        sentences = [f"Phrase {number}." for number in range(1, 1201)]
+        source = make_source_text(user, sentences=sentences)
+        project = make_project(user, source_text=source)
+        version = make_version(user, project)
+        self.client.force_login(user)
+        segments = list(source.segments.current())
+        data = {f"s{segment.pk}": "" for segment in segments}
+        data[f"s{segments[0].pk}"] = "Pluit."
+        response = self.client.post(reverse("translations:version_edit", args=[version.pk]), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(version.segments.get(segment=segments[0]).text, "Pluit.")
+
+    def test_the_limit_covers_a_text_of_the_greatest_size(self):
+        self.assertGreater(settings.DATA_UPLOAD_MAX_NUMBER_FIELDS, MAX_SENTENCES + 100)
