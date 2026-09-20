@@ -264,6 +264,18 @@ Choix du 20 septembre 2026 : les titres de division s'écrivent dans le texte co
 - [x] Enregistrement d'un texte long : la limite du nombre de champs d'un formulaire couvre un livre entier
 - [x] Documentation et traductions anglaises
 
+## Étape 20 : les textes classés par genres et par thèmes
+
+Choix du 20 septembre 2026 : deux listes fermées, un à trois genres et zéro à six thèmes par
+texte, un genre au moins exigé, et une page par entrée.
+
+- [x] Vocabulaire : 52 genres et 44 thèmes rangés par familles, portés par le texte source
+- [x] Page d'ajout et de modification : cases à cocher par familles, un genre au moins
+- [x] Page « Traduction » : filtres par genre et par thème, pastilles sur chaque carte
+- [x] Une page par genre et par thème, à une adresse qui se partage
+- [x] API : les genres et les thèmes dans le bloc du texte source
+- [x] Documentation et traductions anglaises
+
 ## Ouverture publique
 
 - [x] Tableau de bord des administrateurs : chiffres clés, files d'attente, activité récente, état technique, comptes (nouveau mot de passe ou lien de réinitialisation)
