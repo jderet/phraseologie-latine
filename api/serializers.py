@@ -281,6 +281,8 @@ def version_summary(version, link):
             "title": source.title,
             "author": source.author,
             "language": source.language,
+            "genres": source.genres,
+            "themes": source.themes,
             "license": source.get_license_display(),
             "url": source.source_url,
         },

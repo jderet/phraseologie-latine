@@ -106,6 +106,8 @@ class ApiTests(ApiTestCase):
         response, version = self.get("version", self.version.pk)
         self.assertEqual(version["segments"][1]["latin"], "Domi manemus.")
         self.assertEqual(version["author"], "Marcus")
+        self.assertEqual(version["source_text"]["genres"], ["article-presse"])
+        self.assertEqual(version["source_text"]["themes"], [])
         self.assertNotIn("Pluit secretum", response.content.decode())
         self.assertNotIn("@example.org", response.content.decode())
 
