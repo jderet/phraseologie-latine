@@ -443,6 +443,29 @@ h2 {
   font-size: 0.95rem;
 }
 
+/* The main navigation: quiet pills, the section being read lit up. */
+.site-brand .site-nav {
+  gap: 4px;
+}
+
+.site-brand .site-nav a {
+  padding: 6px 12px;
+  color: var(--ink-2);
+  text-decoration: none;
+  border-radius: 999px;
+}
+
+.site-brand .site-nav a:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.site-brand .site-nav a[aria-current="page"] {
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
 .site-nav form {
   margin: 0;
 }
@@ -2987,8 +3010,17 @@ details.fold > summary h2 {
 
 /* Page « Traduction »: each text with its projects. */
 
-.text-card {
-  gap: 8px;
+.item-list.text-list {
+  gap: 16px;
+}
+
+.item-list > li.text-card {
+  gap: 10px;
+  padding: 18px 22px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgb(27 36 31 / 6%);
 }
 
 .text-card-head {
@@ -3010,6 +3042,50 @@ details.fold > summary h2 {
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 16px;
+}
+
+.project-row.is-empty {
+  color: var(--ink-3);
+}
+
+.project-row-new a {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.project-row-new a:hover {
+  text-decoration: underline;
+}
+
+/* A project: its main translation framed, its closed variants folded. */
+.main-translation {
+  margin: 28px 0;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgb(27 36 31 / 6%);
+}
+
+.main-translation h2 {
+  margin-bottom: 10px;
+}
+
+.closed-variants {
+  margin-top: 28px;
+}
+
+.closed-variants > summary {
+  cursor: pointer;
+}
+
+.closed-variants > summary h2 {
+  display: inline;
+  margin: 0;
+  font-size: 1.3rem;
 }
 
 .project-row-name {

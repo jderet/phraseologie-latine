@@ -663,6 +663,11 @@ kbd {
   margin: 0;
 }
 
+/* An entry of the personal memory: marked in gold, it stays private. */
+.memory-item.is-personal {
+  border-left: 3px solid var(--gold);
+}
+
 .memory-latin {
   font-family: var(--serif);
   font-size: 1rem;

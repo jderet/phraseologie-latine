@@ -14,10 +14,12 @@
       <div class="site-brand">
         <a class="brand" href="{% url 'core:home' %}">{% translate "Phraséologie latine" %}</a>
         <nav class="site-nav" aria-label="{% translate 'Navigation principale' %}">
-          <a href="{% url 'corpus:index' %}">{% translate "Corpus" %}</a>
-          <a href="{% url 'corpus:search' %}">{% translate "Recherche" %}</a>
-          <a href="{% url 'phraseology:unit_list' %}">{% translate "Phraséologie" %}</a>
-          <a href="{% url 'translations:source_list' %}">{% translate "Traduction" %}</a>
+          {% with match=request.resolver_match %}
+          <a href="{% url 'corpus:index' %}"{% if match.app_name == "corpus" and match.url_name != "search" and match.url_name != "search_fragment" %} aria-current="page"{% endif %}>{% translate "Corpus" %}</a>
+          <a href="{% url 'corpus:search' %}"{% if match.url_name == "search" or match.url_name == "search_fragment" %} aria-current="page"{% endif %}>{% translate "Recherche" %}</a>
+          <a href="{% url 'phraseology:unit_list' %}"{% if match.app_name == "phraseology" %} aria-current="page"{% endif %}>{% translate "Phraséologie" %}</a>
+          <a href="{% url 'translations:source_list' %}"{% if match.app_name == "translations" %} aria-current="page"{% endif %}>{% translate "Traduction" %}</a>
+          {% endwith %}
         </nav>
       </div>
       <nav class="site-tools" aria-label="{% translate 'Compte' %}">

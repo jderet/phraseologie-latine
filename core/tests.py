@@ -77,6 +77,23 @@ class HomeShowcaseTests(TestCase):
         self.assertNotContains(response, "home-quote")
 
 
+class NavigationTests(TestCase):
+    """The main navigation marks the section being read."""
+
+    def test_corpus_and_search_are_marked_apart(self):
+        response = self.client.get(reverse("corpus:index"))
+        self.assertContains(response, '<a href="/corpus/" aria-current="page">')
+        response = self.client.get(reverse("corpus:search"))
+        self.assertContains(response, '<a href="/recherche/" aria-current="page">')
+        self.assertNotContains(response, '<a href="/corpus/" aria-current="page">')
+
+    def test_phraseology_and_translation_sections_are_marked(self):
+        response = self.client.get(reverse("phraseology:unit_list"))
+        self.assertContains(response, 'aria-current="page"')
+        response = self.client.get(reverse("translations:source_list"))
+        self.assertContains(response, 'aria-current="page"')
+
+
 class ThemeTests(TestCase):
     """The appearance choice is kept in a cookie, without account and without script."""
 
