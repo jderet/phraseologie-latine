@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from .sources import in_division
+
 # The fragment of a tab is loaded for the active sentence: its address carries this mark.
 SEGMENT_MARK = "{segment}"
 
@@ -80,7 +82,11 @@ def row_data(row):
 
 
 def status_counts(rows):
-    """[(status, label, count, percent)] of the rows, for the bar of progress."""
+    """[(status, label, count, percent)] of the rows, for the bar of progress.
+
+    The title of a division is not counted: translating it is free.
+    """
+    rows = [row for row in rows if not getattr(row.get("segment"), "level", 0)]
     labels = {
         TODO: _("à traduire"),
         "draft": _("brouillon"),
@@ -136,12 +142,14 @@ def fold(text):
     return "".join(char for char in decomposed if not unicodedata.combining(char)).casefold()
 
 
-def filter_rows(rows, name, query):
-    """The rows a filter and a search keep; the numbers of the sentences do not change."""
+def filter_rows(rows, name, query, division=""):
+    """The rows a filter, a search and a division keep; the numbers do not change."""
     test = FILTERS.get(name, (None, None))[1]
     needle = fold(query).strip()
     kept = []
     for row in rows:
+        if division and not in_division(row.get("division"), division):
+            continue
         if test is not None and not test(row):
             continue
         if needle and needle not in fold(row["segment"].text) and needle not in fold(row["text"]):

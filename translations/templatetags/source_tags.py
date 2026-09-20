@@ -11,3 +11,9 @@ register = template.Library()
 def division_label(source, division):
     """« Chapitre 2 », with the name this text gives to that level of title."""
     return source.citation(Place(division))
+
+
+@register.filter
+def level_name(source, level):
+    """« Chapitre », the name this text gives to that level of title."""
+    return source.level_label(level)

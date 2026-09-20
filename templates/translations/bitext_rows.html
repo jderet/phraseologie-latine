@@ -1,11 +1,11 @@
-{% load i18n phraseology_tags %}<ol class="bitext">
+{% load i18n phraseology_tags source_tags %}<ol class="bitext">
   {% for row in rows %}
-  <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}">
-    <span class="bitext-number">{{ row.number }}</span>
+  <li class="bitext-row{% if row.segment.level %} bitext-heading division-level-{{ row.segment.level }}{% endif %}{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}">
+    <span class="bitext-number">{% if row.segment.level %}<span class="muted">{{ source|division_label:row.division }}</span>{% else %}{{ row.shown_number }}{% endif %}</span>
     <p class="bitext-source" lang="{{ source.language }}">{{ row.segment.text }}</p>
     <div class="bitext-latin">
       {% include "translations/source_changed.html" %}
-      <p lang="la">{% if row.saved %}{% latin_sentence row.saved row.justifications as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
+      <p lang="la">{% if row.saved %}{% latin_sentence row.saved row.justifications as sentence %}{{ sentence.html }}{% elif row.segment.level %}<span class="muted">{% translate "titre non traduit" %}</span>{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</p>
       {% if row.origin and show_origin or row.origin.written_by %}<p class="row-origin">{% if show_origin %}{% if row.origin.step %}<a href="{{ row.origin.step.get_absolute_url }}">{% blocktranslate with number=row.origin.step.number %}modifiée à l’étape {{ number }}{% endblocktranslate %}</a>{% else %}{% translate "modifiée à une étape non publique" %}{% endif %}{% if row.origin.written_by %} · {% endif %}{% endif %}{% if row.origin.written_by %}{% blocktranslate with name=row.origin.written_by.public_name %}écrite par {{ name }}{% endblocktranslate %}{% endif %}</p>{% endif %}
       {% if row.saved and sentence.units %}<p class="row-units">{% translate "Unités repérées :" %} {% for unit in sentence.units %}<a href="{{ unit.get_absolute_url }}" lang="la">{{ unit.reference_form }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
       {% if row.justifications %}

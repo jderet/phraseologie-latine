@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n source_tags %}
 
 {% block title %}{% translate "Phrases du texte" %} · {{ source.title }} · {{ block.super }}{% endblock %}
 
@@ -58,16 +58,17 @@
   {% endif %}
   <ol class="step-changes">
     {% for sentence in sentences %}
-    <li class="step-change" id="phrase-{{ sentence.order }}">
+    <li class="step-change{% if sentence.level %} division-level-{{ sentence.level }}{% endif %}" id="phrase-{{ sentence.order }}">
       <span class="bitext-number">{{ sentence.order }}</span>
       <div>
-        <p lang="{{ source.language }}">{{ sentence.text }}</p>
-        {% if sentence.starts_paragraph and not forloop.first %}<p class="muted">{% translate "début de paragraphe" %}</p>{% endif %}
+        <p lang="{{ source.language }}"{% if sentence.level %} class="division-title"{% endif %}>{{ sentence.text }}</p>
+        {% if sentence.level %}<p class="muted">{% blocktranslate with name=source|level_name:sentence.level %}titre : {{ name }}{% endblocktranslate %}</p>{% endif %}
+        {% if sentence.starts_paragraph and not forloop.first and not sentence.level %}<p class="muted">{% translate "début de paragraphe" %}</p>{% endif %}
         {% if actions %}
         <p class="form-links">
           <a class="small-link" href="{% url 'translations:source_sentence_edit' source.pk sentence.order %}">{% translate "Modifier" %}</a>
-          <a class="small-link" href="{% url 'translations:source_sentence_split' source.pk sentence.order %}">{% translate "Scinder" %}</a>
-          {% if not forloop.last %}<a class="small-link" href="{% url 'translations:source_sentence_merge' source.pk sentence.order %}">{% translate "Fusionner avec la suivante" %}</a>{% endif %}
+          {% if not sentence.level %}<a class="small-link" href="{% url 'translations:source_sentence_split' source.pk sentence.order %}">{% translate "Scinder" %}</a>{% endif %}
+          {% if not forloop.last and not sentence.level %}<a class="small-link" href="{% url 'translations:source_sentence_merge' source.pk sentence.order %}">{% translate "Fusionner avec la suivante" %}</a>{% endif %}
           <a class="small-link" href="{% url 'translations:source_sentence_insert' source.pk %}?apres={{ sentence.order }}">{% translate "Ajouter des phrases après" %}</a>
         </p>
         {% endif %}

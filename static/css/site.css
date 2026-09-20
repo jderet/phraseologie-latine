@@ -1046,6 +1046,27 @@ code {
   font-weight: 400;
 }
 
+.bitext-heading {
+  margin-top: 18px;
+}
+
+.bitext-heading .bitext-source {
+  font-family: var(--serif);
+  font-weight: 600;
+}
+
+.bitext-heading.division-level-1 .bitext-source {
+  font-size: 1.2rem;
+}
+
+.bitext-heading.division-level-2 .bitext-source {
+  font-size: 1.1rem;
+}
+
+.export-heading td {
+  font-weight: 600;
+}
+
 article > h2 {
   margin-top: 40px;
 }

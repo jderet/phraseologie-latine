@@ -351,7 +351,12 @@ def _shown(lines, number):
     if not 1 <= number <= len(lines):
         raise Http404
     line = lines[number - 1]
-    return {"order": number, "text": line.text, "starts_paragraph": line.starts_paragraph}
+    return {
+        "order": number,
+        "text": line.text,
+        "starts_paragraph": line.starts_paragraph,
+        "level": line.level,
+    }
 
 
 def _preparing_proposal(user, source):
@@ -974,15 +979,24 @@ def _rows(user, version, step=None):
     translated_ids = dict(version.segments.values_list("segment_id", "pk"))
     # In their working text, the author sees the sentences the source text changed since.
     since = _source_changed_since(user, version) if step is None else None
+    source = version.project.source_text
+    divisions, places = history.outline_at(state)
     rows = []
     for number, source_segment in enumerate(history.segments_at(state), start=1):
         sentence = sentences.get(source_segment.pk)
         text = sentence.text if sentence else ""
         changed = since is not None and source_segment.added_in > since.source_state
+        place = places[source_segment.pk]
         rows.append(
             {
                 "segment": source_segment,
+                # The number in the whole text: addresses, anchors and history use it.
                 "number": number,
+                # What is shown: the number inside the division, and where it stands.
+                "place": place,
+                "shown_number": place.number,
+                "division": place.division,
+                "citation": source.citation(place),
                 "translated_pk": translated_ids.get(source_segment.pk),
                 "sentence": sentence,
                 "saved": text,
@@ -1021,9 +1035,11 @@ def _origin(user, version, sentence):
 
 
 def _progress(rows):
+    """The progress of a version; the titles of divisions are not counted."""
+    sentences = [row for row in rows if not row["segment"].level]
     return {
-        "translated_count": sum(1 for row in rows if row["saved"]),
-        "segment_count": len(rows),
+        "translated_count": sum(1 for row in sentences if row["saved"]),
+        "segment_count": len(sentences),
     }
 
 
@@ -1148,7 +1164,13 @@ def version_edit(request, pk):
         messages.error(request, _("Rien n’est enregistré : corrigez les phrases signalées."))
     active_filter = request.GET.get("filtre", "")
     query = request.GET.get("q", "")[:200]
-    shown = filter_rows(rows, active_filter, query)
+    divisions = [row["division"] for row in rows if row["segment"].level]
+    chosen = request.GET.get("division", "")
+    if chosen and not any(division.key == chosen for division in divisions):
+        chosen = ""
+    if not chosen and divisions and len(rows) > DIVISION_AT_ONCE:
+        chosen = divisions[0].key
+    shown = filter_rows(rows, active_filter, query, chosen)
     return render(
         request,
         "translations/version_edit.html",
@@ -1159,6 +1181,8 @@ def version_edit(request, pk):
             "shown_rows": shown,
             "filters": filter_choices(),
             "active_filter": active_filter,
+            "divisions": divisions,
+            "chosen": chosen,
             "query": query,
             "has_members": active_members(version).exists(),
             "source_step": _source_changed_since(request.user, version),

@@ -22,7 +22,11 @@ def word_count(text):
 
 
 def version_stats(user, version, rows):
-    """Figures of the text the user sees (``rows`` of the version page)."""
+    """Figures of the text the user sees (``rows`` of the version page).
+
+    The titles of the divisions are left out: only the sentences are counted.
+    """
+    rows = [row for row in rows if not row["segment"].level]
     translated = [row for row in rows if row["saved"]]
     source_words = sum(word_count(row["segment"].text) for row in rows)
     latin_words = sum(word_count(row["saved"]) for row in translated)

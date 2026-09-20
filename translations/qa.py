@@ -107,7 +107,7 @@ def check_rows(rows, terms=(), ignored=()):
     ``terms`` are the adopted terms of the glossary; ``ignored`` a set of (segment id, code,
     fingerprint) the writers chose to ignore.
     """
-    translated = [row for row in rows if row["saved"]]
+    translated = [row for row in rows if row["saved"] and not row["segment"].level]
     variants = macron_variants(row["saved"] for row in translated)
     found = {}
     for row in translated:

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n static workshop_tags %}
+{% load i18n static source_tags workshop_tags %}
 
 {% block title %}{% translate "Traduire" %} · {{ project.title }} · {{ block.super }}{% endblock %}
 
@@ -35,11 +35,11 @@
       {% csrf_token %}
       <ol class="bitext">
         {% for row in shown_rows %}
-        <li class="bitext-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}" data-segment="{{ row.segment.pk }}"{% for name, value in row.data.items %} data-{{ name }}="{{ value }}"{% endfor %}>
-          <span class="bitext-number">{{ row.number }}{% include "translations/editor_badges.html" %}</span>
+        <li class="bitext-row{% if row.segment.level %} bitext-heading division-level-{{ row.segment.level }}{% endif %}{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}" data-segment="{{ row.segment.pk }}"{% for name, value in row.data.items %} data-{{ name }}="{{ value }}"{% endfor %}>
+          <span class="bitext-number">{% if row.segment.level %}<span class="muted">{{ source|division_label:row.division }}</span>{% else %}{{ row.shown_number }}{% endif %}{% include "translations/editor_badges.html" %}</span>
           <label class="bitext-source" for="s{{ row.segment.pk }}" lang="{{ source.language }}">{% if row.source_marked %}{{ row.source_marked }}{% else %}{{ row.segment.text }}{% endif %}</label>
           <div class="bitext-latin">
-            <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false" data-segment="{{ row.segment.pk }}" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
+            <textarea id="s{{ row.segment.pk }}" name="s{{ row.segment.pk }}" lang="la" rows="2" spellcheck="false"{% if row.segment.level %} placeholder="{% translate 'Titre non traduit (facultatif)' %}"{% endif %} data-segment="{{ row.segment.pk }}" data-save-url="{% url 'translations:translation_save' version.pk row.segment.pk %}">{{ row.text }}</textarea>
             <p class="save-status" aria-live="polite">{% for error in row.errors %}{{ error }} {% endfor %}</p>
             <div class="row-actions">
               <button type="submit" formaction="{% url 'translations:sentence_status' version.pk row.segment.pk %}" name="status" value="translated" data-set-status="translated" aria-pressed="{% if row.data.status == 'translated' %}true{% else %}false{% endif %}" title="Ctrl+Entrée">✓ {% translate "Traduite" %}</button>
@@ -71,7 +71,7 @@
         <p class="note panel-hint">{% translate "Placez-vous sur une phrase ; sélectionnez des mots latins pour justifier ce choix." %}</p>
         {% for row in rows %}
         <div class="row-panel" data-segment="{{ row.segment.pk }}" hidden>
-          <p class="muted">{% blocktranslate with number=row.number %}Phrase {{ number }}{% endblocktranslate %}</p>
+          <p class="muted">{{ row.citation|capfirst }}</p>
           {% if row.justifications %}
           <ul class="row-justifications">
             {% for justification in row.justifications %}{% include "justifications/justification_item.html" %}{% endfor %}

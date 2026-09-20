@@ -36,10 +36,10 @@
   <text>
     <body>
       <div type="source" xml:lang="{{ source.language }}">
-{% for row in rows %}        <ab n="{{ row.number }}" xml:id="source-{{ row.number }}">{{ row.segment.text }}</ab>
+{% for row in rows %}        <ab n="{{ row.number }}" xml:id="source-{{ row.number }}"{% if row.segment.level %} type="heading" subtype="level-{{ row.segment.level }}"{% endif %}>{{ row.segment.text }}</ab>
 {% endfor %}      </div>
       <div type="translation" xml:lang="la">
-{% for row in rows %}{% if row.saved %}        <ab n="{{ row.number }}" xml:id="la-{{ row.number }}" corresp="#source-{{ row.number }}">{{ row.saved }}</ab>
+{% for row in rows %}{% if row.saved %}        <ab n="{{ row.number }}" xml:id="la-{{ row.number }}" corresp="#source-{{ row.number }}"{% if row.segment.level %} type="heading" subtype="level-{{ row.segment.level }}"{% endif %}>{{ row.saved }}</ab>
 {% endif %}{% endfor %}      </div>
       <div type="notes">
 {% for row in rows %}{% for justification in row.justifications %}        <note type="justification" target="#la-{{ row.number }}" n="{{ justification.strength }}">

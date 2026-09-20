@@ -47,6 +47,11 @@ def bilingual_text(version, rows, step=None):
         lines.append("")
         if segment.starts_paragraph and number > 1:
             lines.append("")
+        if segment.level:
+            lines.append(f"{'#' * segment.level} {segment.text}")
+            if row["saved"]:
+                lines.append(f"{'#' * segment.level} {row['saved']}")
+            continue
         latin = row["saved"] or gettext("[non traduite]")
         lines.append(f"{number}. {segment.text}")
         lines.append(f"   {latin}")

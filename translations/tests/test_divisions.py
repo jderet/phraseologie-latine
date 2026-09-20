@@ -1,13 +1,14 @@
 """Parts and chapters of a source text: the outline, the citations, the reading page."""
 
 from django.test import TestCase
+from django.urls import reverse
 
 from accounts.roles import CONTRIBUTOR
 from accounts.tests.factories import make_user
 from translations.segmentation import segment
 from translations.sources import outline, reading_blocks, under
 
-from .factories import make_source_text
+from .factories import make_project, make_source_text, make_version
 
 BOOK = (
     "# Première partie\n"
@@ -119,3 +120,33 @@ class ReadingPageTests(TestCase):
         response = self.client.get(f"{self.source.get_absolute_url()}?division=9")
         self.assertContains(response, "Il pleut.")
         self.assertContains(response, "Nous partons.")
+
+
+class EditorTests(TestCase):
+    def setUp(self):
+        self.user = make_user(role=CONTRIBUTOR)
+        self.source = make_source_text(self.user, sentences=segment(BOOK, "fr"))
+        self.project = make_project(self.user, source_text=self.source)
+        self.version = make_version(self.user, self.project)
+        self.client.force_login(self.user)
+
+    def url(self):
+        return reverse("translations:version_edit", args=[self.version.pk])
+
+    def test_titles_are_rows_the_progress_does_not_count(self):
+        response = self.client.get(self.url())
+        self.assertEqual(response.context["segment_count"], 4)
+        self.assertContains(response, "bitext-heading")
+        self.assertContains(response, "Chapitre second")
+
+    def test_the_editor_shows_one_division(self):
+        response = self.client.get(f"{self.url()}?division=2")
+        texts = [row["segment"].text for row in response.context["shown_rows"]]
+        self.assertEqual(texts, ["Seconde partie", "Chapitre premier", "Nous partons."])
+
+    def test_a_title_is_translated_like_a_sentence(self):
+        title = self.source.segments.get(level=1, text="Première partie")
+        response = self.client.post(self.url(), {f"s{title.pk}": "Pars prima"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.version.segments.get(segment=title).text, "Pars prima")
+        self.assertEqual(self.client.get(self.url()).context["translated_count"], 0)

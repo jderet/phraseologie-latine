@@ -6,6 +6,13 @@
     <option value="">{% translate "toutes les phrases" %}</option>
     {% for name, label in filters %}<option value="{{ name }}"{% if name == active_filter %} selected{% endif %}>{{ label }}</option>{% endfor %}
   </select>
+  {% if divisions %}
+  <label class="visually-hidden" for="editor-division">{% translate "Division" %}</label>
+  <select id="editor-division" name="division">
+    <option value="">{% translate "tout le texte" %}</option>
+    {% for division in divisions %}<option value="{{ division.key }}"{% if division.key == chosen %} selected{% endif %}>{{ division.key }}. {{ division.title }}</option>{% endfor %}
+  </select>
+  {% endif %}
   <button type="submit" class="button button-quiet button-small" data-filter-submit>{% translate "Filtrer" %}</button>
   <span class="muted filter-count" aria-live="polite" data-filter-count>{% if shown_rows|length != rows|length %}{% blocktranslate with shown=shown_rows|length total=rows|length %}{{ shown }} phrases sur {{ total }}{% endblocktranslate %}{% endif %}</span>
 </form>
