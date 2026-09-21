@@ -7,22 +7,9 @@ from justifications.services import update_justification
 from justifications.tests.test_services import JustificationTestCase
 from moderation.models import Revision
 from moderation.services import revert_to
-from translations.models import (
-    ChangeProposal,
-    Segment,
-    SourceChange,
-    SourceText,
-    TranslationVersion,
-)
+from translations.models import Segment, SourceChange, SourceText, TranslationVersion
 from translations.segmentation import MAX_SENTENCES
-from translations.services import (
-    change_source_text,
-    copy_version,
-    create_proposal,
-    create_step,
-    decide_sentence,
-    save_translation,
-)
+from translations.services import change_source_text, create_step, save_translation
 from translations.sources import SourceHistory
 from translations.steps import pending_changes, step_sentences
 
@@ -210,22 +197,6 @@ class LatinFollowsTheSourceTests(TranslationTestCase):
         change_source_text(self.source, merge(0), self.author)
         self.assertEqual(self.working()[0][1:], ("Imber. Domi. Cras proficiscemur.", None))
 
-    def test_a_copy_of_an_earlier_step_follows_the_current_text(self):
-        change_source_text(self.source, merge(1), self.author)
-        copy = copy_version(self.version.steps.get(), TranslationVersion(), self.other)
-        self.assertEqual(
-            list(copy.segments.values_list("segment__text", "text", "written_by")),
-            [
-                ("Il pleut.", "Pluit.", self.author.pk),
-                (
-                    "Nous restons à la maison. Demain, nous partirons.",
-                    "Domi manemus. Cras proficiscemur.",
-                    self.author.pk,
-                ),
-            ],
-        )
-        self.assertEqual(copy.steps.get().source_state, 1)
-
     def test_the_comparison_of_two_steps_carries_the_latin(self):
         change_source_text(self.source, insert(0, "D’abord."), self.author)
         first = self.source.segments.current().first()
@@ -240,23 +211,9 @@ class LatinFollowsTheSourceTests(TranslationTestCase):
         self.assertEqual([(row["number"], row["after"]) for row in rows], [(1, "Primum.")])
 
     def test_a_removed_sentence_takes_no_latin(self):
-        proposal = create_proposal(
-            ChangeProposal(version=self.version, explanation="Subjonctif."),
-            self.other,
-            {self.second: "Domi maneamus."},
-        )
         change_source_text(self.source, edit(1, "Nous restons chez nous."), self.author)
         with self.assertRaises(ValueError):
             save_translation(self.fresh_version(), self.second, "Domi.", self.author)
-        proposed = proposal.sentences.get()
-        with self.assertRaises(ValidationError) as caught:
-            decide_sentence(proposed, self.author, accept=True)
-        self.assertEqual(caught.exception.code, "source_changed")
-        self.client.force_login(self.author)
-        page = self.client.get(proposal.get_absolute_url())
-        self.assertContains(page, "La phrase source a changé depuis cette proposition")
-        self.assertEqual(page.context["sentences"][0]["number"], 2)
-        decide_sentence(proposed, self.author, accept=False)
 
 
 class JustificationsFollowTheSourceTests(JustificationTestCase):

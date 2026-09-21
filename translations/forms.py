@@ -11,10 +11,8 @@ from .classification import (
     grouped_choices,
 )
 from .models import (
-    ChangeProposal,
     GlossaryEntry,
     License,
-    ProposalReview,
     SourceProposal,
     SourceText,
     Topic,
@@ -176,15 +174,6 @@ class StepForm(ContributionForm):
     class Meta:
         model = VersionStep
         fields = ("message",)
-
-
-class ProposalForm(ContributionForm):
-    link_fields = ("explanation",)
-
-    class Meta:
-        model = ChangeProposal
-        fields = ("explanation",)
-        widgets = {"explanation": forms.Textarea(attrs={"rows": 5})}
 
 
 class PublishForm(forms.Form):
@@ -469,22 +458,6 @@ class ReplaceForm(forms.Form):
     match_case = forms.BooleanField(label=_("Respecter les majuscules"), required=False)
     ignore_macrons = forms.BooleanField(
         label=_("Ignorer les macrons (a trouve aussi ā)"), required=False, initial=True
-    )
-
-
-class ProposalReviewForm(forms.Form):
-    verdict = forms.ChoiceField(
-        label=_("Votre avis"),
-        choices=ProposalReview.Verdict.choices,
-        widget=forms.RadioSelect,
-        initial=ProposalReview.Verdict.COMMENT,
-    )
-    text = forms.CharField(
-        label=_("Commentaire"),
-        max_length=3000,
-        required=False,
-        widget=forms.Textarea(attrs={"rows": 3}),
-        help_text=_("Obligatoire, sauf pour approuver."),
     )
 
 

@@ -8,8 +8,8 @@ from activity.models import Notification, Star, Subscription, Verb
 from activity.services import follow, mentioned_users, star, unfollow, unread_count
 from moderation.services import post_comment
 from translations import members
-from translations.models import ChangeProposal
-from translations.services import create_proposal, create_step, publish_version, save_translation
+from translations.models import Topic
+from translations.services import create_step, publish_version, save_translation
 from translations.tests.factories import (
     make_project,
     make_published_version,
@@ -17,6 +17,7 @@ from translations.tests.factories import (
     make_version,
     translate,
 )
+from translations.topics import open_topic
 
 
 class ActivityTestCase(TestCase):
@@ -36,6 +37,10 @@ class ActivityTestCase(TestCase):
         cls.first = cls.source.segments.first()
         cls.project = make_project(cls.author, cls.source)
 
+    def open_topic(self):
+        """A topic opened by someone else in the project of the author."""
+        return open_topic(Topic(project=self.project, title="Style", body="Mieux ?"), self.other)
+
     def verbs(self, user):
         return list(
             Notification.objects.filter(recipient=user).values_list("event__verb", flat=True)
@@ -43,23 +48,18 @@ class ActivityTestCase(TestCase):
 
 
 class NotificationTests(ActivityTestCase):
-    def test_a_proposal_is_told_to_the_author_of_the_version(self):
-        version = make_published_version(self.author, self.project)
-        create_proposal(
-            ChangeProposal(version=version, explanation="Mieux."),
-            self.other,
-            {self.first: "Pluit multum."},
-        )
-        self.assertIn(Verb.PROPOSAL_OPENED, self.verbs(self.author))
-        self.assertNotIn(Verb.PROPOSAL_OPENED, self.verbs(self.other))
+    def test_a_topic_is_told_to_the_writers_of_the_translation(self):
+        self.open_topic()
+        self.assertIn(Verb.TOPIC_OPENED, self.verbs(self.author))
+        self.assertNotIn(Verb.TOPIC_OPENED, self.verbs(self.other))
 
     def test_followers_of_a_project_hear_of_a_publication_not_of_a_draft(self):
         follow(self.reader, self.project)
-        version = make_version(self.other, self.project)
+        version = make_version(self.author, self.project)
         translate(version)
-        create_step(version, self.other, "Premier jet")
+        create_step(version, self.author, "Premier jet")
         self.assertEqual(self.verbs(self.reader), [])
-        publish_version(version, self.other)
+        publish_version(version, self.author)
         self.assertIn(Verb.VERSION_PUBLISHED, self.verbs(self.reader))
 
     def test_co_authors_hear_of_draft_steps(self):
@@ -72,30 +72,20 @@ class NotificationTests(ActivityTestCase):
         create_step(version, self.author, "Premier jet")
         self.assertIn(Verb.STEP_CREATED, self.verbs(self.other))
 
-    def test_unfollowing_a_version_silences_it(self):
-        version = make_published_version(self.author, self.project)
-        unfollow(self.author, version)
-        create_proposal(
-            ChangeProposal(version=version, explanation="Mieux."),
-            self.other,
-            {self.first: "Pluit multum."},
-        )
-        # The writers of the version are always told of a proposal.
-        self.assertIn(Verb.PROPOSAL_OPENED, self.verbs(self.author))
+    def test_unfollowing_a_project_silences_it(self):
+        unfollow(self.author, self.project)
+        self.open_topic()
+        # The writers of the translation are always told of a topic.
+        self.assertIn(Verb.TOPIC_OPENED, self.verbs(self.author))
 
     def test_a_message_tells_the_discussion_and_the_people_mentioned(self):
-        version = make_published_version(self.author, self.project)
-        proposal = create_proposal(
-            ChangeProposal(version=version, explanation="Mieux."),
-            self.other,
-            {self.first: "Pluit multum."},
-        )
+        topic = self.open_topic()
         Notification.objects.all().delete()
-        post_comment(proposal, self.author, "Merci, @Titus, qu’en pensez-vous ?")
+        post_comment(topic, self.author, "Merci, @Titus, qu’en pensez-vous ?")
         self.assertIn(Verb.COMMENT_POSTED, self.verbs(self.other))
         self.assertEqual(self.verbs(self.reader), [Verb.MENTIONED])
         # Its author now follows the discussion.
-        post_comment(proposal, self.other, "D’accord.")
+        post_comment(topic, self.other, "D’accord.")
         self.assertIn(Verb.COMMENT_POSTED, self.verbs(self.author))
 
     def test_mentions_ignore_spaces_and_case_and_shared_names(self):
@@ -112,12 +102,7 @@ class NotificationTests(ActivityTestCase):
 
 class NotificationPageTests(ActivityTestCase):
     def setUp(self):
-        version = make_published_version(self.author, self.project)
-        self.proposal = create_proposal(
-            ChangeProposal(version=version, explanation="Mieux."),
-            self.other,
-            {self.first: "Pluit multum."},
-        )
+        self.topic = self.open_topic()
         self.client.force_login(self.author)
 
     def test_header_shows_the_unread_count(self):
@@ -127,12 +112,12 @@ class NotificationPageTests(ActivityTestCase):
     def test_opening_a_notification_marks_it_read(self):
         notification = Notification.objects.get(recipient=self.author)
         response = self.client.get(notification.get_absolute_url())
-        self.assertRedirects(response, self.proposal.get_absolute_url())
+        self.assertRedirects(response, self.topic.get_absolute_url())
         self.assertEqual(unread_count(self.author), 0)
 
     def test_list_and_mark_all_read(self):
         response = self.client.get(reverse("activity:notifications"))
-        self.assertContains(response, "a proposé des modifications")
+        self.assertContains(response, "a ouvert un sujet")
         self.client.post(reverse("activity:notifications_read"))
         self.assertEqual(unread_count(self.author), 0)
 

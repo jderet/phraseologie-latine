@@ -6,22 +6,12 @@
 {% block content %}
 <section>
   <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a>{% if is_writer or version.is_published %} · <a href="{{ version.get_absolute_url }}">{{ version.display_name }}</a>{% endif %}</p>
-  {% if version.is_main %}
-  <h1>{% translate "Mainteneurs" %}</h1>
+  <h1>{% translate "Auteurs de la traduction" %}</h1>
   <p class="lede">{% blocktranslate trimmed %}
-    Les mainteneurs écrivent la traduction du projet, créent des étapes, justifient, décident des
-    variantes et des propositions, du glossaire et des sujets ; ils voient le brouillon. Le
-    créateur du projet seul publie la traduction et choisit les mainteneurs. Chaque phrase garde
-    le nom de qui l’a écrite.
+    Les auteurs écrivent la traduction du projet, créent des étapes, justifient, décident des
+    variantes, du glossaire et des sujets ; ils voient le brouillon. Le créateur du projet seul
+    publie la traduction et choisit les auteurs. Chaque phrase garde le nom de qui l’a écrite.
   {% endblocktranslate %}</p>
-  {% else %}
-  <h1>{% translate "Co-auteurs" %}</h1>
-  <p class="lede">{% blocktranslate trimmed %}
-    Les co-auteurs écrivent le latin de la variante, créent des étapes et justifient ; ils voient le
-    brouillon. L’auteur seul publie la variante et choisit ses co-auteurs. Chaque phrase garde le
-    nom de qui l’a écrite.
-  {% endblocktranslate %}</p>
-  {% endif %}
 
   {% if own and own.status == "invited" %}
   <div class="notice notice-info invitation">

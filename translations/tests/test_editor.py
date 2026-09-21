@@ -4,7 +4,7 @@ from accounts.roles import CONTRIBUTOR
 from accounts.tests.factories import make_user
 from translations.models import TranslatedSegment
 
-from .factories import make_source_text, make_version
+from .factories import make_project, make_source_text, make_version
 from .test_versions import TranslationTestCase
 
 
@@ -44,7 +44,7 @@ class SentenceSaveTests(TranslationTestCase):
 
     def test_errors_are_returned(self):
         newcomer = make_user(email="new@example.org", role=CONTRIBUTOR)
-        version = make_version(newcomer, self.project)
+        version = make_version(newcomer, make_project(newcomer, self.source, title="Nouveau"))
         self.client.force_login(newcomer)
         url = reverse("translations:translation_save", args=[version.pk, self.first.pk])
         response = self.client.post(url, {"text": "vide www.example.org"})

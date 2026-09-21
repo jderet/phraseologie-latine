@@ -14,9 +14,11 @@ class MemoryTests(TranslationTestCase):
         self.assertEqual(score("Il pleut.", "Il pleut."), 100)
         self.assertLess(score("Il pleut beaucoup ce matin.", "Nous partirons."), 60)
 
-    def test_other_versions_show_their_public_step(self):
-        published = make_published_version(self.other, self.project)
-        draft = make_version(self.reviewer, self.project)
+    def test_translations_of_other_projects_show_their_public_step(self):
+        other_project = make_project(self.other, self.source, title="Autre projet")
+        published = make_published_version(self.other, other_project)
+        hidden = make_project(self.reviewer, self.source, title="Brouillon")
+        draft = make_version(self.reviewer, hidden)
         found = other_versions(self.author, self.version, self.first)
         self.assertEqual([item["version"] for item in found], [published])
         self.assertEqual(found[0]["text"], "Pluit.")

@@ -3,7 +3,7 @@
   {% for item in others %}
   <div class="memory-item">
     <p class="memory-latin" lang="la">{{ item.text }}</p>
-    <p class="memory-meta muted"><a href="{{ item.version.get_absolute_url }}">{{ item.version.display_name }}</a>{% if not item.version.is_main %} · {{ item.version.get_variant_status_display }}{% endif %}{% if item.version.is_draft %} · {% translate "brouillon" %}{% endif %}</p>
+    <p class="memory-meta muted"><a href="{{ item.version.get_absolute_url }}">{{ item.version.project.title }}</a>{% if item.version.is_draft %} · {% translate "brouillon" %}{% endif %}</p>
     <p class="memory-actions"><button type="button" class="link-button" data-use-latin="{{ item.text }}" data-mode="replace">{% translate "Reprendre" %}</button> · <button type="button" class="link-button" data-use-latin="{{ item.text }}" data-mode="insert">{% translate "Insérer à la sélection" %}</button></p>
   </div>
   {% empty %}

@@ -5,22 +5,15 @@ from accounts.roles import CONTRIBUTOR
 from accounts.tests.factories import make_user
 from translations import members
 from translations.models import (
-    ChangeProposal,
     TranslatedSegment,
     TranslationVersion,
     VersionMember,
     is_version_writer,
 )
-from translations.permissions import can_challenge, can_manage, can_propose, can_translate
-from translations.services import (
-    create_proposal,
-    create_step,
-    decide_sentence,
-    publish_version,
-    save_translation,
-)
+from translations.permissions import can_challenge, can_manage, can_translate
+from translations.services import create_step, publish_version, save_translation
 
-from .factories import make_published_version, make_version, translate
+from .factories import make_version, translate
 from .test_versions import TranslationTestCase
 
 
@@ -76,18 +69,12 @@ class MemberServicesTests(MemberTestCase):
         with self.assertRaises(PermissionDenied):
             publish_version(version, self.other)
 
-    def test_a_co_author_decides_proposals_and_may_not_propose(self):
+    def test_a_co_author_writes_the_latin_and_does_not_contest_it(self):
         version, _member = self.join()
         publish_version(version, self.author)
         version.refresh_from_db()
-        self.assertFalse(can_propose(self.other, version))
         self.assertFalse(can_challenge(self.other, version))
-        proposal = create_proposal(
-            ChangeProposal(version=version, explanation="Mieux."),
-            self.reviewer,
-            {self.first: "Pluit multum."},
-        )
-        decide_sentence(proposal.sentences.get(), self.other, accept=True)
+        save_translation(version, self.first, "Pluit multum.", self.other)
         self.assertEqual(
             TranslatedSegment.objects.get(version=version, segment=self.first).text,
             "Pluit multum.",
@@ -180,7 +167,6 @@ class MemberPageTests(MemberTestCase):
         self.assertContains(response, "Quintus")
 
     def test_draft_version_shows_nothing_to_strangers(self):
-        make_published_version(self.reviewer, self.project)
         self.join()
         response = self.client.get(reverse("translations:project", args=[self.project.pk]))
         self.assertNotContains(response, reverse("translations:version", args=[self.version.pk]))

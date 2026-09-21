@@ -28,40 +28,13 @@ def can_propose_source(user, source):
 
 
 def can_translate(user, version):
-    """Its author and co-authors write the Latin of a version, until the variant is closed."""
-    return (
-        user.is_active
-        and not version.is_closed
-        and is_version_writer(user, version)
-        and can_view(user, version)
-    )
+    """Its author and co-authors write the Latin of a translation."""
+    return user.is_active and is_version_writer(user, version) and can_view(user, version)
 
 
 def can_manage(user, version):
     """Only its author publishes a version, changes its settings and chooses its co-authors."""
     return user.is_active and is_owner(user, version) and can_view(user, version)
-
-
-def can_copy(user, step):
-    """Any active account may start a variant from a public step of the main version, like a
-    Git fork; a variant is never copied."""
-    version = step.version
-    return (
-        user.is_authenticated
-        and user.is_active
-        and version.is_main
-        and version.is_published
-        and not version.is_hidden
-        and not version.project.is_hidden
-        and not step.is_hidden
-        and (not step.during_draft or version.shows_draft_steps)
-    )
-
-
-def can_propose(user, version):
-    """Anyone but its writers may propose changes to a published version that is not closed;
-    they decide."""
-    return not version.is_closed and can_challenge(user, version)
 
 
 def can_challenge(user, version):

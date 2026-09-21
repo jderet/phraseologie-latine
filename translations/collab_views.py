@@ -1,9 +1,7 @@
-"""Pages where versions work together: update a copy from its original, propose to the original,
-review proposals, label and restore steps, the network of copies, who wrote what."""
+"""Pages around a translation: label and restore steps, who wrote what, XLIFF and TMX."""
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
@@ -11,147 +9,19 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.decorators.http import require_http_methods, require_POST
 
-from accounts.limits import check_text_for_links
-from moderation.registry import can_view
 from moderation.services import save_with_revision
 
 from .diffs import word_diff
-from .forms import (
-    ProposalForm,
-    ProposalReviewForm,
-    StepLabelForm,
-    TmxImportForm,
-    XliffImportForm,
-)
-from .models import (
-    ChangeProposal,  # noqa: F401 - the form builds one
-    PersonalMemoryEntry,
-)
-from .network import copy_network
-from .permissions import can_propose
-from .services import create_proposal, review_proposal, save_translation, set_sentence_status
+from .forms import StepLabelForm, TmxImportForm, XliffImportForm
+from .models import PersonalMemoryEntry
+from .restore import restore_preview, restore_step
+from .services import save_translation, set_sentence_status
 from .sources import SourceHistory
-from .sync import (
-    differences_with_original,
-    restore_preview,
-    restore_step,
-    take_upstream,
-    upstream_changes,
-)
-from .views import _contribute, _export_step, _own_version, _proposal, _rows, _version
+from .views import _export_step, _own_version, _rows, _version
 from .xliff import MAX_BYTES, STATUSES, XliffError, parse_tmx, parse_xliff
 
 TMX_MAX_BYTES = 5 * 1024 * 1024
 PERSONAL_MEMORY_LIMIT = 20000
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
-def sync_copy(request, pk):
-    """What the original changed since the copy, to take sentence by sentence."""
-    version = _own_version(request.user, pk)
-    if version.copied_from_id is None:
-        messages.info(request, _("Cette variante n’est pas partie de la traduction principale."))
-        return redirect(version)
-    latest, changes = upstream_changes(request.user, version)
-    if request.method == "POST":
-        chosen = {int(value) for value in request.POST.getlist("phrase") if value.isdigit()}
-        taken = take_upstream(request.user, version, chosen)
-        messages.success(
-            request,
-            ngettext(
-                "%(count)d phrase reprise de la traduction principale.",
-                "%(count)d phrases reprises de la traduction principale.",
-                taken,
-            )
-            % {"count": taken},
-        )
-        return redirect("translations:version_edit", version.pk)
-    return render(
-        request,
-        "translations/sync_copy.html",
-        {
-            "version": version,
-            "project": version.project,
-            "original": version.copied_from.version,
-            "base": version.synced_to or version.copied_from,
-            "latest": latest,
-            "changes": changes,
-        },
-    )
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
-def propose_to_original(request, pk):
-    """Prepare a proposal to the original with the sentences where the copy differs."""
-    user = request.user
-    version = _own_version(user, pk)
-    if version.copied_from_id is None:
-        messages.info(request, _("Cette variante n’est pas partie de la traduction principale."))
-        return redirect(version)
-    original = version.copied_from.version
-    if not can_propose(user, original) or not can_view(user, original):
-        messages.error(request, _("Vous ne pouvez pas envoyer cette variante."))
-        return redirect(version)
-    step, rows = differences_with_original(user, version)
-    form = ProposalForm(request.POST or None, user=user)
-    if request.method == "POST" and form.is_valid():
-        chosen = set(request.POST.getlist("phrase"))
-        texts = {
-            segment: mine for segment, _n, _theirs, mine, _c in rows if str(segment.pk) in chosen
-        }
-        proposal = form.save(commit=False)
-        proposal.version = original
-        if version.is_open_variant and original.is_main:
-            proposal.from_version = version
-        try:
-            proposal, saved = _contribute(request, create_proposal, proposal, user, texts)
-        except ValidationError as error:
-            form.add_error(None, error)
-        else:
-            if saved:
-                messages.success(request, _("La proposition est envoyée aux mainteneurs."))
-                return redirect(proposal)
-    return render(
-        request,
-        "translations/propose_to_original.html",
-        {
-            "version": version,
-            "project": version.project,
-            "original": original,
-            "step": step,
-            "rows": rows,
-            "form": form,
-        },
-    )
-
-
-@login_required
-@require_POST
-def proposal_review(request, pk):
-    """Approve a proposal, request changes or comment on it."""
-    proposal = _proposal(request.user, pk)
-    form = ProposalReviewForm(request.POST)
-    if not form.is_valid():
-        messages.error(request, _("Choisissez un avis."))
-        return redirect(proposal)
-    try:
-        check_text_for_links(request.user, form.cleaned_data["text"])
-        _review, saved = _contribute(
-            request,
-            review_proposal,
-            proposal,
-            request.user,
-            form.cleaned_data["verdict"],
-            form.cleaned_data["text"],
-        )
-    except ValidationError as error:
-        messages.error(request, error.messages[0])
-    else:
-        if saved:
-            messages.success(request, _("Votre relecture est publiée."))
-    return redirect(f"{proposal.get_absolute_url()}#relectures")
 
 
 @login_required
@@ -201,17 +71,6 @@ def step_restore(request, pk, number):
             "step": step,
             "rows": restore_preview(version, step),
         },
-    )
-
-
-def version_network(request, pk):
-    """The versions this one comes from, and the tree of the copies made from it."""
-    version = _version(request.user, pk)
-    ancestors, nodes = copy_network(request.user, version)
-    return render(
-        request,
-        "translations/version_network.html",
-        {"version": version, "project": version.project, "ancestors": ancestors, "nodes": nodes},
     )
 
 

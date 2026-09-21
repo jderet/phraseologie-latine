@@ -34,5 +34,5 @@ class TranslationProjectAdmin(ReadOnlyAdmin):
 class TranslationVersionAdmin(ReadOnlyAdmin):
     """Drafts are private: the admin lists versions without showing their Latin."""
 
-    list_display = ("project", "author", "variant_status", "state", "published_at", "is_hidden")
-    list_filter = ("state", "variant_status", "is_hidden")
+    list_display = ("project", "author", "state", "published_at", "is_hidden")
+    list_filter = ("state", "is_hidden")

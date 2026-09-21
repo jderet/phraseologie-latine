@@ -35,7 +35,6 @@ from .permissions import can_edit, can_manage
 from .sources import SourceHistory
 from .templatetags.workshop_tags import FIRST_STEPS_COOKIE
 from .views import _contribute, _paginate, _visible
-from .workshop import visible_proposals
 
 
 @require_GET
@@ -58,21 +57,6 @@ def hide_first_steps(request):
     response = redirect(_safe_next(request))
     response.set_cookie(FIRST_STEPS_COOKIE, "hidden", max_age=60 * 60 * 24 * 365, samesite="Lax")
     return response
-
-
-def project_proposals(request, pk):
-    """All the change proposals made to the versions of a project, open ones first."""
-    project = _visible(request.user, TranslationProject.objects.select_related("source_text"), pk)
-    proposals = visible_proposals(request.user, project)
-    return render(
-        request,
-        "translations/project_proposals.html",
-        {
-            "project": project,
-            "source": project.source_text,
-            "page": _paginate(request, proposals),
-        },
-    )
 
 
 def project_activity(request, pk):

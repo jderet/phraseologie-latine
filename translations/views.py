@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, F, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -19,7 +19,6 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.limits import ContributionLimitReached
 from activity.models import Event, Star
-from activity.templatetags.activity_tags import star_counts
 from corpus.forms import MODE_FORM, SCOPE_CORE, TERM_NUMBERS, SearchForm
 from justifications.display import visible_evidences
 from justifications.models import Challenge, Justification
@@ -34,18 +33,14 @@ from .classification import (
     grouped_choices,
 )
 from .comments import can_comment_sentence, comments_for, open_counts
-from .diffs import word_diff
 from .editor import filter_choices, filter_rows, panel_tabs, row_data, status_counts
 from .exports import bilingual_text, export_filename
 from .forms import (
     ProjectForm,
-    ProposalForm,
-    ProposalReviewForm,
     PublishForm,
     SentenceEditForm,
     SentenceInsertForm,
     SentenceSplitForm,
-    SetAsideForm,
     SourceProposalForm,
     SourceStateForm,
     SourceTextEditForm,
@@ -57,8 +52,6 @@ from .forms import (
 from .glossary import find_terms, marked_text, visible_terms
 from .members import active_members
 from .models import (
-    ChangeProposal,
-    ProposedSentence,
     Segment,
     SourceProposal,
     SourceText,
@@ -70,10 +63,8 @@ from .models import (
 from .permissions import (
     can_challenge,
     can_change_source,
-    can_copy,
     can_edit,
     can_manage,
-    can_propose,
     can_propose_source,
     can_translate,
 )
@@ -83,20 +74,15 @@ from .services import (
     add_proposal_operation,
     adopt_source_proposal,
     change_source_text,
-    copy_version,
     create_project,
-    create_proposal,
     create_source_text,
     create_step,
-    decide_sentence,
     publish_version,
     rebase_source_proposal,
     refuse_source_proposal,
     save_translation,
     send_source_proposal,
-    set_aside_variant,
     undo_proposal_operation,
-    withdraw_proposal,
     withdraw_source_proposal,
 )
 from .sources import (
@@ -257,22 +243,9 @@ def source_by_theme(request, code):
 
 
 def _project_summaries(user, projects):
-    """Projects with the progress of their main version, as the user sees it, and the number
-    of open variants the user may see."""
+    """Projects with the progress of their translation, as the user sees it."""
     projects = list(
         projects.select_related("main_version__author", "source_text").order_by("created_at", "pk")
-    )
-    variants = dict(
-        TranslationVersion.objects.visible_to(user)
-        .filter(
-            project__in=projects,
-            variant_status=TranslationVersion.VariantStatus.OPEN,
-            is_hidden=False,
-        )
-        .order_by()
-        .values("project")
-        .annotate(total=Count("pk", distinct=True))
-        .values_list("project", "total")
     )
     counts = dict(
         Segment.objects.current()
@@ -285,7 +258,6 @@ def _project_summaries(user, projects):
     for project in projects:
         main = project.main_version
         project.segment_count = counts.get(project.source_text_id, 0)
-        project.open_variant_count = variants.get(project.pk, 0)
         project.main_visible = main is not None and can_view(user, main)
         project.translated_count = 0
         if project.main_visible:
@@ -812,33 +784,6 @@ def project_detail(request, pk):
     )
     [summary] = _project_summaries(user, TranslationProject.objects.filter(pk=project.pk))
     main = summary.main_version if summary.main_visible else None
-    variants = list(
-        project.versions.visible_to(user)
-        .exclude(variant_status=TranslationVersion.VariantStatus.MAIN)
-        .select_related("author", "copied_from__version__author")
-        .prefetch_related(
-            Prefetch(
-                "sent_proposals",
-                queryset=ChangeProposal.objects.filter(
-                    status=ChangeProposal.Status.OPEN, is_hidden=False
-                ),
-                to_attr="open_proposals",
-            )
-        )
-        .order_by("-created_at", "-pk")
-    )
-    stars = star_counts(variants)
-    for variant in variants:
-        _step, sentences = shown_sentences(user, variant)
-        variant.translated_count = sum(1 for sentence in sentences.values() if sentence.text)
-        variant.star_count = stars.get(variant.pk, 0)
-    copy_step = None
-    if main is not None and main.is_published:
-        copy_step = public_step(main)
-        if copy_step is not None:
-            copy_step.version = main
-            if not can_copy(user, copy_step):
-                copy_step = None
     return render(
         request,
         "translations/project_detail.html",
@@ -853,14 +798,6 @@ def project_detail(request, pk):
                 else []
             ),
             "segment_count": summary.segment_count,
-            "open_variants": [variant for variant in variants if variant.is_open_variant],
-            "closed_variants": [variant for variant in variants if variant.is_closed],
-            "open_proposal_count": (
-                main.proposals.filter(status=ChangeProposal.Status.OPEN, is_hidden=False).count()
-                if main is not None
-                else 0
-            ),
-            "copy_step": copy_step,
             "can_translate_main": main is not None and can_translate(user, main),
             "can_publish_main": main is not None and main.is_draft and can_manage(user, main),
             "can_manage_main": main is not None and can_manage(user, main),
@@ -903,12 +840,7 @@ def project_compare(request, pk):
     project = _visible(request.user, TranslationProject.objects.select_related("source_text"), pk)
     versions = sorted(
         project.versions.visible_to(request.user).select_related("author"),
-        key=lambda version: (
-            not version.is_main,
-            version.is_closed,
-            version.is_draft,
-            version.published_at or version.created_at,
-        ),
+        key=lambda version: (version.is_draft, version.published_at or version.created_at),
     )
     asked = {int(value) for value in request.GET.getlist("v") if value.isdigit()}
     shown = [version for version in versions if version.pk in asked] or versions
@@ -953,9 +885,7 @@ def project_compare(request, pk):
 
 
 def _version(user, pk):
-    queryset = TranslationVersion.objects.select_related(
-        "project__source_text", "author", "copied_from__version__author"
-    )
+    queryset = TranslationVersion.objects.select_related("project__source_text", "author")
     return _visible(user, queryset, pk)
 
 
@@ -1103,9 +1033,6 @@ def version_detail(request, pk):
     version = _version(user, pk)
     step, rows = _rows(user, version)
     is_author = is_version_writer(user, version)
-    copy_step = step or public_step(version)
-    if copy_step is not None:
-        copy_step.version = version
     return render(
         request,
         "translations/version_detail.html",
@@ -1128,46 +1055,16 @@ def version_detail(request, pk):
                 if can_view(user, _with_version(edition, version))
             ],
             "members": active_members(version),
-            "can_set_aside": version.is_open_variant
-            and is_maintainer(user, version.project)
-            and can_view(user, version),
-            "set_aside_form": SetAsideForm(user=user),
-            "open_sent_proposal": version.sent_proposals.filter(
-                status=ChangeProposal.Status.OPEN, is_hidden=False
-            ).first(),
             "can_challenge": step is not None and can_challenge(user, version),
-            "copy_step": copy_step if copy_step and can_copy(user, copy_step) else None,
-            "can_propose": step is not None and can_propose(user, version),
-            "open_proposal_count": version.proposals.filter(
-                status=ChangeProposal.Status.OPEN, is_hidden=False
-            ).count(),
             **_progress(rows),
         },
     )
 
 
 def version_create(request, project_pk):
-    """A project has one main version; other versions are variants, started from it."""
+    """A project has one translation, created with it."""
     project = get_object_or_404(TranslationProject, pk=project_pk, is_hidden=False)
     return redirect(project)
-
-
-@login_required
-@require_POST
-def variant_set_aside(request, pk):
-    """The maintainers set an open variant aside, with a reason."""
-    version = _version(request.user, pk)
-    form = SetAsideForm(request.POST, user=request.user)
-    if not form.is_valid():
-        messages.error(request, _("Expliquez pourquoi cette variante est écartée."))
-        return redirect(version)
-    try:
-        set_aside_variant(version, request.user, form.cleaned_data["reason"])
-    except ValidationError as error:
-        messages.error(request, " ".join(error.messages))
-        return redirect(version)
-    messages.success(request, _("La variante est écartée."))
-    return redirect(version.project)
 
 
 @login_required
@@ -1499,36 +1396,10 @@ def step_detail(request, pk, number):
             "is_current": current is not None and current.pk == step.pk,
             "is_private": step.during_draft and not version.shows_draft_steps,
             "show_origin": True,
-            "can_copy": can_copy(user, step),
             "can_label": can_translate(user, version),
             "label_form": StepLabelForm(instance=step, user=user),
             **_progress(rows),
         },
-    )
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
-def version_copy(request, pk, number):
-    """Start a variant, a private draft, from a public step of the main version."""
-    source = _version(request.user, pk)
-    step = get_object_or_404(source.steps, number=number)
-    step.version = source
-    if not can_copy(request.user, step):
-        raise Http404
-    if request.method == "POST":
-        version, saved = _contribute(
-            request, copy_version, step, TranslationVersion(), request.user
-        )
-        if saved:
-            messages.success(
-                request, _("La variante est créée : c’est votre brouillon, visible de vous seul.")
-            )
-            return redirect("translations:version_edit", version.pk)
-    return render(
-        request,
-        "translations/version_copy.html",
-        {"source": source, "step": step, "project": source.project},
     )
 
 
@@ -1586,201 +1457,6 @@ def step_compare(request, pk):
             "rows": comparison.sentences,
         },
     )
-
-
-# Proposals
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
-def proposal_create(request, pk):
-    """Propose changes to the latest public step of the published version of someone else."""
-    user = request.user
-    version = _version(user, pk)
-    step = public_step(version)
-    if step is None:
-        raise Http404
-    if not can_propose(user, version):
-        raise PermissionDenied
-    frozen = _frozen_texts(step)
-    history = SourceHistory(version.project.source_text)
-    rows = [
-        {
-            "segment": source_segment,
-            "number": number,
-            "text": frozen[source_segment.pk].text if source_segment.pk in frozen else "",
-            "errors": None,
-        }
-        for number, source_segment in enumerate(history.segments_at(step.source_state), start=1)
-    ]
-    form = ProposalForm(request.POST or None, user=user)
-    if request.method == "POST":
-        texts = {}
-        for row in rows:
-            key = f"s{row['segment'].pk}"
-            if key not in request.POST:
-                continue
-            row["text"] = request.POST[key]
-            text_form = TranslationTextForm({"text": request.POST[key]}, user=user)
-            if text_form.is_valid():
-                texts[row["segment"]] = text_form.cleaned_data["text"]
-            else:
-                row["errors"] = text_form.errors["text"]
-        if form.is_valid() and not any(row["errors"] for row in rows):
-            proposal = form.save(commit=False)
-            proposal.version = version
-            try:
-                proposal, saved = _contribute(request, create_proposal, proposal, user, texts)
-            except ValidationError as error:
-                form.add_error(None, error)
-            else:
-                if saved:
-                    messages.success(request, _("La proposition est envoyée."))
-                    return redirect(proposal)
-    return render(
-        request,
-        "translations/proposal_create.html",
-        {
-            "version": version,
-            "project": version.project,
-            "source": version.project.source_text,
-            "step": step,
-            "rows": rows,
-            "form": form,
-        },
-    )
-
-
-def _proposal(user, pk):
-    queryset = ChangeProposal.objects.select_related(
-        "version__project__source_text", "version__author", "author", "base_step"
-    )
-    proposal = get_object_or_404(queryset, pk=pk)
-    if not can_view(user, proposal.version) or not can_view(user, proposal):
-        raise Http404
-    return proposal
-
-
-def proposal_detail(request, pk):
-    """The proposed sentences word by word; the author of the version decides on each."""
-    user = request.user
-    proposal = _proposal(user, pk)
-    version = proposal.version
-    can_decide = proposal.is_open and can_translate(user, version)
-    # Only the author of the version sees their working text, to spot what changed since.
-    working = (
-        dict(version.segments.current().values_list("segment_id", "text")) if can_decide else {}
-    )
-    numbers = SourceHistory(version.project.source_text).numbers_at(proposal.base_step.source_state)
-    sentences = []
-    for proposed in proposal.sentences.select_related("segment"):
-        proposed.proposal = proposal
-        if not can_view(user, proposed):
-            continue
-        current = working.get(proposed.segment_id, "")
-        undecided = can_decide and proposed.is_pending
-        source_changed = proposed.segment.removed_in is not None
-        sentences.append(
-            {
-                "proposed": proposed,
-                "number": numbers.get(proposed.segment_id),
-                "chunks": word_diff(proposed.base_text, proposed.text),
-                "working": current,
-                "source_changed": undecided and source_changed,
-                "changed_since": undecided and not source_changed and current != proposed.base_text,
-            }
-        )
-    return render(
-        request,
-        "translations/proposal_detail.html",
-        {
-            "proposal": proposal,
-            "version": version,
-            "project": version.project,
-            "source": version.project.source_text,
-            "sentences": sentences,
-            "can_decide": can_decide,
-            "can_withdraw": proposal.is_open and user.pk == proposal.author_id,
-            "reviews": [
-                review
-                for review in proposal.reviews.select_related("reviewer")
-                if can_view(user, _with_proposal(review, proposal))
-            ],
-            "can_review": proposal.is_open
-            and user.is_authenticated
-            and user.is_active
-            and user.pk != proposal.author_id,
-            "review_form": ProposalReviewForm(),
-        },
-    )
-
-
-def proposal_list(request, pk):
-    """The proposals made to a version, open ones first."""
-    user = request.user
-    version = _version(user, pk)
-    proposals = []
-    queryset = version.proposals.select_related("author").annotate(
-        sentence_count=Count("sentences")
-    )
-    for proposal in queryset:
-        proposal.version = version
-        if can_view(user, proposal):
-            proposals.append(proposal)
-    proposals.sort(key=lambda proposal: not proposal.is_open)
-    step = public_step(version)
-    return render(
-        request,
-        "translations/proposal_list.html",
-        {
-            "version": version,
-            "project": version.project,
-            "proposals": proposals,
-            "can_propose": step is not None and can_propose(user, version),
-        },
-    )
-
-
-@login_required
-@require_POST
-def proposed_sentence_decide(request, pk):
-    """The author of the version accepts or refuses one proposed sentence."""
-    proposed = get_object_or_404(ProposedSentence.objects.select_related("segment"), pk=pk)
-    proposal = _proposal(request.user, proposed.proposal_id)
-    decision = request.POST.get("decision")
-    if decision not in ("accept", "refuse"):
-        return HttpResponseBadRequest()
-    accept = decision == "accept"
-    try:
-        decide_sentence(proposed, request.user, accept=accept)
-    except ValidationError as error:
-        messages.error(request, error.messages[0])
-    else:
-        if accept:
-            messages.success(
-                request, _("La phrase est acceptée : elle entre dans votre texte de travail.")
-            )
-        else:
-            messages.success(request, _("La phrase est refusée."))
-    return redirect(f"{proposal.get_absolute_url()}#proposee-{proposed.pk}")
-
-
-@login_required
-@require_POST
-def proposal_withdraw(request, pk):
-    proposal = _proposal(request.user, pk)
-    try:
-        withdraw_proposal(proposal, request.user)
-    except ValidationError as error:
-        messages.error(request, error.messages[0])
-    else:
-        messages.success(request, _("La proposition est retirée."))
-    return redirect(proposal)
-
-
-def _with_proposal(review, proposal):
-    review.proposal = proposal
-    return review
 
 
 def _frozen_texts(step):

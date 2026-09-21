@@ -21,7 +21,7 @@
     <fieldset>
       <legend>{% translate "Textes affichés" %}</legend>
       {% for version in versions %}
-      <label><input type="checkbox" name="v" value="{{ version.pk }}"{% if version in shown %} checked{% endif %}> {{ version.display_name }} <span class="muted">({% if not version.is_main %}{{ version.get_variant_status_display }}{% if version.is_draft or version.author_id == user.pk %}, {% endif %}{% endif %}{% if version.is_draft %}{% translate "votre brouillon" %}{% elif version.author_id == user.pk %}{% translate "votre texte de travail" %}{% endif %})</span></label>
+      <label><input type="checkbox" name="v" value="{{ version.pk }}"{% if version in shown %} checked{% endif %}> {{ version.display_name }} <span class="muted">({% if version.is_draft %}{% translate "votre brouillon" %}{% elif version.author_id == user.pk %}{% translate "votre texte de travail" %}{% endif %})</span></label>
       {% endfor %}
     </fieldset>
     <button type="submit" class="button button-quiet">{% translate "Afficher" %}</button>

@@ -3,7 +3,7 @@ from django.urls import reverse
 from translations.models import TranslationVersion
 from translations.services import change_source_text, create_step, publish_version, save_translation
 
-from .factories import make_published_version, make_version, translate
+from .factories import make_project, make_published_version, make_version, translate
 from .test_sources import insert, merge, split
 from .test_versions import TranslationTestCase
 
@@ -49,7 +49,7 @@ class StepHistoryTests(TranslationTestCase):
         self.assertContains(page, "<del>manemus</del><ins>maneamus</ins>", html=True)
 
     def test_a_private_draft_step_does_not_show_through_the_public_history(self):
-        version = make_version(self.author, self.project)
+        version = make_version(self.author, make_project(self.author, self.source, title="Autre"))
         translate(version)
         create_step(version, self.author, "Brouillon")
         save_translation(version, self.first, "Imber cadit.", self.author)

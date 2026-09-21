@@ -4,7 +4,7 @@ from django.urls import reverse
 from translations.diffs import ADDED, REMOVED, SAME, Chunk, word_diff
 from translations.services import create_step, publish_version, save_translation
 
-from .factories import make_published_version, make_version, translate
+from .factories import make_project, make_published_version, make_version, translate
 from .test_versions import TranslationTestCase
 
 
@@ -61,7 +61,7 @@ class StepCompareTests(TranslationTestCase):
         self.assertContains(response, "<ins>abibimus</ins>", html=True)
 
     def test_hidden_draft_steps_are_not_offered(self):
-        version = make_version(self.other, self.project)
+        version = make_version(self.other, make_project(self.other, self.source, title="Autre"))
         translate(version, ("Pluvia.",))
         create_step(version, self.other, "Brouillon")
         publish_version(version, self.other)

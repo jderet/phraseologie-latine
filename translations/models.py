@@ -498,9 +498,8 @@ class Style(models.TextChoices):
 class TranslationProject(ModeratedContent):
     """The Latin translation of one source text, in one style.
 
-    The project aims at a single text, its main version, written by its creator and the
-    maintainers (the co-authors of the main version); the other versions are variants, to be
-    merged or set aside (choice of 19 September 2026).
+    The project aims at a single translation, written by its editors and translators; other
+    readings of a sentence are its variants (``SegmentVariant``, choice of 21 September 2026).
     """
 
     source_text = models.ForeignKey(
@@ -525,6 +524,15 @@ class TranslationProject(ModeratedContent):
         verbose_name=_("créé par"),
     )
     created_at = models.DateTimeField(_("créé le"), default=timezone.now, editable=False)
+    # Anyone may add variants to a sentence, unless an editor keeps correction to its members.
+    open_correction = models.BooleanField(
+        _("correction ouverte à tous"),
+        default=True,
+        help_text=_(
+            "Décochée, seuls les correcteurs, traducteurs et éditeurs nommés ajoutent des "
+            "variantes aux phrases."
+        ),
+    )
     main_version = models.OneToOneField(
         "TranslationVersion",
         on_delete=models.SET_NULL,
@@ -571,18 +579,11 @@ def coauthored_by(user):
 
 
 class TranslationVersion(ModeratedContent):
-    """The main version of a project, or a variant of it: a private draft until its author
-    publishes it."""
+    """The translation of a project: a private draft until its editors publish it."""
 
     class State(models.TextChoices):
         DRAFT = "draft", _("brouillon")
         PUBLISHED = "published", _("publiée")
-
-    class VariantStatus(models.TextChoices):
-        MAIN = "", _("traduction principale")
-        OPEN = "open", _("variante ouverte")
-        MERGED = "merged", _("variante fusionnée")
-        SET_ASIDE = "set_aside", _("variante écartée")
 
     project = models.ForeignKey(
         TranslationProject,
@@ -599,15 +600,6 @@ class TranslationVersion(ModeratedContent):
     state = models.CharField(
         _("état"), max_length=10, choices=State.choices, default=State.DRAFT, editable=False
     )
-    variant_status = models.CharField(
-        _("statut de la variante"),
-        max_length=10,
-        choices=VariantStatus.choices,
-        default=VariantStatus.OPEN,
-        blank=True,
-        editable=False,
-    )
-    closed_at = models.DateTimeField(_("close le"), null=True, blank=True, editable=False)
     created_at = models.DateTimeField(_("commencée le"), default=timezone.now, editable=False)
     published_at = models.DateTimeField(_("publiée le"), null=True, blank=True, editable=False)
     shows_draft_steps = models.BooleanField(
@@ -616,26 +608,6 @@ class TranslationVersion(ModeratedContent):
         editable=False,
         help_text=_("Choisi une fois pour toutes à la publication."),
     )
-    copied_from = models.ForeignKey(
-        "VersionStep",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        editable=False,
-        related_name="copies",
-        verbose_name=_("copiée de l’étape"),
-    )
-    # The step of the original up to which the copy took its changes (``copied_from`` at first).
-    synced_to = models.ForeignKey(
-        "VersionStep",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        editable=False,
-        related_name="+",
-        verbose_name=_("mise à jour jusqu’à l’étape"),
-    )
-
     objects = VersionQuerySet.as_manager()
 
     class Meta:
@@ -648,20 +620,10 @@ class TranslationVersion(ModeratedContent):
                 | Q(state="published", published_at__isnull=False),
                 name="translations_version_published_at",
             ),
-            models.CheckConstraint(
-                condition=Q(closed_at__isnull=True, variant_status__in=["", "open"])
-                | Q(closed_at__isnull=False, variant_status__in=["merged", "set_aside"]),
-                name="translations_version_closing",
-            ),
         ]
 
     def __str__(self):
-        if self.is_main:
-            return self.project.title
-        return gettext("%(project)s, variante de %(author)s") % {
-            "project": self.project.title,
-            "author": self.author.public_name,
-        }
+        return self.project.title
 
     def get_absolute_url(self):
         return reverse("translations:version", args=[self.pk])
@@ -675,23 +637,8 @@ class TranslationVersion(ModeratedContent):
         return self.state == self.State.DRAFT
 
     @property
-    def is_main(self):
-        return self.variant_status == self.VariantStatus.MAIN
-
-    @property
     def display_name(self):
-        """« Traduction principale », or « Variante de » its author."""
-        if self.is_main:
-            return gettext("Traduction principale")
-        return gettext("Variante de %(name)s") % {"name": self.author.public_name}
-
-    @property
-    def is_open_variant(self):
-        return self.variant_status == self.VariantStatus.OPEN
-
-    @property
-    def is_closed(self):
-        return self.closed_at is not None
+        return gettext("La traduction")
 
 
 class TranslatedQuerySet(models.QuerySet):
@@ -870,135 +817,6 @@ class StepSentence(models.Model):
 
     def __str__(self):
         return self.text
-
-
-class ChangeProposal(ModeratedContent):
-    """Changes proposed to the published version of someone else, like a pull request.
-
-    The writers of the version accept or refuse each proposed sentence (Q36). A proposal sent
-    from a variant to the main version closes the variant once decided.
-    """
-
-    class Status(models.TextChoices):
-        OPEN = "open", _("ouverte")
-        CLOSED = "closed", _("close")
-        WITHDRAWN = "withdrawn", _("retirée par son auteur")
-
-    version = models.ForeignKey(
-        TranslationVersion,
-        on_delete=models.PROTECT,
-        related_name="proposals",
-        verbose_name=_("version"),
-    )
-    base_step = models.ForeignKey(
-        VersionStep,
-        on_delete=models.PROTECT,
-        related_name="proposals",
-        editable=False,
-        verbose_name=_("étape de départ"),
-    )
-    from_version = models.ForeignKey(
-        TranslationVersion,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        editable=False,
-        related_name="sent_proposals",
-        verbose_name=_("variante d’origine"),
-    )
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="change_proposals",
-        verbose_name=_("auteur"),
-    )
-    explanation = models.TextField(
-        _("explication"),
-        max_length=3000,
-        help_text=_("Pourquoi ces changements : tours attestés, fautes corrigées, style visé."),
-    )
-    status = models.CharField(
-        _("statut"), max_length=10, choices=Status.choices, default=Status.OPEN, editable=False
-    )
-    created_at = models.DateTimeField(_("proposée le"), default=timezone.now, editable=False)
-    closed_at = models.DateTimeField(_("close le"), null=True, blank=True, editable=False)
-
-    class Meta:
-        verbose_name = _("proposition de modifications")
-        verbose_name_plural = _("propositions de modifications")
-        ordering = ["-created_at", "-pk"]
-        constraints = [
-            models.CheckConstraint(
-                condition=Q(status="open", closed_at__isnull=True)
-                | (~Q(status="open") & Q(closed_at__isnull=False)),
-                name="translations_proposal_closing",
-            ),
-        ]
-
-    def __str__(self):
-        return gettext("Proposition de %(name)s pour %(version)s") % {
-            "name": self.author.public_name,
-            "version": self.version,
-        }
-
-    def get_absolute_url(self):
-        return reverse("translations:proposal", args=[self.pk])
-
-    @property
-    def is_open(self):
-        return self.status == self.Status.OPEN
-
-
-class ProposedSentence(ModeratedContent):
-    """The Latin proposed for one sentence, and the decision of the author of the version."""
-
-    class Decision(models.TextChoices):
-        PENDING = "pending", _("en attente")
-        ACCEPTED = "accepted", _("acceptée")
-        REFUSED = "refused", _("refusée")
-
-    proposal = models.ForeignKey(
-        ChangeProposal,
-        on_delete=models.PROTECT,
-        related_name="sentences",
-        verbose_name=_("proposition"),
-    )
-    segment = models.ForeignKey(
-        Segment, on_delete=models.PROTECT, related_name="+", verbose_name=_("phrase source")
-    )
-    base_text = models.TextField(_("latin de l’étape de départ"), blank=True, editable=False)
-    text = models.TextField(_("latin proposé"), max_length=4000, blank=True)
-    decision = models.CharField(
-        _("décision"),
-        max_length=10,
-        choices=Decision.choices,
-        default=Decision.PENDING,
-        editable=False,
-    )
-    decided_at = models.DateTimeField(_("examinée le"), null=True, blank=True, editable=False)
-
-    class Meta:
-        verbose_name = _("phrase proposée")
-        verbose_name_plural = _("phrases proposées")
-        ordering = ["proposal", "segment__position"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["proposal", "segment"], name="translations_one_proposed_text_per_segment"
-            ),
-        ]
-
-    def __str__(self):
-        return self.text
-
-    def get_absolute_url(self):
-        return f"{self.proposal.get_absolute_url()}#proposee-{self.pk}"
-
-    def get_discussion_url(self):
-        return self.get_absolute_url()
-
-    @property
-    def is_pending(self):
-        return self.decision == self.Decision.PENDING
 
 
 class VersionMember(ModeratedContent):
@@ -1308,48 +1126,6 @@ class IgnoredAlert(models.Model):
         return f"{self.code} · {self.segment_id}"
 
 
-class ProposalReview(ModeratedContent):
-    """A review of a change proposal, as on GitHub: approve, request changes or comment.
-
-    Indicative: the writers of the version still decide on each sentence."""
-
-    class Verdict(models.TextChoices):
-        APPROVE = "approve", _("approuve")
-        CHANGES = "changes", _("demande des changements")
-        COMMENT = "comment", _("commente")
-
-    proposal = models.ForeignKey(
-        ChangeProposal,
-        on_delete=models.PROTECT,
-        related_name="reviews",
-        verbose_name=_("proposition"),
-    )
-    reviewer = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="+",
-        editable=False,
-        verbose_name=_("relecteur"),
-    )
-    verdict = models.CharField(_("avis"), max_length=10, choices=Verdict.choices)
-    text = models.TextField(_("commentaire"), max_length=3000, blank=True)
-    created_at = models.DateTimeField(_("date"), default=timezone.now, editable=False)
-
-    class Meta:
-        verbose_name = _("relecture d’une proposition")
-        verbose_name_plural = _("relectures des propositions")
-        ordering = ["proposal", "created_at", "pk"]
-
-    def __str__(self):
-        return gettext("%(name)s %(verdict)s") % {
-            "name": self.reviewer.public_name,
-            "verdict": self.get_verdict_display(),
-        }
-
-    def get_absolute_url(self):
-        return f"{self.proposal.get_absolute_url()}#relecture-{self.pk}"
-
-
 class PersonalMemoryEntry(models.Model):
     """A pair of one's own translation memory, imported from a TMX file: offered in the memory
     tab of the editor, to its owner only. Private like the notebook: never shown to anyone
@@ -1470,15 +1246,7 @@ register(
     TranslationVersion,
     owner_field="author",
     visible_to=version_visible_to,
-    not_reverted=(
-        "state",
-        "published_at",
-        "shows_draft_steps",
-        "copied_from",
-        "synced_to",
-        "variant_status",
-        "closed_at",
-    ),
+    not_reverted=("state", "published_at", "shows_draft_steps"),
 )
 register(
     TranslatedSegment,
@@ -1496,25 +1264,6 @@ register(
     visible_to=step_visible_to,
     counts_toward_limit=False,
     not_reverted=("during_draft", "source_state"),
-)
-register(
-    ChangeProposal,
-    owner_field="author",
-    text_fields=("explanation",),
-    visible_to=lambda user, proposal: version_visible_to(user, proposal.version),
-    # A revert never reopens or closes a proposal.
-    not_reverted=("status", "closed_at", "from_version"),
-    discussion=lambda user, proposal: proposal.is_open,
-)
-register(
-    ProposedSentence,
-    owner_field="proposal.author",
-    text_fields=("text",),
-    visible_to=lambda user, proposed: version_visible_to(user, proposed.proposal.version),
-    counts_toward_limit=False,
-    not_reverted=("decision", "decided_at"),
-    # Each proposed sentence has its own thread, like the comments of a line in a review.
-    discussion=lambda user, proposed: proposed.proposal.is_open,
 )
 register(
     VersionMember,
@@ -1550,10 +1299,4 @@ register(
     text_fields=("text",),
     visible_to=lambda user, comment: version_visible_to(user, comment.version),
     not_reverted=("is_resolved", "resolved_by"),
-)
-register(
-    ProposalReview,
-    owner_field="reviewer",
-    text_fields=("text",),
-    visible_to=lambda user, review: version_visible_to(user, review.proposal.version),
 )

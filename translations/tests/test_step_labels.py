@@ -2,7 +2,7 @@ from django.urls import reverse
 
 from translations.services import create_step, save_translation
 
-from .factories import make_published_version, make_version
+from .factories import make_project, make_published_version, make_version
 from .test_versions import TranslationTestCase
 
 
@@ -33,7 +33,7 @@ class StepLabelTests(TranslationTestCase):
         self.assertNotIn("Imber", older)
 
     def test_export_of_a_hidden_draft_step_is_refused(self):
-        draft = make_version(self.author, self.project)
+        draft = make_version(self.author, make_project(self.author, self.source, title="Autre"))
         save_translation(draft, self.first, "Pluit.", self.author)
         create_step(draft, self.author, "Brouillon")
         url = reverse("translations:version_export_text", args=[draft.pk])

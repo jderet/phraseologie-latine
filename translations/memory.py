@@ -42,15 +42,16 @@ def score(first, second):
 
 
 def other_versions(user, version, segment):
-    """The Latin of the same sentence in the other versions of the project the user may see:
-    [{version, text}], the main version first."""
+    """The Latin of the same sentence in the translations of the other projects on this source
+    text that the user may see: [{version, text, step}], oldest first."""
     project = version.project
     history = SourceHistory(project.source_text)
     found = []
     queryset = (
-        project.versions.visible_to(user)
-        .exclude(pk=version.pk)
-        .select_related("author")
+        TranslationVersion.objects.filter(project__source_text_id=project.source_text_id)
+        .visible_to(user)
+        .exclude(project_id=project.pk)
+        .select_related("author", "project")
         .order_by("published_at", "created_at")
     )
     for other in queryset:
@@ -62,7 +63,6 @@ def other_versions(user, version, segment):
         sentence = sentences.get(segment.pk)
         if sentence is not None and sentence.text:
             found.append({"version": other, "text": sentence.text, "step": step})
-    found.sort(key=lambda item: not item["version"].is_main)
     return found
 
 

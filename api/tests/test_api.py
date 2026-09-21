@@ -29,7 +29,8 @@ class ApiTestCase(NeologismTestCase):
         self.draft = make_unit(self.author, self.more_words[:2], reference_form="consilia capere")
         project = make_project(self.author)
         self.version = make_published_version(self.author, project)
-        self.draft_version = make_version(self.other, project)
+        draft_project = make_project(self.other, project.source_text, title="Brouillon")
+        self.draft_version = make_version(self.other, draft_project)
         translate(self.draft_version, ("Pluit secretum.",))
         NegativeSearch.objects.create(
             expression="birota",

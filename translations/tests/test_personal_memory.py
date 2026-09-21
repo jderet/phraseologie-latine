@@ -4,7 +4,7 @@ from django.urls import reverse
 from accounts.services import anonymize_user
 from translations.models import PersonalMemoryEntry
 
-from .factories import make_version
+from .factories import make_project, make_version
 from .test_versions import TranslationTestCase
 
 TMX = """<?xml version="1.0" encoding="UTF-8"?>
@@ -39,7 +39,7 @@ class PersonalMemoryTests(TranslationTestCase):
         version = make_version(self.author, self.project)
         url = reverse("translations:editor_memory", args=[version.pk, self.second.pk])
         self.assertContains(self.client.get(url), "Hodie vesperi domi manemus.")
-        other_version = make_version(self.other, self.project)
+        other_version = make_version(self.other, make_project(self.other, self.source))
         self.client.force_login(self.other)
         url = reverse("translations:editor_memory", args=[other_version.pk, self.second.pk])
         self.assertNotContains(self.client.get(url), "Hodie vesperi")

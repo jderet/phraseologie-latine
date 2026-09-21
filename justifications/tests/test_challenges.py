@@ -19,7 +19,7 @@ from moderation.services import (
     vote_summary,
 )
 from translations.services import create_step, publish_version
-from translations.tests.factories import make_version, translate
+from translations.tests.factories import make_project, make_version, translate
 
 from .test_services import JustificationTestCase
 
@@ -66,7 +66,7 @@ class ChallengeServicesTests(ChallengeTestCase):
             self.contest(user=self.author)
         with self.assertRaises(ValidationError):
             self.contest(excerpt="manebimus")
-        draft = make_version(self.author, self.project)
+        draft = make_version(self.author, make_project(self.author, self.source, title="Autre"))
         translate(draft)
         self.translated = draft.segments.get(segment=self.second)
         with self.assertRaises(PermissionDenied):
@@ -205,7 +205,7 @@ class ChallengePagesTests(ChallengeTestCase):
         self.assertEqual(self.client.get(challenge.get_absolute_url()).status_code, 404)
 
     def test_drafts_cannot_be_contested_or_discussed(self):
-        draft = make_version(self.author, self.project)
+        draft = make_version(self.author, make_project(self.author, self.source, title="Brouillon"))
         translate(draft)
         translated = draft.segments.get(segment=self.second)
         self.client.force_login(self.other)

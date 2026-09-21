@@ -16,10 +16,6 @@ from django.utils.translation import gettext_lazy as _
 class Verb(models.TextChoices):
     VERSION_PUBLISHED = "version_published", _("a publié une version")
     STEP_CREATED = "step_created", _("a créé une étape")
-    PROPOSAL_OPENED = "proposal_opened", _("a proposé des modifications")
-    PROPOSAL_CLOSED = "proposal_closed", _("a examiné une proposition")
-    PROPOSAL_WITHDRAWN = "proposal_withdrawn", _("a retiré une proposition")
-    PROPOSAL_REVIEWED = "proposal_reviewed", _("a relu une proposition")
     COMMENT_POSTED = "comment_posted", _("a écrit un message")
     MENTIONED = "mentioned", _("vous a mentionné")
     CHALLENGE_OPENED = "challenge_opened", _("a contesté un choix")
@@ -32,7 +28,6 @@ class Verb(models.TextChoices):
     TOPIC_CLOSED = "topic_closed", _("a fermé un sujet")
     TOPIC_REOPENED = "topic_reopened", _("a rouvert un sujet")
     SENTENCE_COMMENTED = "sentence_commented", _("a commenté une phrase")
-    VARIANT_SET_ASIDE = "variant_set_aside", _("a écarté une variante")
 
 
 class Event(models.Model):

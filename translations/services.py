@@ -14,9 +14,6 @@ from activity.services import auto_follow, record
 from moderation.services import save_with_revision
 
 from .models import (
-    ChangeProposal,
-    ProposalReview,
-    ProposedSentence,
     Segment,
     SourceChange,
     SourceProposal,
@@ -26,11 +23,10 @@ from .models import (
     TranslationProject,
     TranslationVersion,
     VersionStep,
-    is_maintainer,
     is_version_writer,
     version_writer_ids,
 )
-from .permissions import can_change_source, can_copy, can_propose, can_propose_source
+from .permissions import can_change_source, can_propose_source
 from .segmentation import MAX_LEVEL, MAX_SENTENCE_LENGTH, MAX_SENTENCES, to_lines
 from .sources import (
     EDIT,
@@ -42,16 +38,13 @@ from .sources import (
     SourceHistory,
     apply_operation,
     carry,
-    is_active,
     relocate,
     simulate,
 )
 from .steps import (
     latest_step,
     pending_changes,
-    public_step,
     sentences_to_freeze,
-    step_sentences,
     waiting_justifications,
 )
 
@@ -489,13 +482,10 @@ def _carry_working_texts(removed_ids, carrier, editor):
 
 @transaction.atomic
 def create_project(project, author):
-    """Create a project and its main version, a draft written by its creator."""
+    """Create a project and its translation, a draft written by its creator."""
     project.created_by = author
     save_with_revision(project, author)
-    main = create_version(
-        TranslationVersion(project=project, variant_status=TranslationVersion.VariantStatus.MAIN),
-        author,
-    )
+    main = create_version(TranslationVersion(project=project), author)
     TranslationProject.objects.filter(pk=project.pk).update(main_version=main)
     project.main_version = main
     auto_follow(author, project)
@@ -503,7 +493,7 @@ def create_project(project, author):
 
 
 def create_version(version, author):
-    """Create a version: the main version of a new project, or a variant (open by default)."""
+    """Create the translation of a new project, a draft."""
     version.author = author
     version.state = TranslationVersion.State.DRAFT
     save_with_revision(version, author)
@@ -569,220 +559,6 @@ def set_sentence_status(version, segment, status, user):
 
 
 @transaction.atomic
-def create_proposal(proposal, author, texts):
-    """Propose changes to the published version of someone else, like a pull request.
-
-    ``texts`` maps sentences of the source text to Latin; only those that differ from the
-    latest public step are kept. The author of the version decides on each (Q36).
-    """
-    version = proposal.version
-    step = public_step(version)
-    if step is None or not can_propose(author, version):
-        raise PermissionDenied
-    variant = proposal.from_version
-    if variant is not None:
-        _check_variant_proposal(variant, version, author)
-    frozen = step_sentences(step)
-    changed = []
-    for segment, text in sorted(texts.items(), key=lambda item: item[0].position):
-        if segment.source_text_id != version.project.source_text_id or not is_active(
-            segment, step.source_state
-        ):
-            raise ValueError("The sentence does not belong to the text of the step.")
-        text = normalize_sentence(text)
-        base = frozen[segment.pk].text if segment.pk in frozen else ""
-        if text != base:
-            changed.append((segment, base, text))
-    if not changed:
-        raise ValidationError(
-            gettext("Changez au moins une phrase avant d’envoyer la proposition."),
-            code="unchanged",
-        )
-    proposal.author = author
-    proposal.base_step = step
-    save_with_revision(proposal, author)
-    for segment, base, text in changed:
-        proposed = ProposedSentence(proposal=proposal, segment=segment, base_text=base, text=text)
-        save_with_revision(proposed, author)
-    auto_follow(author, proposal)
-    record(
-        author,
-        Verb.PROPOSAL_OPENED,
-        proposal,
-        recipients=version_writer_ids(version),
-        mention_text=proposal.explanation,
-    )
-    return proposal
-
-
-@transaction.atomic
-def decide_sentence(proposed, user, accept):
-    """The author of the version, or a co-author, accepts or refuses a proposed sentence.
-
-    An accepted sentence replaces the working text, in the name of whoever proposed it; the
-    public sees it at the next step. The proposal closes once every sentence is decided.
-    """
-    proposal = ChangeProposal.objects.select_for_update().get(pk=proposed.proposal_id)
-    version = proposal.version
-    if not is_version_writer(user, version):
-        raise PermissionDenied
-    if not proposal.is_open:
-        raise ValidationError(gettext("Cette proposition est close."), code="closed")
-    proposed = ProposedSentence.objects.select_for_update().get(pk=proposed.pk)
-    if not proposed.is_pending:
-        raise ValidationError(gettext("Cette phrase a déjà été examinée."), code="decided")
-    if accept and proposed.segment.removed_in is not None:
-        raise ValidationError(
-            gettext(
-                "La phrase source a changé depuis cette proposition : refusez cette phrase, ou "
-                "recopiez son latin dans votre texte de travail."
-            ),
-            code="source_changed",
-        )
-    if accept:
-        save_translation(version, proposed.segment, proposed.text, user, written_by=proposal.author)
-        proposed.decision = ProposedSentence.Decision.ACCEPTED
-    else:
-        proposed.decision = ProposedSentence.Decision.REFUSED
-    proposed.decided_at = timezone.now()
-    save_with_revision(proposed, user, comment=proposed.get_decision_display())
-    if not proposal.sentences.filter(decision=ProposedSentence.Decision.PENDING).exists():
-        proposal.status = ChangeProposal.Status.CLOSED
-        proposal.closed_at = timezone.now()
-        save_with_revision(proposal, user, comment=gettext("Proposition close"))
-        record(user, Verb.PROPOSAL_CLOSED, proposal, recipients=[proposal.author_id])
-        if proposal.from_version_id is not None:
-            _close_variant(proposal, user)
-    return proposed
-
-
-def _check_variant_proposal(variant, main, author):
-    """A variant sends its sentences to the main version of its project, one proposal at a time,
-    from its writers."""
-    if (
-        not variant.is_open_variant
-        or variant.project_id != main.project_id
-        or not main.is_main
-        or not is_version_writer(author, variant)
-    ):
-        raise PermissionDenied
-    if variant.sent_proposals.filter(status=ChangeProposal.Status.OPEN).exists():
-        raise ValidationError(
-            gettext("Une proposition de cette variante attend déjà une décision."),
-            code="already_open",
-        )
-
-
-def _close_variant(proposal, user):
-    """Once its proposal is decided, a variant is merged if a sentence was accepted, set aside
-    otherwise; it is no longer written."""
-    variant = TranslationVersion.objects.select_for_update().get(pk=proposal.from_version_id)
-    if not variant.is_open_variant:
-        return
-    accepted = proposal.sentences.filter(decision=ProposedSentence.Decision.ACCEPTED).exists()
-    variant.variant_status = (
-        TranslationVersion.VariantStatus.MERGED
-        if accepted
-        else TranslationVersion.VariantStatus.SET_ASIDE
-    )
-    variant.closed_at = timezone.now()
-    save_with_revision(variant, user, comment=variant.get_variant_status_display())
-
-
-@transaction.atomic
-def set_aside_variant(variant, user, reason):
-    """The maintainers set an open variant aside, with a reason, without a proposal.
-
-    Its open proposal, if any, is closed with it. Return the revision.
-    """
-    variant = TranslationVersion.objects.select_for_update().get(pk=variant.pk)
-    if not variant.is_open_variant or not is_maintainer(user, variant.project):
-        raise PermissionDenied
-    reason = normalize_sentence(reason)
-    if not reason:
-        raise ValidationError(
-            gettext("Expliquez pourquoi cette variante est écartée."), code="no_reason"
-        )
-    now = timezone.now()
-    for proposal in variant.sent_proposals.filter(status=ChangeProposal.Status.OPEN):
-        for proposed in proposal.sentences.filter(decision=ProposedSentence.Decision.PENDING):
-            proposed.decision = ProposedSentence.Decision.REFUSED
-            proposed.decided_at = now
-            save_with_revision(proposed, user, comment=proposed.get_decision_display())
-        proposal.status = ChangeProposal.Status.CLOSED
-        proposal.closed_at = now
-        save_with_revision(proposal, user, comment=gettext("Variante écartée"))
-    variant.variant_status = TranslationVersion.VariantStatus.SET_ASIDE
-    variant.closed_at = now
-    revision = save_with_revision(variant, user, comment=reason)
-    record(
-        user,
-        Verb.VARIANT_SET_ASIDE,
-        variant,
-        recipients=version_writer_ids(variant),
-        mention_text=reason,
-    )
-    return revision
-
-
-@transaction.atomic
-def withdraw_proposal(proposal, user):
-    proposal = ChangeProposal.objects.select_for_update().get(pk=proposal.pk)
-    if user.pk != proposal.author_id:
-        raise PermissionDenied
-    if not proposal.is_open:
-        raise ValidationError(gettext("Cette proposition est close."), code="closed")
-    proposal.status = ChangeProposal.Status.WITHDRAWN
-    proposal.closed_at = timezone.now()
-    revision = save_with_revision(proposal, user, comment=gettext("Proposition retirée"))
-    record(
-        user,
-        Verb.PROPOSAL_WITHDRAWN,
-        proposal,
-        recipients=version_writer_ids(proposal.version),
-    )
-    return revision
-
-
-@transaction.atomic
-def copy_version(step, version, author):
-    """Start a variant, a draft, from a public step of the main version, like a fork.
-
-    Each copied sentence stays credited to whoever
-    wrote it, until the new author rewrites it; justifications are not copied. The Latin of
-    the step is carried to the current source text.
-    """
-    source = step.version
-    if not can_copy(author, step):
-        raise PermissionDenied
-    version.project = source.project
-    version.copied_from = step
-    create_version(version, author)
-    history = SourceHistory(_lock_source(version))
-    frozen = {
-        segment_id: Carried(sentence.text, sentence.written_by_id or source.author_id)
-        for segment_id, sentence in step_sentences(step).items()
-    }
-    for segment_id, sentence in history.project(frozen, step.source_state).items():
-        if not sentence.text:
-            continue
-        # A merge of sentences by several writers is credited to the author of the version.
-        writer_id = sentence.written_by_id or source.author_id
-        translated = TranslatedSegment(
-            version=version,
-            segment_id=segment_id,
-            text=sentence.text,
-            written_by_id=None if writer_id == author.pk else writer_id,
-        )
-        save_with_revision(translated, author)
-    message = gettext("Variante partie de la traduction principale, étape %(number)d") % {
-        "number": step.number
-    }
-    _record_step(version, author, message, history.source_text)
-    return version
-
-
-@transaction.atomic
 def publish_version(version, user, message="", show_draft_steps=False):
     """Make a draft public; a published version never goes back to draft.
 
@@ -805,11 +581,7 @@ def publish_version(version, user, message="", show_draft_steps=False):
     # Publishing always creates a step, the first one the public may see.
     message = normalize_sentence(message) or gettext("Publication")
     _record_step(version, user, message)
-    # The author of a copied version hears about it once the copy is public.
-    recipients = set(version_writer_ids(version))
-    if version.copied_from_id:
-        recipients |= version_writer_ids(version.copied_from.version)
-    record(user, Verb.VERSION_PUBLISHED, version, recipients=recipients)
+    record(user, Verb.VERSION_PUBLISHED, version, recipients=version_writer_ids(version))
     return revision
 
 
@@ -875,34 +647,3 @@ def create_step(version, author, message):
     step = _record_step(version, author, message, source)
     record(author, Verb.STEP_CREATED, step, recipients=version_writer_ids(version))
     return step
-
-
-@transaction.atomic
-def review_proposal(proposal, reviewer, verdict, text=""):
-    """Approve a proposal, request changes or comment; the writers of the version still decide
-    on each sentence. The author of the proposal does not review it."""
-    if (
-        not reviewer.is_authenticated
-        or not reviewer.is_active
-        or reviewer.pk == proposal.author_id
-        or not proposal.is_open
-    ):
-        raise PermissionDenied
-    if verdict not in ProposalReview.Verdict.values:
-        raise ValueError("Unknown verdict.")
-    text = (text or "").strip()
-    if verdict != ProposalReview.Verdict.APPROVE and not text:
-        raise ValidationError(
-            gettext("Dites ce qu’il faudrait changer, ou ce que vous remarquez."), code="empty"
-        )
-    review = ProposalReview(proposal=proposal, reviewer=reviewer, verdict=verdict, text=text)
-    save_with_revision(review, reviewer)
-    auto_follow(reviewer, proposal)
-    record(
-        reviewer,
-        Verb.PROPOSAL_REVIEWED,
-        review,
-        recipients={proposal.author_id} | version_writer_ids(proposal.version),
-        mention_text=text,
-    )
-    return review

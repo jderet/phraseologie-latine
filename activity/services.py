@@ -23,7 +23,6 @@ FOLLOWABLE = {
     "translations.translationproject",
     "translations.translationversion",
     "translations.sourcetext",
-    "translations.changeproposal",
     "translations.sourceproposal",
     "translations.topic",
     "justifications.challenge",
@@ -38,7 +37,7 @@ def _label(obj):
 
 
 def parents(obj):
-    """The contents an object belongs to, nearest first: a proposal belongs to its version,
+    """The contents an object belongs to, nearest first: a step belongs to its version,
     which belongs to its project. Followers of a parent hear about its parts."""
     chain = []
     current = obj
@@ -57,14 +56,11 @@ def _parent(obj):
     if label in ("translations.translationversion",):
         return obj.project
     if label in (
-        "translations.changeproposal",
         "translations.versionstep",
         "translations.versionmember",
         "translations.translatedsegment",
     ):
         return obj.version
-    if label == "translations.proposedsentence":
-        return obj.proposal
     if label == "translations.sourceproposal":
         return obj.source_text
     if label == "justifications.challenge":

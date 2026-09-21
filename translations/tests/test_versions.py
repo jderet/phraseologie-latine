@@ -65,11 +65,10 @@ class VersionServicesTests(TranslationTestCase):
         version = make_version(newcomer, project)
         for segment, text in zip(self.source.segments.all(), ("A.", "B.", "C."), strict=True):
             save_translation(version, segment, text, newcomer)
-        # The project and its main version.
+        # The project and its translation; a second project goes past the limit.
         self.assertEqual(contributions_today(newcomer), 2)
-        make_version(newcomer, self.project)
         with self.assertRaises(ContributionLimitReached):
-            make_version(newcomer, self.project)
+            make_project(newcomer, self.source, title="Un de trop")
         save_translation(version, self.first, "A et B.", newcomer)
         project.style_note = "breviter"
         save_with_revision(project, newcomer)
@@ -94,14 +93,15 @@ class VersionServicesTests(TranslationTestCase):
         self.assertIsNone(revert_to(creation, self.author))
         self.version.refresh_from_db()
         self.assertTrue(self.version.is_published)
-        self.assertTrue(self.version.is_main)
 
 
 class VersionVisibilityTests(TranslationTestCase):
     def setUp(self):
-        # The main version stays a draft; a variant is published.
+        # One project keeps its translation a draft, another publishes its own.
         self.draft = make_version(self.author, self.project)
-        self.published = make_published_version(self.other, self.project)
+        self.published = make_published_version(
+            self.other, make_project(self.other, self.source, title="Autre projet")
+        )
 
     def test_querysets_return_published_versions_and_own_drafts(self):
         versions = TranslationVersion.objects
@@ -134,24 +134,25 @@ class VersionVisibilityTests(TranslationTestCase):
         for url in urls[:3]:
             self.assertEqual(self.client.get(url).status_code, 200)
 
-    def test_project_page_shows_the_translation_to_its_maintainers_while_a_draft(self):
+    def test_project_page_shows_the_translation_to_its_authors_while_a_draft(self):
         draft_url = self.draft.get_absolute_url()
+        other_page = self.client.get(self.published.project.get_absolute_url())
+        self.assertContains(other_page, self.published.get_absolute_url())
+        self.assertContains(other_page, "phrases traduites : 3 sur 3")
         response = self.client.get(self.project.get_absolute_url())
-        self.assertContains(response, self.published.get_absolute_url())
-        self.assertContains(response, "phrases traduites : 3 sur 3")
         self.assertContains(response, "La traduction est en préparation")
         self.assertNotContains(response, draft_url)
         self.client.force_login(self.reviewer)
         self.assertNotContains(self.client.get(self.project.get_absolute_url()), draft_url)
         self.client.force_login(self.author)
         response = self.client.get(self.project.get_absolute_url())
-        self.assertContains(response, "brouillon, visible des seuls mainteneurs")
+        self.assertContains(response, "brouillon, visible des seuls auteurs")
         self.assertContains(response, draft_url)
         self.assertContains(response, reverse("translations:version_edit", args=[self.draft.pk]))
 
     def test_published_version_page(self):
         response = self.client.get(self.published.get_absolute_url())
-        self.assertContains(response, "Variante de Quintus")
+        self.assertContains(response, "La traduction")
         self.assertContains(response, "Domi manemus.")
         self.assertContains(response, "CC BY-SA 4.0")
         self.assertNotContains(
@@ -179,7 +180,7 @@ class TranslationPagesTests(TranslationTestCase):
         self.assertRedirects(response, reverse("translations:version_edit", args=[main.pk]))
         self.assertEqual((project.created_by, project.source_text), (self.other, self.source))
         self.assertEqual((project.style, project.style_note), (Style.TACITEAN, "Annales"))
-        self.assertEqual((main.author, main.is_main, main.is_draft), (self.other, True, True))
+        self.assertEqual((main.author, main.is_draft), (self.other, True))
         page = self.client.get(self.source.get_absolute_url())
         self.assertContains(page, "Pluie")
         self.assertContains(page, "tacitéen")
@@ -223,14 +224,16 @@ class TranslationPagesTests(TranslationTestCase):
         url = reverse("translations:version_edit", args=[version.pk])
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(url).status_code, 404)
-        published = make_published_version(self.other, self.project)
+        published = make_published_version(
+            self.other, make_project(self.other, self.source, title="Autre projet")
+        )
         self.client.force_login(self.author)
         url = reverse("translations:version_edit", args=[published.pk])
         self.assertEqual(self.client.post(url, {f"s{self.first.pk}": "Nix."}).status_code, 403)
 
     def test_editor_refuses_links_from_new_accounts(self):
         newcomer = make_user(email="new@example.org", role=CONTRIBUTOR)
-        version = make_version(newcomer, self.project)
+        version = make_version(newcomer, make_project(newcomer, self.source, title="Nouveau"))
         self.client.force_login(newcomer)
         url = reverse("translations:version_edit", args=[version.pk])
         data = {f"s{self.first.pk}": "Pluit.", f"s{self.second.pk}": "vide www.example.org"}

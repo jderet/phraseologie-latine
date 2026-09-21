@@ -6,7 +6,7 @@ from django.utils import timezone
 from activity.feeds import activity_calendar, contributor_feed, project_feed
 from activity.models import Event, Verb
 from translations import members
-from translations.services import create_step
+from translations.services import create_step, publish_version
 from translations.tests.factories import make_published_version, make_version, translate
 
 from .test_notifications import ActivityTestCase
@@ -14,10 +14,10 @@ from .test_notifications import ActivityTestCase
 
 class FeedTests(ActivityTestCase):
     def test_project_feed_shows_public_events_only(self):
-        draft = make_version(self.other, self.project)
-        translate(draft)
-        create_step(draft, self.other, "Brouillon")
-        make_published_version(self.author, self.project)
+        version = make_version(self.author, self.project)
+        translate(version)
+        create_step(version, self.author, "Brouillon")
+        publish_version(version, self.author)
         verbs = [event.verb for event in project_feed(self.reader, self.project)]
         self.assertEqual(verbs, [Verb.VERSION_PUBLISHED])
 

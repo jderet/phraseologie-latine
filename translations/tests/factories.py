@@ -42,19 +42,11 @@ def make_project(user, source_text=None, **fields):
 
 
 def make_version(user, project, **fields):
-    """The main version of the project for its creator, while it is still empty; otherwise a
-    variant, started from nothing."""
-    main = project.main_version
-    if (
-        main is not None
-        and main.author_id == user.pk
-        and main.is_draft
-        and not fields
-        and not main.segments.exists()
-        and not main.steps.exists()
-    ):
-        return main
-    return create_version(TranslationVersion(project=project, **fields), user)
+    """The translation of the project: a project has only one (choice of 21 September 2026)."""
+    version = project.main_version
+    if version is None:
+        return create_version(TranslationVersion(project=project, **fields), user)
+    return version
 
 
 def translate(version, texts=LATIN):
@@ -66,6 +58,6 @@ def translate(version, texts=LATIN):
 def make_published_version(user, project, texts=LATIN, **fields):
     version = make_version(user, project, **fields)
     translate(version, texts)
-    publish_version(version, user)
+    publish_version(version, version.author)
     version.refresh_from_db()
     return version

@@ -1,7 +1,6 @@
 from django.urls import reverse
 
-from translations.models import ChangeProposal
-from translations.services import create_proposal, create_step, decide_sentence
+from translations.services import create_step, save_translation
 
 from .factories import make_published_version
 from .test_versions import TranslationTestCase
@@ -10,13 +9,8 @@ from .test_versions import TranslationTestCase
 class BlameTests(TranslationTestCase):
     def test_each_sentence_with_its_writer(self):
         version = make_published_version(self.author, self.project)
-        proposal = create_proposal(
-            ChangeProposal(version=version, explanation="Mieux."),
-            self.other,
-            {self.first: "Pluit multum."},
-        )
-        decide_sentence(proposal.sentences.get(), self.author, accept=True)
-        create_step(version, self.author, "Proposition acceptée")
+        save_translation(version, self.first, "Pluit multum.", self.author, written_by=self.other)
+        create_step(version, self.author, "Phrase réécrite")
         response = self.client.get(reverse("translations:version_blame", args=[version.pk]))
         writers = [row["writer"] for row in response.context["rows"]]
         self.assertEqual(writers, [self.other, self.author, self.author])

@@ -1,9 +1,5 @@
 from django.urls import reverse
 
-from translations.models import ChangeProposal
-from translations.services import create_proposal
-
-from .factories import make_published_version, make_version
 from .test_versions import TranslationTestCase
 
 
@@ -14,33 +10,11 @@ class ProjectTabsTests(TranslationTestCase):
         self.assertContains(
             response, reverse("translations:project_compare", args=[self.project.pk])
         )
-        self.assertContains(
-            response, reverse("translations:project_proposals", args=[self.project.pk])
-        )
+        self.assertContains(response, reverse("translations:topic_list", args=[self.project.pk]))
 
     def test_compare_page_marks_its_tab(self):
         response = self.client.get(reverse("translations:project_compare", args=[self.project.pk]))
         self.assertContains(response, 'aria-current="page">Comparer<')
-
-    def test_proposals_of_all_versions_are_listed_with_their_count(self):
-        version = make_published_version(self.author, self.project)
-        proposal = create_proposal(
-            ChangeProposal(version=version, explanation="Mieux."),
-            self.other,
-            {self.first: "Pluit multum."},
-        )
-        response = self.client.get(
-            reverse("translations:project_proposals", args=[self.project.pk])
-        )
-        self.assertContains(response, proposal.get_absolute_url())
-        self.assertContains(response, '<span class="tab-count">1</span>', html=False)
-
-    def test_drafts_bring_no_proposal(self):
-        make_version(self.author, self.project)
-        response = self.client.get(
-            reverse("translations:project_proposals", args=[self.project.pk])
-        )
-        self.assertContains(response, "Aucune proposition pour l’instant.")
 
 
 class FirstStepsTests(TranslationTestCase):

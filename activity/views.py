@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from moderation.registry import can_view, find_registration
 from translations.members import pending_invitations
-from translations.models import ChangeProposal, ProposedSentence, TranslationVersion
+from translations.models import TranslationVersion
 
 from .models import Notification
 from .services import (
@@ -105,7 +105,7 @@ def star_toggle(request, pk):
 @login_required
 @require_GET
 def workshop(request):
-    """The user's desk: invitations, proposals waiting for a decision, versions, news."""
+    """The user's desk: invitations, versions, news."""
     user = request.user
     versions = list(
         TranslationVersion.objects.written_by(user)
@@ -117,19 +117,6 @@ def workshop(request):
         total = version.project.source_text.segments.current().count()
         done = version.segments.current().exclude(text="").count()
         version.progress = {"done": done, "total": total, "percent": done * 100 // (total or 1)}
-    waiting = (
-        ChangeProposal.objects.filter(
-            version__in=[version for version in versions if version.is_published],
-            status=ChangeProposal.Status.OPEN,
-            is_hidden=False,
-            sentences__decision=ProposedSentence.Decision.PENDING,
-        )
-        .distinct()
-        .select_related("author", "version__project")
-    )
-    mine = ChangeProposal.objects.filter(
-        author=user, status=ChangeProposal.Status.OPEN
-    ).select_related("version__project", "version__author")
     notifications = Notification.objects.filter(recipient=user).select_related(
         "event__actor", "event__project", "event__content_type"
     )[:8]
@@ -138,8 +125,6 @@ def workshop(request):
         "activity/workshop.html",
         {
             "invitations": pending_invitations(user),
-            "waiting": waiting,
-            "mine": mine,
             "drafts": [version for version in versions if version.is_draft],
             "published": [version for version in versions if version.is_published],
             "notifications": notifications,

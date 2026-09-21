@@ -12,7 +12,7 @@ from translations.models import VersionStep
 from translations.services import create_step, publish_version, save_translation
 from translations.steps import pending_changes, public_step, shown_text, step_sentences
 
-from .factories import make_published_version, make_version, translate
+from .factories import make_project, make_published_version, make_version, translate
 from .test_versions import TranslationTestCase
 
 
@@ -123,7 +123,7 @@ class PublicStepTests(TranslationTestCase):
                 self.assertNotIn("Imber", self.client.get(url).content.decode())
 
     def test_draft_steps_stay_private_after_publication(self):
-        version = make_version(self.other, self.project)
+        version = make_version(self.other, make_project(self.other, self.source, title="Autre"))
         translate(version, ("Pluvia.",))
         draft_step = create_step(version, self.other, "Brouillon")
         publish_version(version, self.other)
@@ -206,7 +206,9 @@ class StepPagesTests(TranslationTestCase):
 
     def test_only_the_author_creates_steps(self):
         translate(self.version)
-        published = make_published_version(self.author, self.project)
+        published = make_published_version(
+            self.author, make_project(self.author, self.source, title="Autre projet")
+        )
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(self.create_url).status_code, 404)
         other_url = reverse("translations:step_create", args=[published.pk])
