@@ -286,6 +286,21 @@ situé dans un siècle, et un texte qui ne nomme pas ses divisions les cite par 
 - [x] Noms des divisions laissés vides : plus de noms par défaut, citation par le numéro
 - [x] Documentation et traductions anglaises
 
+## Étape 22 : variantes par phrase et rôles d'un projet
+
+Choix du 21 septembre 2026 : la variante n'est plus une copie de toute la traduction, mais une
+autre traduction d'une seule phrase, avec un statut et un commentaire ; un projet confie trois
+rôles emboîtés (éditeur, traducteur, correcteur) et ouvre la correction à tous par défaut.
+
+- [ ] Rôles d'un projet : `ProjectMember` (éditeur, traducteur, correcteur), correction ouverte par défaut, permissions
+- [ ] Retrait de la variante-copie : copie d'une étape, réseau des copies, mise à jour depuis l'originale, envoi vers l'originale
+- [ ] Retrait des propositions de modifications (`ChangeProposal`, `ProposedSentence`, relectures) et de leurs pages
+- [ ] Variante d'une phrase (`SegmentVariant`) : ajouter, modifier, supprimer, adopter, refuser
+- [ ] Variantes affichées sous chaque phrase, en lecture et dans l'éditeur
+- [ ] Comparaison de deux projets traduisant le même texte, variantes affichées à la demande
+- [ ] API, exports, activité, mémoire de traduction
+- [ ] Documentation et traductions anglaises
+
 ## Ouverture publique
 
 - [x] Tableau de bord des administrateurs : chiffres clés, files d'attente, activité récente, état technique, comptes (nouveau mot de passe ou lien de réinitialisation)
