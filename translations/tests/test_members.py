@@ -102,6 +102,16 @@ class MemberServicesTests(MemberTestCase):
         project = TranslationProject.objects.get(pk=self.project.pk)
         self.assertTrue(can_correct(self.reviewer, project))
 
+    def test_an_editor_closes_the_correction_from_the_project_page(self):
+        self.client.force_login(self.author)
+        response = self.client.post(
+            reverse("translations:project_edit", args=[self.project.pk]),
+            {"title": self.project.title, "style": self.project.style, "description": ""},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.project.refresh_from_db()
+        self.assertFalse(self.project.open_correction)
+
     def test_a_translator_writes_the_latin_and_does_not_contest_it(self):
         version, _member = self.join()
         publish_version(version, self.author)

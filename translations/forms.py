@@ -158,7 +158,7 @@ class ProjectForm(ContributionForm):
 
     class Meta:
         model = TranslationProject
-        fields = ("title", "style", "style_note", "description")
+        fields = ("title", "style", "style_note", "description", "open_correction")
         widgets = {"description": forms.Textarea(attrs={"rows": 5})}
 
 
