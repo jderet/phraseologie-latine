@@ -28,6 +28,9 @@ class Verb(models.TextChoices):
     TOPIC_CLOSED = "topic_closed", _("a fermé un sujet")
     TOPIC_REOPENED = "topic_reopened", _("a rouvert un sujet")
     SENTENCE_COMMENTED = "sentence_commented", _("a commenté une phrase")
+    VARIANT_ADDED = "variant_added", _("a proposé une variante")
+    VARIANT_ADOPTED = "variant_adopted", _("a adopté une variante")
+    VARIANT_REFUSED = "variant_refused", _("a refusé une variante")
 
 
 class Event(models.Model):

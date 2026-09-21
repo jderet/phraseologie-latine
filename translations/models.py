@@ -716,6 +716,124 @@ class TranslatedSegment(ModeratedContent):
         return f"{self.version.get_absolute_url()}#phrase-{self.segment.latest.order}"
 
 
+class SegmentVariant(ModeratedContent):
+    """Another Latin for one sentence of a translation (choice of 21 September 2026).
+
+    A variant corrects the main text of its sentence, or another variant of it; its status says
+    whether its author proposes to put it in place of what it corrects, or only records another
+    reading. Adopting a proposal moves its Latin into the main text; refusing it leaves it as a
+    reference. Nothing is erased: a sentence keeps every Latin it has been given.
+    """
+
+    class Status(models.TextChoices):
+        PROPOSAL = "proposal", _("proposition")
+        REFERENCE = "reference", _("pour référence")
+
+    class Decision(models.TextChoices):
+        PENDING = "", _("en attente")
+        ADOPTED = "adopted", _("adoptée")
+        REFUSED = "refused", _("refusée")
+
+    version = models.ForeignKey(
+        TranslationVersion,
+        on_delete=models.PROTECT,
+        related_name="variants",
+        verbose_name=_("traduction"),
+    )
+    segment = models.ForeignKey(
+        Segment,
+        on_delete=models.PROTECT,
+        related_name="variants",
+        verbose_name=_("phrase source"),
+    )
+    # The variant this one corrects; empty for the main text of the sentence.
+    target = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="corrections",
+        verbose_name=_("variante corrigée"),
+    )
+    text = models.TextField(_("latin"), max_length=4000)
+    comment = models.TextField(
+        _("commentaire"),
+        max_length=3000,
+        blank=True,
+        help_text=_("Pourquoi ce latin : tour attesté, faute corrigée, style visé."),
+    )
+    status = models.CharField(
+        _("statut"), max_length=10, choices=Status.choices, default=Status.PROPOSAL
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="segment_variants",
+        editable=False,
+        verbose_name=_("auteur"),
+    )
+    decision = models.CharField(
+        _("décision"),
+        max_length=10,
+        choices=Decision.choices,
+        default=Decision.PENDING,
+        blank=True,
+        editable=False,
+    )
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("décidée par"),
+    )
+    created_at = models.DateTimeField(_("ajoutée le"), default=timezone.now, editable=False)
+    decided_at = models.DateTimeField(_("décidée le"), null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("variante d’une phrase")
+        verbose_name_plural = _("variantes des phrases")
+        ordering = ["segment__position", "created_at", "pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(decision="", decided_at__isnull=True)
+                | (~Q(decision="") & Q(decided_at__isnull=False)),
+                name="translations_variant_decision",
+            ),
+        ]
+
+    def __str__(self):
+        return self.text
+
+    def get_absolute_url(self):
+        return f"{self.version.get_absolute_url()}#variante-{self.pk}"
+
+    def get_discussion_url(self):
+        return self.get_absolute_url()
+
+    @property
+    def is_proposal(self):
+        return self.status == self.Status.PROPOSAL
+
+    @property
+    def is_pending(self):
+        """A proposal nobody has decided on yet."""
+        return self.is_proposal and self.decision == self.Decision.PENDING
+
+    @property
+    def is_adopted(self):
+        return self.decision == self.Decision.ADOPTED
+
+    def clean(self):
+        super().clean()
+        if self.target_id and self.target.segment_id != self.segment_id:
+            raise ValidationError(
+                {"target": gettext("Cette variante porte sur une autre phrase.")}
+            )
+
+
 class StepQuerySet(models.QuerySet):
     def public(self):
         """Steps anyone may see: of a published version, not hidden, and not a draft step
@@ -1300,6 +1418,14 @@ register(
     visible_to=step_visible_to,
     counts_toward_limit=False,
     not_reverted=("during_draft", "source_state"),
+)
+register(
+    SegmentVariant,
+    owner_field="author",
+    text_fields=("text", "comment"),
+    visible_to=lambda user, variant: version_visible_to(user, variant.version),
+    # A revert never adopts, refuses or reopens a variant.
+    not_reverted=("decision", "decided_by", "decided_at"),
 )
 register(
     ProjectMember,

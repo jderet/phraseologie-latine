@@ -56,8 +56,8 @@ def _parent(obj):
     if label in ("translations.translationversion",):
         return obj.project
     if label in (
+        "translations.segmentvariant",
         "translations.versionstep",
-        "translations.versionmember",
         "translations.translatedsegment",
     ):
         return obj.version

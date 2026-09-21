@@ -295,7 +295,7 @@ rôles emboîtés (éditeur, traducteur, correcteur) et ouvre la correction à t
 - [x] Rôles d'un projet : `ProjectMember` (éditeur, traducteur, correcteur), correction ouverte par défaut, permissions
 - [x] Retrait de la variante-copie : copie d'une étape, réseau des copies, mise à jour depuis l'originale, envoi vers l'originale
 - [x] Retrait des propositions de modifications (`ChangeProposal`, `ProposedSentence`, relectures) et de leurs pages
-- [ ] Variante d'une phrase (`SegmentVariant`) : ajouter, modifier, supprimer, adopter, refuser
+- [x] Variante d'une phrase (`SegmentVariant`) : ajouter, modifier, supprimer, adopter, refuser
 - [ ] Variantes affichées sous chaque phrase, en lecture et dans l'éditeur
 - [ ] Comparaison de deux projets traduisant le même texte, variantes affichées à la demande
 - [ ] API, exports, activité, mémoire de traduction
