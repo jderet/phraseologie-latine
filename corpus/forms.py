@@ -88,16 +88,37 @@ class SearchForm(forms.Form):
         label=_("Mot"),
         max_length=100,
         required=False,
+        widget=forms.TextInput(attrs={"lang": "la"}),
         help_text=_("Un mot par case ; * pour un début de mot, | pour des variantes : cap* | cep*"),
     )
     mode1 = mode_field()
-    term2 = forms.CharField(label=_("Deuxième mot"), max_length=100, required=False)
+    term2 = forms.CharField(
+        label=_("Deuxième mot"),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={"lang": "la"}),
+    )
     mode2 = mode_field()
-    term3 = forms.CharField(label=_("Troisième mot"), max_length=100, required=False)
+    term3 = forms.CharField(
+        label=_("Troisième mot"),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={"lang": "la"}),
+    )
     mode3 = mode_field()
-    term4 = forms.CharField(label=_("Quatrième mot"), max_length=100, required=False)
+    term4 = forms.CharField(
+        label=_("Quatrième mot"),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={"lang": "la"}),
+    )
     mode4 = mode_field()
-    term5 = forms.CharField(label=_("Cinquième mot"), max_length=100, required=False)
+    term5 = forms.CharField(
+        label=_("Cinquième mot"),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={"lang": "la"}),
+    )
     mode5 = mode_field()
     distance = forms.IntegerField(
         label=_("Distance maximale (en mots)"),

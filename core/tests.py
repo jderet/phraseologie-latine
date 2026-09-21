@@ -336,3 +336,31 @@ class ContentSecurityPolicyTests(TestCase):
         self.assertIn("object-src 'none'", policy)
         self.assertIn("form-action 'self'", policy)
         self.assertIn("frame-ancestors 'none'", policy)
+
+
+class MacronTypingTests(TestCase):
+    """Two identical vowels become one long vowel in every Latin field (macrons.js)."""
+
+    def test_the_script_is_on_every_page(self):
+        response = self.client.get(reverse("core:home"))
+        self.assertContains(response, "js/macrons.js")
+
+    def test_the_search_words_are_latin_fields(self):
+        from corpus.forms import SearchForm
+
+        for number in range(1, 6):
+            field = SearchForm().fields[f"term{number}"]
+            self.assertEqual(field.widget.attrs.get("lang"), "la", f"term{number}")
+
+    def test_the_latin_term_of_the_glossary_is_a_latin_field(self):
+        from translations.forms import GlossaryEntryForm
+
+        field = GlossaryEntryForm(user=make_user()).fields["latin_term"]
+        self.assertEqual(field.widget.attrs.get("lang"), "la")
+
+
+class MacronScriptTests(SimpleTestCase):
+    def test_the_long_vowels_are_the_ones_of_the_macron_bar(self):
+        source = (settings.BASE_DIR / "static" / "js" / "macrons.js").read_text()
+        for vowel in "āēīōūȳĀĒĪŌŪȲ":
+            self.assertIn(vowel, source)
