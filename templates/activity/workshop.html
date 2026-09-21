@@ -27,6 +27,25 @@
   {% endif %}
 
   <div class="desk-grid">
+    <section class="desk-section" aria-labelledby="desk-waiting">
+      <h2 id="desk-waiting">{% translate "À décider" %}</h2>
+      <ul class="item-list">
+        {% for variant in waiting %}
+        <li><a class="item-title" href="{{ variant.get_absolute_url }}" lang="la">{{ variant.text }}</a> <span class="muted">{{ variant.version.project.title }} · {% blocktranslate with name=variant.author.public_name %}proposée par {{ name }}{% endblocktranslate %} · {{ variant.created_at|date:"j F Y" }}</span></li>
+        {% empty %}
+        <li class="muted">{% translate "Aucune variante n’attend votre décision." %}</li>
+        {% endfor %}
+      </ul>
+      {% if mine %}
+      <h3>{% translate "Vos variantes en attente" %}</h3>
+      <ul class="item-list">
+        {% for variant in mine %}
+        <li><a class="item-title" href="{{ variant.get_absolute_url }}" lang="la">{{ variant.text }}</a> <span class="muted">{{ variant.version.project.title }}</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+
     <section class="desk-section" aria-labelledby="desk-news">
       <h2 id="desk-news">{% translate "Nouvelles" %}</h2>
       <ul class="event-list">

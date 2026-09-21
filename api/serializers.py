@@ -300,6 +300,20 @@ def version_summary(version, link):
     }
 
 
+def variant_data(variant):
+    """A variant of one sentence: its Latin, its status and what it corrects."""
+    return {
+        "id": variant.pk,
+        "latin": variant.text,
+        "status": variant.status,
+        "decision": variant.decision or None,
+        "comment": variant.comment,
+        "corrects": variant.target_id,
+        "author": variant.author.public_name,
+        "created_at": _date(variant.created_at),
+    }
+
+
 def step_data(step, link):
     return {
         "number": step.number,
@@ -315,6 +329,9 @@ def version_data(version, link):
     source text that step froze."""
     step = public_step(version)
     sentences = step_sentences(step) if step else {}
+    variants = {}
+    for variant in version.variants.filter(is_hidden=False).select_related("author"):
+        variants.setdefault(variant.segment_id, []).append(variant)
     history = SourceHistory(version.project.source_text)
     state = step.source_state if step else history.state
     numbers = history.numbers_at(state)
@@ -341,6 +358,8 @@ def version_data(version, link):
                 "order": number,
                 "source": segment.text,
                 "latin": sentences[segment.pk].text if segment.pk in sentences else "",
+                # Other Latin proposed for this sentence (choice of 21 September 2026).
+                "variants": [variant_data(variant) for variant in variants.get(segment.pk, [])],
             }
             for number, segment in enumerate(history.segments_at(state), start=1)
         ],

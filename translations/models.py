@@ -829,9 +829,7 @@ class SegmentVariant(ModeratedContent):
     def clean(self):
         super().clean()
         if self.target_id and self.target.segment_id != self.segment_id:
-            raise ValidationError(
-                {"target": gettext("Cette variante porte sur une autre phrase.")}
-            )
+            raise ValidationError({"target": gettext("Cette variante porte sur une autre phrase.")})
 
 
 class StepQuerySet(models.QuerySet):

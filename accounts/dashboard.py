@@ -11,7 +11,7 @@ from corpus.search import corpus_version, default_layer
 from justifications.models import Challenge, Justification
 from moderation.models import Report, Revision
 from phraseology.models import Attestation, Candidate, NegativeSearch, Unit
-from translations.models import SourceProposal, TranslationVersion
+from translations.models import SegmentVariant, SourceProposal, TranslationVersion
 
 from .models import User
 
@@ -43,6 +43,11 @@ def queues():
         "challenges": Challenge.objects.filter(status=Challenge.Status.OPEN).count(),
         "source_proposals": SourceProposal.objects.filter(
             status=SourceProposal.Status.OPEN
+        ).count(),
+        "variants": SegmentVariant.objects.filter(
+            status=SegmentVariant.Status.PROPOSAL,
+            decision=SegmentVariant.Decision.PENDING,
+            is_hidden=False,
         ).count(),
     }
 

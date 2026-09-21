@@ -6,7 +6,8 @@ from accounts.roles import CONTRIBUTOR
 from accounts.tests.factories import make_user
 from activity.models import Star
 from translations import glossary, members, topics
-from translations.models import GlossaryEntry, Topic
+from translations.models import GlossaryEntry, SegmentVariant, Topic
+from translations.variants import add_variant
 
 from .factories import make_published_version
 from .test_versions import TranslationTestCase
@@ -36,6 +37,23 @@ class OpenDataTests(TranslationTestCase):
         self.assertEqual(data["co_authors"], ["Quintus"])
         self.assertEqual(data["stars"], 1)
         self.assertEqual([edition["label"] for edition in data["editions"]], ["Édition 1"])
+
+    def test_variants_of_a_sentence_are_given(self):
+        add_variant(
+            SegmentVariant(
+                version=self.version,
+                segment=self.first,
+                text="Imber cadit.",
+                comment="Plus fort.",
+            ),
+            self.reviewer,
+        )
+        data = self.client.get(reverse("api:version", args=[self.version.pk])).json()
+        [variant] = data["segments"][0]["variants"]
+        self.assertEqual(variant["latin"], "Imber cadit.")
+        self.assertEqual(variant["status"], "proposal")
+        self.assertIsNone(variant["corrects"])
+        self.assertEqual(data["segments"][1]["variants"], [])
 
     def test_topics_and_adopted_terms_only(self):
         topics_data = self.client.get(reverse("api:topics")).json()

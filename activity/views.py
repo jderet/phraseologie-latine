@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from moderation.registry import can_view, find_registration
 from translations.members import pending_invitations
-from translations.models import TranslationVersion
+from translations.models import SegmentVariant, TranslationVersion
 
 from .models import Notification
 from .services import (
@@ -105,7 +105,7 @@ def star_toggle(request, pk):
 @login_required
 @require_GET
 def workshop(request):
-    """The user's desk: invitations, versions, news."""
+    """The user's desk: invitations, variants to decide, versions, news."""
     user = request.user
     versions = list(
         TranslationVersion.objects.written_by(user)
@@ -117,6 +117,26 @@ def workshop(request):
         total = version.project.source_text.segments.current().count()
         done = version.segments.current().exclude(text="").count()
         version.progress = {"done": done, "total": total, "percent": done * 100 // (total or 1)}
+    waiting = (
+        SegmentVariant.objects.filter(
+            version__in=versions,
+            status=SegmentVariant.Status.PROPOSAL,
+            decision=SegmentVariant.Decision.PENDING,
+            is_hidden=False,
+        )
+        .select_related("author", "version__project")
+        .order_by("created_at")[:20]
+    )
+    mine = (
+        SegmentVariant.objects.filter(
+            author=user,
+            status=SegmentVariant.Status.PROPOSAL,
+            decision=SegmentVariant.Decision.PENDING,
+            is_hidden=False,
+        )
+        .select_related("version__project")
+        .order_by("created_at")[:20]
+    )
     notifications = Notification.objects.filter(recipient=user).select_related(
         "event__actor", "event__project", "event__content_type"
     )[:8]
@@ -125,6 +145,8 @@ def workshop(request):
         "activity/workshop.html",
         {
             "invitations": pending_invitations(user),
+            "waiting": waiting,
+            "mine": mine,
             "drafts": [version for version in versions if version.is_draft],
             "published": [version for version in versions if version.is_published],
             "notifications": notifications,

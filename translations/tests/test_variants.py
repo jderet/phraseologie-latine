@@ -46,8 +46,9 @@ class VariantServicesTests(VariantTestCase):
         self.assertTrue(variant.is_proposal)
         self.assertTrue(variant.is_pending)
         self.assertIsNone(variant.target)
-        self.assertEqual([item.pk for item in variants_for(self.other, self.version, self.first)],
-                         [variant.pk])
+        self.assertEqual(
+            [item.pk for item in variants_for(self.other, self.version, self.first)], [variant.pk]
+        )
 
     def test_a_closed_correction_keeps_the_named_members_only(self):
         self.project.open_correction = False
@@ -56,9 +57,7 @@ class VariantServicesTests(VariantTestCase):
         self.assertFalse(can_add_variant(self.other, self.version))
         with self.assertRaises(PermissionDenied):
             self.add()
-        member = members.invite(
-            self.project, self.author, self.other, ProjectMember.Role.CORRECTOR
-        )
+        member = members.invite(self.project, self.author, self.other, ProjectMember.Role.CORRECTOR)
         members.answer(member, self.other, accept=True)
         self.version.project.__dict__.pop("_role_ids", None)
         self.assertTrue(can_add_variant(self.other, self.version))

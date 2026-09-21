@@ -10,9 +10,7 @@ from .test_versions import TranslationTestCase
 class VariantPageTests(TranslationTestCase):
     def setUp(self):
         self.version = make_published_version(self.author, self.project)
-        self.url = reverse(
-            "translations:variant_create", args=[self.version.pk, self.first.pk]
-        )
+        self.url = reverse("translations:variant_create", args=[self.version.pk, self.first.pk])
 
     def add(self, user=None, text="Imber cadit.", **fields):
         fields.setdefault("segment", self.first)
@@ -48,9 +46,7 @@ class VariantPageTests(TranslationTestCase):
         response = self.client.post(
             reverse("translations:variant_decide", args=[variant.pk]), {"decision": "adopt"}
         )
-        self.assertRedirects(
-            response, variant.get_absolute_url(), fetch_redirect_response=False
-        )
+        self.assertRedirects(response, variant.get_absolute_url(), fetch_redirect_response=False)
         page = self.client.get(self.version.get_absolute_url())
         self.assertContains(page, "Imber cadit.")
         self.assertContains(page, "Texte principal remplacé")

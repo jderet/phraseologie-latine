@@ -298,8 +298,8 @@ rôles emboîtés (éditeur, traducteur, correcteur) et ouvre la correction à t
 - [x] Variante d'une phrase (`SegmentVariant`) : ajouter, modifier, supprimer, adopter, refuser
 - [x] Variantes affichées sous chaque phrase, en lecture et dans l'éditeur
 - [x] Comparaison de deux projets traduisant le même texte, variantes affichées à la demande
-- [ ] API, exports, activité, mémoire de traduction
-- [ ] Documentation et traductions anglaises
+- [x] API, exports, activité, mémoire de traduction
+- [x] Documentation et traductions anglaises
 
 ## Ouverture publique
 

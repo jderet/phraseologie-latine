@@ -138,9 +138,7 @@ def _current_text(version, variant):
     """The Latin the variant corrects: its target, or the main text of the sentence."""
     if variant.target_id is not None:
         return variant.target.text
-    sentence = TranslatedSegment.objects.filter(
-        version=version, segment=variant.segment
-    ).first()
+    sentence = TranslatedSegment.objects.filter(version=version, segment=variant.segment).first()
     return sentence.text if sentence is not None else ""
 
 

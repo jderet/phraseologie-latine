@@ -60,7 +60,7 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | `core` | pages générales | page d'accueil |
 | `corpus` | auteurs, œuvres, éditions, passages, mots, analyses | noyau importé et analysé (LatinCy), lecture continue par pages (`corpus/reading.py`) avec traduction en regard, recherche par forme et par lemme (jusqu'à cinq mots) et par construction (une fiche cherchée par son schéma, `phraseology/search_terms.py`), exports TEI et CoNLL-U d'un passage ou d'une œuvre avec sa phraséologie (`corpus/exports.py`) |
 | `moderation` | révisions, signalements, discussions, votes | révisions, retour arrière, signalements, discussions, avis indicatifs |
-| `translations` | textes sources, projets, versions, segments, étapes, propositions | page « Traduction » par texte (`views.source_list`), classée par genres et thèmes (`translations/classification.py`, deux listes fermées, filtres et page par entrée) ; un projet vise une seule traduction, dans son style : traduction principale écrite par les mainteneurs, variantes fusionnées ou écartées (`services.set_aside_variant`, choix du 19 septembre 2026) ; textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable ; étapes à la manière de Git (`translations/steps.py`), texte source modifiable dont le latin suit les phrases, et propositions de modification du texte adoptées ou refusées en bloc (`translations/sources.py`), différences mot à mot (`translations/diffs.py`), copie d'une version publiée, propositions de modifications décidées phrase par phrase ; co-auteurs (`translations/members.py`), sujets (`topics.py`), glossaire (`glossary.py`), commentaires par phrase (`comments.py`), éditeur à onglets (`editor.py`, `editor_views.py`), mémoire de traduction (`memory.py`, pg_trgm), concordance (`concordance.py`), contrôle qualité (`qa.py`), rechercher-remplacer (`replace.py`), historique d'une phrase (`sentence_history.py`), copies et originale, retour à une étape (`sync.py`), réseau des copies (`network.py`), statistiques (`stats.py`), XLIFF et TMX importés (`xliff.py`), pages dans `workshop_views.py` et `collab_views.py` |
+| `translations` | textes sources, projets, traduction, segments, étapes, variantes, rôles | page « Traduction » par texte (`views.source_list`), classée par genres et thèmes (`translations/classification.py`, deux listes fermées, filtres et page par entrée) ; un projet vise une seule traduction, dans son style, écrite par ses traducteurs et ses éditeurs ; chaque phrase porte des variantes (`translations/variants.py`, choix du 21 septembre 2026) : proposition adoptée, qui devient le texte principal, ou refusée, qui reste pour référence, et variante pour référence ; trois rôles emboîtés par projet (éditeur, traducteur, correcteur, `ProjectMember`), correction ouverte à tous par défaut ; textes découpés, projets, versions, comparaison, éditeur, exports bilingue et imprimable ; étapes à la manière de Git (`translations/steps.py`), texte source modifiable dont le latin suit les phrases, et propositions de modification du texte adoptées ou refusées en bloc (`translations/sources.py`), différences mot à mot (`translations/diffs.py`), comparaison des traductions d'un même texte par plusieurs projets ; rôles (`translations/members.py`), sujets (`topics.py`), glossaire (`glossary.py`), commentaires par phrase (`comments.py`), éditeur à onglets (`editor.py`, `editor_views.py`), mémoire de traduction (`memory.py`, pg_trgm), concordance (`concordance.py`), contrôle qualité (`qa.py`), rechercher-remplacer (`replace.py`), historique d'une phrase (`sentence_history.py`), retour à une étape (`restore.py`), statistiques (`stats.py`), XLIFF et TMX importés (`xliff.py`), pages dans `workshop_views.py`, `collab_views.py` et `variant_views.py` |
 | `justifications` | justifications, preuves, ouvrages, contestations | justifications et preuves, ouvrages de référence, contestations |
 | `api` | API publique en lecture, export complet, page des données ouvertes | API JSON (fiches, néologismes, versions publiées, recherches infructueuses, repérages, notes de lecture, corrections validées), export zip |
 | `activity` | événements, notifications, abonnements, étoiles | notifications sur le site (cloche, page, mentions @nom) déclenchées par les services (`activity.services.record`) et par les messages de discussion (signal) ; personne n'est prévenu d'un contenu qu'il ne peut pas voir ; effacés avec le compte |
@@ -109,23 +109,24 @@ deploy/verify-backup.sh                    # sauvegarder, restaurer dans une bas
 | changement du texte source | `SourceChange` |
 | proposition de modification du texte | `SourceProposal` |
 | projet de traduction | `TranslationProject` |
-| traduction principale | `TranslationProject.main_version`, `TranslationVersion.is_main` |
-| variante (ouverte, fusionnée, écartée) | `TranslationVersion.variant_status` |
-| mainteneur | co-auteur de la traduction principale, `is_maintainer` |
+| la traduction (d'un projet) | `TranslationProject.main_version` |
+| variante d'une phrase | `SegmentVariant` |
+| proposition, pour référence | `SegmentVariant.Status` |
+| variante adoptée, refusée | `SegmentVariant.Decision` |
+| variante corrigée | `SegmentVariant.target` |
+| éditeur, traducteur, correcteur | `ProjectMember.Role`, `is_editor`, `is_translator`, `can_correct` |
+| correction ouverte | `TranslationProject.open_correction` |
 | version en brouillon ou publiée | `TranslationVersion` (`state` : `draft`, `published`) |
 | texte de travail (phrase) | `TranslatedSegment` |
 | étape, phrase d'une étape | `VersionStep`, `StepSentence` |
-| version copiée | `TranslationVersion.copied_from` |
-| co-auteur d'une version | `VersionMember` |
+| rôle dans un projet | `ProjectMember` |
 | sujet d'un projet | `Topic` |
 | terme du glossaire | `GlossaryEntry` |
 | commentaire d'une phrase | `SentenceComment` |
 | statut d'une phrase | `TranslatedSegment.status` |
-| relecture d'une proposition | `ProposalReview` |
 | étiquette d'étape (édition) | `VersionStep.label` |
 | mémoire personnelle | `PersonalMemoryEntry` |
 | alerte ignorée du contrôle qualité | `IgnoredAlert` |
-| proposition de modifications, phrase proposée | `ChangeProposal`, `ProposedSentence` |
 | style visé (du projet) | `TranslationProject.style` |
 | justification, preuve | `Justification`, `Evidence` |
 | force de preuve | `evidence_strength` |
@@ -141,7 +142,7 @@ Le détail est dans la section 7 du [modèle de données](docs/modele-de-donnees
 
 - Les annotations humaines pointent vers des identifiants de mots stables.
 - Une attestation automatique n'est jamais présentée comme validée ; toute mention d'absence indique la version du corpus.
-- Un brouillon n'est visible que de son auteur et de ses co-auteurs, y compris dans l'API et les exports.
+- Un brouillon n'est visible que de ceux qui écrivent la traduction, y compris dans l'API et les exports.
 - Aucun texte source sans licence compatible ; aucune ressource sous droits stockée.
 - Toute modification de contenu crée une révision ; supprimer un compte anonymise ses contributions.
 

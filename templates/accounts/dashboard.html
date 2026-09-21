@@ -25,7 +25,7 @@
     <li><a href="{% url 'phraseology:candidate_list' %}">{% translate "Candidats à examiner" %}</a> : {{ queues.candidates }}</li>
     <li><a href="{% url 'justifications:challenge_list' %}">{% translate "Contestations ouvertes" %}</a> : {{ queues.challenges }}</li>
     <li>{% translate "Propositions de modification du texte ouvertes" %} : {{ queues.source_proposals }}</li>
-    <li>{% translate "Propositions de modifications de versions ouvertes" %} : {{ queues.change_proposals }}</li>
+    <li>{% translate "Variantes de phrases en attente de décision" %} : {{ queues.variants }}</li>
   </ul>
 
   <h2>{% translate "État technique" %}</h2>
