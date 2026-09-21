@@ -172,6 +172,26 @@ class SourceTextPagesTests(TestCase):
         self.assertIn("source_url", form.errors)
         self.assertFalse(SourceText.objects.exists())
 
+    def test_a_text_added_without_a_licence_is_in_the_public_domain(self):
+        self.client.force_login(self.owner)
+        data = self.form_data(segmented="1", author_death_year="1900", text="Il pleut.\nIl vente.")
+        del data["license"], data["source_url"]
+        response = self.client.post(reverse("translations:source_create"), data)
+        source = SourceText.objects.get()
+        self.assertRedirects(response, source.get_absolute_url())
+        self.assertEqual(source.license, License.PUBLIC_DOMAIN)
+        self.assertTrue(source.is_public_domain)
+
+    def test_the_licence_block_stays_folded_until_it_is_needed(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("translations:source_create"))
+        self.assertContains(response, '<details class="fold legal-block">')
+
+        data = self.form_data(segmented="1", source_url="", text="Il pleut.\nIl vente.")
+        response = self.client.post(reverse("translations:source_create"), data)
+        self.assertContains(response, '<details class="fold legal-block" open>')
+        self.assertContains(response, "une licence libre demande de citer la source")
+
     def test_new_accounts_cannot_add_links(self):
         newcomer = make_user(email="new@example.org", role=CONTRIBUTOR)
         self.client.force_login(newcomer)

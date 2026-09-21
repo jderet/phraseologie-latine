@@ -88,7 +88,13 @@ class SourceText(ModeratedContent):
             "Obligatoire pour un texte sous licence libre, qui demande de citer sa source."
         ),
     )
-    license = models.CharField(_("licence"), max_length=20, choices=License.choices)
+    license = models.CharField(
+        _("licence"),
+        max_length=20,
+        choices=License.choices,
+        # A text is taken to be in the public domain unless the person who adds it says so.
+        default=License.PUBLIC_DOMAIN,
+    )
     text = models.TextField(
         _("texte découpé"),
         help_text=_(

@@ -63,15 +63,35 @@
   {% endif %}
   {% else %}
   <p class="lede">{% blocktranslate trimmed %}
-    Seuls sont acceptés les textes du domaine public (auteur mort depuis plus de 70 ans) et les
-    textes sous licence libre compatible, comme les articles de Wikipédia (CC BY-SA).
+    Les textes ajoutés ici sont du domaine public : leur auteur est mort depuis plus de 70 ans.
+    Un texte sous licence libre compatible, comme un article de Wikipédia (CC BY-SA), s’ajoute
+    aussi, en ouvrant « Ce texte n’est pas dans le domaine public » au bas du formulaire.
   {% endblocktranslate %}</p>
   {% endif %}
 
   <form method="post" class="form">
     {% csrf_token %}
     {% if segmented %}<input type="hidden" name="segmented" value="1">{% endif %}
-    {{ form }}
+    {{ form.non_field_errors }}
+    {{ form.title.as_field_group }}
+    {{ form.author.as_field_group }}
+    {{ form.author_death_year.as_field_group }}
+    {{ form.language.as_field_group }}
+    {{ form.genres.as_field_group }}
+    {{ form.themes.as_field_group }}
+    {{ form.level_names.as_field_group }}
+    <details class="fold legal-block"{% if form.legal_block_open %} open{% endif %}>
+      <summary><h2>{% translate "Ce texte n’est pas dans le domaine public" %}</h2></summary>
+      <p class="note">{% blocktranslate trimmed %}
+        À ouvrir seulement pour un texte sous licence libre, par exemple un article de Wikipédia
+        (CC BY-SA). Indiquez alors la licence et l’adresse d’origine, que cette licence oblige à
+        citer.
+      {% endblocktranslate %}</p>
+      {{ form.license.as_field_group }}
+      {{ form.source_url.as_field_group }}
+    </details>
+    {{ form.text.as_field_group }}
+    {{ form.declaration.as_field_group }}
     {% if not segmented %}
     <button type="submit" class="button">{% translate "Découper en phrases" %}</button>
     {% elif unsplit %}

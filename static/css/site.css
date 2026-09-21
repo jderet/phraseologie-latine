@@ -1974,6 +1974,18 @@ details.fold > summary h2 {
   margin: 0;
 }
 
+/* The licence of a source text: folded away, since a text is normally public domain. */
+.legal-block {
+  margin: 18px 0;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+
+.legal-block > summary h2 {
+  font-size: 1rem;
+}
+
 .unit .evidence {
   padding: 10px 14px;
   background: var(--surface-2);

@@ -13,6 +13,7 @@ from .classification import (
 from .models import (
     ChangeProposal,
     GlossaryEntry,
+    License,
     ProposalReview,
     SourceProposal,
     SourceText,
@@ -86,9 +87,29 @@ class SourceTextForm(SourceTextEditForm):
 
     declaration = forms.BooleanField(
         label=_(
-            "Je déclare que ce texte est dans le domaine public ou publié sous la licence indiquée."
+            "Je déclare que ce texte est dans le domaine public, ou publié sous la licence libre "
+            "que j’indique."
         ),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # The licence is not asked any more: a text left alone is in the public domain.
+        self.fields["license"].required = False
+
+    def clean_license(self):
+        return self.cleaned_data.get("license") or License.PUBLIC_DOMAIN
+
+    @property
+    def legal_block_open(self):
+        """Whether the folded licence block must be shown open.
+
+        A field in error inside a closed block would leave the page unsolvable.
+        """
+        if self["license"].errors or self["source_url"].errors:
+            return True
+        license = self["license"].value()
+        return bool(license) and license != License.PUBLIC_DOMAIN
 
     class Meta(SourceTextEditForm.Meta):
         fields = (*SourceTextEditForm.Meta.fields, "text")
@@ -394,7 +415,10 @@ class GlossaryEntryForm(ContributionForm):
     class Meta:
         model = GlossaryEntry
         fields = ("source_term", "latin_term", "note")
-        widgets = {"note": forms.Textarea(attrs={"rows": 3})}
+        widgets = {
+            "latin_term": forms.TextInput(attrs={"lang": "la"}),
+            "note": forms.Textarea(attrs={"rows": 3}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
