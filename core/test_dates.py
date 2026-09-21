@@ -1,7 +1,14 @@
 from django.test import SimpleTestCase
 from django.utils import translation
 
-from .dates import author_dates, century_label, century_of, format_year, roman
+from .dates import (
+    author_dates,
+    century_label,
+    century_of,
+    figures_ordinal,
+    format_year,
+    roman,
+)
 
 
 class RomanNumeralTests(SimpleTestCase):
@@ -61,7 +68,11 @@ class AuthorDatesTests(SimpleTestCase):
     def test_no_year_at_all(self):
         self.assertEqual(author_dates(None, None), "")
 
-    def test_english_says_the_century_too(self):
+    def test_english_writes_its_ordinals_in_figures(self):
+        for number, written in [(1, "1st"), (2, "2nd"), (3, "3rd"), (4, "4th"), (21, "21st")]:
+            with self.subTest(number=number):
+                self.assertEqual(figures_ordinal(number), written)
         with translation.override("en"):
-            self.assertNotEqual(author_dates(1800, 1800), "")
-            self.assertNotEqual(author_dates(None, 1885), "")
+            self.assertEqual(author_dates(1800, 1800), "19th century")
+            self.assertEqual(author_dates(-100, -100), "1st century BC")
+            self.assertEqual(author_dates(1802, 1885), "born 1802, died 1885")

@@ -276,6 +276,16 @@ texte, un genre au moins exigé, et une page par entrée.
 - [x] API : les genres et les thèmes dans le bloc du texte source
 - [x] Documentation et traductions anglaises
 
+## Étape 21 : l'ajout d'un texte simplifié
+
+Choix du 21 septembre 2026 : un texte ajouté est présumé du domaine public, l'auteur peut être
+situé dans un siècle, et un texte qui ne nomme pas ses divisions les cite par leur numéro.
+
+- [x] La licence ne se demande plus : bloc replié « Ce texte n'est pas dans le domaine public » pour les articles de Wikipédia
+- [x] Années de naissance et de mort de l'auteur, la même année de début de siècle situant l'auteur dans ce siècle
+- [x] Noms des divisions laissés vides : plus de noms par défaut, citation par le numéro
+- [x] Documentation et traductions anglaises
+
 ## Ouverture publique
 
 - [x] Tableau de bord des administrateurs : chiffres clés, files d'attente, activité récente, état technique, comptes (nouveau mot de passe ou lien de réinitialisation)
