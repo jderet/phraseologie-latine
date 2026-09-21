@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Variante d’une phrase" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a> · <a href="{{ version.get_absolute_url }}">{% translate "La traduction" %}</a></p>
+  <h1>{% if variant %}{% translate "Modifier la variante" %}{% else %}{% translate "Ajouter une variante" %}{% endif %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Une variante donne un autre latin pour cette phrase. En proposition, vous demandez qu’elle
+    remplace le texte qu’elle corrige ; pour référence, vous indiquez seulement une autre
+    traduction.
+  {% endblocktranslate %}</p>
+
+  <dl class="facts">
+    <div>
+      <dt>{% translate "Phrase source" %}</dt>
+      <dd lang="{{ source.language }}">{{ segment.text }}</dd>
+    </div>
+    <div>
+      <dt>{% if target %}{% translate "Variante corrigée" %}{% else %}{% translate "Texte corrigé" %}{% endif %}</dt>
+      <dd lang="la">{% if target %}{{ target.text }}{% elif corrected %}{{ corrected }}{% else %}{% translate "cette phrase n’a pas encore de latin" %}{% endif %}</dd>
+    </div>
+  </dl>
+
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% if target %}<input type="hidden" name="corrige" value="{{ target.pk }}">{% endif %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% if variant %}{% translate "Enregistrer" %}{% else %}{% translate "Ajouter la variante" %}{% endif %}</button>
+    <a class="button button-quiet" href="{{ version.get_absolute_url }}">{% translate "Annuler" %}</a>
+  </form>
+
+  {% if variants %}
+  <h2>{% translate "Variantes déjà proposées" %}</h2>
+  <ul class="variant-list">
+    {% for variant in variants %}{% include "translations/variant_item.html" %}{% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% load i18n %}<li class="variant variant-{{ variant.status }}{% if variant.is_adopted %} variant-adopted{% endif %}" id="variante-{{ variant.pk }}">
+  <p class="variant-latin" lang="la">{{ variant.text }}</p>
+  <p class="variant-meta muted">
+    <span class="badge{% if variant.is_pending %} state-open{% endif %}">{{ variant.get_status_display }}</span>
+    {% if variant.decision %}<span class="badge">{{ variant.get_decision_display }}</span>{% endif %}
+    {% if variant.target_id %}{% blocktranslate with number=variant.target_id %}corrige la variante ci-dessus{% endblocktranslate %} · {% endif %}
+    <a href="{{ variant.author.get_absolute_url }}">{{ variant.author.public_name }}</a> · {{ variant.created_at|date:"j F Y" }}
+    {% if variant.is_hidden %} · {% translate "masquée" %}{% endif %}
+  </p>
+  {% if variant.comment %}<p class="variant-comment">{{ variant.comment|linebreaksbr }}</p>{% endif %}
+  <p class="variant-actions">
+    {% if variant.can_decide %}
+    <form method="post" action="{% url 'translations:variant_decide' variant.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="link-button" name="decision" value="adopt">{% translate "Adopter" %}</button>
+      <button type="submit" class="link-button" name="decision" value="refuse">{% translate "Refuser" %}</button>
+    </form>
+    {% endif %}
+    {% if variant.can_correct %}<a class="small-link" href="{% url 'translations:variant_create' version.pk variant.segment_id %}?corrige={{ variant.pk }}">{% translate "Corriger cette variante" %}</a>{% endif %}
+    {% if variant.can_edit %}<a class="small-link" href="{% url 'translations:variant_edit' variant.pk %}">{% translate "Modifier" %}</a>
+    <form method="post" action="{% url 'translations:variant_delete' variant.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="link-button">{% translate "Retirer" %}</button>
+    </form>
+    {% endif %}
+  </p>
+</li>

@@ -43,6 +43,12 @@ def panel_tabs(version):
             _fragment("translations:editor_glossary", version),
         ),
         PanelTab(
+            "variants",
+            _("Variantes"),
+            _("Les autres traductions proposées pour cette phrase."),
+            _fragment("translations:editor_variants", version),
+        ),
+        PanelTab(
             "comments",
             _("Commentaires"),
             _("Les commentaires de cette phrase."),

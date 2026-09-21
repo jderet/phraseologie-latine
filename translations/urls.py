@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import collab_views, editor_views, views, workshop_views
+from . import collab_views, editor_views, variant_views, views, workshop_views
 
 app_name = "translations"
 
@@ -111,6 +111,11 @@ urlpatterns = [
         name="editor_glossary",
     ),
     path(
+        "versions/<int:pk>/phrases/<int:segment_pk>/variantes/",
+        editor_views.variants_panel,
+        name="editor_variants",
+    ),
+    path(
         "versions/<int:pk>/phrases/<int:segment_pk>/commentaires/",
         editor_views.comments_panel,
         name="editor_comments",
@@ -147,6 +152,14 @@ urlpatterns = [
     ),
     path("versions/<int:pk>/auteurs/", collab_views.version_blame, name="version_blame"),
     path("versions/<int:pk>/import-xliff/", collab_views.xliff_import, name="xliff_import"),
+    path(
+        "versions/<int:pk>/phrases/<int:segment_pk>/variante/",
+        variant_views.variant_create,
+        name="variant_create",
+    ),
+    path("variantes/<int:pk>/modifier/", variant_views.variant_edit, name="variant_edit"),
+    path("variantes/<int:pk>/retirer/", variant_views.variant_delete, name="variant_delete"),
+    path("variantes/<int:pk>/decider/", variant_views.variant_decide, name="variant_decide"),
     path("versions/<int:pk>/etapes/", views.step_list, name="step_list"),
     path("versions/<int:pk>/etapes/nouvelle/", views.step_create, name="step_create"),
     path("versions/<int:pk>/etapes/comparer/", views.step_compare, name="step_compare"),

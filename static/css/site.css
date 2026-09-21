@@ -1551,6 +1551,43 @@ article > h2 {
 
 /* Challenges, discussions and votes */
 
+/* Variants of a sentence: other Latin proposed under the main text. */
+.variant-list {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 0 0 0 14px;
+  border-left: 2px solid var(--rule);
+  list-style: none;
+}
+
+.variant {
+  font-size: 0.95rem;
+}
+
+.variant-adopted {
+  opacity: 0.7;
+}
+
+.variant-latin {
+  margin: 0;
+}
+
+.variant-meta,
+.variant-comment,
+.variant-actions {
+  margin: 2px 0 0;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+}
+
+.variant-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+}
+
 .row-alert {
   margin: 4px 0 0;
   font-family: var(--sans);

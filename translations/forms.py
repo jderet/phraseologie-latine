@@ -14,6 +14,7 @@ from .models import (
     GlossaryEntry,
     License,
     ProjectMember,
+    SegmentVariant,
     SourceProposal,
     SourceText,
     Topic,
@@ -200,6 +201,34 @@ class PublishForm(forms.Form):
         message = normalize_sentence(self.cleaned_data["message"])
         check_text_for_links(self.user, message)
         return message
+
+
+class SegmentVariantForm(ContributionForm):
+    """Another Latin for one sentence, with its comment and its status."""
+
+    link_fields = ("comment",)
+
+    class Meta:
+        model = SegmentVariant
+        fields = ("text", "status", "comment")
+        widgets = {
+            "text": forms.Textarea(attrs={"lang": "la", "rows": 2, "spellcheck": "false"}),
+            "comment": forms.Textarea(attrs={"rows": 3}),
+            "status": forms.RadioSelect,
+        }
+        help_texts = {
+            "status": _(
+                "Une proposition demande de remplacer le texte visé ; une variante pour "
+                "référence indique une autre traduction, sans rien demander."
+            )
+        }
+
+    def clean_text(self):
+        text = normalize_sentence(self.cleaned_data["text"])
+        check_text_for_links(self.user, text)
+        if not text:
+            raise ValidationError(_("Écrivez le latin de la variante."), code="empty")
+        return text
 
 
 class TranslationTextForm(forms.Form):

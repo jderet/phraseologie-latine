@@ -32,6 +32,12 @@ from .sentence_history import sentence_history
 from .services import save_translation, set_sentence_status
 from .sources import SourceHistory
 from .stats import version_stats
+from .variants import (
+    can_add_variant,
+    can_decide_variant,
+    can_edit_variant,
+    variants_for,
+)
 from .views import _own_version, _rows, _version
 
 
@@ -90,6 +96,30 @@ def memory_panel(request, pk, segment_pk):
             "matches": similar_sentences(request.user, version, segment),
             "personal": personal_matches(request.user, segment),
             "min_score": MIN_SCORE,
+        },
+    )
+
+
+@login_required
+@require_GET
+def variants_panel(request, pk, segment_pk):
+    """The variants of this sentence, with what the user may do with them."""
+    version = _own_version(request.user, pk)
+    segment = get_object_or_404(version.project.source_text.segments.current(), pk=segment_pk)
+    variants = variants_for(request.user, version, segment)
+    correcting = can_add_variant(request.user, version)
+    for variant in variants:
+        variant.can_decide = can_decide_variant(request.user, variant)
+        variant.can_edit = can_edit_variant(request.user, variant)
+        variant.can_correct = correcting
+    return render(
+        request,
+        "translations/panel_variants.html",
+        {
+            "version": version,
+            "segment": segment,
+            "variants": variants,
+            "can_add_variant": correcting,
         },
     )
 

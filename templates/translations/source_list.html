@@ -9,8 +9,8 @@
   <p class="lede">{% blocktranslate trimmed %}
     Des textes en langue moderne, du domaine public ou sous licence libre, découpés en phrases.
     Chaque texte peut être traduit en latin par un ou plusieurs projets ; un projet vise une seule
-    traduction, dans un style commun, que ses mainteneurs écrivent et que chacun peut enrichir
-    par des variantes.
+    traduction, dans un style commun, que ses traducteurs écrivent et que chacun peut enrichir
+    par des variantes de phrases.
   {% endblocktranslate %}</p>
   <p class="actions">{% if user.is_authenticated %}<a class="button" href="{% url 'translations:source_create' %}">{% translate "Ajouter un texte" %}</a> {% endif %}<a href="{% url 'justifications:challenge_list' %}">{% translate "Contestations" %}</a> <a href="{% url 'translations:concordance' %}">{% translate "Concordance des traductions" %}</a> <a href="{% url 'translations:help' %}">{% translate "Aide" %}</a></p>
 

@@ -9,8 +9,8 @@
   <h1>{% translate "Traduire ici" %}</h1>
   <p class="lede">{% blocktranslate trimmed %}
     On traduit à plusieurs des textes modernes vers le latin. Chaque projet vise une seule
-    traduction, justifiée par le corpus, que chacun peut améliorer en proposant des variantes,
-    comme on améliore du code sur GitHub.
+    traduction, justifiée par le corpus, que chacun peut améliorer en proposant une variante à
+    telle ou telle phrase.
   {% endblocktranslate %}</p>
 
   <nav class="help-toc" aria-label="{% translate 'Sommaire' %}">
@@ -28,8 +28,8 @@
       <dd>{% translate "Le texte à traduire, découpé en phrases, sous une licence libre ou dans le domaine public." %}</dd>
       <dt>{% translate "Projet" %}</dt>
       <dd>{% translate "Vise une seule traduction latine d’un texte, dans un style choisi pour tout le projet (cicéronien, livien…). Un même texte peut avoir plusieurs projets, dans des styles différents." %}</dd>
-      <dt>{% translate "Traduction principale" %}</dt>
-      <dd>{% translate "Le texte latin du projet, écrit par ses mainteneurs : son créateur et ceux qu’il invite. Elle reste un brouillon, visible des seuls mainteneurs, jusqu’à ce que le créateur la publie." %}</dd>
+      <dt>{% translate "La traduction" %}</dt>
+      <dd>{% translate "Le texte latin du projet, écrit par ses traducteurs et ses éditeurs. Il reste un brouillon, visible de ses seuls auteurs, jusqu’à ce qu’un éditeur le publie." %}</dd>
     </dl>
     <p>{% translate "Dans l’éditeur, la phrase source est à gauche, votre latin au milieu, les outils à droite. Chaque phrase s’enregistre quand vous la quittez. Deux voyelles de suite donnent une voyelle longue, ici et dans tous les champs latins du site : aa donne ā, et la retaper redonne aa pour les mots qui doublent vraiment la voyelle (cooperio). Avec i, une étape de plus : ii donne ī, iii donne iī. Une voyelle suivie de = prend aussi un macron : a= donne ā." %}</p>
   </section>
@@ -43,12 +43,10 @@
   <section id="ensemble" aria-labelledby="help-together">
     <h2 id="help-together">{% translate "Travailler ensemble" %}</h2>
     <dl class="help-terms">
-      <dt>{% translate "Variante" %}</dt>
-      <dd>{% translate "Partez de la traduction principale publiée pour traduire autrement les phrases de votre choix (comme un fork), puis envoyez la variante aux mainteneurs. Ils acceptent ou refusent chaque phrase ; la variante est alors close : fusionnée si une phrase au moins est acceptée, écartée sinon. Les mainteneurs peuvent aussi l’écarter avec un motif." %}</dd>
-      <dt>{% translate "Proposer des modifications" %}</dt>
-      <dd>{% translate "Pour quelques phrases seulement, proposez directement un autre latin à la traduction principale ; les mainteneurs acceptent ou refusent chaque phrase (comme une pull request)." %}</dd>
-      <dt>{% translate "Mainteneurs" %}</dt>
-      <dd>{% translate "Le créateur du projet invite des mainteneurs, qui écrivent avec lui la traduction, créent des étapes et décident des variantes, du glossaire et des sujets. Le créateur seul publie." %}</dd>
+      <dt>{% translate "Variante d’une phrase" %}</dt>
+      <dd>{% translate "Sous chaque phrase, proposez un autre latin, avec un commentaire. Une proposition demande de remplacer le texte qu’elle corrige : les traducteurs l’adoptent, et son latin devient le texte principal, ou la refusent, et elle reste pour référence. Une variante pour référence indique seulement une autre traduction. Une variante peut corriger le texte principal ou une autre variante ; rien n’est effacé." %}</dd>
+      <dt>{% translate "Rôles d’un projet" %}</dt>
+      <dd>{% translate "Un éditeur décide de tout dans le projet : le modifier, le publier, nommer les rôles, ouvrir ou fermer la correction. Un traducteur écrit la traduction, crée des étapes, justifie et décide des variantes. Un correcteur propose des variantes aux phrases. Par défaut, tout compte actif peut proposer une variante." %}</dd>
       <dt>{% translate "Sujets" %}</dt>
       <dd>{% translate "Ouvrez un sujet sur un projet pour une question, une erreur ou un point de style ; écrivez #3 pour renvoyer au sujet n° 3 (comme une issue)." %}</dd>
       <dt>{% translate "Suivre, étoiles et notifications" %}</dt>
@@ -69,7 +67,7 @@
       <dt>{% translate "Statuts et filtres" %}</dt>
       <dd>{% translate "Chaque phrase est à traduire, en brouillon, traduite ou relue ; la barre en haut montre l’avancement, et le filtre ne montre que les phrases voulues. « ? » liste les raccourcis clavier." %}</dd>
       <dt>{% translate "Mémoire, glossaire et concordance" %}</dt>
-      <dd>{% translate "L’onglet « Mémoire » propose le latin de la traduction principale, des variantes et de phrases ressemblantes ; le glossaire du projet surligne les termes convenus ; la concordance montre comment les traductions publiées ont rendu un mot. Rien n’est inséré sans votre clic." %}</dd>
+      <dd>{% translate "L’onglet « Mémoire » propose le latin des autres projets qui traduisent le même texte et de phrases ressemblantes ; l’onglet « Variantes » réunit les autres traductions proposées pour la phrase ; le glossaire du projet surligne les termes convenus ; la concordance montre comment les traductions publiées ont rendu un mot. Rien n’est inséré sans votre clic." %}</dd>
       <dt>{% translate "Commentaires, historique, contrôle qualité" %}</dt>
       <dd>{% translate "Commentez une phrase et marquez le commentaire résolu ; retrouvez le latin d’une phrase à chaque étape ; le contrôle qualité signale ponctuation, nombres, macrons ou termes du glossaire oubliés, sans jamais juger le latin d’après le corpus." %}</dd>
     </dl>

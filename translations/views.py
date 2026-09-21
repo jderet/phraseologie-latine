@@ -106,6 +106,12 @@ from .steps import (
     step_sentences,
     waiting_justifications,
 )
+from .variants import (
+    can_add_variant,
+    can_decide_variant,
+    can_edit_variant,
+    variants_by_segment,
+)
 
 ITEMS_PER_PAGE = 50
 # Value of the comparison parameter that designates the working text of the author.
@@ -943,7 +949,7 @@ def _challenges_by_segment(user, version, history, state):
     return grouped
 
 
-def _rows(user, version, step=None):
+def _rows(user, version, step=None, with_variants=False):
     """The step shown and each sentence of the source text with its Latin and justifications.
 
     Return (step, rows): the author sees the working text (step None), others the latest
@@ -956,6 +962,7 @@ def _rows(user, version, step=None):
     justifications = _justifications_by_segment(user, version, texts, history, state, step)
     challenges = _challenges_by_segment(user, version, history, state)
     translated_ids = dict(version.segments.values_list("segment_id", "pk"))
+    variants = _variants_shown(user, version) if with_variants else {}
     # In their working text, the author sees the sentences the source text changed since.
     since = _source_changed_since(user, version) if step is None else None
     source = version.project.source_text
@@ -982,6 +989,7 @@ def _rows(user, version, step=None):
                 "text": text,
                 "errors": None,
                 "justifications": justifications.get(source_segment.pk, []),
+                "variants": variants.get(source_segment.pk, []),
                 "challenges": challenges.get(source_segment.pk, []),
                 "origin": _origin(user, version, sentence) if step and sentence else None,
                 "source_changed": changed,
@@ -991,6 +999,18 @@ def _rows(user, version, step=None):
             }
         )
     return step, rows
+
+
+def _variants_shown(user, version):
+    """{segment id: [variant]} with, on each variant, what the user may do with it."""
+    found = variants_by_segment(user, version)
+    correcting = can_add_variant(user, version)
+    for variants in found.values():
+        for variant in variants:
+            variant.can_decide = can_decide_variant(user, variant)
+            variant.can_edit = can_edit_variant(user, variant)
+            variant.can_correct = correcting
+    return found
 
 
 def _source_changed_since(user, version):
@@ -1026,7 +1046,7 @@ def version_detail(request, pk):
     """The author sees the working text; others see the latest public step."""
     user = request.user
     version = _version(user, pk)
-    step, rows = _rows(user, version)
+    step, rows = _rows(user, version, with_variants=True)
     is_author = is_version_writer(user, version)
     return render(
         request,
@@ -1051,6 +1071,7 @@ def version_detail(request, pk):
             ],
             "members": writing_members(version.project),
             "can_challenge": step is not None and can_challenge(user, version),
+            "can_add_variant": can_add_variant(user, version),
             **_progress(rows),
         },
     )
