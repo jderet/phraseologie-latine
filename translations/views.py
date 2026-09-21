@@ -832,27 +832,35 @@ def project_edit(request, pk):
 
 
 def project_compare(request, pk):
-    """The versions of a project aligned sentence by sentence: the main version first, then
-    the open variants, then the closed ones.
+    """The translations of the projects on the same source text, aligned sentence by sentence.
 
-    Each version shows its latest public step; the author's own versions, their working text.
-    The Latin of a step is carried to the current source text.
+    Each translation shows its latest public step; its own writers see their working text. The
+    variants of each sentence are shown on demand (choice of 21 September 2026).
     """
-    project = _visible(request.user, TranslationProject.objects.select_related("source_text"), pk)
+    user = request.user
+    project = _visible(user, TranslationProject.objects.select_related("source_text"), pk)
     versions = sorted(
-        project.versions.visible_to(request.user).select_related("author"),
-        key=lambda version: (version.is_draft, version.published_at or version.created_at),
+        TranslationVersion.objects.filter(project__source_text_id=project.source_text_id)
+        .visible_to(user)
+        .select_related("project", "author"),
+        key=lambda version: (
+            version.project_id != project.pk,
+            version.is_draft,
+            version.published_at or version.created_at,
+        ),
     )
-    asked = {int(value) for value in request.GET.getlist("v") if value.isdigit()}
-    shown = [version for version in versions if version.pk in asked] or versions
+    asked = {int(value) for value in request.GET.getlist("p") if value.isdigit()}
+    shown = [version for version in versions if version.project_id in asked] or versions
+    with_variants = request.GET.get("variantes") == "1"
     history = SourceHistory(project.source_text)
-    sentences, states = {}, {}
+    sentences, states, variants = {}, {}, {}
     for version in shown:
-        step, found = shown_sentences(request.user, version)
+        step, found = shown_sentences(user, version)
         if step is not None:
             found = history.project(carried(found), step.source_state)
             states[version.pk] = step.source_state
         sentences[version.pk] = found
+        variants[version.pk] = variants_by_segment(user, version) if with_variants else {}
     rows = []
     for number, source_segment in enumerate(history.segments_at(), start=1):
         cells = []
@@ -863,6 +871,7 @@ def project_compare(request, pk):
                 {
                     "version": version,
                     "text": sentence.text if sentence else "",
+                    "variants": variants[version.pk].get(source_segment.pk, []),
                     # The step shown was made before this sentence entered the source text.
                     "older": state is not None and source_segment.added_in > state,
                 }
@@ -876,6 +885,8 @@ def project_compare(request, pk):
             "source": project.source_text,
             "versions": versions,
             "shown": shown,
+            "shown_ids": {version.project_id for version in shown},
+            "with_variants": with_variants,
             "rows": rows,
             "main_id": project.main_version_id,
         },

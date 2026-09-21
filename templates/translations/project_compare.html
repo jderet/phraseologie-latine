@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n workshop_tags %}
+{% load i18n workshop_tags phraseology_tags %}
 
 {% block title %}{% translate "Comparer" %} · {{ project.title }} · {{ block.super }}{% endblock %}
 
@@ -12,22 +12,22 @@
   <p class="lede">{% translate "Rien à comparer pour l’instant : la traduction n’est pas encore publiée." %}</p>
   {% else %}
   <p class="lede">{% blocktranslate trimmed %}
-    La traduction principale et ses variantes, alignées phrase par phrase, chacune dans sa
-    dernière étape publique : la traduction principale d’abord, puis les variantes ouvertes, puis
-    les variantes closes.
+    Les traductions de ce texte, alignées phrase par phrase, chacune dans sa dernière étape
+    publique : celle de ce projet d’abord, puis celles des autres projets qui traduisent le même
+    texte.
   {% endblocktranslate %}</p>
 
   <form method="get" class="filters version-picker">
     <fieldset>
-      <legend>{% translate "Textes affichés" %}</legend>
+      <legend>{% translate "Traductions affichées" %}</legend>
       {% for version in versions %}
-      <label><input type="checkbox" name="v" value="{{ version.pk }}"{% if version in shown %} checked{% endif %}> {{ version.display_name }} <span class="muted">({% if version.is_draft %}{% translate "votre brouillon" %}{% elif version.author_id == user.pk %}{% translate "votre texte de travail" %}{% endif %})</span></label>
+      <label><input type="checkbox" name="p" value="{{ version.project_id }}"{% if version.project_id in shown_ids %} checked{% endif %}> {{ version.project.title }} <span class="muted">({{ version.project.get_style_display }}{% if version.is_draft %}, {% translate "votre brouillon" %}{% endif %})</span></label>
       {% endfor %}
     </fieldset>
+    <label><input type="checkbox" name="variantes" value="1"{% if with_variants %} checked{% endif %}> {% translate "Montrer les variantes des phrases" %}</label>
     <button type="submit" class="button button-quiet">{% translate "Afficher" %}</button>
   </form>
 
-  {% load phraseology_tags %}
   <ol class="comparison">
     {% for row in rows %}
     <li class="comparison-row{% if row.segment.starts_paragraph and not forloop.first %} paragraph-start{% endif %}" id="phrase-{{ row.number }}">
@@ -36,9 +36,19 @@
       <ul class="renderings">
         {% for cell in row.cells %}
         <li{% if cell.version.pk == main_id %} class="is-reference"{% endif %}>
-          <a class="rendering-label" href="{{ cell.version.get_absolute_url }}#phrase-{{ row.number }}">{{ cell.version.display_name }}</a>
+          <a class="rendering-label" href="{{ cell.version.get_absolute_url }}#phrase-{{ row.number }}">{{ cell.version.project.title }}</a>
           <span class="rendering-text" lang="la">{% if cell.text %}{% latin_sentence cell.text as sentence %}{{ sentence.html }}{% else %}<span class="muted">{% translate "non traduite" %}</span>{% endif %}</span>
           {% if cell.older %}<span class="muted">{% translate "d’après un texte source antérieur" %}</span>{% endif %}
+          {% if cell.variants %}
+          <ul class="variant-list">
+            {% for variant in cell.variants %}
+            <li class="variant variant-{{ variant.status }}">
+              <p class="variant-latin" lang="la">{{ variant.text }}</p>
+              <p class="variant-meta muted"><span class="badge{% if variant.is_pending %} state-open{% endif %}">{{ variant.get_status_display }}</span> <a href="{{ variant.author.get_absolute_url }}">{{ variant.author.public_name }}</a></p>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
         </li>
         {% endfor %}
       </ul>
