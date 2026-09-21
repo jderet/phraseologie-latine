@@ -14,14 +14,10 @@ from moderation.models import ModeratedContent
 from moderation.registry import can_view, register
 
 from .classification import MAX_GENRES, MAX_THEMES, Genre, Theme, clean_codes, names
-from .segmentation import MAX_LEVEL
 
 # A work enters the public domain on the 1 January following the 70th year after its
 # author's death.
 COPYRIGHT_YEARS = 70
-
-# The usual names of the levels of title, when a text does not choose its own.
-DEFAULT_LEVEL_NAMES = [_("Partie"), _("Chapitre"), _("Section")]
 
 
 def last_public_domain_death_year(today=None):
@@ -117,8 +113,8 @@ class SourceText(ModeratedContent):
         max_length=100,
         blank=True,
         help_text=_(
-            "Noms des trois niveaux de titre, séparés par des virgules : « Partie, Chapitre, "
-            "Section ». Laissé vide, ces noms-là sont employés."
+            "Facultatif. Noms des trois niveaux de titre, séparés par des virgules : « Livre, "
+            "Chapitre, Section ». Laissés vides, les divisions sont citées par leur numéro seul."
         ),
     )
     added_by = models.ForeignKey(
@@ -155,15 +151,20 @@ class SourceText(ModeratedContent):
         return self.title
 
     def citation(self, place):
-        """« Chapitre 2, phrase 5 », or the number alone in a text without divisions."""
+        """« Chapitre 2, phrase 5 », or the number alone in a text without divisions.
+
+        A text that names none of its levels cites its divisions by their number: « 2.3 ».
+        """
         if place is None:
             return ""
         if place.division is None:
             return gettext("phrase %(number)d") % {"number": place.number}
-        division = gettext("%(name)s %(index)d") % {
-            "name": self.level_label(place.division.level),
-            "index": place.division.index,
-        }
+        name = self.level_label(place.division.level)
+        division = (
+            gettext("%(name)s %(index)d") % {"name": name, "index": place.division.index}
+            if name
+            else place.division.key
+        )
         if not place.number:
             return division
         return gettext("%(division)s, phrase %(number)d") % {
@@ -172,11 +173,11 @@ class SourceText(ModeratedContent):
         }
 
     def level_label(self, level):
-        """The name chosen for a level of title, or the usual one."""
+        """The name this text gives to a level of title; empty when it names none."""
         names = [name.strip() for name in self.level_names.split(",") if name.strip()]
         if 1 <= level <= len(names):
             return names[level - 1]
-        return DEFAULT_LEVEL_NAMES[level - 1] if 1 <= level <= MAX_LEVEL else ""
+        return ""
 
     def get_absolute_url(self):
         return reverse("translations:source", args=[self.pk])

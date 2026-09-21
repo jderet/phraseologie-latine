@@ -57,9 +57,17 @@ class OutlineTests(TestCase):
 
     def test_a_sentence_is_cited_by_its_division(self):
         sentence = next(s for s in self.segments if s.text == "Il vente.")
+        self.source.level_names = "Livre, Chapitre"
         self.assertEqual(self.source.citation(self.places[sentence.pk]), "Chapitre 1, phrase 2")
         self.source.level_names = "Livre, Section"
         self.assertEqual(self.source.citation(self.places[sentence.pk]), "Section 1, phrase 2")
+
+    def test_a_text_that_names_no_level_cites_its_divisions_by_their_number(self):
+        sentence = next(s for s in self.segments if s.text == "Il vente.")
+        self.source.level_names = ""
+        self.assertEqual(self.source.citation(self.places[sentence.pk]), "1.1, phrase 2")
+        title = next(s for s in self.segments if s.text == "Chapitre premier")
+        self.assertEqual(self.source.citation(self.places[title.pk]), "1.1")
 
     def test_a_text_without_division_keeps_its_numbers(self):
         source = make_source_text(self.user, title="Sans division")
@@ -95,12 +103,12 @@ class OutlineTests(TestCase):
             ],
         )
 
-    def test_the_usual_names_of_the_levels(self):
-        self.assertEqual(self.source.level_label(1), "Partie")
-        self.assertEqual(self.source.level_label(3), "Section")
+    def test_the_levels_have_no_name_unless_the_text_gives_them_one(self):
+        self.source.level_names = ""
+        self.assertEqual(self.source.level_label(1), "")
         self.source.level_names = "Livre"
         self.assertEqual(self.source.level_label(1), "Livre")
-        self.assertEqual(self.source.level_label(2), "Chapitre")
+        self.assertEqual(self.source.level_label(2), "")
 
 
 class PreviewTests(TestCase):

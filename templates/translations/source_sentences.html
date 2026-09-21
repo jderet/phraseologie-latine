@@ -62,7 +62,7 @@
       <span class="bitext-number">{{ sentence.order }}</span>
       <div>
         <p lang="{{ source.language }}"{% if sentence.level %} class="division-title"{% endif %}>{{ sentence.text }}</p>
-        {% if sentence.level %}<p class="muted">{% blocktranslate with name=source|level_name:sentence.level %}titre : {{ name }}{% endblocktranslate %}</p>{% endif %}
+        {% if sentence.level %}{% with name=source|level_name:sentence.level %}<p class="muted">{% if name %}{% blocktranslate %}titre : {{ name }}{% endblocktranslate %}{% else %}{% blocktranslate with level=sentence.level %}titre de niveau {{ level }}{% endblocktranslate %}{% endif %}</p>{% endwith %}{% endif %}
         {% if sentence.starts_paragraph and not forloop.first and not sentence.level %}<p class="muted">{% translate "début de paragraphe" %}</p>{% endif %}
         {% if actions %}
         <p class="form-links">
