@@ -38,7 +38,10 @@ def bilingual_text(version, rows, step=None):
         % {"title": source.title, "license": source.get_license_display()}
     )
     if source.author:
-        lines.append(gettext("Auteur du texte source : %(author)s.") % {"author": source.author})
+        author = source.author
+        if source.author_dates:
+            author = f"{author} ({source.author_dates})"
+        lines.append(gettext("Auteur du texte source : %(author)s.") % {"author": author})
     if source.source_url:
         lines.append(gettext("Origine : %(url)s") % {"url": source.source_url})
     lines.append(gettext("Traduction latine sous licence CC BY-SA 4.0."))

@@ -16,7 +16,7 @@
     {% if source.author %}
     <div>
       <dt>{% translate "Auteur" %}</dt>
-      <dd>{{ source.author }}{% if source.author_death_year %} ({% blocktranslate with year=source.author_death_year %}mort en {{ year }}{% endblocktranslate %}){% endif %}</dd>
+      <dd>{{ source.author }}{% if source.author_dates %} ({{ source.author_dates }}){% endif %}</dd>
     </div>
     {% endif %}
     <div>

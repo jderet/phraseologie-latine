@@ -39,6 +39,24 @@ class SourceTextRulesTests(TestCase):
                 self.build(license=License.PUBLIC_DOMAIN, author_death_year=year).full_clean()
             self.assertIn("author_death_year", caught.exception.message_dict)
 
+    def test_a_birth_year_after_the_year_of_death_is_refused(self):
+        with self.assertRaises(ValidationError) as caught:
+            self.build(author_birth_year=1900, author_death_year=1880).full_clean()
+        self.assertIn("author_birth_year", caught.exception.message_dict)
+
+    def test_the_year_of_birth_never_decides_the_public_domain(self):
+        last_year = timezone.localdate().year - 71
+        text = self.build(
+            license=License.PUBLIC_DOMAIN, author_birth_year=None, author_death_year=last_year
+        )
+        text.full_clean()
+        self.assertEqual(text.author_dates, f"mort en {last_year}")
+
+    def test_the_same_year_twice_situates_the_author_in_a_century(self):
+        source = self.build(author_birth_year=1800, author_death_year=1800)
+        source.full_clean()
+        self.assertEqual(source.author_dates, "XIXe siècle")
+
     def test_free_licenses_need_the_source_address(self):
         with self.assertRaises(ValidationError) as caught:
             self.build(source_url="").full_clean()
@@ -220,6 +238,16 @@ class SourceTextPagesTests(TestCase):
         self.assertContains(response, "licence libre")
         self.assertContains(response, 'rel="nofollow ugc noopener"')
         self.assertNotContains(response, reverse("translations:source_edit", args=[source.pk]))
+
+    def test_the_page_shows_the_dates_of_the_author(self):
+        source = make_source_text(self.owner, author="Victor Hugo", author_death_year=1885)
+        self.assertContains(self.client.get(source.get_absolute_url()), "mort en 1885")
+        source.author_birth_year = 1802
+        source.save(update_fields=["author_birth_year"])
+        self.assertContains(self.client.get(source.get_absolute_url()), "né en 1802, mort en 1885")
+        source.author_birth_year = source.author_death_year = 1800
+        source.save(update_fields=["author_birth_year", "author_death_year"])
+        self.assertContains(self.client.get(source.get_absolute_url()), "XIXe siècle")
 
     def test_hidden_texts_are_not_shown(self):
         source = make_source_text(self.owner, title="Le vent")

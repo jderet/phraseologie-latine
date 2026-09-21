@@ -280,6 +280,8 @@ def version_summary(version, link):
         "source_text": {
             "title": source.title,
             "author": source.author,
+            "author_birth_year": source.author_birth_year,
+            "author_death_year": source.author_death_year,
             "language": source.language,
             "genres": source.genres,
             "themes": source.themes,

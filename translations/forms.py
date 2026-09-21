@@ -72,6 +72,7 @@ class SourceTextEditForm(ContributionForm):
         fields = (
             "title",
             "author",
+            "author_birth_year",
             "author_death_year",
             "language",
             "genres",

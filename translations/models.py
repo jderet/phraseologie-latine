@@ -9,6 +9,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
+from core import dates
 from moderation.models import ModeratedContent
 from moderation.registry import can_view, register
 
@@ -66,6 +67,15 @@ class SourceText(ModeratedContent):
         max_length=200,
         blank=True,
         help_text=_("Pour un article de Wikipédia : « contributeurs de Wikipédia »."),
+    )
+    author_birth_year = models.IntegerField(
+        _("année de naissance de l’auteur"),
+        null=True,
+        blank=True,
+        help_text=_(
+            "Facultatif. La même année de début de siècle dans les deux cases (1800, ou 1801) "
+            "situe l’auteur dans ce siècle, sans autre précision."
+        ),
     )
     author_death_year = models.IntegerField(
         _("année de mort de l’auteur"),
@@ -190,6 +200,14 @@ class SourceText(ModeratedContent):
             errors["source_url"] = _(
                 "Indiquez l’adresse d’origine : une licence libre demande de citer la source."
             )
+        if (
+            self.author_birth_year is not None
+            and self.author_death_year is not None
+            and self.author_birth_year > self.author_death_year
+        ):
+            errors["author_birth_year"] = _(
+                "L’année de naissance est postérieure à l’année de mort."
+            )
         self.genres = clean_codes(self.genres, Genre)
         self.themes = clean_codes(self.themes, Theme)
         if not self.genres:
@@ -200,6 +218,11 @@ class SourceText(ModeratedContent):
             errors["themes"] = _("Choisissez %(limit)d thèmes au plus.") % {"limit": MAX_THEMES}
         if errors:
             raise ValidationError(errors)
+
+    @property
+    def author_dates(self):
+        """« XIXe siècle », or « né en 1802, mort en 1885 »; empty when no year is known."""
+        return dates.author_dates(self.author_birth_year, self.author_death_year)
 
     @property
     def genre_names(self):

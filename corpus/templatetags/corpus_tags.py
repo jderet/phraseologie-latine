@@ -2,6 +2,7 @@ from django import template
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext
 
+from core import dates
 from corpus.models import Work
 
 register = template.Library()
@@ -21,12 +22,8 @@ def poetry_mark(hit):
 
 @register.filter
 def format_year(year):
-    """Years before the common era are stored as negative numbers."""
-    if year is None:
-        return ""
-    if year < 0:
-        return gettext("%(year)d av. J.-C.") % {"year": -year}
-    return str(year)
+    """Years before the common era are stored as negative numbers (``core.dates``)."""
+    return dates.format_year(year)
 
 
 def _word(token, highlighted):
