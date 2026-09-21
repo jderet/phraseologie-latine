@@ -64,7 +64,7 @@ class NotificationTests(ActivityTestCase):
 
     def test_co_authors_hear_of_draft_steps(self):
         version = make_version(self.author, self.project)
-        member = members.invite(version, self.author, self.other)
+        member = members.invite(self.project, self.author, self.other)
         self.assertEqual(self.verbs(self.other), [Verb.MEMBER_INVITED])
         members.answer(member, self.other, accept=True)
         self.assertIn(Verb.MEMBER_JOINED, self.verbs(self.author))

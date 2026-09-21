@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Rôles" %} · {{ project.title }} · {{ block.super }}{% endblock %}
+
+{% block content %}
+<section>
+  <p class="eyebrow"><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></p>
+  <h1>{% translate "Rôles du projet" %}</h1>
+  <p class="lede">{% blocktranslate trimmed %}
+    Trois rôles, emboîtés. Un éditeur décide de tout dans le projet : le modifier, le publier,
+    nommer et retirer les rôles, ouvrir ou fermer la correction. Un traducteur écrit la
+    traduction, crée des étapes, justifie, et décide des variantes. Un correcteur propose des
+    variantes aux phrases et commente, sans toucher au texte principal. Chaque phrase garde le
+    nom de qui l’a écrite.
+  {% endblocktranslate %}</p>
+  {% if project.open_correction %}
+  <p class="note">{% translate "La correction est ouverte : tout compte actif peut proposer des variantes aux phrases." %}</p>
+  {% else %}
+  <p class="note">{% translate "La correction est fermée : seuls les membres nommés proposent des variantes." %}</p>
+  {% endif %}
+
+  {% if own and own.status == "invited" %}
+  <div class="notice notice-info invitation">
+    <p>{% blocktranslate with name=own.invited_by.public_name role=own.get_role_display %}{{ name }} vous invite à être {{ role }} de ce projet.{% endblocktranslate %}</p>
+    <form method="post" action="{% url 'translations:member_answer' own.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="button" name="decision" value="accept">{% translate "Accepter" %}</button>
+      <button type="submit" class="button button-quiet" name="decision" value="decline">{% translate "Refuser" %}</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <ul class="item-list">
+    <li>
+      <span><a class="item-title" href="{{ project.created_by.get_absolute_url }}">{{ project.created_by.public_name }}</a> <span class="badge state-open">{% translate "éditeur, a créé le projet" %}</span></span>
+    </li>
+    {% for member in members %}
+    <li>
+      <span><a class="item-title" href="{{ member.user.get_absolute_url }}">{{ member.user.public_name }}</a> <span class="badge{% if member.is_active %} state-open{% endif %}">{{ member.get_role_display }}</span> <span class="muted">{{ member.get_status_display }}</span></span>
+      <span class="muted">{% if member.is_active %}{% blocktranslate with date=member.decided_at|date:"j F Y" %}depuis le {{ date }}{% endblocktranslate %}{% else %}{% blocktranslate with date=member.invited_at|date:"j F Y" %}invité le {{ date }}{% endblocktranslate %}{% endif %}</span>
+      {% if can_manage and member.is_active %}
+      <form method="post" action="{% url 'translations:member_role' member.pk %}" class="inline-form">
+        {% csrf_token %}
+        <label class="visually-hidden" for="role-{{ member.pk }}">{% translate "Rôle" %}</label>
+        <select id="role-{{ member.pk }}" name="role">
+          {% for value, label in roles %}<option value="{{ value }}"{% if value == member.role %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="link-button">{% translate "Changer le rôle" %}</button>
+      </form>
+      {% endif %}
+      {% if can_manage or member.user_id == user.pk and member.is_active %}
+      <form method="post" action="{% url 'translations:member_remove' member.pk %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit" class="link-button">{% if member.user_id == user.pk %}{% translate "Quitter le projet" %}{% elif member.is_active %}{% translate "Retirer" %}{% else %}{% translate "Annuler l’invitation" %}{% endif %}</button>
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% if form %}
+  <h2>{% translate "Donner un rôle à quelqu’un" %}</h2>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="button">{% translate "Inviter" %}</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

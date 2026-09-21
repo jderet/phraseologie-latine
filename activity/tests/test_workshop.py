@@ -13,9 +13,9 @@ class WorkshopTests(ActivityTestCase):
 
     def test_desk_gathers_versions_and_invitations(self):
         draft = make_version(self.author, self.project)
-        members.invite(draft, self.author, self.other)
+        members.invite(self.project, self.author, self.other)
         self.client.force_login(self.other)
-        self.assertContains(self.client.get(reverse("activity:workshop")), "vous invite à écrire")
+        self.assertContains(self.client.get(reverse("activity:workshop")), "vous invite à être")
         self.client.force_login(self.author)
         response = self.client.get(reverse("activity:workshop"))
         self.assertContains(response, reverse("translations:version_edit", args=[draft.pk]))

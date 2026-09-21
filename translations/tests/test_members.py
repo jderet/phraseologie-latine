@@ -5,12 +5,16 @@ from accounts.roles import CONTRIBUTOR
 from accounts.tests.factories import make_user
 from translations import members
 from translations.models import (
+    ProjectMember,
     TranslatedSegment,
+    TranslationProject,
     TranslationVersion,
-    VersionMember,
+    can_correct,
+    is_editor,
+    is_translator,
     is_version_writer,
 )
-from translations.permissions import can_challenge, can_manage, can_translate
+from translations.permissions import can_challenge, can_edit, can_manage, can_translate
 from translations.services import create_step, publish_version, save_translation
 
 from .factories import make_version, translate
@@ -22,9 +26,10 @@ class MemberTestCase(TranslationTestCase):
         self.version = make_version(self.author, self.project)
         translate(self.version)
 
-    def join(self, user=None):
+    def join(self, user=None, role=ProjectMember.Role.TRANSLATOR):
+        """Someone takes a role in the project of the author."""
         user = user or self.other
-        member = members.invite(self.version, self.author, user)
+        member = members.invite(self.project, self.author, user, role)
         members.answer(member, user, accept=True)
         return TranslationVersion.objects.get(pk=self.version.pk), member
 
@@ -43,14 +48,14 @@ class MemberServicesTests(MemberTestCase):
         self.assertEqual(caught.exception.code, "ambiguous")
 
     def test_an_invitation_gives_no_access_until_accepted(self):
-        member = members.invite(self.version, self.author, self.other)
-        self.assertEqual(member.status, VersionMember.Status.INVITED)
+        member = members.invite(self.project, self.author, self.other)
+        self.assertEqual(member.status, ProjectMember.Status.INVITED)
         self.assertFalse(is_version_writer(self.other, self.version))
         self.assertFalse(
             TranslationVersion.objects.visible_to(self.other).filter(pk=self.version.pk).exists()
         )
 
-    def test_a_co_author_writes_and_is_credited(self):
+    def test_a_translator_writes_and_is_credited(self):
         version, _member = self.join()
         self.assertTrue(can_translate(self.other, version))
         self.assertFalse(can_manage(self.other, version))
@@ -62,14 +67,42 @@ class MemberServicesTests(MemberTestCase):
         translated.refresh_from_db()
         self.assertIsNone(translated.written_by)
 
-    def test_a_co_author_creates_steps_but_does_not_publish(self):
+    def test_a_translator_creates_steps_but_does_not_publish(self):
         version, _member = self.join()
         step = create_step(version, self.other, "Premier jet")
         self.assertEqual(step.author, self.other)
         with self.assertRaises(PermissionDenied):
             publish_version(version, self.other)
 
-    def test_a_co_author_writes_the_latin_and_does_not_contest_it(self):
+    def test_an_editor_publishes_and_changes_the_project(self):
+        version, _member = self.join(role=ProjectMember.Role.EDITOR)
+        self.assertTrue(is_editor(self.other, self.project))
+        self.assertTrue(can_edit(self.other, self.project))
+        self.assertTrue(can_manage(self.other, version))
+        publish_version(version, self.other)
+        self.assertTrue(TranslationVersion.objects.get(pk=version.pk).is_published)
+
+    def test_a_corrector_never_writes_the_translation(self):
+        version, member = self.join(role=ProjectMember.Role.CORRECTOR)
+        self.assertEqual(member.role, ProjectMember.Role.CORRECTOR)
+        self.assertFalse(is_translator(self.other, self.project))
+        self.assertFalse(can_translate(self.other, version))
+        self.assertTrue(can_correct(self.other, self.project))
+        with self.assertRaises(PermissionDenied):
+            save_translation(version, self.first, "Pluit valde.", self.other)
+
+    def test_correction_open_by_default_and_closed_by_an_editor(self):
+        self.assertTrue(self.project.open_correction)
+        self.assertTrue(can_correct(self.reviewer, self.project))
+        self.project.open_correction = False
+        self.project.save(update_fields=["open_correction"])
+        self.assertFalse(can_correct(self.reviewer, self.project))
+        self.assertTrue(can_correct(self.author, self.project))
+        self.join(self.reviewer, role=ProjectMember.Role.CORRECTOR)
+        project = TranslationProject.objects.get(pk=self.project.pk)
+        self.assertTrue(can_correct(self.reviewer, project))
+
+    def test_a_translator_writes_the_latin_and_does_not_contest_it(self):
         version, _member = self.join()
         publish_version(version, self.author)
         version.refresh_from_db()
@@ -80,87 +113,99 @@ class MemberServicesTests(MemberTestCase):
             "Pluit multum.",
         )
 
-    def test_only_the_author_invites(self):
-        _version, _member = self.join()
+    def test_only_an_editor_invites_and_changes_a_role(self):
+        _version, member = self.join()
         with self.assertRaises(PermissionDenied):
-            members.invite(self.version, self.other, self.reviewer)
+            members.invite(self.project, self.other, self.reviewer)
+        with self.assertRaises(PermissionDenied):
+            members.change_role(member, self.other, ProjectMember.Role.EDITOR)
+        members.change_role(member, self.author, ProjectMember.Role.EDITOR)
+        member.refresh_from_db()
+        self.assertEqual(member.role, ProjectMember.Role.EDITOR)
 
     def test_no_double_invitation(self):
-        members.invite(self.version, self.author, self.other)
+        members.invite(self.project, self.author, self.other)
         with self.assertRaises(ValidationError):
-            members.invite(self.version, self.author, self.other)
+            members.invite(self.project, self.author, self.other)
 
-    def test_removed_co_author_loses_access_and_may_be_invited_again(self):
+    def test_removed_member_loses_access_and_may_be_invited_again(self):
         version, member = self.join()
         members.remove(member, self.author)
         version = TranslationVersion.objects.get(pk=version.pk)
         self.assertFalse(can_translate(self.other, version))
-        member = members.invite(version, self.author, self.other)
-        self.assertEqual(member.status, VersionMember.Status.INVITED)
+        member = members.invite(self.project, self.author, self.other)
+        self.assertEqual(member.status, ProjectMember.Status.INVITED)
 
-    def test_a_co_author_may_leave(self):
+    def test_a_member_may_leave(self):
         _version, member = self.join()
         members.remove(member, self.other)
         member.refresh_from_db()
-        self.assertEqual(member.status, VersionMember.Status.REMOVED)
+        self.assertEqual(member.status, ProjectMember.Status.REMOVED)
 
     def test_only_the_invited_person_answers(self):
-        member = members.invite(self.version, self.author, self.other)
+        member = members.invite(self.project, self.author, self.other)
         with self.assertRaises(PermissionDenied):
             members.answer(member, self.reviewer, accept=True)
 
 
 class MemberPageTests(MemberTestCase):
-    def test_author_invites_from_the_page(self):
+    def test_an_editor_invites_from_the_page(self):
         self.client.force_login(self.author)
-        url = reverse("translations:version_members", args=[self.version.pk])
-        response = self.client.post(url, {"name": "Quintus"})
+        url = reverse("translations:project_members", args=[self.project.pk])
+        response = self.client.post(url, {"name": "Quintus", "role": "corrector"})
         self.assertRedirects(response, url)
-        self.assertTrue(
-            VersionMember.objects.filter(version=self.version, user=self.other).exists()
-        )
+        member = ProjectMember.objects.get(project=self.project, user=self.other)
+        self.assertEqual(member.role, ProjectMember.Role.CORRECTOR)
 
     def test_invited_person_sees_the_invitation_but_not_the_draft(self):
-        members.invite(self.version, self.author, self.other)
+        members.invite(self.project, self.author, self.other)
         self.client.force_login(self.other)
-        page = self.client.get(reverse("translations:version_members", args=[self.version.pk]))
+        page = self.client.get(reverse("translations:project_members", args=[self.project.pk]))
         self.assertContains(page, "Accepter")
         draft = self.client.get(reverse("translations:version", args=[self.version.pk]))
         self.assertEqual(draft.status_code, 404)
 
-    def test_accepting_opens_the_editor(self):
-        member = members.invite(self.version, self.author, self.other)
+    def test_accepting_opens_the_project(self):
+        member = members.invite(self.project, self.author, self.other)
         self.client.force_login(self.other)
         response = self.client.post(
             reverse("translations:member_answer", args=[member.pk]), {"decision": "accept"}
         )
-        self.assertRedirects(response, reverse("translations:version_edit", args=[self.version.pk]))
+        self.assertRedirects(response, reverse("translations:project", args=[self.project.pk]))
         self.assertContains(
             self.client.get(reverse("translations:version", args=[self.version.pk])), "Pluit."
         )
 
-    def test_a_stranger_sees_nothing(self):
-        self.client.force_login(self.reviewer)
-        response = self.client.get(reverse("translations:version_members", args=[self.version.pk]))
-        self.assertEqual(response.status_code, 404)
+    def test_the_role_is_changed_from_the_page(self):
+        _version, member = self.join()
+        self.client.force_login(self.author)
+        response = self.client.post(
+            reverse("translations:member_role", args=[member.pk]), {"role": "editor"}
+        )
+        self.assertRedirects(
+            response, reverse("translations:project_members", args=[self.project.pk])
+        )
+        member.refresh_from_db()
+        self.assertEqual(member.role, ProjectMember.Role.EDITOR)
 
-    def test_a_co_author_may_not_invite_nor_publish(self):
+    def test_a_translator_may_not_invite_nor_publish(self):
         version, _member = self.join()
         self.client.force_login(self.other)
         response = self.client.post(
-            reverse("translations:version_members", args=[version.pk]), {"name": "Titus"}
+            reverse("translations:project_members", args=[self.project.pk]),
+            {"name": "Titus", "role": "translator"},
         )
         self.assertEqual(response.status_code, 404)
         response = self.client.get(reverse("translations:version_publish", args=[version.pk]))
         self.assertEqual(response.status_code, 403)
 
-    def test_project_lists_co_authored_drafts(self):
+    def test_project_lists_the_draft_to_those_who_write_it(self):
         self.join()
         self.client.force_login(self.other)
         response = self.client.get(reverse("translations:project", args=[self.project.pk]))
         self.assertContains(response, reverse("translations:version", args=[self.version.pk]))
 
-    def test_published_version_shows_its_co_authors(self):
+    def test_published_version_shows_those_who_write_it(self):
         version, _member = self.join()
         publish_version(version, self.author)
         response = self.client.get(reverse("translations:version", args=[version.pk]))

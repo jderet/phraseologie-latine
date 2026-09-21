@@ -26,7 +26,7 @@
     <li><a href="{% url 'translations:step_list' version.pk %}">{% translate "Historique des étapes" %}</a></li>
     <li><a href="{% url 'translations:step_compare' version.pk %}?a=travail">{% translate "Différences depuis la dernière étape" %}</a></li>
     <li><a href="{% url 'translations:version_comments' version.pk %}">{% translate "Tous les commentaires" %}</a></li>
-    <li><a href="{% url 'translations:version_members' version.pk %}">{% translate "Auteurs" %}</a></li>
+    <li><a href="{% url 'translations:project_members' version.project_id %}">{% translate "Rôles du projet" %}</a></li>
     <li><a href="{% url 'translations:version_export_tmx' version.pk %}">{% translate "Exporter en TMX" %}</a></li>
     <li><a href="{% url 'translations:version_export_xliff' version.pk %}">{% translate "Exporter en XLIFF" %}</a></li>
     <li><a href="{% url 'translations:xliff_import' version.pk %}">{% translate "Importer un fichier XLIFF" %}</a></li>

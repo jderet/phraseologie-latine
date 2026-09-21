@@ -1,5 +1,5 @@
-"""Co-authors of a version: the author invites them, they accept or decline, the author removes
-them; a co-author may also leave. Every change is recorded as a revision."""
+"""Roles in a project: an editor invites, the person accepts or declines, an editor removes
+them; a member may also leave. Every change is recorded as a revision."""
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -11,7 +11,7 @@ from activity.models import Verb
 from activity.services import auto_follow, record
 from moderation.services import save_with_revision
 
-from .models import TranslationVersion, VersionMember
+from .models import ProjectMember, TranslationProject, is_editor
 
 MAX_MEMBERS = 20
 
@@ -40,42 +40,45 @@ def find_invitee(query):
     return found[0]
 
 
-def _forget_writers(version):
-    version.__dict__.pop("_writer_ids", None)
+def _forget_roles(project):
+    project.__dict__.pop("_role_ids", None)
 
 
 @transaction.atomic
-def invite(version, author, invitee):
-    """The author of a version invites someone to co-author it."""
-    version = TranslationVersion.objects.select_for_update().get(pk=version.pk)
-    if author.pk != version.author_id or not author.is_active:
+def invite(project, author, invitee, role=ProjectMember.Role.TRANSLATOR):
+    """An editor of a project gives someone a role in it."""
+    project = TranslationProject.objects.select_for_update().get(pk=project.pk)
+    if not author.is_active or not is_editor(author, project):
         raise PermissionDenied
-    if invitee.pk == version.author_id:
-        raise ValidationError(gettext("Vous êtes déjà l’auteur de cette version."), code="self")
+    if role not in ProjectMember.Role.values:
+        raise ValueError("Unknown role.")
+    if invitee.pk == project.created_by_id:
+        raise ValidationError(gettext("Cette personne a créé le projet."), code="self")
     if not invitee.is_active:
         raise ValidationError(gettext("Ce compte n’est pas actif."), code="inactive")
-    member = VersionMember.objects.filter(version=version, user=invitee).first()
+    member = ProjectMember.objects.filter(project=project, user=invitee).first()
     if member is not None and member.status in (
-        VersionMember.Status.INVITED,
-        VersionMember.Status.ACTIVE,
+        ProjectMember.Status.INVITED,
+        ProjectMember.Status.ACTIVE,
     ):
         raise ValidationError(
-            gettext("Cette personne est déjà invitée ou co-autrice."), code="already"
+            gettext("Cette personne est déjà invitée ou membre du projet."), code="already"
         )
-    current = version.members.filter(
-        status__in=[VersionMember.Status.INVITED, VersionMember.Status.ACTIVE]
+    current = project.members.filter(
+        status__in=[ProjectMember.Status.INVITED, ProjectMember.Status.ACTIVE]
     ).count()
     if current >= MAX_MEMBERS:
         raise ValidationError(
-            gettext("Une version a au plus %(count)d co-auteurs.") % {"count": MAX_MEMBERS},
+            gettext("Un projet compte au plus %(count)d membres.") % {"count": MAX_MEMBERS},
             code="too_many",
         )
     if member is None:
-        member = VersionMember(version=version, user=invitee)
+        member = ProjectMember(project=project, user=invitee)
+    member.role = role
     member.invited_by = author
     member.invited_at = timezone.now()
     member.decided_at = None
-    member.status = VersionMember.Status.INVITED
+    member.status = ProjectMember.Status.INVITED
     save_with_revision(member, author, comment=gettext("Invitation"))
     record(author, Verb.MEMBER_INVITED, member, recipients=[invitee.pk], notify_followers=False)
     return member
@@ -84,47 +87,70 @@ def invite(version, author, invitee):
 @transaction.atomic
 def answer(member, user, accept):
     """The person invited accepts or declines."""
-    member = VersionMember.objects.select_for_update().get(pk=member.pk)
+    member = ProjectMember.objects.select_for_update().get(pk=member.pk)
     if user.pk != member.user_id or not user.is_active:
         raise PermissionDenied
-    if member.status != VersionMember.Status.INVITED:
+    if member.status != ProjectMember.Status.INVITED:
         raise ValidationError(gettext("Cette invitation n’est plus en attente."), code="answered")
-    member.status = VersionMember.Status.ACTIVE if accept else VersionMember.Status.DECLINED
+    member.status = ProjectMember.Status.ACTIVE if accept else ProjectMember.Status.DECLINED
     member.decided_at = timezone.now()
     comment = gettext("Invitation acceptée") if accept else gettext("Invitation refusée")
     save_with_revision(member, user, comment=comment)
-    _forget_writers(member.version)
+    _forget_roles(member.project)
     if accept:
-        auto_follow(user, member.version)
+        auto_follow(user, member.project)
     verb = Verb.MEMBER_JOINED if accept else Verb.MEMBER_DECLINED
-    record(user, verb, member, recipients=[member.version.author_id], notify_followers=False)
+    record(user, verb, member, recipients=[member.invited_by_id], notify_followers=False)
     return member
 
 
 @transaction.atomic
 def remove(member, user):
-    """The author removes a co-author or withdraws an invitation; a co-author may leave."""
-    member = VersionMember.objects.select_for_update().select_related("version").get(pk=member.pk)
-    if user.pk not in (member.version.author_id, member.user_id):
+    """An editor removes a member or withdraws an invitation; a member may leave."""
+    member = ProjectMember.objects.select_for_update().select_related("project").get(pk=member.pk)
+    if user.pk != member.user_id and not is_editor(user, member.project):
         raise PermissionDenied
-    if member.status not in (VersionMember.Status.INVITED, VersionMember.Status.ACTIVE):
-        raise ValidationError(gettext("Cette personne n’est plus co-autrice."), code="removed")
-    member.status = VersionMember.Status.REMOVED
+    if member.status not in (ProjectMember.Status.INVITED, ProjectMember.Status.ACTIVE):
+        raise ValidationError(gettext("Cette personne n’est plus membre."), code="removed")
+    member.status = ProjectMember.Status.REMOVED
     member.decided_at = timezone.now()
     comment = gettext("Départ") if user.pk == member.user_id else gettext("Retrait")
     save_with_revision(member, user, comment=comment)
-    _forget_writers(member.version)
+    _forget_roles(member.project)
     return member
 
 
-def active_members(version):
-    return version.members.filter(status=VersionMember.Status.ACTIVE).select_related("user")
+@transaction.atomic
+def change_role(member, user, role):
+    """An editor changes the role of an active member."""
+    member = ProjectMember.objects.select_for_update().select_related("project").get(pk=member.pk)
+    if not user.is_active or not is_editor(user, member.project):
+        raise PermissionDenied
+    if role not in ProjectMember.Role.values:
+        raise ValueError("Unknown role.")
+    if not member.is_active:
+        raise ValidationError(gettext("Cette personne n’est pas membre."), code="inactive")
+    member.role = role
+    save_with_revision(member, user, comment=member.get_role_display())
+    _forget_roles(member.project)
+    return member
+
+
+def active_members(project):
+    return project.members.filter(status=ProjectMember.Status.ACTIVE).select_related("user")
+
+
+def writing_members(project):
+    """The members who write the translation: editors and translators."""
+    return active_members(project).filter(
+        role__in=[ProjectMember.Role.EDITOR, ProjectMember.Role.TRANSLATOR]
+    )
 
 
 def pending_invitations(user):
     """Invitations waiting for the user's answer."""
     if not user.is_authenticated:
-        return VersionMember.objects.none()
-    return VersionMember.objects.filter(
-        user=user, status=VersionMember.Status.INVITED, version__is_hidden=False
-    ).select_related("version__project", "version__author", "invited_by")
+        return ProjectMember.objects.none()
+    return ProjectMember.objects.filter(
+        user=user, status=ProjectMember.Status.INVITED, project__is_hidden=False
+    ).select_related("project", "invited_by")

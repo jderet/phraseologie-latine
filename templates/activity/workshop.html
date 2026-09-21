@@ -14,7 +14,7 @@
     <ul class="item-list">
       {% for member in invitations %}
       <li>
-        <span>{% blocktranslate with name=member.invited_by.public_name project=member.version.project.title %}{{ name }} vous invite à écrire la traduction de « {{ project }} ».{% endblocktranslate %}</span>
+        <span>{% blocktranslate with name=member.invited_by.public_name project=member.project.title role=member.get_role_display %}{{ name }} vous invite à être {{ role }} de « {{ project }} ».{% endblocktranslate %}</span>
         <form method="post" action="{% url 'translations:member_answer' member.pk %}" class="inline-form">
           {% csrf_token %}
           <button type="submit" class="button button-small" name="decision" value="accept">{% translate "Accepter" %}</button>

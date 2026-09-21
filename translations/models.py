@@ -562,20 +562,23 @@ class VersionQuerySet(models.QuerySet):
         published = Q(state=TranslationVersion.State.PUBLISHED, is_hidden=False)
         if not user.is_authenticated:
             return self.filter(published)
-        return self.filter(published | Q(author=user) | Q(pk__in=coauthored_by(user))).distinct()
+        writes = Q(author=user) | Q(project__in=written_by_ids(user))
+        return self.filter(published | writes).distinct()
 
     def written_by(self, user):
-        """Versions the user writes: their own and those they co-author."""
+        """Versions the user writes: their own and those of the projects they write."""
         if not user.is_authenticated:
             return self.none()
-        return self.filter(Q(author=user) | Q(pk__in=coauthored_by(user)))
+        return self.filter(Q(author=user) | Q(project__in=written_by_ids(user))).distinct()
 
 
-def coauthored_by(user):
-    """Ids of the versions the user co-authors."""
-    return VersionMember.objects.filter(user=user, status=VersionMember.Status.ACTIVE).values(
-        "version_id"
-    )
+def written_by_ids(user):
+    """Ids of the projects whose translation the user writes: an editor or a translator."""
+    return ProjectMember.objects.filter(
+        user=user,
+        status=ProjectMember.Status.ACTIVE,
+        role__in=[ProjectMember.Role.EDITOR, ProjectMember.Role.TRANSLATOR],
+    ).values("project_id")
 
 
 class TranslationVersion(ModeratedContent):
@@ -819,31 +822,38 @@ class StepSentence(models.Model):
         return self.text
 
 
-class VersionMember(ModeratedContent):
-    """A co-author of a version, invited by its author.
+class ProjectMember(ModeratedContent):
+    """Someone an editor gave a role in a project (choice of 21 September 2026).
 
-    A co-author writes the working text, creates steps, justifies and decides on proposals, and
-    sees the draft; the author alone publishes, changes the settings and removes co-authors.
+    Three nested roles: an editor decides everything about the project, a translator writes the
+    translation, a corrector only adds variants to its sentences. Each role has the rights of
+    the next one; the creator of the project is an editor without a row here.
     """
+
+    class Role(models.TextChoices):
+        EDITOR = "editor", _("éditeur")
+        TRANSLATOR = "translator", _("traducteur")
+        CORRECTOR = "corrector", _("correcteur")
 
     class Status(models.TextChoices):
         INVITED = "invited", _("invité")
-        ACTIVE = "active", _("co-auteur")
+        ACTIVE = "active", _("membre")
         DECLINED = "declined", _("invitation refusée")
         REMOVED = "removed", _("retiré")
 
-    version = models.ForeignKey(
-        TranslationVersion,
+    project = models.ForeignKey(
+        TranslationProject,
         on_delete=models.PROTECT,
         related_name="members",
-        verbose_name=_("version"),
+        verbose_name=_("projet"),
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name="version_memberships",
-        verbose_name=_("co-auteur"),
+        related_name="project_memberships",
+        verbose_name=_("membre"),
     )
+    role = models.CharField(_("rôle"), max_length=10, choices=Role.choices, default=Role.TRANSLATOR)
     invited_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -858,25 +868,31 @@ class VersionMember(ModeratedContent):
     decided_at = models.DateTimeField(_("réponse le"), null=True, blank=True, editable=False)
 
     class Meta:
-        verbose_name = _("co-auteur d’une version")
-        verbose_name_plural = _("co-auteurs d’une version")
-        ordering = ["version", "invited_at", "pk"]
+        verbose_name = _("rôle dans un projet")
+        verbose_name_plural = _("rôles dans un projet")
+        ordering = ["project", "invited_at", "pk"]
         constraints = [
-            models.UniqueConstraint(fields=["version", "user"], name="translations_one_membership"),
+            models.UniqueConstraint(fields=["project", "user"], name="translations_one_membership"),
         ]
 
     def __str__(self):
-        return gettext("%(name)s, co-auteur de %(version)s") % {
+        return gettext("%(name)s, %(role)s de %(project)s") % {
             "name": self.user.public_name,
-            "version": self.version,
+            "role": self.get_role_display(),
+            "project": self.project.title,
         }
 
     def get_absolute_url(self):
-        return reverse("translations:version_members", args=[self.version_id])
+        return reverse("translations:project_members", args=[self.project_id])
 
     @property
     def is_active(self):
         return self.status == self.Status.ACTIVE
+
+    @property
+    def writes(self):
+        """Editors and translators write the translation itself."""
+        return self.role in (self.Role.EDITOR, self.Role.TRANSLATOR)
 
 
 class Topic(ModeratedContent):
@@ -1164,45 +1180,65 @@ def is_version_author(user, version):
     return user.is_authenticated and user.pk == version.author_id
 
 
+def _member_ids(project, roles):
+    """Ids of the creator of the project and of its active members holding one of ``roles``."""
+    cache = getattr(project, "_role_ids", None)
+    if cache is None:
+        cache = {}
+        for role, user_id in project.members.filter(status=ProjectMember.Status.ACTIVE).values_list(
+            "role", "user_id"
+        ):
+            cache.setdefault(role, set()).add(user_id)
+        project._role_ids = cache
+    ids = {project.created_by_id}
+    for role in roles:
+        ids |= cache.get(role, set())
+    return ids
+
+
+WRITERS = (ProjectMember.Role.EDITOR, ProjectMember.Role.TRANSLATOR)
+
+
+def editor_ids(project):
+    """Ids of the editors of a project: its creator and the members it named editors."""
+    return _member_ids(project, (ProjectMember.Role.EDITOR,))
+
+
+def writer_ids(project):
+    """Ids of those who write the translation: the editors and the translators."""
+    return _member_ids(project, WRITERS)
+
+
 def version_writer_ids(version):
-    """Ids of the author and the co-authors of a version."""
-    return {
-        version.author_id,
-        *version.members.filter(status=VersionMember.Status.ACTIVE).values_list(
-            "user_id", flat=True
-        ),
-    }
+    """Ids of those who write the translation of a version."""
+    return writer_ids(version.project) | {version.author_id}
 
 
-def maintainer_ids(project):
-    """Ids of the creator and the maintainers of a project."""
-    if project.main_version_id is None:
-        return {project.created_by_id}
-    return version_writer_ids(project.main_version)
+def is_editor(user, project):
+    """An editor decides everything about the project: its information, its roles, publication."""
+    return user.is_authenticated and user.pk in editor_ids(project)
 
 
-def is_maintainer(user, project):
-    """The creator of a project and its maintainers, the writers of its main version: they
-    write the translation and decide on the variants, the glossary and the topics."""
-    main = project.main_version
-    return main is not None and is_version_writer(user, main)
+def is_translator(user, project):
+    """A translator writes the translation; an editor has the same rights."""
+    return user.is_authenticated and user.pk in writer_ids(project)
+
+
+def can_correct(user, project):
+    """Correctors add variants to the sentences: the named ones, and anyone else while the
+    project leaves its correction open."""
+    if not user.is_authenticated or not user.is_active:
+        return False
+    if project.open_correction:
+        return True
+    return user.pk in _member_ids(project, tuple(ProjectMember.Role.values))
 
 
 def is_version_writer(user, version):
-    """The author of a version, or one of its co-authors: they write and see the working text."""
+    """Whoever writes the translation: they see and write the working text."""
     if not user.is_authenticated:
         return False
-    if user.pk == version.author_id:
-        return True
-    cache = getattr(version, "_writer_ids", None)
-    if cache is None:
-        cache = set(
-            version.members.filter(status=VersionMember.Status.ACTIVE).values_list(
-                "user_id", flat=True
-            )
-        )
-        version._writer_ids = cache
-    return user.pk in cache
+    return user.pk == version.author_id or is_translator(user, version.project)
 
 
 def source_proposal_visible_to(user, proposal):
@@ -1266,14 +1302,13 @@ register(
     not_reverted=("during_draft", "source_state"),
 )
 register(
-    VersionMember,
-    owner_field="version.author",
-    # The author of the version, the person invited, and the public once they co-author a
-    # published version.
+    ProjectMember,
+    owner_field="project.created_by",
+    # The editors of the project, the person invited, and the public once the role is held.
     visible_to=lambda user, member: (
-        is_version_author(user, member.version)
+        is_editor(user, member.project)
         or (user.is_authenticated and user.pk == member.user_id)
-        or (member.is_active and version_visible_to(user, member.version))
+        or (member.is_active and can_view(user, member.project))
     ),
     not_reverted=("status", "decided_at"),
 )

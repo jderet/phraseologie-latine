@@ -25,8 +25,8 @@
       <dd>{{ project.get_style_display|capfirst }}{% if project.style_note %} ({{ project.style_note }}){% endif %}</dd>
     </div>
     <div>
-      <dt>{% translate "Mainteneurs" %}</dt>
-      <dd>{% for person in maintainers %}<a href="{{ person.get_absolute_url }}">{{ person.public_name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}<a href="{{ project.created_by.get_absolute_url }}">{{ project.created_by.public_name }}</a>{% endfor %}{% if can_manage_main %} · <a href="{% url 'translations:version_members' main.pk %}">{% translate "inviter ou retirer" %}</a>{% endif %}</dd>
+      <dt>{% translate "Rôles" %}</dt>
+      <dd>{% for person in writers %}<a href="{{ person.get_absolute_url }}">{{ person.public_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %} · <a href="{% url 'translations:project_members' project.pk %}">{% if is_editor %}{% translate "inviter, changer un rôle ou retirer" %}{% else %}{% translate "voir les rôles" %}{% endif %}</a></dd>
     </div>
   </dl>
   <p class="form-links">

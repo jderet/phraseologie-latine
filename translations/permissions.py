@@ -3,12 +3,17 @@
 from accounts.roles import is_reviewer
 from moderation.registry import can_view, is_owner
 
-from .models import is_version_writer
+from .models import TranslationProject, is_editor, is_version_writer
 
 
 def can_edit(user, obj):
-    """The owner of a content, or a reviewer, may change its information."""
-    return can_view(user, obj) and (is_owner(user, obj) or is_reviewer(user))
+    """The owner of a content, or a reviewer, may change its information; a project is also
+    changed by its editors (choice of 21 September 2026)."""
+    if not can_view(user, obj):
+        return False
+    if isinstance(obj, TranslationProject):
+        return is_editor(user, obj) or is_reviewer(user)
+    return is_owner(user, obj) or is_reviewer(user)
 
 
 def can_change_source(user, source):
@@ -33,8 +38,8 @@ def can_translate(user, version):
 
 
 def can_manage(user, version):
-    """Only its author publishes a version, changes its settings and chooses its co-authors."""
-    return user.is_active and is_owner(user, version) and can_view(user, version)
+    """The editors of the project publish its translation and choose its settings."""
+    return user.is_active and is_editor(user, version.project) and can_view(user, version)
 
 
 def can_challenge(user, version):

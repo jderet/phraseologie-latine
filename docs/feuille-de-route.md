@@ -292,9 +292,9 @@ Choix du 21 septembre 2026 : la variante n'est plus une copie de toute la traduc
 autre traduction d'une seule phrase, avec un statut et un commentaire ; un projet confie trois
 rôles emboîtés (éditeur, traducteur, correcteur) et ouvre la correction à tous par défaut.
 
-- [ ] Rôles d'un projet : `ProjectMember` (éditeur, traducteur, correcteur), correction ouverte par défaut, permissions
-- [ ] Retrait de la variante-copie : copie d'une étape, réseau des copies, mise à jour depuis l'originale, envoi vers l'originale
-- [ ] Retrait des propositions de modifications (`ChangeProposal`, `ProposedSentence`, relectures) et de leurs pages
+- [x] Rôles d'un projet : `ProjectMember` (éditeur, traducteur, correcteur), correction ouverte par défaut, permissions
+- [x] Retrait de la variante-copie : copie d'une étape, réseau des copies, mise à jour depuis l'originale, envoi vers l'originale
+- [x] Retrait des propositions de modifications (`ChangeProposal`, `ProposedSentence`, relectures) et de leurs pages
 - [ ] Variante d'une phrase (`SegmentVariant`) : ajouter, modifier, supprimer, adopter, refuser
 - [ ] Variantes affichées sous chaque phrase, en lecture et dans l'éditeur
 - [ ] Comparaison de deux projets traduisant le même texte, variantes affichées à la demande

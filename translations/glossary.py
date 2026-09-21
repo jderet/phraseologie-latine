@@ -16,7 +16,7 @@ from accounts.roles import is_reviewer
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
-from .models import GlossaryEntry, is_maintainer
+from .models import GlossaryEntry, is_editor
 
 
 def can_propose_term(user, project):
@@ -25,9 +25,7 @@ def can_propose_term(user, project):
 
 def can_decide_term(user, project):
     return (
-        user.is_authenticated
-        and user.is_active
-        and (is_maintainer(user, project) or is_reviewer(user))
+        user.is_authenticated and user.is_active and (is_editor(user, project) or is_reviewer(user))
     )
 
 

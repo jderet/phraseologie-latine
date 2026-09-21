@@ -50,14 +50,14 @@ from .forms import (
     TranslationTextForm,
 )
 from .glossary import find_terms, marked_text, visible_terms
-from .members import active_members
+from .members import writing_members
 from .models import (
     Segment,
     SourceProposal,
     SourceText,
     TranslationProject,
     TranslationVersion,
-    is_maintainer,
+    is_editor,
     is_version_writer,
 )
 from .permissions import (
@@ -777,7 +777,7 @@ def project_create(request, source_pk):
 
 
 def project_detail(request, pk):
-    """The translation of the project, its maintainers and its variants."""
+    """The translation of the project and the people who write it."""
     user = request.user
     project = _visible(
         user, TranslationProject.objects.select_related("source_text", "created_by"), pk
@@ -792,16 +792,11 @@ def project_detail(request, pk):
             "source": project.source_text,
             "summary": summary,
             "main": main,
-            "maintainers": (
-                [project.main_version.author, *(m.user for m in active_members(main))]
-                if main is not None
-                else []
-            ),
+            "writers": [project.created_by, *(m.user for m in writing_members(project))],
             "segment_count": summary.segment_count,
             "can_translate_main": main is not None and can_translate(user, main),
             "can_publish_main": main is not None and main.is_draft and can_manage(user, main),
-            "can_manage_main": main is not None and can_manage(user, main),
-            "is_maintainer": is_maintainer(user, project),
+            "is_editor": is_editor(user, project),
             "can_edit": can_edit(user, project),
             "can_change_source": can_change_source(user, project.source_text),
             "can_propose_source": can_propose_source(user, project.source_text),
@@ -1054,7 +1049,7 @@ def version_detail(request, pk):
                 for edition in version.steps.exclude(label="").order_by("-number")
                 if can_view(user, _with_version(edition, version))
             ],
-            "members": active_members(version),
+            "members": writing_members(version.project),
             "can_challenge": step is not None and can_challenge(user, version),
             **_progress(rows),
         },
@@ -1135,7 +1130,7 @@ def version_edit(request, pk):
             "divisions": divisions,
             "chosen": chosen,
             "query": query,
-            "has_members": active_members(version).exists(),
+            "has_members": writing_members(version.project).exists(),
             "source_step": _source_changed_since(request.user, version),
             "version": version,
             "project": version.project,

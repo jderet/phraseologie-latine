@@ -22,8 +22,8 @@ class FeedTests(ActivityTestCase):
         self.assertEqual(verbs, [Verb.VERSION_PUBLISHED])
 
     def test_invitations_never_appear_in_feeds(self):
-        version = make_published_version(self.author, self.project)
-        members.invite(version, self.author, self.other)
+        make_published_version(self.author, self.project)
+        members.invite(self.project, self.author, self.other)
         verbs = [event.verb for event in contributor_feed(self.reader, self.author)]
         self.assertNotIn(Verb.MEMBER_INVITED, verbs)
 

@@ -39,7 +39,7 @@
     {% if members or can_manage %}
     <div>
       <dt>{% translate "Auteurs" %}</dt>
-      <dd>{% for member in members %}<a href="{{ member.user.get_absolute_url }}">{{ member.user.public_name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}{% translate "aucun" %}{% endfor %}{% if can_manage or is_author %} · <a href="{% url 'translations:version_members' version.pk %}">{% if can_manage %}{% translate "inviter ou retirer" %}{% else %}{% translate "voir" %}{% endif %}</a>{% endif %}</dd>
+      <dd>{% for member in members %}<a href="{{ member.user.get_absolute_url }}">{{ member.user.public_name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}{% translate "aucun" %}{% endfor %} · <a href="{% url 'translations:project_members' project.pk %}">{% translate "les rôles du projet" %}</a></dd>
     </div>
     {% endif %}
     <div>

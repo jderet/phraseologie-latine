@@ -25,13 +25,13 @@ from .concordance import LATIN, SOURCE, highlight, search
 from .forms import GlossaryEntryForm, InviteForm, TopicForm
 from .models import (
     GlossaryEntry,
+    ProjectMember,
     Topic,
     TranslationProject,
-    TranslationVersion,
-    VersionMember,
-    is_version_writer,
+    is_editor,
+    is_translator,
 )
-from .permissions import can_edit, can_manage
+from .permissions import can_edit
 from .sources import SourceHistory
 from .templatetags.workshop_tags import FIRST_STEPS_COOKIE
 from .views import _contribute, _paginate, _visible
@@ -72,34 +72,41 @@ def project_activity(request, pk):
 # Co-authors
 
 
-def _members_version(user, pk):
-    """A version the user may see, or one they are invited to co-author."""
-    version = get_object_or_404(
-        TranslationVersion.objects.select_related("project", "author"), pk=pk
+def _members_project(user, pk):
+    """A project the user may see, or one they are invited to take a role in."""
+    project = get_object_or_404(
+        TranslationProject.objects.select_related("source_text", "created_by"), pk=pk
     )
     invited = (
         user.is_authenticated
-        and version.members.filter(user=user, status=VersionMember.Status.INVITED).exists()
+        and project.members.filter(user=user, status=ProjectMember.Status.INVITED).exists()
     )
-    if not (can_view(user, version) or invited):
+    if not (can_view(user, project) or invited):
         raise Http404
-    return version
+    return project
 
 
 @require_http_methods(["GET", "POST"])
-def version_members(request, pk):
-    """The co-authors of a version; its author invites and removes them."""
+def project_members(request, pk):
+    """The roles of a project; its editors invite, change roles and remove."""
     user = request.user
-    version = _members_version(user, pk)
-    manager = can_manage(user, version)
+    project = _members_project(user, pk)
+    editor = is_editor(user, project) and user.is_active
     form = InviteForm(request.POST or None)
     if request.method == "POST":
-        if not manager:
+        if not editor:
             raise Http404
         if form.is_valid():
             try:
                 invitee = member_services.find_invitee(form.cleaned_data["name"])
-                member, saved = _contribute(request, member_services.invite, version, user, invitee)
+                member, saved = _contribute(
+                    request,
+                    member_services.invite,
+                    project,
+                    user,
+                    invitee,
+                    form.cleaned_data["role"],
+                )
             except ValidationError as error:
                 form.add_error("name", error)
             else:
@@ -109,33 +116,51 @@ def version_members(request, pk):
                         _("%(name)s est invité : il ou elle doit accepter l’invitation.")
                         % {"name": member.user.public_name},
                     )
-                    return redirect("translations:version_members", version.pk)
+                    return redirect("translations:project_members", project.pk)
     shown = [
         member
-        for member in version.members.select_related("user", "invited_by")
+        for member in project.members.select_related("user", "invited_by")
         if can_view(user, member)
-        and (member.status in (VersionMember.Status.INVITED, VersionMember.Status.ACTIVE))
+        and (member.status in (ProjectMember.Status.INVITED, ProjectMember.Status.ACTIVE))
     ]
     own = next((member for member in shown if member.user_id == user.pk), None)
     return render(
         request,
-        "translations/version_members.html",
+        "translations/project_members.html",
         {
-            "version": version,
-            "project": version.project,
+            "project": project,
+            "source": project.source_text,
             "members": shown,
             "own": own,
-            "can_manage": manager,
-            "is_writer": is_version_writer(user, version),
-            "form": form if manager else None,
+            "can_manage": editor,
+            "is_writer": is_translator(user, project),
+            "roles": ProjectMember.Role.choices,
+            "form": form if editor else None,
         },
     )
 
 
 @login_required
 @require_POST
+def member_role(request, pk):
+    """An editor gives another role to a member."""
+    member = get_object_or_404(ProjectMember.objects.select_related("project"), pk=pk)
+    role = request.POST.get("role")
+    if role not in ProjectMember.Role.values:
+        return HttpResponseBadRequest()
+    try:
+        member_services.change_role(member, request.user, role)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+    else:
+        messages.success(request, _("Le rôle est changé."))
+    return redirect("translations:project_members", member.project_id)
+
+
+@login_required
+@require_POST
 def member_answer(request, pk):
-    member = get_object_or_404(VersionMember.objects.select_related("version"), pk=pk)
+    member = get_object_or_404(ProjectMember.objects.select_related("project"), pk=pk)
     decision = request.POST.get("decision")
     if decision not in ("accept", "decline"):
         return HttpResponseBadRequest()
@@ -143,28 +168,31 @@ def member_answer(request, pk):
         member_services.answer(member, request.user, accept=decision == "accept")
     except ValidationError as error:
         messages.error(request, error.messages[0])
-        return redirect("translations:version_members", member.version_id)
+        return redirect("translations:project_members", member.project_id)
     if decision == "accept":
-        messages.success(request, _("Vous êtes co-auteur de cette version."))
-        return redirect("translations:version_edit", member.version_id)
+        messages.success(
+            request,
+            _("Vous êtes %(role)s de ce projet.") % {"role": member.get_role_display()},
+        )
+        return redirect("translations:project", member.project_id)
     messages.success(request, _("L’invitation est refusée."))
-    return redirect("translations:project", member.version.project_id)
+    return redirect("translations:project", member.project_id)
 
 
 @login_required
 @require_POST
 def member_remove(request, pk):
-    member = get_object_or_404(VersionMember.objects.select_related("version"), pk=pk)
+    member = get_object_or_404(ProjectMember.objects.select_related("project"), pk=pk)
     try:
         member_services.remove(member, request.user)
     except ValidationError as error:
         messages.error(request, error.messages[0])
     else:
         if request.user.pk == member.user_id:
-            messages.success(request, _("Vous n’êtes plus co-auteur de cette version."))
-            return redirect("translations:project", member.version.project_id)
-        messages.success(request, _("La personne n’est plus co-autrice de cette version."))
-    return redirect("translations:version_members", member.version_id)
+            messages.success(request, _("Vous n’êtes plus membre de ce projet."))
+            return redirect("translations:project", member.project_id)
+        messages.success(request, _("La personne n’est plus membre du projet."))
+    return redirect("translations:project_members", member.project_id)
 
 
 # Topics

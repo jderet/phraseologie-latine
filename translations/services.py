@@ -23,6 +23,7 @@ from .models import (
     TranslationProject,
     TranslationVersion,
     VersionStep,
+    is_editor,
     is_version_writer,
     version_writer_ids,
 )
@@ -566,7 +567,7 @@ def publish_version(version, user, message="", show_draft_steps=False):
     and for all whether the steps of the draft are shown.
     """
     version = TranslationVersion.objects.select_for_update().get(pk=version.pk)
-    if user.pk != version.author_id:
+    if user.pk != version.author_id and not is_editor(user, version.project):
         raise PermissionDenied
     if version.is_published:
         return None

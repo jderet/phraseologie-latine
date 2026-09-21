@@ -22,7 +22,7 @@ from phraseology.models import (
     Unit,
     UnitFrequency,
 )
-from translations.models import GlossaryEntry, Topic, TranslationVersion, VersionMember
+from translations.models import GlossaryEntry, ProjectMember, Topic, TranslationVersion
 from translations.sources import SourceHistory
 from translations.steps import public_step, step_sentences
 
@@ -288,7 +288,10 @@ def version_summary(version, link):
         "published_at": _date(version.published_at),
         "co_authors": [
             member.user.public_name
-            for member in version.members.filter(status=VersionMember.Status.ACTIVE)
+            for member in version.project.members.filter(
+                status=ProjectMember.Status.ACTIVE,
+                role__in=[ProjectMember.Role.EDITOR, ProjectMember.Role.TRANSLATOR],
+            )
             .select_related("user")
             .order_by("decided_at", "pk")
         ],

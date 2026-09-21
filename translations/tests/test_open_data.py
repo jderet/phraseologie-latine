@@ -15,7 +15,7 @@ from .test_versions import TranslationTestCase
 class OpenDataTests(TranslationTestCase):
     def setUp(self):
         self.version = make_published_version(self.author, self.project)
-        member = members.invite(self.version, self.author, self.other)
+        member = members.invite(self.project, self.author, self.other)
         members.answer(member, self.other, accept=True)
         Star.objects.create(user=self.reviewer, version=self.version)
         self.version.steps.filter(number=1).update(label="Édition 1")

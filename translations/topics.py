@@ -17,7 +17,7 @@ from activity.services import auto_follow, record
 from moderation.registry import can_view
 from moderation.services import save_with_revision
 
-from .models import Topic, TranslationProject, is_maintainer, maintainer_ids
+from .models import Topic, TranslationProject, editor_ids, is_editor
 
 REFERENCE = re.compile(r"(?<![\w&#/])#(\d{1,6})\b")
 
@@ -30,7 +30,7 @@ def can_close_topic(user, topic):
     return (
         user.is_authenticated
         and user.is_active
-        and (user.pk == topic.author_id or is_maintainer(user, topic.project) or is_reviewer(user))
+        and (user.pk == topic.author_id or is_editor(user, topic.project) or is_reviewer(user))
     )
 
 
@@ -56,7 +56,7 @@ def open_topic(topic, author):
         author,
         Verb.TOPIC_OPENED,
         topic,
-        recipients=maintainer_ids(project),
+        recipients=editor_ids(project),
         mention_text=topic.body,
     )
     return topic

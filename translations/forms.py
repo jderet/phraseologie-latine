@@ -13,6 +13,7 @@ from .classification import (
 from .models import (
     GlossaryEntry,
     License,
+    ProjectMember,
     SourceProposal,
     SourceText,
     Topic,
@@ -336,7 +337,16 @@ class InviteForm(forms.Form):
     name = forms.CharField(
         label=_("Nom affiché ou numéro de profil"),
         max_length=80,
-        help_text=_("La personne invitée accepte ou refuse ; elle voit alors votre brouillon."),
+        help_text=_("La personne invitée accepte ou refuse."),
+    )
+    role = forms.ChoiceField(
+        label=_("Rôle"),
+        choices=ProjectMember.Role.choices,
+        initial=ProjectMember.Role.TRANSLATOR,
+        help_text=_(
+            "Un éditeur décide de tout dans le projet ; un traducteur écrit la traduction ; "
+            "un correcteur propose des variantes aux phrases."
+        ),
     )
 
 
